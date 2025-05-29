@@ -1,0 +1,97 @@
+// Database systems navigation structure
+export const dbSystems = [
+  {
+    name: "MySQL",
+    id: "mysql",
+    links: [
+      { text: "Default Databases", href: "#MySQL_Default_Databases" },
+      { text: "Testing Injection", href: "#MySQL_Testing_Injection" },
+      { text: "Comment Out Query", href: "#MySQL_Comment_Out_Query" },
+      { text: "Testing Version", href: "#MySQL_Testing_Version" },
+      { text: "Database Credentials", href: "#MySQL_Database_Credentials" },
+      { text: "Database Names", href: "#MySQL_Database_Names" },
+      { text: "Server Hostname", href: "#MySQL_Server_Hostname" },
+      { text: "Server MAC Address", href: "#MySQL_Server_MAC_Address" },
+      { text: "Tables and Columns", href: "#MySQL_Tables_And_Columns" },
+      { text: "Avoiding Quotations", href: "#MySQL_Avoiding_Quotations" },
+      { text: "String Concatenation", href: "#MySQL_String_Concatenation" },
+      { text: "Conditional Statements", href: "#MySQL_Conditional_Statements" },
+      { text: "Timing", href: "#MySQL_Timing" },
+      { text: "Privileges", href: "#MySQL_File_Privileges" },
+      { text: "Reading Files", href: "#MySQL_Reading_Files" },
+      { text: "Writing Files", href: "#MySQL_Writing_Files" },
+      { text: "Out of Band Channeling", href: "#MySQL_OOB_Channeling" },
+      { text: "Stacked Queries", href: "#MySQL_Stacked_Queries" },
+      { text: "MySQL-specific Code", href: "#MySQL_Specific_Code" },
+      { text: "Fuzzing and Obfuscation", href: "#MySQL_Fuzzing_Obfuscation" },
+      { text: "Operators", href: "#MySQL_Operators" },
+      { text: "Constants", href: "#MySQL_Constants" },
+      { text: "Password Hashing", href: "#MySQL_Password_Hashing" },
+      { text: "Password Cracking", href: "#MySQL_Password_Cracking" }
+    ]
+  },
+  {
+    name: "MSSQL",
+    id: "mssql",
+    links: [
+      { text: "Default Databases", href: "#MSSQL_Default_Databases" },
+      { text: "Comment Out Query", href: "#MSSQL_Comment_Out_Query" },
+      { text: "Testing Version", href: "#MSSQL_Testing_Version" },
+      { text: "Database Credentials", href: "#MSSQL_Database_Credentials" },
+      { text: "Database Names", href: "#MSSQL_Database_Names" },
+      { text: "Server Hostname", href: "#MSSQL_Server_Hostname" },
+      { text: "Tables and Columns", href: "#MSSQL_Tables_And_Columns" },
+      { text: "Avoiding Quotations", href: "#MSSQL_Avoiding_Quotations" },
+      { text: "String Concatenation", href: "#MSSQL_String_Concatenation" },
+      { text: "Conditional Statements", href: "#MSSQL_Conditional_Statements" },
+      { text: "Timing", href: "#MSSQL_Timing" },
+      { text: "OPENROWSET Attacks", href: "#MSSQL_OPENROWSET_Attacks" },
+      { text: "System Command Execution", href: "#MSSQL_System_Command_Execution" },
+      { text: "SP_PASSWORD (Hiding Query)", href: "#MSSQL_SP_PASSWORD" },
+      { text: "Stacked Queries", href: "#MSSQL_Stacked_Queries" },
+      { text: "Fuzzing and Obfuscation", href: "#MSSQL_Fuzzing_Obfuscation" },
+      { text: "Password Hashing", href: "#MSSQL_Password_Hashing" },
+      { text: "Password Cracking", href: "#MSSQL_Password_Cracking" }
+    ]
+  },
+  {
+    name: "Oracle",
+    id: "oracle",
+    links: [
+      { text: "Default Databases", href: "#Oracle_Default_Databases" },
+      { text: "Comment Out Query", href: "#Oracle_Comment_Out_Query" },
+      { text: "Testing Version", href: "#Oracle_Testing_Version" },
+      { text: "Database Credentials", href: "#Oracle_Database_Credentials" },
+      { text: "Database Names", href: "#Oracle_Database_Names" },
+      { text: "Server Hostname", href: "#Oracle_Server_Hostname" },
+      { text: "Tables and Columns", href: "#Oracle_Tables_And_Columns" },
+      { text: "Avoiding Quotations", href: "#Oracle_Avoiding_Quotations" },
+      { text: "String Concatenation", href: "#Oracle_String_Concatenation" },
+      { text: "Conditional Statements", href: "#Oracle_Conditional_Statements" },
+      { text: "Timing", href: "#Oracle_Timing" },
+      { text: "Privileges", href: "#Oracle_Privileges" },
+      { text: "Out Of Band Channeling", href: "#Oracle_OOB_Channeling" },
+      { text: "Password Cracking", href: "#Oracle_Password_Cracking" }
+    ]
+  }
+];
+
+// Extra links - internal and external
+export const extraLinks = [
+  { text: "About", href: "#Extra_About" },
+  { text: "Contact", href: "#Extra_Contact" },
+  { text: "Special Thanks", href: "#Extra_Special_Thanks" },
+  { text: "Contributions", href: "#Extra_Contributions" },
+  { text: "Acknowledgments", href: "#Extra_Acknowledgments" },
+  { text: "Google Docs Version", href: "https://docs.google.com/document/edit?id=1rO_LCBKJY0puvRhPhAfTD2iNVPfR4e9KiKDpDE2enMI", external: true },
+  { text: "SQLi Challenges", href: "http://50.57.51.240/challenges/", external: true },
+  { text: "SQL Fiddle", href: "http://sqlfiddle.com/", external: true },
+  { text: "Pentestmonkey Cheatsheet", href: "http://pentestmonkey.net/cheat-sheet", external: true },
+  { text: "Ferruh Mavituna Cheatsheet", href: "http://ferruh.mavituna.com/sql-injection-cheatsheet-oku/", external: true },
+  { text: "MS Access Cheatsheet", href: "http://nibblesec.org/files/MSAccessSQLi/MSAccessSQLi.html", external: true },
+  { text: "SQLite3 Cheatsheet", href: "https://sites.google.com/site/0x7674/home/sqlite3injectioncheatsheet", external: true },
+  { text: "Reiners Filter Evasion Cheatsheet", href: "https://websec.wordpress.com/2010/12/04/sqli-filter-evasion-cheat-sheet-mysql/", external: true },
+  { text: "OWASP Prevention Cheatsheet", href: "https://www.owasp.org/index.php/SQL_Injection_Prevention_Cheat_Sheet", external: true },
+  { text: "Bobby Tables Prevention Guide", href: "http://bobby-tables.com/", external: true },
+  { text: "HTML5 Security Cheatsheet", href: "http://html5sec.org/", external: true }
+];

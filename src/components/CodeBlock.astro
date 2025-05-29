@@ -1,0 +1,80 @@
+---
+interface Props {
+  code: string;
+  language?: string;
+  title?: string;
+  highlightLines?: number[];
+}
+
+const { code, language = "sql", title, highlightLines = [] } = Astro.props;
+---
+
+<div class="modern-code-block">
+  <div class="code-header">
+    <span class="code-label">{title || language.toUpperCase()}</span>
+    <div class="fake-buttons">
+      <span></span><span></span><span></span>
+    </div>
+  </div>
+  <pre class="code-content"><code class={`language-${language}`} set:html={code} /></pre>
+</div>
+
+<style>
+  .modern-code-block {
+    margin: 1.25rem 0;
+    background-color: #f8fafc;
+    border-radius: 8px;
+    font-family: var(--font-mono);
+    font-size: 0.9rem;
+    line-height: 1.5;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    overflow: hidden;
+  }
+  
+  .code-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.5rem 1rem;
+    background-color: #edf2f7;
+    border-bottom: 1px solid #e2e8f0;
+  }
+  
+  .code-label {
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    color: #4a5568;
+  }
+  
+  .fake-buttons {
+    display: flex;
+    gap: 6px;
+  }
+  
+  .fake-buttons span {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    display: block;
+  }
+  
+  .fake-buttons span:nth-child(1) {
+    background-color: #fc8181;
+  }
+  
+  .fake-buttons span:nth-child(2) {
+    background-color: #f6e05e;
+  }
+  
+  .fake-buttons span:nth-child(3) {
+    background-color: #68d391;
+  }
+  
+  .code-content {
+    margin: 0;
+    padding: 1rem;
+    background-color: white;
+    overflow-x: auto;
+  }
+</style>

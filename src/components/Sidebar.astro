@@ -1,0 +1,313 @@
+---
+import { getCollection } from 'astro:content';
+
+// Get all entries to build the navigation menu
+const mysqlEntries = await getCollection('mysql');
+const mssqlEntries = await getCollection('mssql');
+const oracleEntries = await getCollection('oracle');
+const extrasEntries = await getCollection('extras');
+
+// Helper function to group entries by category
+function groupByCategory(entries) {
+  return entries.reduce((acc, entry) => {
+    const category = entry.data.category;
+    if (!acc[category]) {
+      acc[category] = [];
+    }
+    acc[category].push(entry);
+    return acc;
+  }, {});
+}
+
+// Group entries by category
+const mysqlByCategory = groupByCategory(mysqlEntries);
+const mssqlByCategory = groupByCategory(mssqlEntries);
+const oracleByCategory = groupByCategory(oracleEntries);
+
+// Sort each category's entries by order
+Object.keys(mysqlByCategory).forEach(category => {
+  mysqlByCategory[category].sort((a, b) => a.data.order - b.data.order);
+});
+
+Object.keys(mssqlByCategory).forEach(category => {
+  mssqlByCategory[category].sort((a, b) => a.data.order - b.data.order);
+});
+
+Object.keys(oracleByCategory).forEach(category => {
+  oracleByCategory[category].sort((a, b) => a.data.order - b.data.order);
+});
+
+// Sort categories alphabetically
+const mysqlCategories = Object.keys(mysqlByCategory).sort();
+const mssqlCategories = Object.keys(mssqlByCategory).sort();
+const oracleCategories = Object.keys(oracleByCategory).sort();
+
+// Filter out external links from extras
+const resourceLinks = extrasEntries.filter(entry => entry.data.title === "External Resources");
+const otherExtras = extrasEntries.filter(entry => entry.data.title !== "External Resources");
+
+// Current path to highlight active link
+const currentPath = Astro.url.pathname;
+
+// Determine active section based on current path
+let activeSection = 'mysql';
+if (currentPath.includes('/mssql/')) {
+  activeSection = 'mssql';
+} else if (currentPath.includes('/oracle/')) {
+  activeSection = 'oracle';
+} else if (currentPath.includes('/extras/')) {
+  activeSection = 'extras';
+}
+---
+
+<aside class="sidebar">
+  <div class="sidebar-header">
+    <h3>Table of Contents</h3>
+  </div>
+  
+  <div class="sidebar-search">
+    <input type="text" id="sidebar-search-input" placeholder="Search documentation..." />
+  </div>
+  
+  <div class="sidebar-content">
+    <div class={`sidebar-section ${activeSection === 'mysql' ? 'active' : ''}`} data-section="mysql">
+      <div class="sidebar-heading" role="button" tabindex="0">
+        <span>MySQL</span>
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="toggle-icon">
+          <polyline points="6 9 12 15 18 9"></polyline>
+        </svg>
+      </div>
+      <div class="sidebar-items">
+        {mysqlCategories.map(category => (
+          <div class="sidebar-category">
+            <div class="category-name">{category}</div>
+            <ul class="sidebar-nav">
+              {mysqlByCategory[category].map(entry => (
+                <li>
+                  <a 
+                    href={`/mysql/${entry.slug}`} 
+                    class={currentPath === `/mysql/${entry.slug}` ? 'active' : ''}
+                  >
+                    {entry.data.title}
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </div>
+        ))}
+      </div>
+    </div>
+    
+    <div class={`sidebar-section ${activeSection === 'mssql' ? 'active' : ''}`} data-section="mssql">
+      <div class="sidebar-heading" role="button" tabindex="0">
+        <span>MSSQL</span>
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="toggle-icon">
+          <polyline points="6 9 12 15 18 9"></polyline>
+        </svg>
+      </div>
+      <div class="sidebar-items">
+        {mssqlCategories.map(category => (
+          <div class="sidebar-category">
+            <div class="category-name">{category}</div>
+            <ul class="sidebar-nav">
+              {mssqlByCategory[category].map(entry => (
+                <li>
+                  <a 
+                    href={`/mssql/${entry.slug}`} 
+                    class={currentPath === `/mssql/${entry.slug}` ? 'active' : ''}
+                  >
+                    {entry.data.title}
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </div>
+        ))}
+      </div>
+    </div>
+    
+    <div class={`sidebar-section ${activeSection === 'oracle' ? 'active' : ''}`} data-section="oracle">
+      <div class="sidebar-heading" role="button" tabindex="0">
+        <span>Oracle</span>
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="toggle-icon">
+          <polyline points="6 9 12 15 18 9"></polyline>
+        </svg>
+      </div>
+      <div class="sidebar-items">
+        {oracleCategories.map(category => (
+          <div class="sidebar-category">
+            <div class="category-name">{category}</div>
+            <ul class="sidebar-nav">
+              {oracleByCategory[category].map(entry => (
+                <li>
+                  <a 
+                    href={`/oracle/${entry.slug}`} 
+                    class={currentPath === `/oracle/${entry.slug}` ? 'active' : ''}
+                  >
+                    {entry.data.title}
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </div>
+        ))}
+      </div>
+    </div>
+    
+    <div class={`sidebar-section ${activeSection === 'extras' ? 'active' : ''}`} data-section="extras">
+      <div class="sidebar-heading" role="button" tabindex="0">
+        <span>Extras</span>
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="toggle-icon">
+          <polyline points="6 9 12 15 18 9"></polyline>
+        </svg>
+      </div>
+      <div class="sidebar-items">
+        <ul class="sidebar-nav">
+          {otherExtras.map(entry => (
+            <li>
+              <a 
+                href={`/extras/${entry.slug}`} 
+                class={currentPath === `/extras/${entry.slug}` ? 'active' : ''}
+              >
+                {entry.data.title}
+              </a>
+            </li>
+          ))}
+          
+          {resourceLinks.length > 0 && (
+            <li>
+              <a 
+                href={`/extras/${resourceLinks[0].slug}`} 
+                class={currentPath === `/extras/${resourceLinks[0].slug}` ? 'active' : ''}
+              >
+                External Resources
+              </a>
+            </li>
+          )}
+        </ul>
+      </div>
+    </div>
+  </div>
+</aside>
+
+<script>
+  // Handle sidebar functionality
+  function initSidebar() {
+    // Remove any existing event listeners by adding and removing a temporary class
+    document.querySelectorAll('.sidebar-heading').forEach(el => {
+      el.classList.add('temp-class');
+      el.classList.remove('temp-class');
+    });
+    
+    // Add click handlers to sidebar headings
+    document.querySelectorAll('.sidebar-heading').forEach(heading => {
+      // Ensure we're not adding duplicate listeners
+      heading.removeEventListener('click', toggleSection);
+      heading.addEventListener('click', toggleSection);
+      
+      // Also handle keyboard navigation
+      heading.removeEventListener('keydown', handleKeyDown);
+      heading.addEventListener('keydown', handleKeyDown);
+    });
+    
+    // Search functionality
+    const searchInput = document.getElementById('sidebar-search-input');
+    if (searchInput) {
+      searchInput.removeEventListener('input', handleSearch);
+      searchInput.addEventListener('input', handleSearch);
+    }
+  }
+  
+  // Toggle section visibility
+  function toggleSection(e) {
+    const section = this.closest('.sidebar-section');
+    if (section) {
+      section.classList.toggle('active');
+      
+      // Announce to screen readers
+      const isExpanded = section.classList.contains('active');
+      this.setAttribute('aria-expanded', isExpanded ? 'true' : 'false');
+    }
+  }
+  
+  // Keyboard navigation
+  function handleKeyDown(e) {
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      toggleSection.call(this, e);
+    }
+  }
+  
+  // Search functionality
+  function handleSearch() {
+    const searchTerm = this.value.toLowerCase().trim();
+    
+    if (searchTerm.length < 2) {
+      // Reset all elements if search term is too short
+      document.querySelectorAll('.sidebar-nav a, .sidebar-category').forEach(el => {
+        el.style.display = '';
+      });
+      
+      // Restore previous active states
+      document.querySelectorAll('.sidebar-section').forEach(section => {
+        if (section.dataset.wasActive === 'true') {
+          section.classList.add('active');
+          section.removeAttribute('data-was-active');
+        }
+      });
+      
+      return;
+    }
+    
+    // Remember which sections were active before searching
+    document.querySelectorAll('.sidebar-section.active').forEach(section => {
+      section.setAttribute('data-was-active', 'true');
+    });
+    
+    // Hide all categories initially
+    document.querySelectorAll('.sidebar-category').forEach(category => {
+      category.style.display = 'none';
+    });
+    
+    // Hide all items initially
+    document.querySelectorAll('.sidebar-nav a').forEach(link => {
+      link.style.display = 'none';
+    });
+    
+    // Expand all sections for search
+    document.querySelectorAll('.sidebar-section').forEach(section => {
+      section.classList.add('active');
+    });
+    
+    // Show matching items
+    let hasMatches = false;
+    document.querySelectorAll('.sidebar-nav a').forEach(link => {
+      const text = link.textContent.toLowerCase();
+      
+      if (text.includes(searchTerm)) {
+        link.style.display = '';
+        const category = link.closest('.sidebar-category');
+        if (category) category.style.display = '';
+        hasMatches = true;
+      }
+    });
+    
+    // If no matches found, we could add a "no results" message here
+    if (!hasMatches) {
+      // Empty state handling can be added in the future if needed
+    }
+  }
+  
+  // Initialize on page load
+  document.addEventListener('DOMContentLoaded', initSidebar);
+  
+  // Initialize after navigation with ViewTransitions
+  document.addEventListener('astro:page-load', initSidebar);
+  
+  // Ensure sidebar works even if DOMContentLoaded already fired
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initSidebar);
+  } else {
+    initSidebar();
+  }
+</script>

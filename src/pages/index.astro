@@ -1,0 +1,383 @@
+---
+import { getCollection } from 'astro:content';
+import Layout from '../layouts/Layout.astro';
+import EntryList from '../components/EntryList.astro';
+import { fade, slide } from 'astro:transitions';
+
+// Get entries from all collections
+const mysqlEntries = await getCollection('mysql');
+const mssqlEntries = await getCollection('mssql');
+const oracleEntries = await getCollection('oracle');
+const extrasEntries = await getCollection('extras');
+
+// Count total entries
+const totalEntries = mysqlEntries.length + mssqlEntries.length + oracleEntries.length + extrasEntries.length;
+
+// Count actual database platforms (collections with at least one entry)
+const activeDatabaseCount = [
+  mysqlEntries.length > 0, 
+  mssqlEntries.length > 0, 
+  oracleEntries.length > 0
+].filter(Boolean).length;
+---
+
+<Layout title="SQL Injection Knowledge Base | Home" showSidebar={false}>
+  <div class="home-intro" transition:animate="slide">
+    <h1 transition:name="page-title">SQL Injection Knowledge Base</h1>
+    <p class="lead" transition:animate="fade">
+      A comprehensive resource for SQL injection techniques, examples, and bypasses
+      across multiple database platforms.
+    </p>
+    <div class="stats" transition:animate="fade">
+      <div class="stat-item">
+        <span class="stat-value">{totalEntries}</span>
+        <span class="stat-label">Knowledge Base Entries</span>
+      </div>
+      <div class="stat-item">
+        <span class="stat-value">{activeDatabaseCount}</span>
+        <span class="stat-label">Database Platforms</span>
+      </div>
+      <div class="stat-item">
+        <span class="stat-value">100%</span>
+        <span class="stat-label">Open Source Resources</span>
+      </div>
+    </div>
+    
+    <div class="cta-container">
+      <a href="/browse?type=mysql" class="explore-button">
+        <span>Explore Documentation</span>
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M5 12h14"></path>
+          <path d="m12 5 7 7-7 7"></path>
+        </svg>
+      </a>
+    </div>
+  </div>
+  
+  <div class="database-tabs" transition:animate="slide">
+    <div class="tab-container">
+      <ul class="tab-list" role="tablist" transition:animate="fade">
+        <li class="tab" role="tab" aria-selected="true" data-tab="mysql">MySQL</li>
+        <li class="tab" role="tab" aria-selected="false" data-tab="mssql">MSSQL</li>
+        <li class="tab" role="tab" aria-selected="false" data-tab="oracle">Oracle</li>
+        <li class="tab" role="tab" aria-selected="false" data-tab="extras">Extras</li>
+      </ul>
+    </div>
+    
+    <div class="tab-panels">
+      <div class="tab-panel active" data-panel="mysql">
+        <EntryList 
+          entries={mysqlEntries} 
+          title="MySQL" 
+          collectionType="mysql" 
+        />
+      </div>
+      
+      <div class="tab-panel" data-panel="mssql">
+        <EntryList 
+          entries={mssqlEntries} 
+          title="MSSQL" 
+          collectionType="mssql" 
+        />
+      </div>
+      
+      <div class="tab-panel" data-panel="oracle">
+        <EntryList 
+          entries={oracleEntries} 
+          title="Oracle" 
+          collectionType="oracle" 
+        />
+      </div>
+      
+      <div class="tab-panel" data-panel="extras">
+        <EntryList 
+          entries={extrasEntries} 
+          title="Additional Resources" 
+          collectionType="extras" 
+        />
+      </div>
+    </div>
+  </div>
+</Layout>
+
+<script>
+  // Initialize tab functionality
+  function initializeTabs() {
+    const tabs = document.querySelectorAll('.tab');
+    const panels = document.querySelectorAll('.tab-panel');
+    
+    // Check URL for tab parameter
+    const urlParams = new URLSearchParams(window.location.search);
+    const tabParam = urlParams.get('tab');
+    
+    // Initialize tabs
+    if (tabParam && document.querySelector(`[data-tab="${tabParam}"]`)) {
+      selectTab(tabParam);
+    }
+    
+    // Add click handler to tabs
+    tabs.forEach(tab => {
+      // Remove existing event listeners by cloning
+      const newTab = tab.cloneNode(true);
+      tab.parentNode.replaceChild(newTab, tab);
+      
+      // Add event listener to new tab
+      newTab.addEventListener('click', () => {
+        const tabId = newTab.getAttribute('data-tab');
+        if (tabId) {
+          selectTab(tabId);
+          
+          // Update URL without page reload
+          const url = new URL(window.location);
+          url.searchParams.set('tab', tabId);
+          window.history.pushState({}, '', url);
+        }
+      });
+    });
+    
+    // Function to select a tab
+    function selectTab(tabId) {
+      // Deactivate all tabs and panels
+      tabs.forEach(tab => tab.setAttribute('aria-selected', 'false'));
+      panels.forEach(panel => panel.classList.remove('active'));
+      
+      // Activate the selected tab and panel
+      const selectedTab = document.querySelector(`[data-tab="${tabId}"]`);
+      const selectedPanel = document.querySelector(`[data-panel="${tabId}"]`);
+      
+      if (selectedTab && selectedPanel) {
+        selectedTab.setAttribute('aria-selected', 'true');
+        selectedPanel.classList.add('active');
+      }
+    }
+  }
+
+  // Run initialization on DOMContentLoaded
+  document.addEventListener('DOMContentLoaded', initializeTabs);
+  
+  // Run initialization after Astro View Transitions
+  document.addEventListener('astro:page-load', initializeTabs);
+</script>
+
+<style>
+  .home-intro {
+    background-color: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    padding: 2.5rem;
+    margin-bottom: 3rem;
+    text-align: center;
+  }
+  
+  .home-intro h1 {
+    margin-top: 0;
+    font-size: 2.5rem;
+    color: var(--color-primary);
+    border-bottom: none;
+  }
+  
+  .lead {
+    font-size: 1.2rem;
+    max-width: 800px;
+    margin: 1rem auto 2rem;
+    color: #4a5568;
+  }
+  
+  .stats {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 3.5rem;
+    margin: 2.5rem auto;
+    max-width: 800px;
+  }
+  
+  .cta-container {
+    margin-top: 2.5rem;
+    text-align: center;
+  }
+  
+  .explore-button {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.75rem;
+    background-color: var(--color-primary);
+    color: white;
+    padding: 0.75rem 1.5rem;
+    border-radius: 4px;
+    font-weight: 600;
+    text-decoration: none;
+    transition: all 0.2s ease;
+    box-shadow: 0 4px 6px rgba(49, 130, 206, 0.2);
+  }
+  
+  .explore-button:hover {
+    background-color: #2c73b4;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 12px rgba(49, 130, 206, 0.3);
+    text-decoration: none;
+  }
+  
+  .explore-button svg {
+    transition: transform 0.2s ease;
+  }
+  
+  .explore-button:hover svg {
+    transform: translateX(3px);
+  }
+  
+  .stat-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-width: 150px;
+    text-align: center;
+    position: relative;
+  }
+  
+  .stat-value {
+    font-size: 2.25rem;
+    font-weight: 700;
+    color: var(--color-primary);
+    line-height: 1;
+    margin-bottom: 0.75rem;
+  }
+  
+  .stat-label {
+    font-size: 1rem;
+    color: #4a5568;
+    font-weight: 500;
+    line-height: 1.3;
+    max-width: 140px;
+  }
+  
+  .database-tabs {
+    margin-top: 2rem;
+  }
+  
+  .tab-container {
+    position: relative;
+    margin-bottom: 2rem;
+  }
+  
+  .tab-list {
+    display: flex;
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    border-bottom: 1px solid var(--color-border);
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+  
+  .tab-list::-webkit-scrollbar {
+    display: none;
+  }
+  
+  .tab {
+    padding: 1rem 1.5rem;
+    cursor: pointer;
+    font-weight: 600;
+    color: #4a5568;
+    border-bottom: 3px solid transparent;
+    transition: all 0.3s ease;
+    white-space: nowrap;
+  }
+  
+  .tab:hover {
+    color: var(--color-primary);
+    background-color: rgba(66, 153, 225, 0.05);
+  }
+  
+  .tab[aria-selected="true"] {
+    color: var(--color-primary);
+    border-bottom-color: var(--color-primary);
+  }
+  
+  .tab-panels {
+    position: relative;
+    margin-top: 1rem;
+  }
+  
+  .tab-panel {
+    display: none;
+    animation: fadeIn 0.5s ease;
+  }
+  
+  .tab-panel.active {
+    display: block;
+  }
+  
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  
+  @media (max-width: 768px) {
+    .home-intro {
+      padding: 1.5rem;
+    }
+    
+    .home-intro h1 {
+      font-size: 2rem;
+    }
+    
+    .lead {
+      font-size: 1.1rem;
+    }
+    
+    .stats {
+      gap: 2rem;
+      flex-direction: column;
+      align-items: center;
+      margin: 2rem auto;
+    }
+    
+    .stat-item {
+      min-width: 200px;
+      padding: 0.75rem 0;
+    }
+    
+    .stat-value {
+      font-size: 2rem;
+      margin-bottom: 0.5rem;
+    }
+    
+    .stat-label {
+      font-size: 0.95rem;
+      max-width: 180px;
+    }
+    
+    .cta-container {
+      margin-top: 1.5rem;
+    }
+    
+    .explore-button {
+      width: 100%;
+      justify-content: center;
+    }
+    
+    .tab {
+      padding: 0.75rem 1rem;
+      font-size: 0.9rem;
+    }
+    
+    .tab-list {
+      padding-bottom: 2px;
+    }
+    
+    /* Make tabs scrollable on mobile */
+    .tab-container {
+      position: relative;
+      width: 100%;
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+    }
+    
+    .tab-list {
+      flex-wrap: nowrap;
+      width: max-content;
+      min-width: 100%;
+    }
+  }
+</style>

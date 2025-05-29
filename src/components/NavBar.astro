@@ -1,0 +1,793 @@
+---
+import { getCollection } from 'astro:content';
+
+// Get all entries to build the navigation menu
+const mysqlEntries = await getCollection('mysql');
+const mssqlEntries = await getCollection('mssql');
+const oracleEntries = await getCollection('oracle');
+const extrasEntries = await getCollection('extras');
+
+// Helper function to group entries by category
+function groupByCategory(entries) {
+  return entries.reduce((acc, entry) => {
+    const category = entry.data.category;
+    if (!acc[category]) {
+      acc[category] = [];
+    }
+    acc[category].push(entry);
+    return acc;
+  }, {});
+}
+
+// Group entries by category
+const mysqlByCategory = groupByCategory(mysqlEntries);
+const mssqlByCategory = groupByCategory(mssqlEntries);
+const oracleByCategory = groupByCategory(oracleEntries);
+
+// Sort each category's entries by order
+Object.keys(mysqlByCategory).forEach(category => {
+  mysqlByCategory[category].sort((a, b) => a.data.order - b.data.order);
+});
+
+Object.keys(mssqlByCategory).forEach(category => {
+  mssqlByCategory[category].sort((a, b) => a.data.order - b.data.order);
+});
+
+Object.keys(oracleByCategory).forEach(category => {
+  oracleByCategory[category].sort((a, b) => a.data.order - b.data.order);
+});
+
+// Sort categories alphabetically
+const mysqlCategories = Object.keys(mysqlByCategory).sort();
+const mssqlCategories = Object.keys(mssqlByCategory).sort();
+const oracleCategories = Object.keys(oracleByCategory).sort();
+
+// Filter out external links from extras
+const resourceLinks = extrasEntries.filter(entry => entry.data.title === "External Resources");
+const otherExtras = extrasEntries.filter(entry => entry.data.title !== "External Resources");
+
+// Current path to highlight active link
+const currentPath = Astro.url.pathname;
+---
+
+<nav class="navbar">
+  <div class="container">
+    <div class="navbar-logo">
+      <a href="/" class="logo">
+        <div class="logo-container">
+          <img src="/images/logo-white-ai.png" alt="WEBSEC Logo" class="websec-logo">
+        </div>
+        <span class="logo-text">SQL Injection Knowledge Base</span>
+      </a>
+      <button id="mobile-toggle" aria-label="Menu" aria-expanded="false">
+        <span class="bar"></span>
+        <span class="bar"></span>
+        <span class="bar"></span>
+      </button>
+    </div>
+    
+    <div class="navbar-menu" id="navbar-menu">
+      <div class="search-container">
+        <svg class="search-icon" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="11" cy="11" r="8"></circle>
+          <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+        </svg>
+        <form id="search-form" action="/search" method="get">
+          <input 
+            type="text" 
+            id="search-input" 
+            name="q"
+            placeholder="Search..." 
+            aria-label="Search the knowledge base"
+          />
+        </form>
+      </div>
+      
+      <ul class="nav-links">
+        <li class="nav-item dropdown">
+          <button class="nav-link dropdown-toggle">
+            MySQL
+            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="6 9 12 15 18 9"></polyline>
+            </svg>
+          </button>
+          <div class="dropdown-menu">
+            {mysqlCategories.map(category => (
+              <div class="dropdown-submenu">
+                <div class="dropdown-header">{category}</div>
+                <ul class="dropdown-list">
+                  {mysqlByCategory[category].map(entry => (
+                    <li>
+                      <a 
+                        href={`/mysql/${entry.slug}`} 
+                        class={currentPath === `/mysql/${entry.slug}` ? 'active' : ''}
+                      >
+                        {entry.data.title}
+                      </a>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ))}
+          </div>
+        </li>
+        
+        <li class="nav-item dropdown">
+          <button class="nav-link dropdown-toggle">
+            MSSQL
+            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="6 9 12 15 18 9"></polyline>
+            </svg>
+          </button>
+          <div class="dropdown-menu">
+            {mssqlCategories.map(category => (
+              <div class="dropdown-submenu">
+                <div class="dropdown-header">{category}</div>
+                <ul class="dropdown-list">
+                  {mssqlByCategory[category].map(entry => (
+                    <li>
+                      <a 
+                        href={`/mssql/${entry.slug}`} 
+                        class={currentPath === `/mssql/${entry.slug}` ? 'active' : ''}
+                      >
+                        {entry.data.title}
+                      </a>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ))}
+          </div>
+        </li>
+        
+        <li class="nav-item dropdown">
+          <button class="nav-link dropdown-toggle">
+            Oracle
+            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="6 9 12 15 18 9"></polyline>
+            </svg>
+          </button>
+          <div class="dropdown-menu">
+            {oracleCategories.map(category => (
+              <div class="dropdown-submenu">
+                <div class="dropdown-header">{category}</div>
+                <ul class="dropdown-list">
+                  {oracleByCategory[category].map(entry => (
+                    <li>
+                      <a 
+                        href={`/oracle/${entry.slug}`} 
+                        class={currentPath === `/oracle/${entry.slug}` ? 'active' : ''}
+                      >
+                        {entry.data.title}
+                      </a>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ))}
+          </div>
+        </li>
+        
+        <li class="nav-item dropdown">
+          <button class="nav-link dropdown-toggle">
+            Extras
+            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="6 9 12 15 18 9"></polyline>
+            </svg>
+          </button>
+          <div class="dropdown-menu dropdown-menu-right">
+            {otherExtras.map(entry => (
+              <a 
+                href={`/extras/${entry.slug}`} 
+                class={currentPath === `/extras/${entry.slug}` ? 'dropdown-item active' : 'dropdown-item'}
+              >
+                {entry.data.title}
+              </a>
+            ))}
+            
+            {resourceLinks.length > 0 && (
+              <div class="dropdown-divider"></div>
+            )}
+            
+            {resourceLinks.length > 0 && (
+              <a 
+                href={`/extras/${resourceLinks[0].slug}`} 
+                class={currentPath === `/extras/${resourceLinks[0].slug}` ? 'dropdown-item active' : 'dropdown-item'}
+              >
+                External Resources
+              </a>
+            )}
+          </div>
+        </li>
+        
+        <li class="nav-item">
+          <a href="https://github.com/WebsecLabs/sql-injection-knowledge-base" target="_blank" rel="noopener noreferrer" class="nav-link github-link">
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"></path>
+            </svg>
+            GitHub
+          </a>
+        </li>
+      </ul>
+    </div>
+  </div>
+</nav>
+
+<script>
+  // Initialize navbar functionality
+  function initNavbar() {
+    // Mobile menu toggle
+    const mobileToggle = document.getElementById('mobile-toggle');
+    const navbarMenu = document.getElementById('navbar-menu');
+    
+    if (mobileToggle && navbarMenu) {
+      mobileToggle.addEventListener('click', function() {
+        const isExpanded = this.getAttribute('aria-expanded') === 'true';
+        this.setAttribute('aria-expanded', !isExpanded);
+        navbarMenu.classList.toggle('active');
+        this.classList.toggle('active');
+      });
+    }
+    
+    // Handle dropdown toggle on mobile and desktop differently
+    const isMobile = window.innerWidth < 992;
+    const dropdowns = document.querySelectorAll('.dropdown');
+    
+    // Clear any existing click handlers from dropdown toggles
+    document.querySelectorAll('.dropdown-toggle').forEach(toggle => {
+      const newToggle = toggle.cloneNode(true);
+      if (toggle.parentNode) toggle.parentNode.replaceChild(newToggle, toggle);
+    });
+    
+    // Add fresh handlers to dropdowns
+    dropdowns.forEach(dropdown => {
+      const toggle = dropdown.querySelector('.dropdown-toggle');
+      if (!toggle) return;
+      
+      if (isMobile) {
+        // On mobile, toggle on click
+        toggle.addEventListener('click', function(e) {
+          e.preventDefault();
+          e.stopPropagation();
+          
+          // Close all other dropdowns
+          dropdowns.forEach(other => {
+            if (other !== dropdown) {
+              other.classList.remove('show');
+            }
+          });
+          
+          // Toggle this dropdown
+          dropdown.classList.toggle('show');
+        });
+      } else {
+        // On desktop, show on hover
+        dropdown.addEventListener('mouseenter', function() {
+          this.classList.add('show');
+        });
+        
+        dropdown.addEventListener('mouseleave', function() {
+          this.classList.remove('show');
+        });
+        
+        // But also support click for accessibility
+        toggle.addEventListener('click', function(e) {
+          e.preventDefault();
+          e.stopPropagation();
+          
+          if (dropdown.classList.contains('show')) {
+            dropdown.classList.remove('show');
+          } else {
+            // Close other dropdowns
+            dropdowns.forEach(other => {
+              other.classList.remove('show');
+            });
+            dropdown.classList.add('show');
+          }
+        });
+      }
+    });
+    
+    // Close dropdowns when clicking outside
+    document.addEventListener('click', function(e) {
+      if (!e.target.closest('.dropdown')) {
+        dropdowns.forEach(dropdown => {
+          dropdown.classList.remove('show');
+        });
+      }
+    });
+    
+    // Ensure dropdown menu stays within viewport
+    document.querySelectorAll('.dropdown-menu').forEach(menu => {
+      const rect = menu.getBoundingClientRect();
+      if (rect.right > window.innerWidth) {
+        menu.classList.add('dropdown-menu-right');
+      }
+    });
+  }
+  
+  // Initialize search functionality
+  function initSearch() {
+    const searchForm = document.getElementById('search-form');
+    const searchInput = document.getElementById('search-input');
+    const searchIcon = document.querySelector('.search-icon');
+    
+    if (searchForm && searchInput) {
+      // Make search icon clickable
+      if (searchIcon) {
+        searchIcon.addEventListener('click', function() {
+          if (searchInput.value.trim()) {
+            searchForm.submit();
+          } else {
+            searchInput.focus();
+          }
+        });
+      }
+      
+      // Prevent empty searches
+      searchForm.addEventListener('submit', function(e) {
+        if (!searchInput.value.trim()) {
+          e.preventDefault();
+          searchInput.focus();
+        }
+      });
+      
+      // Submit on enter
+      searchInput.addEventListener('keydown', function(e) {
+        if (e.key === 'Enter' && this.value.trim()) {
+          searchForm.submit();
+        }
+      });
+    }
+  }
+  
+  // Handle window resize
+  function handleResize() {
+    if (window.innerWidth < 992) {
+      // On mobile, reset all dropdowns
+      document.querySelectorAll('.dropdown').forEach(dropdown => {
+        dropdown.classList.remove('show');
+      });
+      
+      // Re-initialize navbar to apply mobile behavior
+      initNavbar();
+    } else {
+      // Close mobile menu if open
+      const navbarMenu = document.getElementById('navbar-menu');
+      const mobileToggle = document.getElementById('mobile-toggle');
+      
+      if (navbarMenu && navbarMenu.classList.contains('active')) {
+        navbarMenu.classList.remove('active');
+        if (mobileToggle) {
+          mobileToggle.classList.remove('active');
+          mobileToggle.setAttribute('aria-expanded', 'false');
+        }
+      }
+      
+      // Re-initialize navbar to apply desktop behavior
+      initNavbar();
+    }
+  }
+  
+  // Initialize on page load
+  document.addEventListener('DOMContentLoaded', function() {
+    initNavbar();
+    initSearch();
+    
+    // Add resize listener with debounce
+    let resizeTimer;
+    window.addEventListener('resize', function() {
+      clearTimeout(resizeTimer);
+      resizeTimer = setTimeout(handleResize, 100);
+    });
+  });
+  
+  // Re-initialize after each page navigation with View Transitions
+  document.addEventListener('astro:page-load', function() {
+    initNavbar();
+    initSearch();
+  });
+  
+  // Fix for dropdowns to ensure they're always initialized
+  function ensureDropdownsWork() {
+    // Simple fallback if JavaScript fails - use hover state
+    const dropdowns = document.querySelectorAll('.dropdown');
+    dropdowns.forEach(dropdown => {
+      dropdown.addEventListener('mouseenter', function() {
+        this.classList.add('show');
+      });
+      
+      dropdown.addEventListener('mouseleave', function() {
+        this.classList.remove('show');
+      });
+    });
+  }
+  
+  // Run initialization immediately if document is already loaded
+  if (document.readyState !== 'loading') {
+    initNavbar();
+    initSearch();
+    ensureDropdownsWork();
+  } else {
+    ensureDropdownsWork();
+  }
+</script>
+
+<style>
+  .navbar {
+    background-color: var(--color-primary);
+    background-image: linear-gradient(135deg, var(--color-primary), #1a365d);
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+    color: white;
+    width: 100%;
+    max-width: 100%;
+    /* Allow dropdowns to be visible on desktop */
+    overflow: visible;
+  }
+  
+  /* Apply overflow: hidden only on mobile screens */
+  @media (max-width: 768px) {
+    .navbar {
+      overflow: hidden;
+    }
+  }
+  
+  .container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 1.5rem;
+    height: 70px;
+  }
+  
+  .navbar-logo {
+    display: flex;
+    align-items: center;
+  }
+  
+  .logo {
+    display: flex;
+    align-items: flex-start;
+    text-decoration: none;
+    white-space: nowrap;
+  }
+  
+  .logo-container {
+    display: flex;
+    align-items: center;
+    margin-right: 12px;
+  }
+  
+  .websec-logo {
+    height: 34px;
+    margin-top: 1.25px;
+  }
+  
+  .logo-text {
+    font-weight: 700;
+    font-size: 1.25rem;
+    color: white;
+    line-height: 1.7;
+  }
+  
+  .logo:hover {
+    text-decoration: none;
+  }
+  
+  #mobile-toggle {
+    display: none;
+    background: none;
+    border: none;
+    padding: 0.5rem;
+    margin-left: 1rem;
+    cursor: pointer;
+  }
+  
+  .bar {
+    display: block;
+    width: 25px;
+    height: 3px;
+    margin: 5px auto;
+    background-color: white;
+    transition: all 0.3s ease-in-out;
+  }
+  
+  #mobile-toggle.active .bar:nth-child(1) {
+    transform: translateY(8px) rotate(45deg);
+  }
+  
+  #mobile-toggle.active .bar:nth-child(2) {
+    opacity: 0;
+  }
+  
+  #mobile-toggle.active .bar:nth-child(3) {
+    transform: translateY(-8px) rotate(-45deg);
+  }
+  
+  .navbar-menu {
+    display: flex;
+    align-items: center;
+  }
+  
+  .search-container {
+    position: relative;
+    margin-right: 1.5rem;
+  }
+  
+  #search-form {
+    position: relative;
+    display: flex;
+    align-items: center;
+    width: 100%;
+  }
+  
+  #search-input {
+    padding: 0.5rem 0.75rem 0.5rem 2.25rem;
+    border: none;
+    border-radius: 4px;
+    font-size: 0.9rem;
+    width: 220px;
+    transition: all 0.2s ease;
+    background-color: rgba(255, 255, 255, 0.1);
+    color: white;
+  }
+  
+  #search-input::placeholder {
+    color: rgba(255, 255, 255, 0.7);
+  }
+  
+  #search-input:focus {
+    outline: none;
+    background-color: rgba(255, 255, 255, 0.2);
+    box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.25);
+    width: 280px;
+  }
+  
+    
+  .search-icon {
+    position: absolute;
+    left: 0.75rem;
+    top: 50%;
+    transform: translateY(-50%);
+    color: rgba(255, 255, 255, 0.7);
+    z-index: 1;
+    cursor: pointer;
+  }
+  
+  .nav-links {
+    display: flex;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+  
+  .nav-item {
+    position: relative;
+  }
+  
+  .nav-link {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+    padding: 0 1rem;
+    height: 70px;
+    font-weight: 500;
+    color: white;
+    text-decoration: none;
+    transition: background-color 0.2s ease;
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 1rem;
+  }
+  
+  .nav-link:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+  }
+  
+  .github-link svg {
+    margin-right: 0.5rem;
+    stroke: white;
+  }
+  
+  .dropdown-menu {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    width: 280px;
+    background-color: white;
+    border-radius: 4px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    visibility: hidden;
+    opacity: 0;
+    transform: translateY(-10px);
+    z-index: 1;
+    transition: all 0.2s ease;
+    max-height: calc(100vh - 100px);
+    overflow-y: auto;
+  }
+  
+  .dropdown.show .dropdown-menu {
+    visibility: visible;
+    opacity: 1;
+    transform: translateY(0);
+  }
+  
+  .dropdown-menu-right {
+    left: auto;
+    right: 0;
+  }
+  
+  .dropdown-submenu {
+    border-bottom: 1px solid #f0f0f0;
+  }
+  
+  .dropdown-submenu:last-child {
+    border-bottom: none;
+  }
+  
+  .dropdown-header {
+    padding: 0.75rem 1rem;
+    font-weight: 600;
+    color: #2d3748;
+    font-size: 0.9rem;
+    background-color: #f8fafc;
+  }
+  
+  .dropdown-list {
+    list-style: none;
+    padding: 0.5rem 0;
+    margin: 0;
+  }
+  
+  .dropdown-list a {
+    display: block;
+    padding: 0.5rem 1rem;
+    color: #4a5568;
+    text-decoration: none;
+    transition: background-color 0.2s ease;
+    font-size: 0.9rem;
+  }
+  
+  .dropdown-list a:hover,
+  .dropdown-list a.active {
+    background-color: #f7fafc;
+    color: var(--color-primary);
+  }
+  
+  .dropdown-item {
+    display: block;
+    padding: 0.5rem 1rem;  /* Match the padding of dropdown-list a */
+    color: #4a5568;
+    text-decoration: none;
+    transition: background-color 0.2s ease;
+    font-size: 0.9rem;  /* Match the font-size of dropdown-list a */
+  }
+  
+  .dropdown-item:hover {
+    background-color: #f7fafc;
+  }
+  
+  .dropdown-item.active {
+    background-color: #f7fafc;
+    color: var(--color-primary);
+    font-weight: 500;
+  }
+  
+  .dropdown-item-link {
+    color: #4a5568;
+    text-decoration: none;
+  }
+  
+  .dropdown-divider {
+    height: 1px;
+    background-color: #e2e8f0;
+    margin: 0.5rem 0;
+  }
+  
+  @media (max-width: 991px) {
+    .container {
+      padding: 0 1rem;
+    }
+    
+    #mobile-toggle {
+      display: block;
+    }
+    
+    .navbar-menu {
+      position: absolute;
+      top: 70px;
+      left: 0;
+      right: 0;
+      flex-direction: column;
+      align-items: flex-start;
+      background-color: white;
+      padding: 1rem;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      visibility: hidden;
+      opacity: 0;
+      transform: translateY(-10px);
+      transition: all 0.3s ease;
+      z-index: 999;
+    }
+    
+    .navbar-menu.active {
+      visibility: visible;
+      opacity: 1;
+      transform: translateY(0);
+    }
+    
+    .search-container {
+      width: 100%;
+      margin-right: 0;
+      margin-bottom: 1rem;
+    }
+    
+    #search-input {
+      width: 100%;
+      background-color: #f1f5f9;
+      color: var(--color-text);
+    }
+    
+    #search-input::placeholder {
+      color: #a0aec0;
+    }
+    
+    #search-input:focus {
+      width: 100%;
+      background-color: white;
+      box-shadow: 0 0 0 2px rgba(49, 130, 206, 0.2);
+    }
+    
+    .search-icon {
+      color: #a0aec0;
+    }
+    
+    .nav-links {
+      flex-direction: column;
+      width: 100%;
+    }
+    
+    .nav-link {
+      height: auto;
+      padding: 1rem;
+      justify-content: space-between;
+      width: 100%;
+      color: var(--color-text);
+    }
+    
+    .nav-link:hover {
+      background-color: #f8fafc;
+    }
+    
+    .dropdown-menu {
+      position: static;
+      width: 100%;
+      box-shadow: none;
+      max-height: 0;
+      overflow: hidden;
+      margin-top: 0;
+      margin-bottom: 0;
+      border-left: 2px solid #e2e8f0;
+      margin-left: 1rem;
+      border-radius: 0;
+      transform: none;
+      transition: max-height 0.3s ease, opacity 0.2s ease;
+    }
+    
+    .dropdown.show .dropdown-menu {
+      max-height: 1000px;
+      visibility: visible;
+      opacity: 1;
+      margin-top: 0.5rem;
+      margin-bottom: 0.5rem;
+    }
+    
+    .github-link svg {
+      stroke: var(--color-primary);
+    }
+  }
+</style>

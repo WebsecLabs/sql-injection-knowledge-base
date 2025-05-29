@@ -1,0 +1,163 @@
+---
+import { getCollection } from 'astro:content';
+import Layout from '../layouts/Layout.astro';
+import MarkdownEntry from '../components/MarkdownEntry.astro';
+import { slide, fade } from 'astro:transitions';
+
+// Get entries from all collections
+const mysqlEntries = await getCollection('mysql');
+const mssqlEntries = await getCollection('mssql');
+const oracleEntries = await getCollection('oracle');
+const extrasEntries = await getCollection('extras');
+
+// Function to find an entry by type and slug
+function findEntry(type, slug) {
+  switch(type) {
+    case 'mysql':
+      return mysqlEntries.find(entry => entry.slug === slug);
+    case 'mssql':
+      return mssqlEntries.find(entry => entry.slug === slug);
+    case 'oracle':
+      return oracleEntries.find(entry => entry.slug === slug);
+    case 'extras':
+      return extrasEntries.find(entry => entry.slug === slug);
+    default:
+      return null;
+  }
+}
+
+// Check for query parameters to determine which entry to show
+const url = new URL(Astro.request.url);
+const type = url.searchParams.get('type') || 'mysql';
+const slug = url.searchParams.get('slug');
+
+// Find the entry to display
+let currentEntry;
+if (type && slug) {
+  currentEntry = findEntry(type, slug);
+} 
+
+// If no entry was found or no parameters provided, use the intro page for the selected type
+if (!currentEntry) {
+  if (type === 'mysql') {
+    currentEntry = mysqlEntries.find(entry => entry.slug === 'intro') || mysqlEntries[0];
+  } else if (type === 'mssql') {
+    currentEntry = mssqlEntries.find(entry => entry.slug === 'intro') || mssqlEntries[0];
+  } else if (type === 'oracle') {
+    currentEntry = oracleEntries.find(entry => entry.slug === 'intro') || oracleEntries[0];
+  } else {
+    currentEntry = mysqlEntries.find(entry => entry.slug === 'intro') || mysqlEntries[0];
+  }
+}
+
+// Determine page title
+const pageTitle = currentEntry 
+  ? `${currentEntry.data.title} | SQL Injection KB` 
+  : 'Browse | SQL Injection Knowledge Base';
+---
+
+<Layout title={pageTitle}>
+  <div class="browse-container" transition:animate="slide">
+    <div class="browse-header" transition:animate="fade">
+      <div class="breadcrumbs">
+        <a href="/">Home</a>
+        <span class="separator">/</span>
+        <a href={`/browse?type=${currentEntry.collection}`}>{currentEntry.collection.toUpperCase()}</a>
+        <span class="separator">/</span>
+        <span>{currentEntry.data.title}</span>
+      </div>
+    </div>
+    
+    <MarkdownEntry entry={currentEntry} />
+  </div>
+  
+  <script>
+    // Enhance sidebar navigation to update URL parameters
+    document.addEventListener('DOMContentLoaded', () => {
+      const sidebarLinks = document.querySelectorAll('.sidebar-nav a');
+      
+      sidebarLinks.forEach(link => {
+        const href = link.getAttribute('href');
+        
+        // We'll only modify the behavior if it's linking to a specific entry
+        if (href && (href.startsWith('/mysql/') || href.startsWith('/mssql/') || 
+                     href.startsWith('/oracle/') || href.startsWith('/extras/'))) {
+          
+          link.addEventListener('click', (e) => {
+            e.preventDefault();
+            
+            // Parse the href to get type and slug
+            const parts = href.split('/').filter(Boolean);
+            if (parts.length >= 2) {
+              const type = parts[0];
+              const slug = parts[1];
+              
+              // Build the URL for the browse page with parameters
+              const newUrl = `/browse?type=${type}&slug=${slug}`;
+              
+              // Update the browser history without a page reload
+              window.history.pushState({}, '', newUrl);
+              
+              // Load the content for the selected entry
+              loadEntry(type, slug);
+            }
+          });
+        }
+      });
+      
+      // Function to load entry content via fetch
+      async function loadEntry(type, slug) {
+        try {
+          // This would typically be an API endpoint, but for simplicity in this demo:
+          // We'll just reload the page with the new parameters
+          window.location.href = `/browse?type=${type}&slug=${slug}`;
+        } catch (error) {
+          console.error('Error loading entry:', error);
+        }
+      }
+      
+      // Handle back/forward browser navigation
+      window.addEventListener('popstate', () => {
+        const url = new URL(window.location.href);
+        const type = url.searchParams.get('type');
+        const slug = url.searchParams.get('slug');
+        
+        if (type && slug) {
+          loadEntry(type, slug);
+        }
+      });
+    });
+  </script>
+</Layout>
+
+<style>
+  .browse-container {
+    max-width: 900px;
+    margin: 0 auto;
+  }
+  
+  .browse-header {
+    margin-bottom: 1.5rem;
+  }
+  
+  .breadcrumbs {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.875rem;
+    color: #718096;
+  }
+  
+  .breadcrumbs a {
+    color: var(--color-primary);
+    text-decoration: none;
+  }
+  
+  .breadcrumbs a:hover {
+    text-decoration: underline;
+  }
+  
+  .separator {
+    color: #CBD5E0;
+  }
+</style>

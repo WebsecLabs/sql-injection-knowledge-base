@@ -1,0 +1,150 @@
+---
+import { ViewTransitions } from 'astro:transitions';
+import NavBar from '../components/NavBar.astro';
+import Sidebar from '../components/Sidebar.astro';
+
+interface Props {
+  title: string;
+  description?: string;
+  showSidebar?: boolean;
+}
+
+const { 
+  title, 
+  description = "The SQL Injection Knowledge Base is a comprehensive reference and educational resource on identifying, testing, and preventing SQL injection vulnerabilities across various database systems.",
+  showSidebar = true
+} = Astro.props;
+---
+
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <link rel="icon" type="image/png" href="/favicon.png" />
+    <title>{title}</title>
+    <meta name="description" content={description} />
+    <meta name="keywords" content="SQL Injection, SQLi, Knowledge Base, KB, CS, PR, MySQL, MSSQL, Oracle, PostgreSQL, SQLite, MS Access, Cheatsheet, Pocket Reference" />
+    <meta name="HandheldFriendly" content="true" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/styles/main.css" />
+    <link rel="stylesheet" href="/styles/navbar.css" />
+    <link rel="stylesheet" href="/styles/code.css" />
+    <script src="/scripts/main.js" defer></script>
+    
+    <!-- Add Astro's View Transitions for smooth page navigation -->
+    <ViewTransitions fallback="swap" />
+    
+    <!-- Sidebar toggle functionality moved to /scripts/main.js -->
+  </head>
+  <body>
+    <NavBar />
+    
+    <div class="page-layout">
+      {showSidebar && (
+        <>
+          <div id="sidebar-overlay" class="sidebar-overlay"></div>
+          <Sidebar />
+        </>
+      )}
+      
+      {/* Mobile-only button container - only visible when sidebar should be shown */}
+      {showSidebar && (
+        <div class="button-container">
+          <button id="sidebar-toggle" class="sidebar-toggle" aria-label="Toggle navigation">
+            <div class="hamburger-icon">
+              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="3" y1="12" x2="21" y2="12"></line>
+                <line x1="3" y1="6" x2="21" y2="6"></line>
+                <line x1="3" y1="18" x2="21" y2="18"></line>
+              </svg>
+            </div>
+          </button>
+        </div>
+      )}
+      
+      <main class="main-content">
+        <div class="content-container">
+          <slot />
+        </div>
+      </main>
+    </div>
+    
+    <footer>
+      <div class="container">
+        <div class="footer-content">
+          <div class="footer-branding">
+            <div class="footer-logo">
+              <img src="/images/logo-white-ai.png" alt="Websec Logo" class="footer-logo-img">
+            </div>
+            <div class="footer-text">
+              <p>&copy; 2025 Websec. All Rights Reserved.</p>
+              <p>SQL Injection Knowledge Base maintained by <a href="https://www.websec.com" target="_blank">Websec</a>.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </footer>
+    
+    <style>
+      footer {
+        background-color: var(--color-primary);
+        background-image: linear-gradient(135deg, var(--color-primary), #1a365d);
+        color: white;
+        padding: 2rem 0;
+        margin-top: 3rem;
+      }
+      
+      .footer-content {
+        display: flex;
+        justify-content: center;
+        text-align: center;
+      }
+      
+      .footer-branding {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        max-width: 600px;
+      }
+      
+      .footer-logo {
+        margin-bottom: 1.5rem;
+      }
+      
+      .footer-logo-img {
+        height: 50px;
+        filter: brightness(0) invert(1);
+      }
+      
+      .footer-text {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+      }
+      
+      .footer-text p {
+        margin: 0 0 0.5rem 0;
+        font-size: 1rem;
+        line-height: 1.5;
+      }
+      
+      .footer-text a {
+        color: white;
+        text-decoration: underline;
+      }
+      
+      @media (max-width: 768px) {
+        .footer-branding {
+          width: 100%;
+        }
+        
+        .footer-text p {
+          font-size: 0.9rem;
+        }
+      }
+    </style>
+  </body>
+</html>

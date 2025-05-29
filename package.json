@@ -1,0 +1,24 @@
+{
+  "name": "sqli-kb-astro",
+  "version": "1.0.0",
+  "description": "SQL Injection Knowledge Base",
+  "main": "index.js",
+  "scripts": {
+    "dev": "npx astro dev",
+    "start": "npx astro dev",
+    "build": "npx astro build",
+    "preview": "npx astro preview"
+  },
+  "keywords": [
+    "SQL Injection",
+    "SQLi",
+    "Knowledge Base",
+    "Security",
+    "Web Security"
+  ],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "astro": "4.5.6"
+  }
+}

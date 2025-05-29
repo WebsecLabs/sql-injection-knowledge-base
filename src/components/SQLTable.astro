@@ -1,0 +1,63 @@
+---
+interface TableRow {
+  code?: string;
+  description?: string;
+  result?: 'true' | 'false' | null;
+  [key: string]: string | null | undefined;
+}
+
+interface Props {
+  headers?: string[];
+  rows: TableRow[];
+  noborder?: boolean;
+}
+
+const { headers = [], rows = [], noborder = false } = Astro.props;
+
+// Determine columns from first row if headers not provided
+const columns = headers.length > 0 
+  ? headers 
+  : rows.length > 0 
+    ? Object.keys(rows[0]).filter(key => key !== 'result')
+    : [];
+---
+
+<div class="table-wrapper">
+  <table class={noborder ? 'noborder' : ''}>
+    {headers.length > 0 && (
+      <thead>
+        <tr>
+          {headers.map(header => <th>{header}</th>)}
+        </tr>
+      </thead>
+    )}
+    <tbody>
+      {rows.map(row => (
+        <tr class={row.result ? `result-${row.result}` : ''}>
+          {columns.map(column => (
+            <td class={column === 'code' ? 'code' : ''}>
+              {column === 'code' 
+                ? <code>{row[column]}</code>
+                : row[column]}
+            </td>
+          ))}
+        </tr>
+      ))}
+    </tbody>
+  </table>
+</div>
+
+<style>
+  .result-true {
+    background-color: rgba(40, 167, 69, 0.1);
+  }
+  
+  .result-false {
+    background-color: rgba(220, 53, 69, 0.1);
+  }
+  
+  table.noborder td {
+    border: none;
+    background-color: transparent;
+  }
+</style>

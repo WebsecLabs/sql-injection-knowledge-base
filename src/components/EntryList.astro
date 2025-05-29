@@ -1,0 +1,161 @@
+---
+import { type CollectionEntry } from 'astro:content';
+import { getEntryURL } from '../utils/entryUtils';
+import { fade } from 'astro:transitions';
+
+interface Props {
+  entries: CollectionEntry<'mysql' | 'mssql' | 'oracle' | 'extras'>[];
+  title: string;
+  collectionType: 'mysql' | 'mssql' | 'oracle' | 'extras';
+}
+
+const { entries, title, collectionType } = Astro.props;
+
+// Sort entries by their order property
+const sortedEntries = [...entries].sort((a, b) => a.data.order - b.data.order);
+
+// Group entries by category
+const entriesByCategory = sortedEntries.reduce((acc, entry) => {
+  const category = entry.data.category;
+  if (!acc[category]) {
+    acc[category] = [];
+  }
+  acc[category].push(entry);
+  return acc;
+}, {} as Record<string, typeof entries>);
+
+// Sort categories alphabetically
+const sortedCategories = Object.keys(entriesByCategory).sort();
+---
+
+<section class="entry-list">
+  <h2 class="collection-title">{title}</h2>
+  
+  {sortedCategories.map(category => (
+    <div class="category-section">
+      <h3 class="category-title">{category}</h3>
+      <ul class="entry-grid">
+        {entriesByCategory[category].map(entry => (
+          <li class="entry-item">
+            <a href={getEntryURL(collectionType, entry.slug)} class="entry-card" transition:name={`card-${collectionType}-${entry.slug}`}>
+              <h4 class="entry-title" transition:name={`title-${collectionType}-${entry.slug}`}>{entry.data.title}</h4>
+              {entry.data.description && <p class="entry-description" transition:name={`desc-${collectionType}-${entry.slug}`}>{entry.data.description}</p>}
+              
+              {entry.data.tags && entry.data.tags.length > 0 && (
+                <div class="entry-tags" transition:animate="fade">
+                  {entry.data.tags.slice(0, 3).map(tag => (
+                    <span class="tag">{tag}</span>
+                  ))}
+                  {entry.data.tags.length > 3 && <span class="tag-more">+{entry.data.tags.length - 3}</span>}
+                </div>
+              )}
+            </a>
+          </li>
+        ))}
+      </ul>
+    </div>
+  ))}
+</section>
+
+<style>
+  .entry-list {
+    margin-bottom: 3rem;
+  }
+  
+  .collection-title {
+    font-size: 1.8rem;
+    margin-bottom: 1.5rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 1px solid var(--color-border);
+    color: var(--color-primary);
+  }
+  
+  .category-section {
+    margin-bottom: 2rem;
+  }
+  
+  .category-title {
+    font-size: 1.3rem;
+    margin-bottom: 1rem;
+    color: #4a5568;
+  }
+  
+  .entry-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 1.5rem;
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+  
+  .entry-item {
+    display: flex;
+  }
+  
+  .entry-card {
+    display: flex;
+    flex-direction: column;
+    background-color: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    padding: 1.5rem;
+    border-left: 4px solid var(--color-accent);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    text-decoration: none;
+    color: inherit;
+    height: 100%;
+  }
+  
+  .entry-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    text-decoration: none;
+  }
+  
+  .entry-title {
+    font-size: 1.2rem;
+    margin: 0 0 0.75rem 0;
+    color: var(--color-primary);
+  }
+  
+  .entry-description {
+    margin: 0 0 1rem 0;
+    font-size: 0.9rem;
+    color: #4a5568;
+    flex: 1;
+  }
+  
+  .entry-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-top: auto;
+  }
+  
+  .tag {
+    display: inline-block;
+    background-color: #edf2f7;
+    color: #4a5568;
+    padding: 0.2rem 0.5rem;
+    border-radius: 9999px;
+    font-size: 0.7rem;
+    font-weight: 500;
+  }
+  
+  .tag-more {
+    display: inline-block;
+    background-color: #e2e8f0;
+    color: #4a5568;
+    padding: 0.2rem 0.5rem;
+    border-radius: 9999px;
+    font-size: 0.7rem;
+    font-weight: 500;
+  }
+  
+  @media (max-width: 768px) {
+    .entry-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>

@@ -1,0 +1,60 @@
+---
+import { getCollection, type CollectionEntry } from 'astro:content';
+import Layout from '../../layouts/Layout.astro';
+import MarkdownEntry from '../../components/MarkdownEntry.astro';
+
+export async function getStaticPaths() {
+  const entries = await getCollection('extras');
+  
+  return entries.map(entry => ({
+    params: { slug: entry.slug },
+    props: { entry },
+  }));
+}
+
+interface Props {
+  entry: CollectionEntry<'extras'>;
+}
+
+const { entry } = Astro.props;
+---
+
+<Layout title={`${entry.data.title} | SQL Injection KB`}>
+  <MarkdownEntry entry={entry} />
+  
+  <div class="entry-navigation">
+    <a href="/" class="back-link">
+      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <line x1="19" y1="12" x2="5" y2="12"></line>
+        <polyline points="12 19 5 12 12 5"></polyline>
+      </svg>
+      Back to Knowledge Base
+    </a>
+  </div>
+</Layout>
+
+<style>
+  .entry-navigation {
+    margin-top: 2rem;
+    margin-bottom: 4rem;
+  }
+  
+  .back-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1rem;
+    background-color: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 4px;
+    color: var(--color-primary);
+    font-weight: 500;
+    text-decoration: none;
+    transition: background-color 0.2s ease;
+  }
+  
+  .back-link:hover {
+    background-color: #edf2f7;
+    text-decoration: none;
+  }
+</style>
