@@ -33,17 +33,22 @@ html {
   width: 100%;
   touch-action: manipulation;
   -webkit-text-size-adjust: 100%;
+  min-height: 100vh;
 }
 
 body {
   font-family: var(--font-sans);
-  line-height: 1.6;
   color: var(--color-text);
   background-color: var(--color-background);
-  width: 100%;
-  max-width: 100vw;
-  -webkit-text-size-adjust: 100%;
-  box-sizing: border-box;
+  line-height: 1.6;
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  margin: 0;
+  padding: 0;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
 }
 
 a {
@@ -143,12 +148,14 @@ code {
 /* Sidebar layout */
 .page-layout {
   display: flex;
-  min-height: calc(100vh - 70px); /* Match exact navbar height */
+  gap: 0;
   width: 100%;
-  max-width: 100%;
-  overflow-x: hidden;
   position: relative;
-  margin-top: 0; /* Ensure no gap at the top */
+  padding-top: 0;
+  margin-top: 70px; /* Adjust based on navbar height */
+  overflow-x: hidden;
+  background-color: #ffffff;
+  flex: 1; /* Make it grow to push footer down */
 }
 
 /* Hide sidebar overlay by default (desktop) */
@@ -285,6 +292,14 @@ code {
   position: relative;
   z-index: 1;
   -webkit-tap-highlight-color: rgba(66, 153, 225, 0.15); /* Shows tap highlight on iOS */
+  /* Button reset styles */
+  width: 100%;
+  border: none;
+  text-align: left;
+  font-family: inherit;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
 }
 
 /* Add a pseudo-element to increase tap target size */
@@ -627,9 +642,15 @@ footer {
   background-color: var(--color-primary);
   background-image: linear-gradient(135deg, var(--color-primary), #1a365d);
   color: white;
-  padding: 1.75rem 0;
+  padding: 2rem 0; /* Add proper padding */
   text-align: center;
   box-shadow: 0 -4px 6px rgba(0, 0, 0, 0.05);
+  margin-bottom: 0;
+  margin-top: auto; /* Push to bottom */
+}
+
+footer .container {
+  padding: 0;
 }
 
 footer a {
@@ -641,6 +662,40 @@ footer a {
 
 footer a:hover {
   text-decoration-thickness: 2px;
+}
+
+.footer-content {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.footer-branding {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0;
+}
+
+.footer-logo {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0; /* Remove negative margins */
+}
+
+.footer-logo-img {
+  height: 300px;
+  width: 300px;
+  object-fit: contain;
+}
+
+.footer-text {
+  text-align: center;
+}
+
+.footer-text p {
+  margin: 0;
 }
 
 /* Responsive */
@@ -799,5 +854,32 @@ footer a:hover {
       opacity: 1;
       visibility: visible;
     }
+  }
+  
+  /* Footer mobile styles */
+  footer {
+    padding: 1rem 0;
+  }
+  
+  .footer-branding {
+    padding: 0 1rem;
+  }
+  
+  .footer-logo {
+    margin: 0.5rem 0;
+  }
+  
+  .footer-logo-img {
+    height: 150px;
+    width: 150px;
+  }
+  
+  .footer-text {
+    font-size: 0.85rem;
+    line-height: 1.4;
+  }
+  
+  .footer-text p {
+    margin: 0.25rem 0;
   }
 }

@@ -71,12 +71,12 @@ if (currentPath.includes('/mssql/')) {
   
   <div class="sidebar-content">
     <div class={`sidebar-section ${activeSection === 'mysql' ? 'active' : ''}`} data-section="mysql">
-      <div class="sidebar-heading" role="button" tabindex="0">
+      <button class="sidebar-heading" aria-expanded={activeSection === 'mysql' ? 'true' : 'false'}>
         <span>MySQL</span>
         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="toggle-icon">
           <polyline points="6 9 12 15 18 9"></polyline>
         </svg>
-      </div>
+      </button>
       <div class="sidebar-items">
         {mysqlCategories.map(category => (
           <div class="sidebar-category">
@@ -99,12 +99,12 @@ if (currentPath.includes('/mssql/')) {
     </div>
     
     <div class={`sidebar-section ${activeSection === 'mssql' ? 'active' : ''}`} data-section="mssql">
-      <div class="sidebar-heading" role="button" tabindex="0">
+      <button class="sidebar-heading" aria-expanded={activeSection === 'mssql' ? 'true' : 'false'}>
         <span>MSSQL</span>
         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="toggle-icon">
           <polyline points="6 9 12 15 18 9"></polyline>
         </svg>
-      </div>
+      </button>
       <div class="sidebar-items">
         {mssqlCategories.map(category => (
           <div class="sidebar-category">
@@ -127,12 +127,12 @@ if (currentPath.includes('/mssql/')) {
     </div>
     
     <div class={`sidebar-section ${activeSection === 'oracle' ? 'active' : ''}`} data-section="oracle">
-      <div class="sidebar-heading" role="button" tabindex="0">
+      <button class="sidebar-heading" aria-expanded={activeSection === 'oracle' ? 'true' : 'false'}>
         <span>Oracle</span>
         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="toggle-icon">
           <polyline points="6 9 12 15 18 9"></polyline>
         </svg>
-      </div>
+      </button>
       <div class="sidebar-items">
         {oracleCategories.map(category => (
           <div class="sidebar-category">
@@ -155,12 +155,12 @@ if (currentPath.includes('/mssql/')) {
     </div>
     
     <div class={`sidebar-section ${activeSection === 'extras' ? 'active' : ''}`} data-section="extras">
-      <div class="sidebar-heading" role="button" tabindex="0">
+      <button class="sidebar-heading" aria-expanded={activeSection === 'extras' ? 'true' : 'false'}>
         <span>Extras</span>
         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="toggle-icon">
           <polyline points="6 9 12 15 18 9"></polyline>
         </svg>
-      </div>
+      </button>
       <div class="sidebar-items">
         <ul class="sidebar-nav">
           {otherExtras.map(entry => (
@@ -245,14 +245,15 @@ if (currentPath.includes('/mssql/')) {
     if (searchTerm.length < 2) {
       // Reset all elements if search term is too short
       document.querySelectorAll('.sidebar-nav a, .sidebar-category').forEach(el => {
-        el.style.display = '';
+        (el as HTMLElement).style.display = '';
       });
       
       // Restore previous active states
       document.querySelectorAll('.sidebar-section').forEach(section => {
-        if (section.dataset.wasActive === 'true') {
-          section.classList.add('active');
-          section.removeAttribute('data-was-active');
+        const htmlSection = section as HTMLElement;
+        if (htmlSection.dataset.wasActive === 'true') {
+          htmlSection.classList.add('active');
+          htmlSection.removeAttribute('data-was-active');
         }
       });
       
@@ -266,12 +267,12 @@ if (currentPath.includes('/mssql/')) {
     
     // Hide all categories initially
     document.querySelectorAll('.sidebar-category').forEach(category => {
-      category.style.display = 'none';
+      (category as HTMLElement).style.display = 'none';
     });
     
     // Hide all items initially
     document.querySelectorAll('.sidebar-nav a').forEach(link => {
-      link.style.display = 'none';
+      (link as HTMLElement).style.display = 'none';
     });
     
     // Expand all sections for search
@@ -282,11 +283,11 @@ if (currentPath.includes('/mssql/')) {
     // Show matching items
     let hasMatches = false;
     document.querySelectorAll('.sidebar-nav a').forEach(link => {
-      const text = link.textContent.toLowerCase();
+      const text = link.textContent?.toLowerCase() || '';
       
       if (text.includes(searchTerm)) {
-        link.style.display = '';
-        const category = link.closest('.sidebar-category');
+        (link as HTMLElement).style.display = '';
+        const category = link.closest('.sidebar-category') as HTMLElement | null;
         if (category) category.style.display = '';
         hasMatches = true;
       }

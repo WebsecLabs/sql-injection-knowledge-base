@@ -1,6 +1,9 @@
 // Main JavaScript file for the SQL Injection Knowledge Base
 
 document.addEventListener('astro:page-load', function() {
+  // Remove tabindex from pre elements (accessibility fix)
+  removeTabindexFromPreElements();
+  
   // Handle mobile toggle for sidebar
   const toggleButton = document.getElementById('sidebar-toggle');
   const buttonContainer = document.querySelector('.button-container');
@@ -122,6 +125,21 @@ document.addEventListener('astro:page-load', function() {
   addCopyButtons();
 });
 
+// Remove tabindex from pre elements
+function removeTabindexFromPreElements() {
+  // Find all pre elements and remove tabindex attribute
+  const preElements = document.querySelectorAll('pre[tabindex]');
+  preElements.forEach(pre => {
+    pre.removeAttribute('tabindex');
+  });
+  
+  // Also check for any astro-code elements with tabindex
+  const astroCodeElements = document.querySelectorAll('.astro-code[tabindex]');
+  astroCodeElements.forEach(element => {
+    element.removeAttribute('tabindex');
+  });
+}
+
 // Add copy buttons to code blocks
 function addCopyButtons() {
   // Remove any existing copy buttons to avoid duplicates
@@ -214,6 +232,8 @@ function legacyCopy(text, button) {
 
 // Run on initial page load
 document.addEventListener('DOMContentLoaded', function() {
+  // Remove tabindex from pre elements on initial load
+  removeTabindexFromPreElements();
   document.dispatchEvent(new Event('astro:page-load'));
 });
 

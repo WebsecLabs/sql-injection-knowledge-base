@@ -101,8 +101,9 @@ const currentPath = Astro.url.pathname;
                       <a 
                         href={`/mysql/${entry.slug}`} 
                         class={currentPath === `/mysql/${entry.slug}` ? 'active' : ''}
+                        aria-label={entry.data.title || `MySQL ${entry.slug}`}
                       >
-                        {entry.data.title}
+                        {entry.data.title || entry.slug}
                       </a>
                     </li>
                   ))}
@@ -129,8 +130,9 @@ const currentPath = Astro.url.pathname;
                       <a 
                         href={`/mssql/${entry.slug}`} 
                         class={currentPath === `/mssql/${entry.slug}` ? 'active' : ''}
+                        aria-label={entry.data.title || `MSSQL ${entry.slug}`}
                       >
-                        {entry.data.title}
+                        {entry.data.title || entry.slug}
                       </a>
                     </li>
                   ))}
@@ -157,8 +159,9 @@ const currentPath = Astro.url.pathname;
                       <a 
                         href={`/oracle/${entry.slug}`} 
                         class={currentPath === `/oracle/${entry.slug}` ? 'active' : ''}
+                        aria-label={entry.data.title || `Oracle ${entry.slug}`}
                       >
-                        {entry.data.title}
+                        {entry.data.title || entry.slug}
                       </a>
                     </li>
                   ))}
@@ -180,8 +183,9 @@ const currentPath = Astro.url.pathname;
               <a 
                 href={`/extras/${entry.slug}`} 
                 class={currentPath === `/extras/${entry.slug}` ? 'dropdown-item active' : 'dropdown-item'}
+                aria-label={entry.data.title || `Extras ${entry.slug}`}
               >
-                {entry.data.title}
+                {entry.data.title || entry.slug}
               </a>
             ))}
             
@@ -193,6 +197,7 @@ const currentPath = Astro.url.pathname;
               <a 
                 href={`/extras/${resourceLinks[0].slug}`} 
                 class={currentPath === `/extras/${resourceLinks[0].slug}` ? 'dropdown-item active' : 'dropdown-item'}
+                aria-label="External Resources"
               >
                 External Resources
               </a>
@@ -203,6 +208,7 @@ const currentPath = Astro.url.pathname;
         <li class="nav-item">
           <a href="https://github.com/WebsecLabs/sql-injection-knowledge-base" target="_blank" rel="noopener noreferrer" class="nav-link github-link">
             <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <title>GitHub</title>
               <path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"></path>
             </svg>
             GitHub
@@ -217,13 +223,13 @@ const currentPath = Astro.url.pathname;
   // Initialize navbar functionality
   function initNavbar() {
     // Mobile menu toggle
-    const mobileToggle = document.getElementById('mobile-toggle');
+    const mobileToggle = document.getElementById('mobile-toggle') as HTMLButtonElement | null;
     const navbarMenu = document.getElementById('navbar-menu');
     
     if (mobileToggle && navbarMenu) {
       mobileToggle.addEventListener('click', function() {
         const isExpanded = this.getAttribute('aria-expanded') === 'true';
-        this.setAttribute('aria-expanded', !isExpanded);
+        this.setAttribute('aria-expanded', String(!isExpanded));
         navbarMenu.classList.toggle('active');
         this.classList.toggle('active');
       });
@@ -290,7 +296,8 @@ const currentPath = Astro.url.pathname;
     
     // Close dropdowns when clicking outside
     document.addEventListener('click', function(e) {
-      if (!e.target.closest('.dropdown')) {
+      const target = e.target as HTMLElement;
+      if (target && !target.closest('.dropdown')) {
         dropdowns.forEach(dropdown => {
           dropdown.classList.remove('show');
         });
@@ -308,8 +315,8 @@ const currentPath = Astro.url.pathname;
   
   // Initialize search functionality
   function initSearch() {
-    const searchForm = document.getElementById('search-form');
-    const searchInput = document.getElementById('search-input');
+    const searchForm = document.getElementById('search-form') as HTMLFormElement | null;
+    const searchInput = document.getElementById('search-input') as HTMLInputElement | null;
     const searchIcon = document.querySelector('.search-icon');
     
     if (searchForm && searchInput) {
@@ -354,7 +361,7 @@ const currentPath = Astro.url.pathname;
     } else {
       // Close mobile menu if open
       const navbarMenu = document.getElementById('navbar-menu');
-      const mobileToggle = document.getElementById('mobile-toggle');
+      const mobileToggle = document.getElementById('mobile-toggle') as HTMLButtonElement | null;
       
       if (navbarMenu && navbarMenu.classList.contains('active')) {
         navbarMenu.classList.remove('active');
@@ -375,7 +382,7 @@ const currentPath = Astro.url.pathname;
     initSearch();
     
     // Add resize listener with debounce
-    let resizeTimer;
+    let resizeTimer: ReturnType<typeof setTimeout>;
     window.addEventListener('resize', function() {
       clearTimeout(resizeTimer);
       resizeTimer = setTimeout(handleResize, 100);
