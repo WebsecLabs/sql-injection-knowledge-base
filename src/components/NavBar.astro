@@ -55,9 +55,10 @@ const currentPath = Astro.url.pathname;
     <div class="navbar-logo">
       <a href="/" class="logo">
         <div class="logo-container">
-          <img src="/images/logo-white-ai.png" alt="WEBSEC Logo" class="websec-logo">
+          <img src="/images/websec-logo.png" alt="WEBSEC Logo" class="websec-logo">
         </div>
-        <span class="logo-text">SQL Injection Knowledge Base</span>
+        <span class="logo-text logo-text-full">SQL Injection Knowledge Base</span>
+        <span class="logo-text logo-text-short">SQL Injection KB</span>
       </a>
       <button id="mobile-toggle" aria-label="Menu" aria-expanded="false">
         <span class="bar"></span>
@@ -478,6 +479,37 @@ const currentPath = Astro.url.pathname;
     font-size: 1.25rem;
     color: white;
     line-height: 1.7;
+  }
+  
+  /* Show full text on desktop, hide short text */
+  .logo-text-full {
+    display: inline;
+  }
+  
+  .logo-text-short {
+    display: none;
+  }
+  
+  /* On smaller screens, hide full text and show short text */
+  @media (max-width: 480px) {
+    .logo-text-full {
+      display: none;
+    }
+    
+    .logo-text-short {
+      display: inline;
+    }
+    
+    .logo-text {
+      font-size: 1.1rem; /* Also slightly reduce font size on very small screens */
+    }
+  }
+  
+  /* For tablets/medium screens, reduce font size */
+  @media (max-width: 768px) {
+    .logo-text {
+      font-size: 1.15rem;
+    }
   }
   
   .logo:hover {

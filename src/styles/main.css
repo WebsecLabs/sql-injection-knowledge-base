@@ -642,60 +642,67 @@ footer {
   background-color: var(--color-primary);
   background-image: linear-gradient(135deg, var(--color-primary), #1a365d);
   color: white;
-  padding: 2rem 0; /* Add proper padding */
+  height: 70px; /* Match navbar height */
+  padding: 0; /* Remove padding to control height precisely */
   text-align: center;
   box-shadow: 0 -4px 6px rgba(0, 0, 0, 0.05);
   margin-bottom: 0;
   margin-top: auto; /* Push to bottom */
+  display: flex; /* Use flexbox for vertical centering */
+  align-items: center; /* Center content vertically */
 }
 
 footer .container {
-  padding: 0;
-}
-
-footer a {
-  color: white;
-  text-decoration: underline;
-  text-decoration-thickness: 1px;
-  text-underline-offset: 2px;
-}
-
-footer a:hover {
-  text-decoration-thickness: 2px;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
 }
 
 .footer-content {
   display: flex;
-  justify-content: center;
   align-items: center;
+  justify-content: center;
+  height: 100%;
 }
 
 .footer-branding {
   display: flex;
-  flex-direction: column;
   align-items: center;
-  gap: 0;
+  gap: 0.75rem; /* Space between text and logo */
+}
+
+.footer-text {
+  color: white;
+  font-size: 0.9rem;
+  font-weight: 500;
+  opacity: 0.9;
 }
 
 .footer-logo {
   display: flex;
   align-items: center;
-  justify-content: center;
-  margin: 0; /* Remove negative margins */
+}
+
+.footer-logo-link {
+  display: flex;
+  align-items: center;
+  text-decoration: none;
+  transition: transform 0.2s ease;
+}
+
+.footer-logo-link:hover {
+  transform: scale(1.05);
+  text-decoration: none;
 }
 
 .footer-logo-img {
-  height: 300px;
-  width: 300px;
+  height: 34px; /* Match header logo size */
+  width: auto; /* Let width scale proportionally */
   object-fit: contain;
-}
-
-.footer-text {
-  text-align: center;
-}
-
-.footer-text p {
-  margin: 0;
+  opacity: 0.95; /* Slight transparency to ensure visibility */
+  filter: brightness(1.1); /* Slightly brighten the logo */
 }
 
 /* Responsive */
@@ -854,32 +861,5 @@ footer a:hover {
       opacity: 1;
       visibility: visible;
     }
-  }
-  
-  /* Footer mobile styles */
-  footer {
-    padding: 1rem 0;
-  }
-  
-  .footer-branding {
-    padding: 0 1rem;
-  }
-  
-  .footer-logo {
-    margin: 0.5rem 0;
-  }
-  
-  .footer-logo-img {
-    height: 150px;
-    width: 150px;
-  }
-  
-  .footer-text {
-    font-size: 0.85rem;
-    line-height: 1.4;
-  }
-  
-  .footer-text p {
-    margin: 0.25rem 0;
   }
 }
