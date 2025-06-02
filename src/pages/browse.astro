@@ -60,9 +60,9 @@ const pageTitle = currentEntry
   <div class="browse-container" transition:animate="slide">
     <div class="browse-header" transition:animate="fade">
       <div class="breadcrumbs">
-        <a href="/">Home</a>
+        <a href={import.meta.env.BASE_URL}>Home</a>
         <span class="separator">/</span>
-        <a href={`/browse?type=${currentEntry.collection}`}>{currentEntry.collection.toUpperCase()}</a>
+        <a href={`${import.meta.env.BASE_URL}browse?type=${currentEntry.collection}`}>{currentEntry.collection.toUpperCase()}</a>
         <span class="separator">/</span>
         <span>{currentEntry.data.title}</span>
       </div>

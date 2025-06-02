@@ -85,7 +85,7 @@ if (currentPath.includes('/mssql/')) {
               {mysqlByCategory[category].map(entry => (
                 <li>
                   <a 
-                    href={`/mysql/${entry.slug}`} 
+                    href={`${import.meta.env.BASE_URL}mysql/${entry.slug}`} 
                     class={currentPath === `/mysql/${entry.slug}` ? 'active' : ''}
                   >
                     {entry.data.title}
@@ -113,7 +113,7 @@ if (currentPath.includes('/mssql/')) {
               {mssqlByCategory[category].map(entry => (
                 <li>
                   <a 
-                    href={`/mssql/${entry.slug}`} 
+                    href={`${import.meta.env.BASE_URL}mssql/${entry.slug}`} 
                     class={currentPath === `/mssql/${entry.slug}` ? 'active' : ''}
                   >
                     {entry.data.title}
@@ -141,7 +141,7 @@ if (currentPath.includes('/mssql/')) {
               {oracleByCategory[category].map(entry => (
                 <li>
                   <a 
-                    href={`/oracle/${entry.slug}`} 
+                    href={`${import.meta.env.BASE_URL}oracle/${entry.slug}`} 
                     class={currentPath === `/oracle/${entry.slug}` ? 'active' : ''}
                   >
                     {entry.data.title}
@@ -166,7 +166,7 @@ if (currentPath.includes('/mssql/')) {
           {otherExtras.map(entry => (
             <li>
               <a 
-                href={`/extras/${entry.slug}`} 
+                href={`${import.meta.env.BASE_URL}extras/${entry.slug}`} 
                 class={currentPath === `/extras/${entry.slug}` ? 'active' : ''}
               >
                 {entry.data.title}
@@ -177,7 +177,7 @@ if (currentPath.includes('/mssql/')) {
           {resourceLinks.length > 0 && (
             <li>
               <a 
-                href={`/extras/${resourceLinks[0].slug}`} 
+                href={`${import.meta.env.BASE_URL}extras/${resourceLinks[0].slug}`} 
                 class={currentPath === `/extras/${resourceLinks[0].slug}` ? 'active' : ''}
               >
                 External Resources

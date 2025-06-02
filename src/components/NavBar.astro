@@ -54,7 +54,7 @@ const currentPath = Astro.url.pathname;
 <nav class="navbar">
   <div class="container">
     <div class="navbar-logo">
-      <a href="/" class="logo">
+      <a href={import.meta.env.BASE_URL} class="logo">
         <div class="logo-container">
           <img src={websecLogo.src} alt="WEBSEC Logo" class="websec-logo">
         </div>
@@ -74,7 +74,7 @@ const currentPath = Astro.url.pathname;
           <circle cx="11" cy="11" r="8"></circle>
           <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
         </svg>
-        <form id="search-form" action="/search" method="get">
+        <form id="search-form" action={`${import.meta.env.BASE_URL}search`} method="get">
           <input 
             type="text" 
             id="search-input" 
@@ -101,7 +101,7 @@ const currentPath = Astro.url.pathname;
                   {mysqlByCategory[category].map(entry => (
                     <li>
                       <a 
-                        href={`/mysql/${entry.slug}`} 
+                        href={`${import.meta.env.BASE_URL}mysql/${entry.slug}`} 
                         class={currentPath === `/mysql/${entry.slug}` ? 'active' : ''}
                         aria-label={entry.data.title || `MySQL ${entry.slug}`}
                       >
@@ -130,7 +130,7 @@ const currentPath = Astro.url.pathname;
                   {mssqlByCategory[category].map(entry => (
                     <li>
                       <a 
-                        href={`/mssql/${entry.slug}`} 
+                        href={`${import.meta.env.BASE_URL}mssql/${entry.slug}`} 
                         class={currentPath === `/mssql/${entry.slug}` ? 'active' : ''}
                         aria-label={entry.data.title || `MSSQL ${entry.slug}`}
                       >
@@ -159,7 +159,7 @@ const currentPath = Astro.url.pathname;
                   {oracleByCategory[category].map(entry => (
                     <li>
                       <a 
-                        href={`/oracle/${entry.slug}`} 
+                        href={`${import.meta.env.BASE_URL}oracle/${entry.slug}`} 
                         class={currentPath === `/oracle/${entry.slug}` ? 'active' : ''}
                         aria-label={entry.data.title || `Oracle ${entry.slug}`}
                       >
@@ -183,7 +183,7 @@ const currentPath = Astro.url.pathname;
           <div class="dropdown-menu dropdown-menu-right">
             {otherExtras.map(entry => (
               <a 
-                href={`/extras/${entry.slug}`} 
+                href={`${import.meta.env.BASE_URL}extras/${entry.slug}`} 
                 class={currentPath === `/extras/${entry.slug}` ? 'dropdown-item active' : 'dropdown-item'}
                 aria-label={entry.data.title || `Extras ${entry.slug}`}
               >
@@ -197,7 +197,7 @@ const currentPath = Astro.url.pathname;
             
             {resourceLinks.length > 0 && (
               <a 
-                href={`/extras/${resourceLinks[0].slug}`} 
+                href={`${import.meta.env.BASE_URL}extras/${resourceLinks[0].slug}`} 
                 class={currentPath === `/extras/${resourceLinks[0].slug}` ? 'dropdown-item active' : 'dropdown-item'}
                 aria-label="External Resources"
               >
