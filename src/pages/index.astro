@@ -2,7 +2,6 @@
 import { getCollection } from 'astro:content';
 import Layout from '../layouts/Layout.astro';
 import EntryList from '../components/EntryList.astro';
-import { fade, slide } from 'astro:transitions';
 
 // Get entries from all collections
 const mysqlEntries = await getCollection('mysql');
@@ -118,8 +117,10 @@ const activeDatabaseCount = [
     // Add click handler to tabs
     tabs.forEach(tab => {
       // Remove existing event listeners by cloning
-      const newTab = tab.cloneNode(true);
-      tab.parentNode.replaceChild(newTab, tab);
+      const newTab = tab.cloneNode(true) as HTMLElement;
+      if (tab.parentNode) {
+        tab.parentNode.replaceChild(newTab, tab);
+      }
       
       // Add event listener to new tab
       newTab.addEventListener('click', () => {
@@ -128,7 +129,7 @@ const activeDatabaseCount = [
           selectTab(tabId);
           
           // Update URL without page reload
-          const url = new URL(window.location);
+          const url = new URL(window.location.href);
           url.searchParams.set('tab', tabId);
           window.history.pushState({}, '', url);
         }

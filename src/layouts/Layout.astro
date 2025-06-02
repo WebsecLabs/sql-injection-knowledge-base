@@ -2,6 +2,7 @@
 import { ViewTransitions } from 'astro:transitions';
 import NavBar from '../components/NavBar.astro';
 import Sidebar from '../components/Sidebar.astro';
+import websecLogo from '../assets/websec-logo.png';
 
 // Import CSS files
 import '../styles/main.css';
@@ -85,7 +86,7 @@ const {
             <span class="footer-text">Powered by</span>
             <div class="footer-logo">
               <a href="https://www.websec.com" target="_blank" rel="noopener noreferrer" class="footer-logo-link">
-                <img src="/images/websec-logo.png" alt="Websec Logo" class="footer-logo-img" loading="lazy">
+                <img src={websecLogo.src} alt="Websec Logo" class="footer-logo-img" loading="lazy">
               </a>
             </div>
           </div>

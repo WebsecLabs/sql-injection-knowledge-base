@@ -1,5 +1,6 @@
 ---
 import { getCollection } from 'astro:content';
+import websecLogo from '../assets/websec-logo.png';
 
 // Get all entries to build the navigation menu
 const mysqlEntries = await getCollection('mysql');
@@ -55,7 +56,7 @@ const currentPath = Astro.url.pathname;
     <div class="navbar-logo">
       <a href="/" class="logo">
         <div class="logo-container">
-          <img src="/images/websec-logo.png" alt="WEBSEC Logo" class="websec-logo">
+          <img src={websecLogo.src} alt="WEBSEC Logo" class="websec-logo">
         </div>
         <span class="logo-text logo-text-full">SQL Injection Knowledge Base</span>
         <span class="logo-text logo-text-short">SQL Injection KB</span>
