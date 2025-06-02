@@ -577,26 +577,9 @@ const currentPath = Astro.url.pathname;
   }
   
   .navbar-menu {
-    position: absolute;
-    top: 70px;
-    left: 0;
-    right: 0;
-    flex-direction: column;
-    align-items: flex-start;
-    background-color: white;
-    padding: 1rem;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-    visibility: hidden;
-    opacity: 0;
-    transform: translateY(-10px);
-    transition: all 0.3s ease;
-    z-index: 999;
-  }
-  
-  .navbar-menu.active {
-    visibility: visible;
-    opacity: 1;
-    transform: translateY(0);
+    display: flex;
+    align-items: center;
+    gap: 2rem;
   }
   
   .search-container {
@@ -801,6 +784,8 @@ const currentPath = Astro.url.pathname;
       transform: translateY(-10px);
       transition: all 0.3s ease;
       z-index: 999;
+      /* Ensure dropdowns aren't clipped */
+      overflow: visible !important;
     }
     
     .navbar-menu.active {
@@ -838,6 +823,14 @@ const currentPath = Astro.url.pathname;
     .nav-links {
       flex-direction: column;
       width: 100%;
+      /* Ensure dropdowns aren't clipped */
+      overflow: visible !important;
+    }
+    
+    .nav-item {
+      /* Ensure dropdowns aren't clipped */
+      overflow: visible !important;
+      position: relative;
     }
     
     .nav-link {
@@ -878,6 +871,8 @@ const currentPath = Astro.url.pathname;
       opacity: 1;
       margin-top: 0.5rem;
       margin-bottom: 0.5rem;
+      display: block !important;
+      overflow: visible !important;
     }
     
     .github-link svg {
