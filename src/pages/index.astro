@@ -118,6 +118,26 @@ const activeDatabaseCount = [
     const urlParams = new URLSearchParams(window.location.search);
     const tabParam = urlParams.get('tab');
     
+    // Function to select a tab
+    function selectTab(tabId) {
+      // Re-query DOM elements to ensure we have the current ones
+      const currentTabs = document.querySelectorAll('.tab');
+      const currentPanels = document.querySelectorAll('.tab-panel');
+      
+      // Deactivate all tabs and panels
+      currentTabs.forEach(tab => tab.setAttribute('aria-selected', 'false'));
+      currentPanels.forEach(panel => panel.classList.remove('active'));
+      
+      // Activate the selected tab and panel
+      const selectedTab = document.querySelector(`[data-tab="${tabId}"]`);
+      const selectedPanel = document.querySelector(`[data-panel="${tabId}"]`);
+      
+      if (selectedTab && selectedPanel) {
+        selectedTab.setAttribute('aria-selected', 'true');
+        selectedPanel.classList.add('active');
+      }
+    }
+    
     // Initialize tabs
     if (tabParam && document.querySelector(`[data-tab="${tabParam}"]`)) {
       selectTab(tabParam);
@@ -144,22 +164,6 @@ const activeDatabaseCount = [
         }
       });
     });
-    
-    // Function to select a tab
-    function selectTab(tabId) {
-      // Deactivate all tabs and panels
-      tabs.forEach(tab => tab.setAttribute('aria-selected', 'false'));
-      panels.forEach(panel => panel.classList.remove('active'));
-      
-      // Activate the selected tab and panel
-      const selectedTab = document.querySelector(`[data-tab="${tabId}"]`);
-      const selectedPanel = document.querySelector(`[data-panel="${tabId}"]`);
-      
-      if (selectedTab && selectedPanel) {
-        selectedTab.setAttribute('aria-selected', 'true');
-        selectedPanel.classList.add('active');
-      }
-    }
   }
 
   // Run initialization on DOMContentLoaded
