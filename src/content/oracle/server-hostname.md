@@ -4,7 +4,7 @@ description: Techniques to retrieve the Oracle database server hostname informat
 category: Information Gathering
 order: 6
 tags: ["hostname", "enumeration", "system information"]
-lastUpdated: 2023-03-15
+lastUpdated: 2025-03-15
 ---
 
 ## Server Hostname

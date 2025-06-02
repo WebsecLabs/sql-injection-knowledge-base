@@ -4,7 +4,7 @@ description: Methods for string concatenation in MySQL
 category: Injection Techniques
 order: 11
 tags: ["string operations", "concatenation", "sql functions"]
-lastUpdated: 2023-03-15
+lastUpdated: 2025-03-15
 ---
 
 ## String Concatenation

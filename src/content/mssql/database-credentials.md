@@ -4,7 +4,7 @@ description: How to extract database credentials from Microsoft SQL Server
 category: Information Gathering
 order: 4
 tags: ["credentials", "authentication", "user data"]
-lastUpdated: 2023-03-15
+lastUpdated: 2025-03-15
 ---
 
 ## Database Credentials

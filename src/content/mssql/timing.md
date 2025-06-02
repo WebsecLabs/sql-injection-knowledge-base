@@ -4,7 +4,7 @@ description: Time-based techniques for MSSQL injection attacks
 category: Injection Techniques
 order: 11
 tags: ["time-based", "blind injection", "waitfor"]
-lastUpdated: 2023-03-15
+lastUpdated: 2025-03-15
 ---
 
 ## Timing

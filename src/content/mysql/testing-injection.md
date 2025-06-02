@@ -4,7 +4,7 @@ description: Techniques for testing SQL injection vulnerabilities in MySQL
 category: Basics
 order: 2
 tags: ["testing", "basics", "injection"]
-lastUpdated: 2023-03-16
+lastUpdated: 2025-03-16
 ---
 
 When testing for SQL injection vulnerabilities in MySQL databases, keep in mind:

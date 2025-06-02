@@ -4,7 +4,7 @@ description: Techniques to bypass quotation filters in Oracle SQL injection
 category: Injection Techniques
 order: 8
 tags: ["filter bypass", "quotation", "string manipulation"]
-lastUpdated: 2023-03-15
+lastUpdated: 2025-03-15
 ---
 
 ## Avoiding Quotations

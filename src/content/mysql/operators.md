@@ -4,7 +4,7 @@ description: MySQL operators useful for SQL injection techniques
 category: Reference
 order: 21
 tags: ["operators", "comparison", "logical", "reference"]
-lastUpdated: 2023-03-15
+lastUpdated: 2025-03-15
 ---
 
 ## Operators

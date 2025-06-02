@@ -4,7 +4,7 @@ description: Understanding and checking MySQL privileges for SQL injection attac
 category: Information Gathering
 order: 14
 tags: ["privileges", "permissions", "file access"]
-lastUpdated: 2023-03-15
+lastUpdated: 2025-03-15
 ---
 
 ## Privileges

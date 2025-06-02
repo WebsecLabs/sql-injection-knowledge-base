@@ -4,7 +4,7 @@ description: Techniques for extracting and cracking Oracle database password has
 category: Advanced Techniques
 order: 14
 tags: ["password", "hash", "cracking", "authentication"]
-lastUpdated: 2023-03-15
+lastUpdated: 2025-03-15
 ---
 
 ## Password Cracking

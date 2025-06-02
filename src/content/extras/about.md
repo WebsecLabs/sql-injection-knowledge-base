@@ -3,7 +3,7 @@ title: About
 description: About the SQL Injection Knowledge Base
 category: Information
 order: 1
-lastUpdated: 2023-03-16
+lastUpdated: 2025-03-16
 ---
 
 # About the SQL Injection Knowledge Base

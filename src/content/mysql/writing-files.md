@@ -4,7 +4,7 @@ description: Techniques for writing files to the filesystem using MySQL
 category: File Operations
 order: 16
 tags: ["file operations", "outfile", "dumpfile", "web shell"]
-lastUpdated: 2023-03-15
+lastUpdated: 2025-03-15
 ---
 
 ## Writing Files

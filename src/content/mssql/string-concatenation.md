@@ -4,7 +4,7 @@ description: Methods for string concatenation in MSSQL
 category: Injection Techniques
 order: 9
 tags: ["string operations", "concatenation", "T-SQL"]
-lastUpdated: 2023-03-15
+lastUpdated: 2025-03-15
 ---
 
 ## String Concatenation

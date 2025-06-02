@@ -4,7 +4,7 @@ description: Techniques for bypassing WAFs and filters in MySQL injection
 category: Advanced Techniques
 order: 20
 tags: ["bypass", "WAF", "obfuscation", "filter evasion"]
-lastUpdated: 2023-03-15
+lastUpdated: 2025-03-15
 ---
 
 ## Fuzzing and Obfuscation

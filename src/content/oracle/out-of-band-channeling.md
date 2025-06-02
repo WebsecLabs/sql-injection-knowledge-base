@@ -4,7 +4,7 @@ description: Techniques for extracting Oracle data via out-of-band channels
 category: Advanced Techniques
 order: 13
 tags: ["oob", "exfiltration", "data extraction", "alternative channels"]
-lastUpdated: 2023-03-15
+lastUpdated: 2025-03-15
 ---
 
 ## Out Of Band Channeling

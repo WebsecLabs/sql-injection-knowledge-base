@@ -4,7 +4,7 @@ description: Techniques for reading files from the filesystem using MySQL
 category: File Operations
 order: 15
 tags: ["file operations", "load_file", "privilege escalation"]
-lastUpdated: 2023-03-15
+lastUpdated: 2025-03-15
 ---
 
 ## Reading Files

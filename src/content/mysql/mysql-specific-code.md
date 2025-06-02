@@ -4,7 +4,7 @@ description: MySQL-specific syntax and techniques for SQL injection
 category: Advanced Techniques
 order: 19
 tags: ["mysql specific", "special syntax", "version compatibility"]
-lastUpdated: 2023-03-15
+lastUpdated: 2025-03-15
 ---
 
 ## MySQL-specific Code

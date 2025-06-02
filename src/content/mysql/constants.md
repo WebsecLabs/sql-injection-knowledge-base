@@ -4,7 +4,7 @@ description: MySQL constants and literals useful in SQL injection
 category: Reference
 order: 22
 tags: ["constants", "literals", "reference"]
-lastUpdated: 2023-03-15
+lastUpdated: 2025-03-15
 ---
 
 ## Constants
@@ -42,10 +42,10 @@ Date and time constants:
 
 | Type | Example | Notes |
 |------|---------|-------|
-| Date | `'2023-03-15'` | YYYY-MM-DD format |
+| Date | `'2025-03-15'` | YYYY-MM-DD format |
 | Time | `'15:30:45'` | HH:MM:SS format |
-| Datetime | `'2023-03-15 15:30:45'` | YYYY-MM-DD HH:MM:SS format |
-| Timestamp | `TIMESTAMP '2023-03-15 15:30:45'` | ANSI SQL timestamp |
+| Datetime | `'2025-03-15 15:30:45'` | YYYY-MM-DD HH:MM:SS format |
+| Timestamp | `TIMESTAMP '2025-03-15 15:30:45'` | ANSI SQL timestamp |
 
 ### Special Constants
 

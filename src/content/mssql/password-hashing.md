@@ -4,7 +4,7 @@ description: Understanding password hashing mechanisms in Microsoft SQL Server
 category: Authentication
 order: 17
 tags: ["password hashing", "authentication", "security"]
-lastUpdated: 2023-03-15
+lastUpdated: 2025-03-15
 ---
 
 ## Password Hashing

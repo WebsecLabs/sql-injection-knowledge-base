@@ -4,7 +4,7 @@ description: How to retrieve the server hostname in MySQL
 category: Information Gathering
 order: 7
 tags: ["hostname", "server information"]
-lastUpdated: 2023-03-15
+lastUpdated: 2025-03-15
 ---
 
 ## Server Hostname

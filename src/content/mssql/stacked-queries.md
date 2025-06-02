@@ -4,7 +4,7 @@ description: Using multiple SQL statements in a single MSSQL injection
 category: Advanced Techniques
 order: 15
 tags: ["stacked queries", "multiple statements", "batch injection"]
-lastUpdated: 2023-03-15
+lastUpdated: 2025-03-15
 ---
 
 ## Stacked Queries

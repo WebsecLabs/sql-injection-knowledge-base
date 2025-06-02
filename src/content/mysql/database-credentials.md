@@ -4,7 +4,7 @@ description: How to retrieve database credentials in MySQL
 category: Information Gathering
 order: 5
 tags: ["credentials", "authentication", "user data"]
-lastUpdated: 2023-03-15
+lastUpdated: 2025-03-15
 ---
 
 ## Database Credentials

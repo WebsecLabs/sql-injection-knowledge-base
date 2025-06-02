@@ -4,7 +4,7 @@ description: Techniques for cracking Microsoft SQL Server password hashes
 category: Authentication
 order: 18
 tags: ["password cracking", "hash", "authentication"]
-lastUpdated: 2023-03-15
+lastUpdated: 2025-03-15
 ---
 
 ## Password Cracking

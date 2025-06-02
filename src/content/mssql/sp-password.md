@@ -4,7 +4,7 @@ description: Using SP_PASSWORD to hide SQL queries in MSSQL logs
 category: Advanced Techniques
 order: 14
 tags: ["sp_password", "log evasion", "query hiding"]
-lastUpdated: 2023-03-15
+lastUpdated: 2025-03-15
 ---
 
 ## SP_PASSWORD (Hiding Query)

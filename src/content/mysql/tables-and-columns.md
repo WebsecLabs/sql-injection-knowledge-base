@@ -4,7 +4,7 @@ description: How to discover and extract table and column information in MySQL
 category: Information Gathering
 order: 9
 tags: ["schema", "tables", "columns", "enumeration"]
-lastUpdated: 2023-03-15
+lastUpdated: 2025-03-15
 ---
 
 ## Tables and Columns

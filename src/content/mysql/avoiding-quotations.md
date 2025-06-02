@@ -4,7 +4,7 @@ description: Techniques to avoid using quotes in MySQL injection
 category: Injection Techniques
 order: 10
 tags: ["quotes", "evasion", "bypass"]
-lastUpdated: 2023-03-15
+lastUpdated: 2025-03-15
 ---
 
 ## Avoiding Quotations

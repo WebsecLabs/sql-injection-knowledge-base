@@ -4,7 +4,7 @@ description: How to enumerate database names in Oracle
 category: Information Gathering
 order: 5
 tags: ["databases", "schema", "enumeration"]
-lastUpdated: 2023-03-15
+lastUpdated: 2025-03-15
 ---
 
 ## Database Names

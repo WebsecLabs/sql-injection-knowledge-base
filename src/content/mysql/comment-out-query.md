@@ -4,7 +4,7 @@ description: Techniques for commenting out the remainder of SQL queries in MySQL
 category: Basics
 order: 3
 tags: ["comments", "basics", "query manipulation"]
-lastUpdated: 2023-03-16
+lastUpdated: 2025-03-16
 ---
 
 The following methods can be used to comment out the rest of a query after your injection:

@@ -4,7 +4,7 @@ description: Exploiting OPENROWSET functionality in MSSQL for advanced attacks
 category: Advanced Techniques
 order: 12
 tags: ["openrowset", "linked servers", "data access"]
-lastUpdated: 2023-03-15
+lastUpdated: 2025-03-15
 ---
 
 ## OPENROWSET Attacks

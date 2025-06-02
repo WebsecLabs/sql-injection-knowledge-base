@@ -4,7 +4,7 @@ description: Using conditional logic in MySQL injections
 category: Injection Techniques
 order: 12
 tags: ["conditional logic", "if", "case", "boolean"]
-lastUpdated: 2023-03-15
+lastUpdated: 2025-03-15
 ---
 
 ## Conditional Statements

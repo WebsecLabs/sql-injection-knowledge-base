@@ -4,7 +4,7 @@ description: How to retrieve database names from Microsoft SQL Server
 category: Information Gathering
 order: 5
 tags: ["database enumeration", "information schema"]
-lastUpdated: 2023-03-15
+lastUpdated: 2025-03-15
 ---
 
 ## Database Names

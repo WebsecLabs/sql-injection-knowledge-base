@@ -4,7 +4,7 @@ description: How to retrieve the server MAC address in MySQL
 category: Information Gathering
 order: 8
 tags: ["MAC address", "UUID", "hardware information"]
-lastUpdated: 2023-03-15
+lastUpdated: 2025-03-15
 ---
 
 ## Server MAC Address

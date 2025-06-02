@@ -3,7 +3,7 @@ title: External Resources
 description: Additional resources for SQL injection research
 category: Resources
 order: 2
-lastUpdated: 2023-03-16
+lastUpdated: 2025-03-16
 ---
 
 # External SQL Injection Resources

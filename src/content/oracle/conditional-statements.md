@@ -4,7 +4,7 @@ description: Using Oracle conditional expressions for SQL injection attacks
 category: Injection Techniques
 order: 10
 tags: ["conditional", "boolean", "case", "decode"]
-lastUpdated: 2023-03-15
+lastUpdated: 2025-03-15
 ---
 
 ## Conditional Statements

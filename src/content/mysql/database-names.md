@@ -4,7 +4,7 @@ description: How to extract database names from MySQL
 category: Information Gathering
 order: 6
 tags: ["schema", "database names"]
-lastUpdated: 2023-03-15
+lastUpdated: 2025-03-15
 ---
 
 ## Database Names

@@ -4,7 +4,7 @@ description: Techniques for executing operating system commands through MSSQL
 category: Advanced Techniques
 order: 13
 tags: ["command execution", "xp_cmdshell", "system commands"]
-lastUpdated: 2023-03-15
+lastUpdated: 2025-03-15
 ---
 
 ## System Command Execution

@@ -4,7 +4,7 @@ description: Techniques for determining MySQL version information
 category: Reconnaissance
 order: 4
 tags: ["version", "reconnaissance"]
-lastUpdated: 2023-03-16
+lastUpdated: 2025-03-16
 ---
 
 ## Using Version Variables

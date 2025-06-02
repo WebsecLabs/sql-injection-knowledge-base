@@ -4,7 +4,7 @@ description: Techniques for cracking MySQL password hashes
 category: Authentication
 order: 24
 tags: ["password cracking", "authentication", "hash breaking"]
-lastUpdated: 2023-03-15
+lastUpdated: 2025-03-15
 ---
 
 ## Password Cracking

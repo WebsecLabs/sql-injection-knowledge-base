@@ -4,7 +4,7 @@ description: Overview of Microsoft SQL Server SQL injection techniques and categ
 category: Basics
 order: 1
 tags: ["introduction", "overview", "mssql", "sql server"]
-lastUpdated: 2023-03-16
+lastUpdated: 2025-03-16
 ---
 
 # Microsoft SQL Server Introduction

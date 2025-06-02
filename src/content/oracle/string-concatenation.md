@@ -4,7 +4,7 @@ description: Techniques for concatenating strings in Oracle SQL injection
 category: Injection Techniques
 order: 9
 tags: ["concatenation", "string manipulation", "injection"]
-lastUpdated: 2023-03-15
+lastUpdated: 2025-03-15
 ---
 
 ## String Concatenation

@@ -4,7 +4,7 @@ description: How to comment out queries in Oracle Database
 category: Basics
 order: 2
 tags: ["basics", "syntax", "comments"]
-lastUpdated: 2023-03-15
+lastUpdated: 2025-03-15
 ---
 
 ## Comment Out Query

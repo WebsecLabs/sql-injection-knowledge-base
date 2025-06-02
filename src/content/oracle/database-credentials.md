@@ -4,7 +4,7 @@ description: How to extract Oracle database user credentials through SQL injecti
 category: Information Gathering
 order: 4
 tags: ["credentials", "users", "passwords"]
-lastUpdated: 2023-03-15
+lastUpdated: 2025-03-15
 ---
 
 ## Database Credentials

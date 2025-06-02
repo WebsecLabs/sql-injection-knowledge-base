@@ -4,7 +4,7 @@ description: Overview of Oracle SQL injection techniques and categories
 category: Basics
 order: 1
 tags: ["introduction", "overview", "oracle"]
-lastUpdated: 2023-03-16
+lastUpdated: 2025-03-16
 ---
 
 # Oracle Introduction

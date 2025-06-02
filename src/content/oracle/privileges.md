@@ -4,7 +4,7 @@ description: Analyzing and exploiting Oracle database privileges in SQL injectio
 category: Advanced Techniques
 order: 12
 tags: ["privileges", "escalation", "administration", "security"]
-lastUpdated: 2023-03-15
+lastUpdated: 2025-03-15
 ---
 
 ## Privileges

@@ -4,7 +4,7 @@ description: Using time-based techniques in MySQL injections
 category: Injection Techniques
 order: 13
 tags: ["time-based", "blind injection", "sleep"]
-lastUpdated: 2023-03-15
+lastUpdated: 2025-03-15
 ---
 
 ## Timing

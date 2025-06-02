@@ -4,7 +4,7 @@ description: Using conditional logic in MSSQL for advanced injection techniques
 category: Injection Techniques
 order: 10
 tags: ["conditional logic", "case", "if", "blind injection"]
-lastUpdated: 2023-03-15
+lastUpdated: 2025-03-15
 ---
 
 ## Conditional Statements

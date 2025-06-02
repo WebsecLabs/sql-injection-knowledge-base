@@ -4,7 +4,7 @@ description: Executing multiple SQL statements in a single injection
 category: Advanced Techniques
 order: 18
 tags: ["stacked queries", "multiple statements", "advanced injection"]
-lastUpdated: 2023-03-15
+lastUpdated: 2025-03-15
 ---
 
 ## Stacked Queries

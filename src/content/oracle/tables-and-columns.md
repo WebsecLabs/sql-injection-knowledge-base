@@ -4,7 +4,7 @@ description: Methods to enumerate database tables and columns in Oracle
 category: Information Gathering
 order: 7
 tags: ["tables", "columns", "schema", "enumeration"]
-lastUpdated: 2023-03-15
+lastUpdated: 2025-03-15
 ---
 
 ## Tables and Columns

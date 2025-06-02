@@ -4,7 +4,7 @@ description: Methods to determine the version of Microsoft SQL Server
 category: Basics
 order: 3
 tags: ["version detection", "reconnaissance"]
-lastUpdated: 2023-03-15
+lastUpdated: 2025-03-15
 ---
 
 ## Testing Version

@@ -4,7 +4,7 @@ description: Understanding MySQL password hashing algorithms and formats
 category: Authentication
 order: 23
 tags: ["password hashing", "authentication", "security"]
-lastUpdated: 2023-03-15
+lastUpdated: 2025-03-15
 ---
 
 ## Password Hashing

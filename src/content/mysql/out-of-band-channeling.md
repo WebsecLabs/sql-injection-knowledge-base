@@ -4,7 +4,7 @@ description: Techniques for exfiltrating data through out-of-band channels in My
 category: Advanced Techniques
 order: 17
 tags: ["OOB", "exfiltration", "DNS", "HTTP"]
-lastUpdated: 2023-03-15
+lastUpdated: 2025-03-15
 ---
 
 ## Out of Band Channeling

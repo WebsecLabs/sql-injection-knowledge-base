@@ -4,7 +4,7 @@ description: Using time-based techniques for Oracle SQL injection attacks
 category: Injection Techniques
 order: 11
 tags: ["timing", "blind injection", "delay", "time-based"]
-lastUpdated: 2023-03-15
+lastUpdated: 2025-03-15
 ---
 
 ## Timing

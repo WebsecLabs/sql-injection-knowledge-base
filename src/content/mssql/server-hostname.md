@@ -4,7 +4,7 @@ description: How to retrieve the server hostname in Microsoft SQL Server
 category: Information Gathering
 order: 6
 tags: ["hostname", "server information", "reconnaissance"]
-lastUpdated: 2023-03-15
+lastUpdated: 2025-03-15
 ---
 
 ## Server Hostname

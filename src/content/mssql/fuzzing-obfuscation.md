@@ -4,7 +4,7 @@ description: Techniques for bypassing defenses in MSSQL injection
 category: Advanced Techniques
 order: 16
 tags: ["obfuscation", "WAF bypass", "filter evasion"]
-lastUpdated: 2023-03-15
+lastUpdated: 2025-03-15
 ---
 
 ## Fuzzing and Obfuscation
