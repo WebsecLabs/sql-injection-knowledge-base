@@ -44,7 +44,16 @@ function highlightText(text, query) {
 }
 ---
 
-<Layout title={`Search Results for "${searchQuery}" - SQL Injection KB`} showSidebar={false}>
+<Layout 
+  title={`Search Results for "${searchQuery}" - SQL Injection KB`} 
+  showSidebar={false}
+  collections={{
+    mysqlEntries,
+    mssqlEntries,
+    oracleEntries,
+    extrasEntries
+  }}
+>
   <div class="search-results">
     <h1>Search Results</h1>
     

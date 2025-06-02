@@ -1,12 +1,16 @@
 ---
-import { getCollection } from 'astro:content';
+import { type CollectionEntry } from 'astro:content';
 import websecLogo from '../assets/websec-logo.png';
 
-// Get all entries to build the navigation menu
-const mysqlEntries = await getCollection('mysql');
-const mssqlEntries = await getCollection('mssql');
-const oracleEntries = await getCollection('oracle');
-const extrasEntries = await getCollection('extras');
+interface Props {
+  mysqlEntries: CollectionEntry<'mysql'>[];
+  mssqlEntries: CollectionEntry<'mssql'>[];
+  oracleEntries: CollectionEntry<'oracle'>[];
+  extrasEntries: CollectionEntry<'extras'>[];
+}
+
+// Get entries from props instead of loading them
+const { mysqlEntries, mssqlEntries, oracleEntries, extrasEntries } = Astro.props;
 
 // Helper function to group entries by category
 function groupByCategory(entries) {

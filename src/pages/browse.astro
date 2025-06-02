@@ -1,62 +1,65 @@
 ---
-import { getCollection } from 'astro:content';
+import { getCollection, type CollectionEntry } from 'astro:content';
 import Layout from '../layouts/Layout.astro';
 import MarkdownEntry from '../components/MarkdownEntry.astro';
-import { slide, fade } from 'astro:transitions';
 
-// Get entries from all collections
-const mysqlEntries = await getCollection('mysql');
-const mssqlEntries = await getCollection('mssql');
-const oracleEntries = await getCollection('oracle');
-const extrasEntries = await getCollection('extras');
-
-// Function to find an entry by type and slug
-function findEntry(type, slug) {
-  switch(type) {
-    case 'mysql':
-      return mysqlEntries.find(entry => entry.slug === slug);
-    case 'mssql':
-      return mssqlEntries.find(entry => entry.slug === slug);
-    case 'oracle':
-      return oracleEntries.find(entry => entry.slug === slug);
-    case 'extras':
-      return extrasEntries.find(entry => entry.slug === slug);
-    default:
-      return null;
-  }
-}
-
-// Check for query parameters to determine which entry to show
+// Check for query parameters to determine which collection to load
 const url = new URL(Astro.request.url);
 const type = url.searchParams.get('type') || 'mysql';
 const slug = url.searchParams.get('slug');
 
-// Find the entry to display
-let currentEntry;
-if (type && slug) {
-  currentEntry = findEntry(type, slug);
-} 
+// Only load the collection we actually need
+let entries: CollectionEntry<'mysql' | 'mssql' | 'oracle' | 'extras'>[];
+switch(type) {
+  case 'mssql':
+    entries = await getCollection('mssql');
+    break;
+  case 'oracle':
+    entries = await getCollection('oracle');
+    break;
+  case 'extras':
+    entries = await getCollection('extras');
+    break;
+  default:
+    entries = await getCollection('mysql');
+    break;
+}
 
-// If no entry was found or no parameters provided, use the intro page for the selected type
+// Find the entry to display
+let currentEntry: CollectionEntry<'mysql' | 'mssql' | 'oracle' | 'extras'> | undefined;
+if (slug) {
+  currentEntry = entries.find(entry => entry.slug === slug);
+}
+
+// If no entry was found or no slug provided, use the intro page or first entry
 if (!currentEntry) {
-  if (type === 'mysql') {
-    currentEntry = mysqlEntries.find(entry => entry.slug === 'intro') || mysqlEntries[0];
-  } else if (type === 'mssql') {
-    currentEntry = mssqlEntries.find(entry => entry.slug === 'intro') || mssqlEntries[0];
-  } else if (type === 'oracle') {
-    currentEntry = oracleEntries.find(entry => entry.slug === 'intro') || oracleEntries[0];
-  } else {
-    currentEntry = mysqlEntries.find(entry => entry.slug === 'intro') || mysqlEntries[0];
-  }
+  currentEntry = entries.find(entry => entry.slug === 'intro') || entries[0];
 }
 
 // Determine page title
 const pageTitle = currentEntry 
   ? `${currentEntry.data.title} | SQL Injection KB` 
   : 'Browse | SQL Injection Knowledge Base';
+
+// Create collections object to pass to Layout
+const collections: any = {};
+switch(type) {
+  case 'mssql':
+    collections.mssqlEntries = entries;
+    break;
+  case 'oracle':
+    collections.oracleEntries = entries;
+    break;
+  case 'extras':
+    collections.extrasEntries = entries;
+    break;
+  default:
+    collections.mysqlEntries = entries;
+    break;
+}
 ---
 
-<Layout title={pageTitle}>
+<Layout title={pageTitle} collections={collections}>
   <div class="browse-container" transition:animate="slide">
     <div class="browse-header" transition:animate="fade">
       <div class="breadcrumbs">

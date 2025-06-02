@@ -3,9 +3,12 @@ import { getCollection, type CollectionEntry } from 'astro:content';
 import Layout from '../../layouts/Layout.astro';
 import MarkdownEntry from '../../components/MarkdownEntry.astro';
 
+// Load all entries for this collection
+const entries = await getCollection('mssql');
+
+// Define a function to generate static paths for all entries
 export async function getStaticPaths() {
   const entries = await getCollection('mssql');
-  
   return entries.map(entry => ({
     params: { slug: entry.slug },
     props: { entry },
@@ -16,10 +19,17 @@ interface Props {
   entry: CollectionEntry<'mssql'>;
 }
 
+// Destructure the entry from Astro props
 const { entry } = Astro.props;
+
+// Build page title
+const pageTitle = `${entry.data.title} | MSSQL | SQL Injection KB`;
 ---
 
-<Layout title={`${entry.data.title} | MSSQL | SQL Injection KB`}>
+<Layout 
+  title={pageTitle}
+  collections={{ mssqlEntries: entries }}
+>
   <MarkdownEntry entry={entry} />
   
   <div class="entry-navigation">

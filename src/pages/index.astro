@@ -20,7 +20,16 @@ const activeDatabaseCount = [
 ].filter(Boolean).length;
 ---
 
-<Layout title="SQL Injection Knowledge Base | Home" showSidebar={false}>
+<Layout 
+  title="SQL Injection Knowledge Base | Home" 
+  showSidebar={false}
+  collections={{
+    mysqlEntries,
+    mssqlEntries,
+    oracleEntries,
+    extrasEntries
+  }}
+>
   <div class="home-intro" transition:animate="slide">
     <h1 transition:name="page-title">SQL Injection Knowledge Base</h1>
     <p class="lead" transition:animate="fade">
