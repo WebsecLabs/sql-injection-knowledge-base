@@ -84,11 +84,7 @@
   transform: rotate(-45deg);
 }
 
-.navbar-menu {
-  display: flex;
-  align-items: center;
-  gap: 1.5rem;
-}
+
 
 .navbar-search {
   position: relative;
@@ -291,28 +287,7 @@
     margin-left: auto;
   }
   
-  .navbar-menu {
-    position: absolute;
-    top: 64px;
-    left: 0;
-    right: 0;
-    flex-direction: column;
-    background-color: white;
-    padding: 1rem;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-    transform: translateY(-100%);
-    opacity: 0;
-    visibility: hidden;
-    transition: all 0.3s ease;
-    align-items: stretch;
-    gap: 0.5rem;
-  }
-  
-  .navbar-menu.active {
-    transform: translateY(0);
-    opacity: 1;
-    visibility: visible;
-  }
+
   
   .navbar-search {
     width: 100%;

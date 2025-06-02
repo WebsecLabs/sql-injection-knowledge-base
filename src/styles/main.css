@@ -152,7 +152,7 @@ code {
   width: 100%;
   position: relative;
   padding-top: 0;
-  margin-top: 70px; /* Adjust based on navbar height */
+  margin-top: 0; /* Remove the margin that was causing grey space */
   overflow-x: hidden;
   background-color: #ffffff;
   flex: 1; /* Make it grow to push footer down */
