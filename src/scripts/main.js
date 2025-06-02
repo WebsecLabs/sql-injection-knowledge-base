@@ -1,6 +1,7 @@
 // Main JavaScript file for the SQL Injection Knowledge Base
 
-document.addEventListener('astro:page-load', function() {
+// Global initialization function for sidebar
+window.initializeSidebar = function() {
   // Remove tabindex from pre elements (accessibility fix)
   removeTabindexFromPreElements();
   
@@ -16,9 +17,9 @@ document.addEventListener('astro:page-load', function() {
     // If on desktop, make sure sidebar is visible and reset any transforms
     if (window.innerWidth > 768) {
       sidebar.style.transform = '';
-      buttonContainer.style.display = 'none';
+      if (buttonContainer) buttonContainer.style.display = 'none';
     } else {
-      buttonContainer.style.display = 'block';
+      if (buttonContainer) buttonContainer.style.display = 'block';
     }
   }
   
@@ -32,27 +33,31 @@ document.addEventListener('astro:page-load', function() {
     }, 1000);
   }
   
-  // Handle window resize events
-  window.addEventListener('resize', function() {
-    if (buttonContainer) {
-      if (window.innerWidth > 768) {
-        buttonContainer.style.display = 'none';
-        // Reset sidebar state for desktop
-        if (sidebar) {
-          sidebar.classList.remove('mobile-open');
-          body.style.overflow = '';
+  // Handle window resize events - only add once
+  if (!window.sidebarResizeListenerAdded) {
+    window.sidebarResizeListenerAdded = true;
+    window.addEventListener('resize', function() {
+      if (buttonContainer) {
+        if (window.innerWidth > 768) {
+          buttonContainer.style.display = 'none';
+          // Reset sidebar state for desktop
+          if (sidebar) {
+            sidebar.classList.remove('mobile-open');
+            body.style.overflow = '';
+          }
+          if (overlay) {
+            overlay.classList.remove('active');
+          }
+        } else {
+          buttonContainer.style.display = 'block';
         }
-        if (overlay) {
-          overlay.classList.remove('active');
-        }
-      } else {
-        buttonContainer.style.display = 'block';
       }
-    }
-  });
+    });
+  }
 
-  // Handle button visibility on scroll
-  if (buttonContainer && window.innerWidth <= 768) {
+  // Handle button visibility on scroll - only add once
+  if (buttonContainer && window.innerWidth <= 768 && !window.sidebarScrollListenerAdded) {
+    window.sidebarScrollListenerAdded = true;
     let lastScrollTop = 0;
     let ticking = false;
     
@@ -64,10 +69,10 @@ document.addEventListener('astro:page-load', function() {
           // Hide button when scrolling down, show when scrolling up
           if (currentScroll > lastScrollTop && currentScroll > 100) {
             // Scrolling down
-            buttonContainer.classList.add('hidden');
+            if (buttonContainer) buttonContainer.classList.add('hidden');
           } else {
             // Scrolling up or near top
-            buttonContainer.classList.remove('hidden');
+            if (buttonContainer) buttonContainer.classList.remove('hidden');
           }
           
           lastScrollTop = currentScroll <= 0 ? 0 : currentScroll;
@@ -81,10 +86,13 @@ document.addEventListener('astro:page-load', function() {
   
   // Handle sidebar toggle button click
   if (toggleButton && sidebar) {
-    // Remove existing event listeners and add a fresh one
-    toggleButton.onclick = null;
+    // Clone the button to remove all existing event listeners
+    const newToggleButton = toggleButton.cloneNode(true);
+    if (toggleButton.parentNode) {
+      toggleButton.parentNode.replaceChild(newToggleButton, toggleButton);
+    }
     
-    toggleButton.addEventListener('click', function(e) {
+    newToggleButton.addEventListener('click', function(e) {
       e.preventDefault();
       e.stopPropagation();
       
@@ -99,31 +107,54 @@ document.addEventListener('astro:page-load', function() {
       }
     });
     
-    // Close sidebar when clicking on overlay
-    if (overlay) {
+    // Close sidebar when clicking on overlay - only add once
+    if (overlay && !window.overlayListenerAdded) {
+      window.overlayListenerAdded = true;
       overlay.addEventListener('click', function(e) {
         e.preventDefault();
         e.stopPropagation();
         
-        sidebar.classList.remove('mobile-open');
+        if (sidebar) sidebar.classList.remove('mobile-open');
         overlay.classList.remove('active');
         body.style.overflow = '';
       });
     }
     
-    // Close sidebar when escape key is pressed
-    document.addEventListener('keydown', function(e) {
-      if (e.key === 'Escape' && sidebar && sidebar.classList.contains('mobile-open')) {
-        sidebar.classList.remove('mobile-open');
-        if (overlay) overlay.classList.remove('active');
-        body.style.overflow = '';
-      }
-    });
+    // Close sidebar when escape key is pressed - only add once
+    if (!window.escapeListenerAdded) {
+      window.escapeListenerAdded = true;
+      document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape' && sidebar && sidebar.classList.contains('mobile-open')) {
+          sidebar.classList.remove('mobile-open');
+          if (overlay) overlay.classList.remove('active');
+          body.style.overflow = '';
+        }
+      });
+    }
   }
   
   // Add copy buttons to code blocks
   addCopyButtons();
-});
+};
+
+// Initialize on various events
+
+// 1. When DOM is ready
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', window.initializeSidebar);
+} else {
+  // DOM is already ready
+  window.initializeSidebar();
+}
+
+// 2. On Astro page load (for View Transitions)
+document.addEventListener('astro:page-load', window.initializeSidebar);
+
+// 3. After page swap (for View Transitions)
+document.addEventListener('astro:after-swap', window.initializeSidebar);
+
+// 4. As a fallback, also run after a short delay
+setTimeout(window.initializeSidebar, 100);
 
 // Remove tabindex from pre elements
 function removeTabindexFromPreElements() {
