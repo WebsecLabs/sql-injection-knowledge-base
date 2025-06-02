@@ -51,7 +51,7 @@ SQL Server password hashes have specific formats:
 
 #### SQL Server 2000 and Earlier
 
-```
+```plaintext
 0x0100[16-byte hash]
 ```
 
@@ -59,20 +59,21 @@ Example: `0x0100B58E58130D2B6FF57F70737D3978`
 
 #### SQL Server 2005 and Later
 
-```
+```plaintext
 0x0200[SHA-1 hash of salt+password][salt]
 ```
 
 Example: `0x020058CD420B993C1C32561C772608D549FCEDFA66C8B733C3270DD8D3D32385D6580A6D367B`
 
 The format consists of:
+
 - `0x0200`: Version identifier
 - First 20 bytes: SHA-1 hash of (password + salt)
 - Remaining bytes: The salt value
 
 ### SQL Server 2012+ Format
 
-```
+```plaintext
 0x0200[SHA-512 hash][salt]
 ```
 
@@ -119,6 +120,7 @@ FROM sys.sql_logins;
 ```
 
 Policies can include:
+
 - Minimum password length
 - Password complexity requirements
 - Password history
@@ -133,7 +135,8 @@ SQL Server uses salting to prevent dictionary and rainbow table attacks:
 3. Even identical passwords produce different hash values
 
 Example of how salting works:
-```
+
+```plaintext
 User1: Password "Password123" + Salt "ABCDEF" = Hash1
 User2: Password "Password123" + Salt "XYZABC" = Hash2
 ```

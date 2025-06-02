@@ -122,7 +122,7 @@ SQL Server hashes often need to be reformatted for cracking tools:
 
 #### SQL Server 2000 Format
 
-```plaintext
+```markdown
 # Original format
 0x0100B58E58130D2B6FF57F70737D3978
 
@@ -132,7 +132,7 @@ SQL Server hashes often need to be reformatted for cracking tools:
 
 #### SQL Server 2005+ Format
 
-```plaintext
+```markdown
 # Original format
 0x020058CD420B993C1C32561C772608D549FCEDFA66C8B733C3270DD8D3D32385D6580A6D367B
 
