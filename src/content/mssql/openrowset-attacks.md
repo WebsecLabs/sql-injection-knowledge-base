@@ -24,6 +24,7 @@ SELECT * FROM OPENROWSET(
 ```
 
 Common providers:
+
 - 'SQLNCLI' (SQL Server Native Client)
 - 'Microsoft.ACE.OLEDB.12.0' (Access, Excel)
 - 'MSDASQL' (ODBC)
@@ -33,12 +34,13 @@ Common providers:
 OPENROWSET attacks typically require:
 
 1. Ad hoc distributed queries must be enabled:
-```sql
-EXEC sp_configure 'show advanced options', 1;
-RECONFIGURE;
-EXEC sp_configure 'ad hoc distributed queries', 1;
-RECONFIGURE;
-```
+
+   ```sql
+   EXEC sp_configure 'show advanced options', 1;
+   RECONFIGURE;
+   EXEC sp_configure 'ad hoc distributed queries', 1;
+   RECONFIGURE;
+   ```
 
 2. Sufficient permissions (typically sysadmin or similar high privileges)
 3. Appropriate network connectivity from the SQL Server to target systems
@@ -193,29 +195,32 @@ SELECT * FROM OPENROWSET('MSDASQL',
 To prevent OPENROWSET attacks:
 
 1. Disable ad hoc distributed queries if not needed:
-```sql
-EXEC sp_configure 'ad hoc distributed queries', 0;
-RECONFIGURE;
-```
+
+   ```sql
+   EXEC sp_configure 'ad hoc distributed queries', 0;
+   RECONFIGURE;
+   ```
 
 2. Limit permissions on SQL Server providers:
-```sql
-DENY EXECUTE ON sys.sp_addlinkedserver TO PUBLIC
-DENY EXECUTE ON sys.sp_addlinkedsrvlogin TO PUBLIC
-```
+
+   ```sql
+   DENY EXECUTE ON sys.sp_addlinkedserver TO PUBLIC
+   DENY EXECUTE ON sys.sp_addlinkedsrvlogin TO PUBLIC
+   ```
 
 3. Implement network segmentation to prevent SQL Server from connecting to unauthorized systems
 
 4. Use parameterized queries and input validation in applications
 
 5. Regularly audit and monitor for OPENROWSET usage:
-```sql
-SELECT OBJECT_NAME(s.objectid) as ProcedureName, 
-       s.text
-FROM sys.dm_exec_cached_plans p
-CROSS APPLY sys.dm_exec_sql_text(p.plan_handle) s
-WHERE s.text LIKE '%OPENROWSET%'
-```
+
+    ```sql
+    SELECT OBJECT_NAME(s.objectid) as ProcedureName, 
+        s.text
+    FROM sys.dm_exec_cached_plans p
+    CROSS APPLY sys.dm_exec_sql_text(p.plan_handle) s
+    WHERE s.text LIKE '%OPENROWSET%'
+    ```
 
 ### Limitations and Considerations
 

@@ -6,7 +6,7 @@ order: 3
 lastUpdated: 2025-03-24
 ---
 
-# Contributing to the SQL Injection Knowledge Base
+## Contributing to the SQL Injection Knowledge Base
 
 Thank you for your interest in contributing to the SQL Injection Knowledge Base! This guide outlines how you can help improve this resource for the security community.
 
@@ -36,7 +36,7 @@ There are several ways you can contribute to the knowledge base:
 
 New entries should be added to the appropriate database folder:
 
-```
+```plaintext
 src/content/
 ├── mysql/     # MySQL-specific techniques
 ├── mssql/     # Microsoft SQL Server techniques
@@ -69,8 +69,10 @@ Example SQL code
 ```
 
 ## Notes
+
 Additional information, caveats, or version-specific details
-```
+
+```markdown
 
 ### Technical Guidelines
 

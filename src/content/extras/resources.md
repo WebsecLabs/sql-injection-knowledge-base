@@ -6,7 +6,7 @@ order: 2
 lastUpdated: 2025-03-16
 ---
 
-# External SQL Injection Resources
+## External SQL Injection Resources
 
 Here is a collection of valuable external resources for further learning about SQL injection techniques and defenses:
 

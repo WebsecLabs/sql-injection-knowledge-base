@@ -7,7 +7,7 @@ tags: ["introduction", "overview", "mssql", "sql server"]
 lastUpdated: 2025-03-16
 ---
 
-# Microsoft SQL Server Introduction
+## Microsoft SQL Server Introduction
 
 This section provides a comprehensive collection of SQL injection techniques specific to Microsoft SQL Server (MSSQL) databases. The techniques are organized into the following categories:
 

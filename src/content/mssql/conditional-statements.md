@@ -25,6 +25,7 @@ IF condition
 ```
 
 Example:
+
 ```sql
 IF (SELECT COUNT(*) FROM users) > 10
   SELECT 'Many users'
@@ -53,6 +54,7 @@ END
 ```
 
 Example:
+
 ```sql
 SELECT username,
   CASE 
@@ -72,6 +74,7 @@ IIF(condition, true_value, false_value)
 ```
 
 Example:
+
 ```sql
 SELECT username, IIF(admin = 1, 'Administrator', 'Regular User') AS user_role
 FROM users
@@ -206,4 +209,3 @@ NULL handling is important in conditional logic:
 3. Blind techniques require multiple queries and are much slower than direct extraction
 4. Error-based techniques may be blocked by error suppression
 5. Some conditional operations require specific permissions
-

@@ -229,7 +229,7 @@ If 'UNION' is blocked:
 
 Tools like SQLMap include fuzzing capabilities to automatically test various bypass techniques:
 
-```
+```bash
 sqlmap --url="http://target/page.php?id=1" --tamper=charencode,space2comment,randomcase --technique=U
 ```
 

