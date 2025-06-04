@@ -3,7 +3,8 @@
  */
 export function getEntryURL(
   collection: 'mysql' | 'mssql' | 'oracle' | 'extras',
-  slug: string
+  slug: string,
+  baseUrl: string = '/'
 ): string {
-  return `/${collection}/${slug}`;
+  return `${baseUrl}${collection}/${slug}`;
 }
