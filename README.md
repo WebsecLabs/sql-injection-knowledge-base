@@ -30,7 +30,7 @@ Built with:
 
 1. Clone the repository:
    ```bash
-   git clone https://github.com/yourusername/sql-injection-knowledge-base.git
+   git clone https://github.com/WebsecLabs/sql-injection-knowledge-base.git
    cd sql-injection-knowledge-base
    ```
 
