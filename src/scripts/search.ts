@@ -115,7 +115,7 @@ export function initSearch() {
     let html = "";
     for (const [collection, entries] of Object.entries(grouped)) {
       html += `<div class="result-section">
-        <h2>${collectionLabels[collection] || collection} (${entries.length})</h2>
+        <h2>${escapeHtml(collectionLabels[collection] || collection)} (${entries.length})</h2>
         <ul class="result-list">`;
 
       for (const entry of entries) {

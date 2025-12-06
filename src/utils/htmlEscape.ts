@@ -29,5 +29,10 @@ export function escapeHtml(text: string | null | undefined): string {
   if (text == null) {
     return "";
   }
-  return text.replace(HTML_ESCAPE_PATTERN, (char) => HTML_ESCAPE_MAP[char] || char);
+  return text.replace(HTML_ESCAPE_PATTERN, (char) => {
+    if (HTML_ESCAPE_MAP[char] !== undefined) {
+      return HTML_ESCAPE_MAP[char];
+    }
+    throw new Error(`Unmapped HTML escape character: ${char}`);
+  });
 }
