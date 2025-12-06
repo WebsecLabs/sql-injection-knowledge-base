@@ -100,7 +100,7 @@ export function initSearch() {
     }
 
     // Update UI
-    searchStatus.textContent = `Found ${matches.length} ${matches.length === 1 ? "result" : "results"} for "${escapeHtml(query)}"`;
+    searchStatus.textContent = `Found ${matches.length} ${matches.length === 1 ? "result" : "results"} for "${query}"`;
 
     if (matches.length === 0) {
       noResults.style.display = "block";
