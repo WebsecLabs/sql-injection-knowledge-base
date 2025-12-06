@@ -80,7 +80,7 @@ SELECT name, password FROM sys.user$ WHERE password IS NOT NULL;
 SELECT name, password, spare4 FROM sys.user$ WHERE password IS NOT NULL;
 
 -- Oracle 12c and later (advanced encryption)
-SELECT name, password versions_pw, spare4 pw12c FROM sys.user$ WHERE password IS NOT NULL;
+SELECT name, password AS versions_pw, spare4 AS pw12c FROM sys.user$ WHERE password IS NOT NULL;
 ```
 
 ### SQL Injection Examples

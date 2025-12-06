@@ -38,11 +38,48 @@ const matchingExtras = extrasEntries.filter(matchesSearch);
 const totalResults =
   matchingMysql.length + matchingMssql.length + matchingOracle.length + matchingExtras.length;
 
-// Helper function to highlight search terms in text
-function highlightText(text, query) {
-  if (!query || !text) return text;
-  const regex = new RegExp(`(${query})`, "gi");
-  return text.replace(regex, "<mark>$1</mark>");
+// Helper function to escape HTML special characters (prevents XSS)
+function escapeHtml(text: string): string {
+  const htmlEscapes: Record<string, string> = {
+    "&": "&amp;",
+    "<": "&lt;",
+    ">": "&gt;",
+    '"': "&quot;",
+    "'": "&#39;",
+  };
+  return text.replace(/[&<>"']/g, (char) => htmlEscapes[char]);
+}
+
+// Helper function to highlight search terms in text safely
+// Uses indexOf-based matching to avoid ReDoS, escapes HTML to prevent XSS
+function highlightText(text: string, query: string): string {
+  if (!query || !text) return escapeHtml(text || "");
+
+  const escapedText = escapeHtml(text);
+  const lowerText = escapedText.toLowerCase();
+  const lowerQuery = query.toLowerCase();
+
+  // Find all match positions using indexOf (no regex, no ReDoS risk)
+  const matches: Array<{ start: number; end: number }> = [];
+  let pos = 0;
+  while ((pos = lowerText.indexOf(lowerQuery, pos)) !== -1) {
+    matches.push({ start: pos, end: pos + lowerQuery.length });
+    pos += lowerQuery.length;
+  }
+
+  if (matches.length === 0) return escapedText;
+
+  // Build result with <mark> tags around matches
+  let result = "";
+  let lastEnd = 0;
+  for (const match of matches) {
+    result += escapedText.slice(lastEnd, match.start);
+    result += "<mark>" + escapedText.slice(match.start, match.end) + "</mark>";
+    lastEnd = match.end;
+  }
+  result += escapedText.slice(lastEnd);
+
+  return result;
 }
 ---
 

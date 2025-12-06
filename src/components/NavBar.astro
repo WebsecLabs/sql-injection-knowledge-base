@@ -3,14 +3,19 @@ import { type CollectionEntry } from "astro:content";
 import websecLogo from "../assets/websec-logo.png";
 
 interface Props {
-  mysqlEntries: CollectionEntry<"mysql">[];
-  mssqlEntries: CollectionEntry<"mssql">[];
-  oracleEntries: CollectionEntry<"oracle">[];
-  extrasEntries: CollectionEntry<"extras">[];
+  mysqlEntries?: CollectionEntry<"mysql">[];
+  mssqlEntries?: CollectionEntry<"mssql">[];
+  oracleEntries?: CollectionEntry<"oracle">[];
+  extrasEntries?: CollectionEntry<"extras">[];
 }
 
-// Get entries from props instead of loading them
-const { mysqlEntries, mssqlEntries, oracleEntries, extrasEntries } = Astro.props;
+// Get entries from props, defaulting to empty arrays
+const {
+  mysqlEntries = [],
+  mssqlEntries = [],
+  oracleEntries = [],
+  extrasEntries = [],
+} = Astro.props;
 
 // Helper function to group entries by category
 function groupByCategory(entries) {
@@ -53,6 +58,13 @@ const otherExtras = extrasEntries.filter((entry) => entry.data.title !== "Extern
 
 // Current path to highlight active link
 const currentPath = Astro.url.pathname;
+
+// Helper function for exact path matching (handles trailing slashes and BASE_URL)
+function isActivePath(section: string, slug: string): boolean {
+  const entryPath = `${import.meta.env.BASE_URL}${section}/${slug}`.replace(/\/+$/, "");
+  const normalizedCurrentPath = currentPath.replace(/\/+$/, "");
+  return normalizedCurrentPath === entryPath;
+}
 ---
 
 <nav class="navbar">
@@ -128,7 +140,7 @@ const currentPath = Astro.url.pathname;
                       <li>
                         <a
                           href={`${import.meta.env.BASE_URL}mysql/${entry.slug}`}
-                          class={currentPath === `/mysql/${entry.slug}` ? "active" : ""}
+                          class={isActivePath("mysql", entry.slug) ? "active" : ""}
                           aria-label={entry.data.title || `MySQL ${entry.slug}`}
                         >
                           {entry.data.title || entry.slug}
@@ -169,7 +181,7 @@ const currentPath = Astro.url.pathname;
                       <li>
                         <a
                           href={`${import.meta.env.BASE_URL}mssql/${entry.slug}`}
-                          class={currentPath === `/mssql/${entry.slug}` ? "active" : ""}
+                          class={isActivePath("mssql", entry.slug) ? "active" : ""}
                           aria-label={entry.data.title || `MSSQL ${entry.slug}`}
                         >
                           {entry.data.title || entry.slug}
@@ -210,7 +222,7 @@ const currentPath = Astro.url.pathname;
                       <li>
                         <a
                           href={`${import.meta.env.BASE_URL}oracle/${entry.slug}`}
-                          class={currentPath === `/oracle/${entry.slug}` ? "active" : ""}
+                          class={isActivePath("oracle", entry.slug) ? "active" : ""}
                           aria-label={entry.data.title || `Oracle ${entry.slug}`}
                         >
                           {entry.data.title || entry.slug}
@@ -247,9 +259,7 @@ const currentPath = Astro.url.pathname;
                 <a
                   href={`${import.meta.env.BASE_URL}extras/${entry.slug}`}
                   class={
-                    currentPath === `/extras/${entry.slug}`
-                      ? "dropdown-item active"
-                      : "dropdown-item"
+                    isActivePath("extras", entry.slug) ? "dropdown-item active" : "dropdown-item"
                   }
                   aria-label={entry.data.title || `Extras ${entry.slug}`}
                 >
@@ -265,7 +275,7 @@ const currentPath = Astro.url.pathname;
                 <a
                   href={`${import.meta.env.BASE_URL}extras/${resourceLinks[0].slug}`}
                   class={
-                    currentPath === `/extras/${resourceLinks[0].slug}`
+                    isActivePath("extras", resourceLinks[0].slug)
                       ? "dropdown-item active"
                       : "dropdown-item"
                   }

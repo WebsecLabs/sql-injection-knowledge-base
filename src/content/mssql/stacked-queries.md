@@ -182,7 +182,20 @@ To prevent stacked query attacks:
            sqlOptions.MaxBatchSize(1)));
    ```
 
-   For raw ADO.NET with `SqlClient`, stacked queries are controlled by the query itself—always use parameterized queries rather than relying on connection-level settings.
+   For raw ADO.NET with `SqlClient`, **connection-level settings do not prevent stacked queries** if the SQL string itself is dynamically constructed from user input. Stacked query prevention relies entirely on **never constructing `CommandText` from untrusted input**. Always use parameterized `SqlCommand` parameters so that injected semicolons or SQL fragments in parameter values are treated only as literal data, not as executable SQL:
+
+   ```csharp
+   // SAFE: User input passed as parameter (semicolons are data, not SQL)
+   using (SqlCommand cmd = new SqlCommand("SELECT * FROM users WHERE id = @id", conn))
+   {
+       cmd.Parameters.AddWithValue("@id", userInput);
+       // Even if userInput = "1; DROP TABLE users--", it's treated as a literal string
+   }
+
+   // UNSAFE: User input concatenated into SQL (vulnerable to stacked queries)
+   string sql = "SELECT * FROM users WHERE id = " + userInput;
+   // If userInput = "1; DROP TABLE users--", both statements execute
+   ```
 
 3. Apply the principle of least privilege for database accounts
 
