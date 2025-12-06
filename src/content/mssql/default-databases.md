@@ -9,11 +9,11 @@ lastUpdated: 2025-03-16
 
 MSSQL comes with several default databases that can be useful during SQL injection attacks.
 
-| Database | Description |
-|----------|-------------|
-| `master` | Primary system database |
-| `model` | Template for new databases |
-| `msdb` | SQL Server Agent |
-| `tempdb` | Temporary objects |
+| Database | Description                |
+| -------- | -------------------------- |
+| `master` | Primary system database    |
+| `model`  | Template for new databases |
+| `msdb`   | SQL Server Agent           |
+| `tempdb` | Temporary objects          |
 
 The `master` database contains system-level information, making it especially valuable during SQL injection.

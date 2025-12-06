@@ -15,12 +15,12 @@ Time-based SQL injection is a blind technique that allows attackers to extract i
 
 Microsoft SQL Server provides several ways to introduce time delays:
 
-| Function | Description | Example |
-|----------|-------------|---------|
-| `WAITFOR DELAY` | Pauses execution for a specified time | `WAITFOR DELAY '0:0:5'` (5 seconds) |
-| `WAITFOR TIME` | Waits until a specific time of day | `WAITFOR TIME '23:59:59'` |
-| `DBCC PINTABLE` | Pins a table in memory (side effect is delay) | `DBCC PINTABLE ('database', 'table')` |
-| Computational Delays | Heavy calculations that consume time | `SELECT COUNT(*) FROM large_table CROSS JOIN large_table` |
+| Function             | Description                                   | Example                                                   |
+| -------------------- | --------------------------------------------- | --------------------------------------------------------- |
+| `WAITFOR DELAY`      | Pauses execution for a specified time         | `WAITFOR DELAY '0:0:5'` (5 seconds)                       |
+| `WAITFOR TIME`       | Waits until a specific time of day            | `WAITFOR TIME '23:59:59'`                                 |
+| `DBCC PINTABLE`      | Pins a table in memory (side effect is delay) | `DBCC PINTABLE ('database', 'table')`                     |
+| Computational Delays | Heavy calculations that consume time          | `SELECT COUNT(*) FROM large_table CROSS JOIN large_table` |
 
 ### Basic Time-Based Injection
 
@@ -151,4 +151,3 @@ IF (ASCII(SUBSTRING((SELECT password FROM users WHERE username='admin'), 1, 1)) 
 3. Some environments have query execution timeouts
 4. Modern security tools often detect and block time-based attacks
 5. Multiple simultaneous connections may affect timing accuracy
-

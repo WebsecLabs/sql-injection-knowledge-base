@@ -39,8 +39,8 @@ Before attempting to read files, check if the current user has the necessary pri
 SELECT File_priv FROM mysql.user WHERE user = SUBSTRING_INDEX(USER(), '@', 1);
 
 -- Option 2: Check through information_schema (more commonly accessible)
-SELECT 1 FROM information_schema.user_privileges 
-WHERE grantee LIKE CONCAT("'", SUBSTRING_INDEX(USER(), '@', 1), "'@%") 
+SELECT 1 FROM information_schema.user_privileges
+WHERE grantee LIKE CONCAT("'", SUBSTRING_INDEX(USER(), '@', 1), "'@%")
 AND privilege_type = 'FILE';
 ```
 
@@ -48,20 +48,20 @@ AND privilege_type = 'FILE';
 
 Common valuable files to read:
 
-| File Path | Description |
-|-----------|-------------|
-| `/etc/passwd` | System users list |
-| `/etc/shadow` | Password hashes (rarely readable) |
-| `/etc/hosts` | Host mapping information |
-| `/proc/self/environ` | Environment variables |
-| `/etc/my.cnf` or `/etc/mysql/my.cnf` | MySQL configuration |
-| `/var/lib/mysql-files/` | MySQL secure file priv directory |
-| `/var/www/html/config.php` | Web application configuration |
-| `/var/www/html/wp-config.php` | WordPress configuration |
-| `/var/www/html/.env` | Environment variables for web applications |
-| `/home/user/.bash_history` | Command history |
-| `/var/log/apache2/access.log` | Web server logs |
-| `/var/log/mysql/error.log` | MySQL error logs |
+| File Path                            | Description                                |
+| ------------------------------------ | ------------------------------------------ |
+| `/etc/passwd`                        | System users list                          |
+| `/etc/shadow`                        | Password hashes (rarely readable)          |
+| `/etc/hosts`                         | Host mapping information                   |
+| `/proc/self/environ`                 | Environment variables                      |
+| `/etc/my.cnf` or `/etc/mysql/my.cnf` | MySQL configuration                        |
+| `/var/lib/mysql-files/`              | MySQL secure file priv directory           |
+| `/var/www/html/config.php`           | Web application configuration              |
+| `/var/www/html/wp-config.php`        | WordPress configuration                    |
+| `/var/www/html/.env`                 | Environment variables for web applications |
+| `/home/user/.bash_history`           | Command history                            |
+| `/var/log/apache2/access.log`        | Web server logs                            |
+| `/var/log/mysql/error.log`           | MySQL error logs                           |
 
 ### Advanced Techniques
 

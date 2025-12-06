@@ -13,12 +13,12 @@ Extracting database names is often a crucial step in SQL injection attacks again
 
 ### System Tables and Views with Database Information
 
-| Source | Description | Requires Privileges |
-|--------|-------------|---------------------|
-| `sys.databases` | Contains detailed database information | Medium |
-| `master.dbo.sysdatabases` | Legacy view (older SQL Server versions) | Medium |
-| `information_schema.schemata` | ANSI standard view for databases | Low |
-| `master..sysdatabases` | Another legacy format | Medium |
+| Source                        | Description                             | Requires Privileges |
+| ----------------------------- | --------------------------------------- | ------------------- |
+| `sys.databases`               | Contains detailed database information  | Medium              |
+| `master.dbo.sysdatabases`     | Legacy view (older SQL Server versions) | Medium              |
+| `information_schema.schemata` | ANSI standard view for databases        | Low                 |
+| `master..sysdatabases`        | Another legacy format                   | Medium              |
 
 ### Current Database Context
 
@@ -37,8 +37,8 @@ SELECT DB_NAME();
 SELECT name FROM sys.databases;
 
 -- Get databases with additional details
-SELECT name, database_id, create_date, compatibility_level 
-FROM sys.databases 
+SELECT name, database_id, create_date, compatibility_level
+FROM sys.databases
 ORDER BY name;
 ```
 
@@ -63,11 +63,11 @@ SELECT name FROM master.dbo.sysdatabases;
 
 ```sql
 -- Get user databases only (excluding system databases)
-SELECT name FROM sys.databases 
+SELECT name FROM sys.databases
 WHERE name NOT IN ('master', 'tempdb', 'model', 'msdb');
 
 -- Get databases created after a specific date
-SELECT name, create_date FROM sys.databases 
+SELECT name, create_date FROM sys.databases
 WHERE create_date > '2022-01-01';
 ```
 
@@ -83,8 +83,8 @@ SELECT STRING_AGG(name, ',') FROM sys.databases;
 
 -- For SQL Server 2016 and earlier without STRING_AGG
 SELECT STUFF((
-    SELECT ',' + name 
-    FROM sys.databases 
+    SELECT ',' + name
+    FROM sys.databases
     FOR XML PATH('')
 ), 1, 1, '');
 ```

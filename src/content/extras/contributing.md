@@ -48,7 +48,7 @@ src/content/
 
 All entries should use Markdown with the following frontmatter:
 
-```markdown
+````markdown
 ---
 title: Entry Title
 description: Brief description of the technique
@@ -61,19 +61,21 @@ lastUpdated: YYYY-MM-DD
 # Entry Title
 
 ## Overview
+
 Brief explanation of the technique
 
 ## Examples
+
 ```sql
 Example SQL code
 ```
+````
 
 ## Notes
 
 Additional information, caveats, or version-specific details
 
 ```markdown
-
 ### Technical Guidelines
 
 1. **Keep examples concise** - Focus on clarity and effectiveness
@@ -105,3 +107,4 @@ If you have questions about contributing, you can:
 By contributing to this project, you agree that your contributions will be licensed under the same license as the project (typically MIT or similar open-source license). All contributions should be for educational and security research purposes only.
 
 Thank you for helping make the SQL Injection Knowledge Base a valuable resource for the security community!
+```

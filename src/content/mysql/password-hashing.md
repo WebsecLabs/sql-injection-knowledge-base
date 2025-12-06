@@ -13,12 +13,12 @@ MySQL uses different password hashing algorithms depending on the version. Under
 
 ### MySQL Password Hash Evolution
 
-| MySQL Version | Hash Algorithm | Hash Length | Format |
-|---------------|----------------|-------------|--------|
-| Pre-4.1 | Hash() | 16 bytes | Hex string (16 chars) |
-| 4.1 to 5.6 | SHA1(SHA1()) | 20 bytes | '*' + Hex string (41 chars) |
-| 5.7+ | Native Authentication | 20 bytes | '*' + Hex string (41 chars) |
-| 8.0+ | caching_sha2_password | SHA-256 | '$A$005$' + mixed case (60 chars) |
+| MySQL Version | Hash Algorithm        | Hash Length | Format                            |
+| ------------- | --------------------- | ----------- | --------------------------------- |
+| Pre-4.1       | Hash()                | 16 bytes    | Hex string (16 chars)             |
+| 4.1 to 5.6    | SHA1(SHA1())          | 20 bytes    | '\*' + Hex string (41 chars)      |
+| 5.7+          | Native Authentication | 20 bytes    | '\*' + Hex string (41 chars)      |
+| 8.0+          | caching_sha2_password | SHA-256     | '$A$005$' + mixed case (60 chars) |
 
 ### MySQL Old Password Algorithm (Pre-4.1)
 
@@ -30,6 +30,7 @@ SELECT OLD_PASSWORD('password'); -- Returns '5d2e19393cc5ef67'
 ```
 
 The algorithm:
+
 1. Take the first 8 bytes of SHA1(password)
 2. Perform a specific folding operation
 3. Convert to a 16-character hex string
@@ -44,9 +45,10 @@ SELECT PASSWORD('password'); -- Returns '*2470C0C06DEE42FD1618BB99005ADCA2EC9D1E
 ```
 
 The algorithm:
+
 1. Calculate SHA1(password) = hash1
 2. Calculate SHA1(hash1) = hash2
-3. Return '*' + UPPERCASE(HEX(hash2))
+3. Return '\*' + UPPERCASE(HEX(hash2))
 
 ### Where Password Hashes Are Stored
 

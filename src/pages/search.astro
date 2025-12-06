@@ -1,31 +1,32 @@
 ---
-import { getCollection } from 'astro:content';
-import Layout from '../layouts/Layout.astro';
+import { getCollection } from "astro:content";
+import Layout from "../layouts/Layout.astro";
 
 // Get the search query from URL
-const searchQuery = Astro.url.searchParams.get('q') || '';
+const searchQuery = Astro.url.searchParams.get("q") || "";
 const normalizedQuery = searchQuery.toLowerCase().trim();
 
 // Function to check if an entry matches the search query
 function matchesSearch(entry) {
   if (!normalizedQuery) return false;
-  
+
   // Search in title, description, and content
   const titleMatch = entry.data.title.toLowerCase().includes(normalizedQuery);
   const descMatch = entry.data.description?.toLowerCase().includes(normalizedQuery) || false;
-  const tagsMatch = entry.data.tags?.some(tag => tag.toLowerCase().includes(normalizedQuery)) || false;
+  const tagsMatch =
+    entry.data.tags?.some((tag) => tag.toLowerCase().includes(normalizedQuery)) || false;
   const categoryMatch = entry.data.category.toLowerCase().includes(normalizedQuery);
-  
+
   // Search in metadata
-  
+
   return titleMatch || descMatch || tagsMatch || categoryMatch;
 }
 
 // Load all entries
-const mysqlEntries = await getCollection('mysql');
-const mssqlEntries = await getCollection('mssql');
-const oracleEntries = await getCollection('oracle');
-const extrasEntries = await getCollection('extras');
+const mysqlEntries = await getCollection("mysql");
+const mssqlEntries = await getCollection("mssql");
+const oracleEntries = await getCollection("oracle");
+const extrasEntries = await getCollection("extras");
 
 // Filter entries based on search query
 const matchingMysql = mysqlEntries.filter(matchesSearch);
@@ -34,163 +35,192 @@ const matchingOracle = oracleEntries.filter(matchesSearch);
 const matchingExtras = extrasEntries.filter(matchesSearch);
 
 // Total results
-const totalResults = matchingMysql.length + matchingMssql.length + matchingOracle.length + matchingExtras.length;
+const totalResults =
+  matchingMysql.length + matchingMssql.length + matchingOracle.length + matchingExtras.length;
 
 // Helper function to highlight search terms in text
 function highlightText(text, query) {
   if (!query || !text) return text;
-  const regex = new RegExp(`(${query})`, 'gi');
-  return text.replace(regex, '<mark>$1</mark>');
+  const regex = new RegExp(`(${query})`, "gi");
+  return text.replace(regex, "<mark>$1</mark>");
 }
 ---
 
-<Layout 
-  title={`Search Results for "${searchQuery}" - SQL Injection KB`} 
+<Layout
+  title={`Search Results for "${searchQuery}" - SQL Injection KB`}
   showSidebar={false}
   collections={{
     mysqlEntries,
     mssqlEntries,
     oracleEntries,
-    extrasEntries
+    extrasEntries,
   }}
 >
   <div class="search-results">
     <h1>Search Results</h1>
-    
-    {normalizedQuery ? (
-      <>
-        <div class="search-info">
-          <p>Found {totalResults} {totalResults === 1 ? 'result' : 'results'} for "{searchQuery}"</p>
-          <div class="search-form">
-            <form action={`${import.meta.env.BASE_URL}search`} method="get">
-              <input 
-                type="text" 
-                name="q" 
-                placeholder="Search again..." 
-                value={searchQuery}
-                aria-label="Search"
-              />
-              <button type="submit">Search</button>
-            </form>
+
+    {
+      normalizedQuery ? (
+        <>
+          <div class="search-info">
+            <p>
+              Found {totalResults} {totalResults === 1 ? "result" : "results"} for "{searchQuery}"
+            </p>
+            <div class="search-form">
+              <form action={`${import.meta.env.BASE_URL}search`} method="get">
+                <input
+                  type="text"
+                  name="q"
+                  placeholder="Search again..."
+                  value={searchQuery}
+                  aria-label="Search"
+                />
+                <button type="submit">Search</button>
+              </form>
+            </div>
           </div>
+
+          {totalResults === 0 && (
+            <div class="no-results">
+              <p>No entries found matching your query. Please try a different search term.</p>
+            </div>
+          )}
+
+          {matchingMysql.length > 0 && (
+            <div class="result-section">
+              <h2>MySQL ({matchingMysql.length})</h2>
+              <ul class="result-list">
+                {matchingMysql.map((entry) => (
+                  <li>
+                    <a href={`${import.meta.env.BASE_URL}mysql/${entry.slug}`} class="result-card">
+                      <div
+                        class="result-title"
+                        set:html={highlightText(entry.data.title, normalizedQuery)}
+                      />
+                      <div class="result-category">{entry.data.category}</div>
+                      {entry.data.description && (
+                        <div
+                          class="result-description"
+                          set:html={highlightText(entry.data.description, normalizedQuery)}
+                        />
+                      )}
+                      {entry.data.tags && (
+                        <div class="result-tags">
+                          {entry.data.tags.map((tag) => (
+                            <span class="tag">{tag}</span>
+                          ))}
+                        </div>
+                      )}
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+
+          {matchingMssql.length > 0 && (
+            <div class="result-section">
+              <h2>MSSQL ({matchingMssql.length})</h2>
+              <ul class="result-list">
+                {matchingMssql.map((entry) => (
+                  <li>
+                    <a href={`${import.meta.env.BASE_URL}mssql/${entry.slug}`} class="result-card">
+                      <div
+                        class="result-title"
+                        set:html={highlightText(entry.data.title, normalizedQuery)}
+                      />
+                      <div class="result-category">{entry.data.category}</div>
+                      {entry.data.description && (
+                        <div
+                          class="result-description"
+                          set:html={highlightText(entry.data.description, normalizedQuery)}
+                        />
+                      )}
+                      {entry.data.tags && (
+                        <div class="result-tags">
+                          {entry.data.tags.map((tag) => (
+                            <span class="tag">{tag}</span>
+                          ))}
+                        </div>
+                      )}
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+
+          {matchingOracle.length > 0 && (
+            <div class="result-section">
+              <h2>Oracle ({matchingOracle.length})</h2>
+              <ul class="result-list">
+                {matchingOracle.map((entry) => (
+                  <li>
+                    <a href={`${import.meta.env.BASE_URL}oracle/${entry.slug}`} class="result-card">
+                      <div
+                        class="result-title"
+                        set:html={highlightText(entry.data.title, normalizedQuery)}
+                      />
+                      <div class="result-category">{entry.data.category}</div>
+                      {entry.data.description && (
+                        <div
+                          class="result-description"
+                          set:html={highlightText(entry.data.description, normalizedQuery)}
+                        />
+                      )}
+                      {entry.data.tags && (
+                        <div class="result-tags">
+                          {entry.data.tags.map((tag) => (
+                            <span class="tag">{tag}</span>
+                          ))}
+                        </div>
+                      )}
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+
+          {matchingExtras.length > 0 && (
+            <div class="result-section">
+              <h2>Other Resources ({matchingExtras.length})</h2>
+              <ul class="result-list">
+                {matchingExtras.map((entry) => (
+                  <li>
+                    <a href={`${import.meta.env.BASE_URL}extras/${entry.slug}`} class="result-card">
+                      <div
+                        class="result-title"
+                        set:html={highlightText(entry.data.title, normalizedQuery)}
+                      />
+                      {entry.data.description && (
+                        <div
+                          class="result-description"
+                          set:html={highlightText(entry.data.description, normalizedQuery)}
+                        />
+                      )}
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+        </>
+      ) : (
+        <div class="search-form initial-search">
+          <p>Enter a search term to find entries across all database types</p>
+          <form action={`${import.meta.env.BASE_URL}search`} method="get">
+            <input
+              type="text"
+              name="q"
+              placeholder="Search for techniques, keywords, etc..."
+              aria-label="Search"
+            />
+            <button type="submit">Search</button>
+          </form>
         </div>
-        
-        {totalResults === 0 && (
-          <div class="no-results">
-            <p>No entries found matching your query. Please try a different search term.</p>
-          </div>
-        )}
-        
-        {matchingMysql.length > 0 && (
-          <div class="result-section">
-            <h2>MySQL ({matchingMysql.length})</h2>
-            <ul class="result-list">
-              {matchingMysql.map(entry => (
-                <li>
-                  <a href={`${import.meta.env.BASE_URL}mysql/${entry.slug}`} class="result-card">
-                    <div class="result-title" set:html={highlightText(entry.data.title, normalizedQuery)} />
-                    <div class="result-category">{entry.data.category}</div>
-                    {entry.data.description && (
-                      <div class="result-description" set:html={highlightText(entry.data.description, normalizedQuery)} />
-                    )}
-                    {entry.data.tags && (
-                      <div class="result-tags">
-                        {entry.data.tags.map(tag => (
-                          <span class="tag">{tag}</span>
-                        ))}
-                      </div>
-                    )}
-                  </a>
-                </li>
-              ))}
-            </ul>
-          </div>
-        )}
-        
-        {matchingMssql.length > 0 && (
-          <div class="result-section">
-            <h2>MSSQL ({matchingMssql.length})</h2>
-            <ul class="result-list">
-              {matchingMssql.map(entry => (
-                <li>
-                  <a href={`${import.meta.env.BASE_URL}mssql/${entry.slug}`} class="result-card">
-                    <div class="result-title" set:html={highlightText(entry.data.title, normalizedQuery)} />
-                    <div class="result-category">{entry.data.category}</div>
-                    {entry.data.description && (
-                      <div class="result-description" set:html={highlightText(entry.data.description, normalizedQuery)} />
-                    )}
-                    {entry.data.tags && (
-                      <div class="result-tags">
-                        {entry.data.tags.map(tag => (
-                          <span class="tag">{tag}</span>
-                        ))}
-                      </div>
-                    )}
-                  </a>
-                </li>
-              ))}
-            </ul>
-          </div>
-        )}
-        
-        {matchingOracle.length > 0 && (
-          <div class="result-section">
-            <h2>Oracle ({matchingOracle.length})</h2>
-            <ul class="result-list">
-              {matchingOracle.map(entry => (
-                <li>
-                  <a href={`${import.meta.env.BASE_URL}oracle/${entry.slug}`} class="result-card">
-                    <div class="result-title" set:html={highlightText(entry.data.title, normalizedQuery)} />
-                    <div class="result-category">{entry.data.category}</div>
-                    {entry.data.description && (
-                      <div class="result-description" set:html={highlightText(entry.data.description, normalizedQuery)} />
-                    )}
-                    {entry.data.tags && (
-                      <div class="result-tags">
-                        {entry.data.tags.map(tag => (
-                          <span class="tag">{tag}</span>
-                        ))}
-                      </div>
-                    )}
-                  </a>
-                </li>
-              ))}
-            </ul>
-          </div>
-        )}
-        
-        {matchingExtras.length > 0 && (
-          <div class="result-section">
-            <h2>Other Resources ({matchingExtras.length})</h2>
-            <ul class="result-list">
-              {matchingExtras.map(entry => (
-                <li>
-                  <a href={`${import.meta.env.BASE_URL}extras/${entry.slug}`} class="result-card">
-                    <div class="result-title" set:html={highlightText(entry.data.title, normalizedQuery)} />
-                    {entry.data.description && (
-                      <div class="result-description" set:html={highlightText(entry.data.description, normalizedQuery)} />
-                    )}
-                  </a>
-                </li>
-              ))}
-            </ul>
-          </div>
-        )}
-      </>
-    ) : (
-      <div class="search-form initial-search">
-        <p>Enter a search term to find entries across all database types</p>
-        <form action={`${import.meta.env.BASE_URL}search`} method="get">
-          <input 
-            type="text" 
-            name="q" 
-            placeholder="Search for techniques, keywords, etc..." 
-            aria-label="Search"
-          />
-          <button type="submit">Search</button>
-        </form>
-      </div>
-    )}
+      )
+    }
   </div>
 </Layout>
 
@@ -200,12 +230,12 @@ function highlightText(text, query) {
     margin: 0 auto;
     padding: 1rem;
   }
-  
+
   h1 {
     margin-bottom: 2rem;
     color: var(--color-primary);
   }
-  
+
   .search-info {
     display: flex;
     justify-content: space-between;
@@ -214,26 +244,26 @@ function highlightText(text, query) {
     flex-wrap: wrap;
     gap: 1rem;
   }
-  
+
   .search-info p {
     font-size: 1.1rem;
     opacity: 0.8;
   }
-  
+
   .search-form {
     margin-bottom: 2rem;
   }
-  
+
   .initial-search p {
     margin-bottom: 1rem;
     font-size: 1.1rem;
   }
-  
+
   .search-form form {
     display: flex;
     gap: 0.5rem;
   }
-  
+
   .search-form input {
     padding: 0.5rem 1rem;
     border: 1px solid #ccc;
@@ -241,7 +271,7 @@ function highlightText(text, query) {
     font-size: 1rem;
     min-width: 300px;
   }
-  
+
   .search-form button {
     padding: 0.5rem 1rem;
     background-color: var(--color-primary);
@@ -251,7 +281,7 @@ function highlightText(text, query) {
     cursor: pointer;
     font-size: 1rem;
   }
-  
+
   .no-results {
     background-color: #f8f9fa;
     padding: 2rem;
@@ -259,17 +289,17 @@ function highlightText(text, query) {
     text-align: center;
     margin: 2rem 0;
   }
-  
+
   .result-section {
     margin-bottom: 3rem;
   }
-  
+
   .result-section h2 {
     margin-bottom: 1rem;
     padding-bottom: 0.5rem;
     border-bottom: 1px solid #eaeaea;
   }
-  
+
   .result-list {
     list-style: none;
     padding: 0;
@@ -278,7 +308,7 @@ function highlightText(text, query) {
     grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
     gap: 1rem;
   }
-  
+
   .result-card {
     display: block;
     padding: 1.25rem;
@@ -286,22 +316,24 @@ function highlightText(text, query) {
     background-color: #f8f9fa;
     text-decoration: none;
     color: inherit;
-    transition: transform 0.2s, box-shadow 0.2s;
+    transition:
+      transform 0.2s,
+      box-shadow 0.2s;
     height: 100%;
   }
-  
+
   .result-card:hover {
     transform: translateY(-3px);
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
   }
-  
+
   .result-title {
     font-weight: 600;
     font-size: 1.1rem;
     margin-bottom: 0.5rem;
     color: var(--color-primary);
   }
-  
+
   .result-category {
     display: inline-block;
     font-size: 0.8rem;
@@ -311,7 +343,7 @@ function highlightText(text, query) {
     border-radius: 4px;
     margin-bottom: 0.75rem;
   }
-  
+
   .result-description {
     font-size: 0.9rem;
     color: #495057;
@@ -321,14 +353,14 @@ function highlightText(text, query) {
     -webkit-box-orient: vertical;
     overflow: hidden;
   }
-  
+
   .result-tags {
     display: flex;
     flex-wrap: wrap;
     gap: 0.5rem;
     margin-top: 0.75rem;
   }
-  
+
   .tag {
     font-size: 0.75rem;
     padding: 0.2rem 0.5rem;
@@ -336,28 +368,28 @@ function highlightText(text, query) {
     color: var(--color-primary);
     border-radius: 4px;
   }
-  
+
   mark {
     background-color: #fff3cd;
     color: #664d03;
     padding: 0 2px;
     border-radius: 2px;
   }
-  
+
   @media (max-width: 768px) {
     .search-info {
       flex-direction: column;
       align-items: flex-start;
     }
-    
+
     .result-list {
       grid-template-columns: 1fr;
     }
-    
+
     .search-form form {
       flex-direction: column;
     }
-    
+
     .search-form input {
       min-width: 100%;
     }

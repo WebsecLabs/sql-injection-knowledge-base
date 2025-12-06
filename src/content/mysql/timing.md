@@ -15,9 +15,9 @@ Time-based SQL injection is particularly useful in blind scenarios where no visi
 
 MySQL provides several ways to cause deliberate delays:
 
-| Function | Description |
-|----------|-------------|
-| `SLEEP(seconds)` | Pauses execution for the specified number of seconds |
+| Function                 | Description                                               |
+| ------------------------ | --------------------------------------------------------- |
+| `SLEEP(seconds)`         | Pauses execution for the specified number of seconds      |
 | `BENCHMARK(count, expr)` | Executes an expression repeatedly for performance testing |
 
 ### Basic Sleep Injection

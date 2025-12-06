@@ -15,13 +15,13 @@ When quotation marks are filtered or escaped, standard SQL injection techniques 
 
 Oracle provides several functions to convert between ASCII values and characters:
 
-| Function | Description | Example |
-|----------|-------------|---------|
-| `CHR()` | Converts ASCII value to character | `CHR(39)` produces a single quote `'` |
-| `ASCII()` | Converts character to ASCII value | `ASCII('A')` returns `65` |
-| `CONCAT()` | Concatenates strings | `CONCAT('ab','cd')` returns `abcd` |
-| `HEXTORAW()` | Converts hex to raw binary | `HEXTORAW('414243')` converts to `ABC` |
-| `UTL_RAW.CAST_TO_VARCHAR2()` | Converts raw data to string | Converts raw data to VARCHAR2 |
+| Function                     | Description                       | Example                                |
+| ---------------------------- | --------------------------------- | -------------------------------------- |
+| `CHR()`                      | Converts ASCII value to character | `CHR(39)` produces a single quote `'`  |
+| `ASCII()`                    | Converts character to ASCII value | `ASCII('A')` returns `65`              |
+| `CONCAT()`                   | Concatenates strings              | `CONCAT('ab','cd')` returns `abcd`     |
+| `HEXTORAW()`                 | Converts hex to raw binary        | `HEXTORAW('414243')` converts to `ABC` |
+| `UTL_RAW.CAST_TO_VARCHAR2()` | Converts raw data to string       | Converts raw data to VARCHAR2          |
 
 ### Basic Quotation Bypasses
 
@@ -154,4 +154,3 @@ Quotation bypasses often work best when combined with other techniques:
 -- Combine with error-based injection
 ' AND (SELECT UPPER(CHR(65)||CHR(68)||CHR(77)||CHR(73)||CHR(78)) FROM dual)=CHR(65)||CHR(68)||CHR(77)||CHR(73)||CHR(78)--
 ```
-

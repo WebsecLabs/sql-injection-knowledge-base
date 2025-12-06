@@ -1,14 +1,14 @@
 ---
-import { ViewTransitions } from 'astro:transitions';
-import { getCollection, type CollectionEntry } from 'astro:content';
-import NavBar from '../components/NavBar.astro';
-import Sidebar from '../components/Sidebar.astro';
-import websecLogo from '../assets/websec-logo.png';
+import { ViewTransitions } from "astro:transitions";
+import { getCollection, type CollectionEntry } from "astro:content";
+import NavBar from "../components/NavBar.astro";
+import Sidebar from "../components/Sidebar.astro";
+import websecLogo from "../assets/websec-logo.png";
 
 // Import CSS files
-import '../styles/main.css';
-import '../styles/navbar.css';
-import '../styles/code.css';
+import "../styles/main.css";
+import "../styles/navbar.css";
+import "../styles/code.css";
 
 interface Props {
   title: string;
@@ -16,28 +16,28 @@ interface Props {
   showSidebar?: boolean;
   // Allow pages to pass their own collections to avoid duplicate loading
   collections?: {
-    mysqlEntries?: CollectionEntry<'mysql'>[];
-    mssqlEntries?: CollectionEntry<'mssql'>[];
-    oracleEntries?: CollectionEntry<'oracle'>[];
-    extrasEntries?: CollectionEntry<'extras'>[];
+    mysqlEntries?: CollectionEntry<"mysql">[];
+    mssqlEntries?: CollectionEntry<"mssql">[];
+    oracleEntries?: CollectionEntry<"oracle">[];
+    extrasEntries?: CollectionEntry<"extras">[];
   };
 }
 
-const { 
-  title, 
+const {
+  title,
   description = "The SQL Injection Knowledge Base is a comprehensive reference and educational resource on identifying, testing, and preventing SQL injection vulnerabilities across various database systems.",
   showSidebar = true,
-  collections
+  collections,
 } = Astro.props;
 
 // Load collections only if not provided by the page
-const mysqlEntries = collections?.mysqlEntries ?? await getCollection('mysql');
-const mssqlEntries = collections?.mssqlEntries ?? await getCollection('mssql');
-const oracleEntries = collections?.oracleEntries ?? await getCollection('oracle');
-const extrasEntries = collections?.extrasEntries ?? await getCollection('extras');
+const mysqlEntries = collections?.mysqlEntries ?? (await getCollection("mysql"));
+const mssqlEntries = collections?.mssqlEntries ?? (await getCollection("mssql"));
+const oracleEntries = collections?.oracleEntries ?? (await getCollection("oracle"));
+const extrasEntries = collections?.extrasEntries ?? (await getCollection("extras"));
 ---
 
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
@@ -45,73 +45,103 @@ const extrasEntries = collections?.extrasEntries ?? await getCollection('extras'
     <link rel="icon" type="image/png" href={`${import.meta.env.BASE_URL}favicon.png`} />
     <title>{title}</title>
     <meta name="description" content={description} />
-    <meta name="keywords" content="SQL Injection, SQLi, Knowledge Base, KB, CS, PR, MySQL, MSSQL, Oracle, PostgreSQL, SQLite, MS Access, Cheatsheet, Pocket Reference" />
+    <meta
+      name="keywords"
+      content="SQL Injection, SQLi, Knowledge Base, KB, CS, PR, MySQL, MSSQL, Oracle, PostgreSQL, SQLite, MS Access, Cheatsheet, Pocket Reference"
+    />
     <meta name="HandheldFriendly" content="true" />
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
-    
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap"
+      rel="stylesheet"
+    />
+
     <!-- Import main.js using Astro's component pipeline -->
     <script>
-      import '/src/scripts/main.js';
+      import "/src/scripts/main.js";
     </script>
-    
+
     <!-- Add Astro's View Transitions for smooth page navigation -->
     <ViewTransitions fallback="swap" />
-    
+
     <!-- Sidebar toggle functionality moved to /scripts/main.js -->
   </head>
   <body>
-    <NavBar 
+    <NavBar
       mysqlEntries={mysqlEntries}
       mssqlEntries={mssqlEntries}
       oracleEntries={oracleEntries}
       extrasEntries={extrasEntries}
     />
-    
+
     <div class="page-layout">
-      {showSidebar && (
-        <>
-          <div id="sidebar-overlay" class="sidebar-overlay"></div>
-          <Sidebar 
-            mysqlEntries={mysqlEntries}
-            mssqlEntries={mssqlEntries}
-            oracleEntries={oracleEntries}
-            extrasEntries={extrasEntries}
-          />
-        </>
-      )}
-      
+      {
+        showSidebar && (
+          <>
+            <div id="sidebar-overlay" class="sidebar-overlay" />
+            <Sidebar
+              mysqlEntries={mysqlEntries}
+              mssqlEntries={mssqlEntries}
+              oracleEntries={oracleEntries}
+              extrasEntries={extrasEntries}
+            />
+          </>
+        )
+      }
+
       {/* Mobile-only button container - only visible when sidebar should be shown */}
-      {showSidebar && (
-        <div class="button-container">
-          <button id="sidebar-toggle" class="sidebar-toggle" aria-label="Toggle navigation">
-            <div class="hamburger-icon">
-              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                <line x1="3" y1="12" x2="21" y2="12"></line>
-                <line x1="3" y1="6" x2="21" y2="6"></line>
-                <line x1="3" y1="18" x2="21" y2="18"></line>
-              </svg>
-            </div>
-          </button>
-        </div>
-      )}
-      
+      {
+        showSidebar && (
+          <div class="button-container">
+            <button id="sidebar-toggle" class="sidebar-toggle" aria-label="Toggle navigation">
+              <div class="hamburger-icon">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="24"
+                  height="24"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="white"
+                  stroke-width="2.5"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                >
+                  <line x1="3" y1="12" x2="21" y2="12" />
+                  <line x1="3" y1="6" x2="21" y2="6" />
+                  <line x1="3" y1="18" x2="21" y2="18" />
+                </svg>
+              </div>
+            </button>
+          </div>
+        )
+      }
+
       <main class="main-content">
         <div class="content-container">
           <slot />
         </div>
       </main>
     </div>
-    
+
     <footer>
       <div class="container">
         <div class="footer-content">
           <div class="footer-branding">
             <span class="footer-text">Powered by</span>
             <div class="footer-logo">
-              <a href="https://www.websec.com" target="_blank" rel="noopener noreferrer" class="footer-logo-link">
-                <img src={websecLogo.src} alt="Websec Logo" class="footer-logo-img" loading="lazy">
+              <a
+                href="https://www.websec.com"
+                target="_blank"
+                rel="noopener noreferrer"
+                class="footer-logo-link"
+              >
+                <img
+                  src={websecLogo.src}
+                  alt="Websec Logo"
+                  class="footer-logo-img"
+                  loading="lazy"
+                />
               </a>
             </div>
           </div>

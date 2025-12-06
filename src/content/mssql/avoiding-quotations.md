@@ -1,7 +1,7 @@
 ---
 title: Avoiding Quotations
 description: Techniques to avoid using quotes in MSSQL injection
-category: Injection Techniques 
+category: Injection Techniques
 order: 8
 tags: ["bypass", "quotation", "filter evasion"]
 lastUpdated: 2025-03-15
@@ -68,7 +68,7 @@ SELECT DB_NAME(1)
 -- Instead of 'dbo'
 SELECT SCHEMA_NAME(1)
 
--- Instead of 'guest' 
+-- Instead of 'guest'
 SELECT USER_NAME(2)
 ```
 

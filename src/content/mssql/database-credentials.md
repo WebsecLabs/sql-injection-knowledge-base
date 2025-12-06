@@ -13,14 +13,14 @@ Extracting database credentials from Microsoft SQL Server can provide valuable i
 
 ### System Tables with Credential Information
 
-| Information | Tables/Views |
-|-------------|--------------|
+| Information       | Tables/Views                                                      |
+| ----------------- | ----------------------------------------------------------------- |
 | SQL Server Logins | `sys.server_principals`, `sys.sql_logins`, `master.sys.syslogins` |
-| SQL Server Roles | `sys.server_role_members` |
-| Database Users | `sys.database_principals` |
-| Database Roles | `sys.database_role_members` |
-| Current User | `USER_NAME()`, `CURRENT_USER`, `SYSTEM_USER`, `SUSER_NAME()` |
-| Current Login | `SUSER_SNAME()` |
+| SQL Server Roles  | `sys.server_role_members`                                         |
+| Database Users    | `sys.database_principals`                                         |
+| Database Roles    | `sys.database_role_members`                                       |
+| Current User      | `USER_NAME()`, `CURRENT_USER`, `SYSTEM_USER`, `SUSER_NAME()`      |
+| Current Login     | `SUSER_SNAME()`                                                   |
 
 ### Examples
 

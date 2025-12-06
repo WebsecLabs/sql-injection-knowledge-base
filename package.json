@@ -1,13 +1,16 @@
 {
   "name": "sqli-kb-astro",
+  "type": "module",
   "version": "1.0.0",
   "description": "SQL Injection Knowledge Base",
-  "main": "index.js",
   "scripts": {
-    "dev": "npx astro dev",
-    "start": "npx astro dev",
-    "build": "npx astro build",
-    "preview": "npx astro preview"
+    "dev": "astro dev",
+    "start": "astro dev",
+    "build": "astro build",
+    "preview": "astro preview",
+    "lint": "eslint . && prettier --check .",
+    "lint:fix": "eslint --fix . && prettier --write .",
+    "typecheck": "astro check"
   },
   "keywords": [
     "SQL Injection",
@@ -16,9 +19,20 @@
     "Security",
     "Web Security"
   ],
-  "author": "",
+  "author": "WebsecLabs",
   "license": "MIT",
   "dependencies": {
-    "astro": "5.15.9"
+    "astro": "^5.15.9"
+  },
+  "devDependencies": {
+    "@astrojs/check": "^0.9.6",
+    "eslint": "^9.39.1",
+    "eslint-plugin-astro": "^1.5.0",
+    "globals": "^16.5.0",
+    "prettier": "^3.6.2",
+    "prettier-plugin-astro": "^0.14.1",
+    "typescript": "^5.9.3",
+    "typescript-eslint": "^8.48.0",
+    "vite-tsconfig-paths": "^5.1.4"
   }
 }

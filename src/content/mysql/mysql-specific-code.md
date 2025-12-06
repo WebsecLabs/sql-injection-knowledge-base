@@ -40,14 +40,14 @@ SELECT /*!32302 1/0, */ 1 FROM dual
 
 MySQL offers unique functions not available in other database systems:
 
-| Function | Description |
-|----------|-------------|
-| `UPDATEXML()` | XML manipulation function, useful for error-based injection |
-| `EXTRACTVALUE()` | Extract XML values, also useful for error-based injection |
-| `NAME_CONST()` | Creates a column with a specific name |
-| `UUID()` | Generates a unique ID (retrieves MAC address in older versions) |
-| `POLYGON()` | Geometric function that can crash some MySQL versions |
-| `WEIGHT_STRING()` | Returns the weight string for a string |
+| Function          | Description                                                     |
+| ----------------- | --------------------------------------------------------------- |
+| `UPDATEXML()`     | XML manipulation function, useful for error-based injection     |
+| `EXTRACTVALUE()`  | Extract XML values, also useful for error-based injection       |
+| `NAME_CONST()`    | Creates a column with a specific name                           |
+| `UUID()`          | Generates a unique ID (retrieves MAC address in older versions) |
+| `POLYGON()`       | Geometric function that can crash some MySQL versions           |
+| `WEIGHT_STRING()` | Returns the weight string for a string                          |
 
 ### Error-based Extraction Using MySQL Functions
 
@@ -166,6 +166,7 @@ SELECT JSON_EXTRACT('{"id": 1}', '$.id');  -- Only works in 5.7+
 ### Practical Applications
 
 Using MySQL-specific features can help in:
+
 - Bypassing WAFs that block standard SQL injection patterns
 - Creating more precise injection payloads
 - Detecting MySQL versions

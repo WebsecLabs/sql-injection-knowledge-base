@@ -1,56 +1,56 @@
 ---
-import { getCollection, type CollectionEntry } from 'astro:content';
-import Layout from '../layouts/Layout.astro';
-import MarkdownEntry from '../components/MarkdownEntry.astro';
+import { getCollection, type CollectionEntry } from "astro:content";
+import Layout from "../layouts/Layout.astro";
+import MarkdownEntry from "../components/MarkdownEntry.astro";
 
 // Check for query parameters to determine which collection to load
 const url = new URL(Astro.request.url);
-const type = url.searchParams.get('type') || 'mysql';
-const slug = url.searchParams.get('slug');
+const type = url.searchParams.get("type") || "mysql";
+const slug = url.searchParams.get("slug");
 
 // Only load the collection we actually need
-let entries: CollectionEntry<'mysql' | 'mssql' | 'oracle' | 'extras'>[];
-switch(type) {
-  case 'mssql':
-    entries = await getCollection('mssql');
+let entries: CollectionEntry<"mysql" | "mssql" | "oracle" | "extras">[];
+switch (type) {
+  case "mssql":
+    entries = await getCollection("mssql");
     break;
-  case 'oracle':
-    entries = await getCollection('oracle');
+  case "oracle":
+    entries = await getCollection("oracle");
     break;
-  case 'extras':
-    entries = await getCollection('extras');
+  case "extras":
+    entries = await getCollection("extras");
     break;
   default:
-    entries = await getCollection('mysql');
+    entries = await getCollection("mysql");
     break;
 }
 
 // Find the entry to display
-let currentEntry: CollectionEntry<'mysql' | 'mssql' | 'oracle' | 'extras'> | undefined;
+let currentEntry: CollectionEntry<"mysql" | "mssql" | "oracle" | "extras"> | undefined;
 if (slug) {
-  currentEntry = entries.find(entry => entry.slug === slug);
+  currentEntry = entries.find((entry) => entry.slug === slug);
 }
 
 // If no entry was found or no slug provided, use the intro page or first entry
 if (!currentEntry) {
-  currentEntry = entries.find(entry => entry.slug === 'intro') || entries[0];
+  currentEntry = entries.find((entry) => entry.slug === "intro") || entries[0];
 }
 
 // Determine page title
-const pageTitle = currentEntry 
-  ? `${currentEntry.data.title} | SQL Injection KB` 
-  : 'Browse | SQL Injection Knowledge Base';
+const pageTitle = currentEntry
+  ? `${currentEntry.data.title} | SQL Injection KB`
+  : "Browse | SQL Injection Knowledge Base";
 
 // Create collections object to pass to Layout
-const collections: any = {};
-switch(type) {
-  case 'mssql':
+const collections: Record<string, typeof entries> = {};
+switch (type) {
+  case "mssql":
     collections.mssqlEntries = entries;
     break;
-  case 'oracle':
+  case "oracle":
     collections.oracleEntries = entries;
     break;
-  case 'extras':
+  case "extras":
     collections.extrasEntries = entries;
     break;
   default:
@@ -65,49 +65,55 @@ switch(type) {
       <div class="breadcrumbs">
         <a href={import.meta.env.BASE_URL}>Home</a>
         <span class="separator">/</span>
-        <a href={`${import.meta.env.BASE_URL}browse?type=${currentEntry.collection}`}>{currentEntry.collection.toUpperCase()}</a>
+        <a href={`${import.meta.env.BASE_URL}browse?type=${currentEntry.collection}`}
+          >{currentEntry.collection.toUpperCase()}</a
+        >
         <span class="separator">/</span>
         <span>{currentEntry.data.title}</span>
       </div>
     </div>
-    
+
     <MarkdownEntry entry={currentEntry} />
   </div>
-  
+
   <script>
     // Enhance sidebar navigation to update URL parameters
-    document.addEventListener('DOMContentLoaded', () => {
-      const sidebarLinks = document.querySelectorAll('.sidebar-nav a');
-      
-      sidebarLinks.forEach(link => {
-        const href = link.getAttribute('href');
-        
+    document.addEventListener("DOMContentLoaded", () => {
+      const sidebarLinks = document.querySelectorAll(".sidebar-nav a");
+
+      sidebarLinks.forEach((link) => {
+        const href = link.getAttribute("href");
+
         // We'll only modify the behavior if it's linking to a specific entry
-        if (href && (href.startsWith('/mysql/') || href.startsWith('/mssql/') || 
-                     href.startsWith('/oracle/') || href.startsWith('/extras/'))) {
-          
-          link.addEventListener('click', (e) => {
+        if (
+          href &&
+          (href.startsWith("/mysql/") ||
+            href.startsWith("/mssql/") ||
+            href.startsWith("/oracle/") ||
+            href.startsWith("/extras/"))
+        ) {
+          link.addEventListener("click", (e) => {
             e.preventDefault();
-            
+
             // Parse the href to get type and slug
-            const parts = href.split('/').filter(Boolean);
+            const parts = href.split("/").filter(Boolean);
             if (parts.length >= 2) {
               const type = parts[0];
               const slug = parts[1];
-              
+
               // Build the URL for the browse page with parameters
               const newUrl = `/browse?type=${type}&slug=${slug}`;
-              
+
               // Update the browser history without a page reload
-              window.history.pushState({}, '', newUrl);
-              
+              window.history.pushState({}, "", newUrl);
+
               // Load the content for the selected entry
               loadEntry(type, slug);
             }
           });
         }
       });
-      
+
       // Function to load entry content via fetch
       async function loadEntry(type, slug) {
         try {
@@ -115,16 +121,16 @@ switch(type) {
           // We'll just reload the page with the new parameters
           window.location.href = `/browse?type=${type}&slug=${slug}`;
         } catch (error) {
-          console.error('Error loading entry:', error);
+          console.error("Error loading entry:", error);
         }
       }
-      
+
       // Handle back/forward browser navigation
-      window.addEventListener('popstate', () => {
+      window.addEventListener("popstate", () => {
         const url = new URL(window.location.href);
-        const type = url.searchParams.get('type');
-        const slug = url.searchParams.get('slug');
-        
+        const type = url.searchParams.get("type");
+        const slug = url.searchParams.get("slug");
+
         if (type && slug) {
           loadEntry(type, slug);
         }
@@ -138,11 +144,11 @@ switch(type) {
     max-width: 900px;
     margin: 0 auto;
   }
-  
+
   .browse-header {
     margin-bottom: 1.5rem;
   }
-  
+
   .breadcrumbs {
     display: flex;
     align-items: center;
@@ -150,17 +156,17 @@ switch(type) {
     font-size: 0.875rem;
     color: #718096;
   }
-  
+
   .breadcrumbs a {
     color: var(--color-primary);
     text-decoration: none;
   }
-  
+
   .breadcrumbs a:hover {
     text-decoration: underline;
   }
-  
+
   .separator {
-    color: #CBD5E0;
+    color: #cbd5e0;
   }
 </style>

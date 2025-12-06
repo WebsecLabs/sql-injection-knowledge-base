@@ -15,12 +15,12 @@ Oracle implements a sophisticated privilege system to control access to database
 
 Oracle has several types of privileges:
 
-| Privilege Type | Description | Examples |
-|----------------|-------------|----------|
-| System Privileges | Control of database-wide actions | CREATE SESSION, CREATE TABLE, CREATE ANY TABLE |
-| Object Privileges | Access to specific database objects | SELECT, INSERT, UPDATE, DELETE on tables |
-| Role-Based Privileges | Collection of privileges assigned as a group | DBA, CONNECT, RESOURCE roles |
-| Code-Based Privileges | Permission to execute procedures | EXECUTE on packages like UTL_FILE |
+| Privilege Type        | Description                                  | Examples                                       |
+| --------------------- | -------------------------------------------- | ---------------------------------------------- |
+| System Privileges     | Control of database-wide actions             | CREATE SESSION, CREATE TABLE, CREATE ANY TABLE |
+| Object Privileges     | Access to specific database objects          | SELECT, INSERT, UPDATE, DELETE on tables       |
+| Role-Based Privileges | Collection of privileges assigned as a group | DBA, CONNECT, RESOURCE roles                   |
+| Code-Based Privileges | Permission to execute procedures             | EXECUTE on packages like UTL_FILE              |
 
 ### Enumerating Current Privileges
 
@@ -162,4 +162,3 @@ If DBMS_SCHEDULER privileges exist:
 -- Find indirect privilege paths
 ' UNION SELECT GRANTEE, PRIVILEGE FROM DBA_SYS_PRIVS WHERE GRANTEE IN (SELECT GRANTED_ROLE FROM USER_ROLE_PRIVS)--
 ```
-

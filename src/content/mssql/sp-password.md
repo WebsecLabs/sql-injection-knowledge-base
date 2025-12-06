@@ -123,12 +123,12 @@ SP_PASSWORD can be used with other evasion techniques:
 
 ### Version Specifics
 
-| SQL Server Version | Behavior |
-|-------------------|----------|
-| SQL Server 2000 | Original behavior - query completely hidden |
-| SQL Server 2005+ | Some improvements, but basic technique still works |
-| SQL Server 2012+ | Additional logging mechanisms may still capture queries |
-| SQL Server 2016+ | Advanced threat protection features may detect suspicious patterns regardless |
+| SQL Server Version | Behavior                                                                      |
+| ------------------ | ----------------------------------------------------------------------------- |
+| SQL Server 2000    | Original behavior - query completely hidden                                   |
+| SQL Server 2005+   | Some improvements, but basic technique still works                            |
+| SQL Server 2012+   | Additional logging mechanisms may still capture queries                       |
+| SQL Server 2016+   | Advanced threat protection features may detect suspicious patterns regardless |
 
 ### Detection and Mitigation Strategies
 
@@ -155,7 +155,7 @@ AS
 BEGIN
     DECLARE @data XML
     SET @data = EVENTDATA()
-    
+
     IF @data.value('(/EVENT_INSTANCE/TSQLCommand/CommandText)[1]', 'nvarchar(max)') LIKE '%sp_password%'
     BEGIN
         -- Log to a custom audit table that won't be affected by sp_password

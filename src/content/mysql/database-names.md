@@ -11,11 +11,11 @@ lastUpdated: 2025-03-15
 
 Extracting database names is often a crucial step in SQL injection attacks, as it helps to identify potential targets for further exploitation.
 
-| Information | Query |
-|-------------|-------|
-| Tables | `information_schema.schemata`, `mysql.db` |
-| Columns | `schema_name`, `db` |
-| Current DB | `database()`, `schema()` |
+| Information | Query                                     |
+| ----------- | ----------------------------------------- |
+| Tables      | `information_schema.schemata`, `mysql.db` |
+| Columns     | `schema_name`, `db`                       |
+| Current DB  | `database()`, `schema()`                  |
 
 ### Examples
 

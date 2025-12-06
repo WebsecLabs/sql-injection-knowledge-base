@@ -16,11 +16,13 @@ Conditional statements are crucial for blind SQL injection techniques, allowing 
 The `IF()` function evaluates a condition and returns one value if the condition is true and another value if it's false.
 
 Syntax:
+
 ```sql
 IF(condition, value_if_true, value_if_false)
 ```
 
 Example:
+
 ```sql
 SELECT IF(1=1, 'True', 'False');
 -- Returns: 'True'
@@ -34,6 +36,7 @@ SELECT IF(1=2, 'True', 'False');
 The `CASE` statement provides more flexible conditional logic with multiple conditions.
 
 Syntax:
+
 ```sql
 CASE
   WHEN condition1 THEN result1
@@ -44,9 +47,10 @@ END
 ```
 
 Example:
+
 ```sql
-SELECT 
-CASE 
+SELECT
+CASE
   WHEN 1=1 THEN 'First is true'
   WHEN 2=2 THEN 'Second is true'
   ELSE 'Nothing is true'

@@ -64,11 +64,11 @@ SQL Server Agent can be used to execute commands via the CmdExec subsystem:
 ```sql
 -- Create a job to execute commands
 EXEC msdb.dbo.sp_add_job @job_name = 'CommandExecution';
-EXEC msdb.dbo.sp_add_jobstep 
-  @job_name = 'CommandExecution', 
-  @step_name = 'Execute command', 
-  @subsystem = 'CmdExec', 
-  @command = 'cmd.exe /c dir C:\ > C:\output.txt', 
+EXEC msdb.dbo.sp_add_jobstep
+  @job_name = 'CommandExecution',
+  @step_name = 'Execute command',
+  @subsystem = 'CmdExec',
+  @command = 'cmd.exe /c dir C:\ > C:\output.txt',
   @on_success_action = 1;
 EXEC msdb.dbo.sp_start_job 'CommandExecution';
 ```
@@ -200,11 +200,11 @@ When `xp_cmdshell` is not available, alternatives include:
 ```sql
 -- Using SQL Agent (requires appropriate permissions)
 EXEC msdb.dbo.sp_add_job @job_name = 'CommandExecution';
-EXEC msdb.dbo.sp_add_jobstep 
-  @job_name = 'CommandExecution', 
-  @step_name = 'Execute command', 
-  @subsystem = 'CmdExec', 
-  @command = 'cmd.exe /c dir C:\ > C:\output.txt', 
+EXEC msdb.dbo.sp_add_jobstep
+  @job_name = 'CommandExecution',
+  @step_name = 'Execute command',
+  @subsystem = 'CmdExec',
+  @command = 'cmd.exe /c dir C:\ > C:\output.txt',
   @on_success_action = 1;
 EXEC msdb.dbo.sp_start_job 'CommandExecution';
 
@@ -217,6 +217,7 @@ EXEC master..xp_regwrite 'HKEY_LOCAL_MACHINE', 'SOFTWARE\Microsoft\Windows\Curre
 To prevent system command execution via SQL Server:
 
 1. Disable `xp_cmdshell` and other dangerous procedures:
+
    ```sql
    EXEC sp_configure 'xp_cmdshell', 0;
    EXEC sp_configure 'Ole Automation Procedures', 0;
@@ -225,11 +226,13 @@ To prevent system command execution via SQL Server:
    ```
 
 2. Apply proper permissions:
+
    ```sql
    DENY EXECUTE ON xp_cmdshell TO PUBLIC;
    ```
 
 3. Monitor for enabling of dangerous features:
+
    ```sql
    CREATE TRIGGER security_alert ON ALL SERVER WITH EXECUTE AS 'sa'
    FOR ALTER_CONFIGURATION

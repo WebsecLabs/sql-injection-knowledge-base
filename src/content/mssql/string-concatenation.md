@@ -59,8 +59,8 @@ Before STRING_AGG, this was the common method for aggregating strings:
 
 ```sql
 SELECT STUFF((
-    SELECT ',' + name 
-    FROM sys.databases 
+    SELECT ',' + name
+    FROM sys.databases
     FOR XML PATH('')
 ), 1, 1, '');
 ```

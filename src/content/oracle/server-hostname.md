@@ -15,12 +15,12 @@ Determining the hostname of an Oracle database server can provide valuable infor
 
 Oracle provides several system views and functions to obtain hostname information:
 
-| Method | Description | Example Output |
-|--------|-------------|----------------|
-| `SYS_CONTEXT('USERENV', 'SERVER_HOST')` | Current server hostname | oracle-prod-db01 |
-| `UTL_INADDR.GET_HOST_NAME` | Local hostname via UTL_INADDR package | oracle-prod-db01.example.com |
-| `v$instance.HOST_NAME` | Instance hostname from v$instance view | oracle-prod-db01 |
-| `sys.GV_$INSTANCE` | Host information in RAC environments | Multiple hostnames in cluster |
+| Method                                  | Description                            | Example Output                |
+| --------------------------------------- | -------------------------------------- | ----------------------------- |
+| `SYS_CONTEXT('USERENV', 'SERVER_HOST')` | Current server hostname                | oracle-prod-db01              |
+| `UTL_INADDR.GET_HOST_NAME`              | Local hostname via UTL_INADDR package  | oracle-prod-db01.example.com  |
+| `v$instance.HOST_NAME`                  | Instance hostname from v$instance view | oracle-prod-db01              |
+| `sys.GV_$INSTANCE`                      | Host information in RAC environments   | Multiple hostnames in cluster |
 
 ### Standard Hostname Queries
 
@@ -130,4 +130,3 @@ The global database name combines the database name with the domain:
 -- Get global database name
 SELECT GLOBAL_NAME FROM GLOBAL_NAME
 ```
-

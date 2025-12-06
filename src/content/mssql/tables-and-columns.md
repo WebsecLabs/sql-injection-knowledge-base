@@ -52,8 +52,8 @@ SQL Server provides standardized INFORMATION_SCHEMA views for metadata discovery
 SELECT table_name FROM information_schema.tables WHERE table_type='BASE TABLE'
 
 -- Include schema name and table type
-SELECT table_schema, table_name, table_type 
-FROM information_schema.tables 
+SELECT table_schema, table_name, table_type
+FROM information_schema.tables
 ORDER BY table_schema, table_name
 ```
 
@@ -61,13 +61,13 @@ ORDER BY table_schema, table_name
 
 ```sql
 -- List all columns for a specific table
-SELECT column_name, data_type, character_maximum_length 
-FROM information_schema.columns 
+SELECT column_name, data_type, character_maximum_length
+FROM information_schema.columns
 WHERE table_name = 'users'
 
 -- List all columns with their tables
-SELECT table_name, column_name, data_type, character_maximum_length 
-FROM information_schema.columns 
+SELECT table_name, column_name, data_type, character_maximum_length
+FROM information_schema.columns
 ORDER BY table_name, ordinal_position
 ```
 
@@ -89,14 +89,14 @@ SELECT name FROM sys.objects WHERE type = 'U' ORDER BY name
 
 ```sql
 -- Get columns for a specific table
-SELECT name, column_id, system_type_id 
-FROM sys.columns 
+SELECT name, column_id, system_type_id
+FROM sys.columns
 WHERE object_id = OBJECT_ID('dbo.users')
 
 -- Get all columns with their table names
-SELECT o.name AS table_name, c.name AS column_name 
-FROM sys.columns c 
-JOIN sys.objects o ON o.object_id = c.object_id 
+SELECT o.name AS table_name, c.name AS column_name
+FROM sys.columns c
+JOIN sys.objects o ON o.object_id = c.object_id
 WHERE o.type = 'U'
 ORDER BY o.name, c.column_id
 ```
@@ -162,7 +162,7 @@ SELECT STUFF((
 
 ```sql
 -- Check first character of first table name
-' AND ASCII(SUBSTRING((SELECT TOP 1 name FROM sys.tables), 1, 1)) = 117-- 
+' AND ASCII(SUBSTRING((SELECT TOP 1 name FROM sys.tables), 1, 1)) = 117--
 -- Where 117 is ASCII for 'u'
 ```
 
@@ -182,19 +182,19 @@ SELECT * FROM [linked_server].[database].[schema].[table]
 
 Common interesting tables to look for:
 
-| Table Name | Description | Interesting Columns |
-|------------|-------------|---------------------|
-| users, accounts, members | User information | username, password, email |
-| customers, clients | Customer data | name, email, address, payment_info |
-| orders, transactions | Order information | order_id, customer_id, amount |
-| products, items | Product catalog | id, name, price |
-| config, settings | Configuration data | setting_name, setting_value |
-| employees, staff | Employee information | name, salary, position |
+| Table Name               | Description          | Interesting Columns                |
+| ------------------------ | -------------------- | ---------------------------------- |
+| users, accounts, members | User information     | username, password, email          |
+| customers, clients       | Customer data        | name, email, address, payment_info |
+| orders, transactions     | Order information    | order_id, customer_id, amount      |
+| products, items          | Product catalog      | id, name, price                    |
+| config, settings         | Configuration data   | setting_name, setting_value        |
+| employees, staff         | Employee information | name, salary, position             |
 
 ### Notes
 
 1. Some system tables and views require elevated privileges
 2. Information schema views are more standard across database systems
-3. System catalog views (sys.*) provide SQL Server-specific details
+3. System catalog views (sys.\*) provide SQL Server-specific details
 4. For very large databases, query performance may be affected
 5. Column and table names are usually case-insensitive in SQL Server

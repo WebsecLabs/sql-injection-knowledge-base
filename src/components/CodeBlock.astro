@@ -7,6 +7,12 @@ interface Props {
 }
 
 const { code, language = "sql", title, highlightLines = [] } = Astro.props;
+
+// Split code into lines for line-level highlighting
+const lines = code.split("\n");
+
+// Normalize highlightLines to a Set for O(1) lookups
+const highlightSet = new Set(highlightLines.map((n) => Number(n)));
 ---
 
 <div class="modern-code-block">
@@ -16,7 +22,19 @@ const { code, language = "sql", title, highlightLines = [] } = Astro.props;
       <span></span><span></span><span></span>
     </div>
   </div>
-  <pre class="code-content"><code class={`language-${language}`} set:html={code} /></pre>
+  <pre
+    class="code-content"><code class={`language-${language}`}>{
+      lines.map((line, index) => {
+        const lineNumber = index + 1;
+        const isHighlighted = highlightSet.has(lineNumber);
+        return (
+          <span class={isHighlighted ? "line highlight" : "line"}>
+            {line}
+            {index < lines.length - 1 ? "\n" : ""}
+          </span>
+        );
+      })
+    }</code></pre>
 </div>
 
 <style>
@@ -30,7 +48,7 @@ const { code, language = "sql", title, highlightLines = [] } = Astro.props;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
     overflow: hidden;
   }
-  
+
   .code-header {
     display: flex;
     justify-content: space-between;
@@ -39,42 +57,61 @@ const { code, language = "sql", title, highlightLines = [] } = Astro.props;
     background-color: #edf2f7;
     border-bottom: 1px solid #e2e8f0;
   }
-  
+
   .code-label {
     font-size: 0.75rem;
     font-weight: 600;
     text-transform: uppercase;
     color: #4a5568;
   }
-  
+
   .fake-buttons {
     display: flex;
     gap: 6px;
   }
-  
+
   .fake-buttons span {
     width: 12px;
     height: 12px;
     border-radius: 50%;
     display: block;
   }
-  
+
   .fake-buttons span:nth-child(1) {
     background-color: #fc8181;
   }
-  
+
   .fake-buttons span:nth-child(2) {
     background-color: #f6e05e;
   }
-  
+
   .fake-buttons span:nth-child(3) {
     background-color: #68d391;
   }
-  
+
   .code-content {
     margin: 0;
     padding: 1rem;
     background-color: white;
     overflow-x: auto;
+  }
+
+  .code-content code {
+    display: block;
+    white-space: pre;
+  }
+
+  .code-content .line {
+    display: inline;
+  }
+
+  .code-content .line.highlight {
+    display: inline;
+    background-color: rgba(255, 255, 0, 0.2);
+    border-left: 3px solid var(--color-accent, #f6ad55);
+    margin-left: -1rem;
+    padding-left: calc(1rem - 3px);
+    margin-right: -1rem;
+    padding-right: 1rem;
   }
 </style>

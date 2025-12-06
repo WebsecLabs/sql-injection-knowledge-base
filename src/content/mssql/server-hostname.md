@@ -43,7 +43,7 @@ For more comprehensive information:
 
 ```sql
 -- Get combined server instance information
-SELECT @@SERVERNAME AS ServerInstance, 
+SELECT @@SERVERNAME AS ServerInstance,
        SERVERPROPERTY('MachineName') AS HostName,
        SERVERPROPERTY('InstanceName') AS InstanceName;
 ```
@@ -56,7 +56,7 @@ In SQL Server, you can also retrieve other system information that may include o
 
 ```sql
 -- Get all environment variables with xp_cmdshell
-EXEC xp_cmdshell 'set';  -- Requires high privileges 
+EXEC xp_cmdshell 'set';  -- Requires high privileges
 
 -- Get computer name
 EXEC xp_cmdshell 'echo %COMPUTERNAME%';  -- Requires high privileges
@@ -111,17 +111,18 @@ Here are examples of how to use these techniques in SQL injection scenarios:
 
 Different deployment types can affect what hostname information is available:
 
-| Deployment Type | Hostname Considerations |
-|-----------------|-------------------------|
-| Standalone Server | @@SERVERNAME typically matches the Windows hostname |
-| Named Instance | @@SERVERNAME includes instance name (e.g., SERVER\INSTANCE) |
-| Clustered Instance | @@SERVERNAME may show the virtual network name |
-| Docker Container | May show container ID or custom hostname |
+| Deployment Type    | Hostname Considerations                                     |
+| ------------------ | ----------------------------------------------------------- |
+| Standalone Server  | @@SERVERNAME typically matches the Windows hostname         |
+| Named Instance     | @@SERVERNAME includes instance name (e.g., SERVER\INSTANCE) |
+| Clustered Instance | @@SERVERNAME may show the virtual network name              |
+| Docker Container   | May show container ID or custom hostname                    |
 | Azure SQL Database | Limited hostname information (@@SERVERNAME may be obscured) |
 
 ### Security Implications
 
 Exposing the hostname can have security implications:
+
 - Reveals internal naming conventions
 - Might expose domain information
 - Can help attackers target specific hosts in a network

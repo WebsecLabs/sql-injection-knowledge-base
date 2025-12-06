@@ -15,15 +15,15 @@ Enumerating tables and columns is a critical step in Oracle SQL injection attack
 
 Oracle provides several data dictionary views to query database structure:
 
-| View | Description | Information Provided |
-|------|-------------|----------------------|
-| `ALL_TABLES` | Tables accessible to current user | Table names, owners, tablespaces |
-| `ALL_TAB_COLUMNS` | Columns in accessible tables | Column names, data types, sizes |
-| `USER_TABLES` | Tables owned by current user | Table names, storage, statistics |
-| `USER_TAB_COLUMNS` | Columns in user's tables | Column details for owned tables |
-| `DBA_TABLES` | All tables in the database | Complete table information (requires privileges) |
-| `DBA_TAB_COLUMNS` | All columns in the database | Complete column information (requires privileges) |
-| `ALL_OBJECTS` | All objects accessible to user | Objects by type (TABLE, VIEW, etc.) |
+| View               | Description                       | Information Provided                              |
+| ------------------ | --------------------------------- | ------------------------------------------------- |
+| `ALL_TABLES`       | Tables accessible to current user | Table names, owners, tablespaces                  |
+| `ALL_TAB_COLUMNS`  | Columns in accessible tables      | Column names, data types, sizes                   |
+| `USER_TABLES`      | Tables owned by current user      | Table names, storage, statistics                  |
+| `USER_TAB_COLUMNS` | Columns in user's tables          | Column details for owned tables                   |
+| `DBA_TABLES`       | All tables in the database        | Complete table information (requires privileges)  |
+| `DBA_TAB_COLUMNS`  | All columns in the database       | Complete column information (requires privileges) |
+| `ALL_OBJECTS`      | All objects accessible to user    | Objects by type (TABLE, VIEW, etc.)               |
 
 ### Basic Table Enumeration
 
@@ -165,4 +165,3 @@ For time-based blind:
 -- Check for existence of common sensitive tables
 ' UNION SELECT 'Found '||TABLE_NAME,NULL FROM ALL_TABLES WHERE TABLE_NAME IN ('USERS','EMPLOYEES','CUSTOMERS','ACCOUNTS','PAYMENTS')--
 ```
-

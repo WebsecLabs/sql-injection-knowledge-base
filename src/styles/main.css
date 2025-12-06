@@ -10,11 +10,12 @@
   --color-true: rgba(72, 187, 120, 0.1);
   --color-false: rgba(245, 101, 101, 0.1);
   --color-code-bg: #f8fafc;
-  
-  --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 
-    'Helvetica Neue', Arial, sans-serif;
-  --font-mono: 'JetBrains Mono', 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
-  
+
+  --font-sans:
+    "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial,
+    sans-serif;
+  --font-mono: "JetBrains Mono", "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+
   --shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
   --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.07);
   --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.1);
@@ -60,7 +61,12 @@ a:hover {
   text-decoration: underline;
 }
 
-h1, h2, h3, h4, h5, h6 {
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
   margin-top: 1.5rem;
   margin-bottom: 1rem;
   font-weight: 600;
@@ -106,7 +112,8 @@ p {
   margin-bottom: 1rem;
 }
 
-ul, ol {
+ul,
+ol {
   margin-left: 1.5rem;
   margin-bottom: 1rem;
 }
@@ -162,7 +169,6 @@ code {
 .sidebar-overlay {
   display: none;
 }
-
 
 .sidebar {
   display: block;
@@ -304,7 +310,7 @@ code {
 
 /* Add a pseudo-element to increase tap target size */
 .sidebar-heading::before {
-  content: '';
+  content: "";
   position: absolute;
   top: -10px;
   left: 0;
@@ -318,7 +324,7 @@ code {
   .sidebar-heading {
     padding: 1.25rem 1.25rem; /* Larger padding on mobile */
   }
-  
+
   .sidebar-heading span {
     font-size: 1.1rem; /* Larger text on mobile */
   }
@@ -333,9 +339,9 @@ code {
   .sidebar-heading:active {
     background-color: rgba(66, 153, 225, 0.15);
   }
-  
+
   .sidebar-heading::after {
-    content: '';
+    content: "";
     position: absolute;
     top: 0;
     left: 0;
@@ -471,7 +477,8 @@ table {
   font-size: 0.95rem;
 }
 
-th, td {
+th,
+td {
   padding: 0.75rem 1rem;
   border: 1px solid #edf2f7;
   text-align: left;
@@ -489,12 +496,14 @@ tr:nth-child(even) {
   background-color: #f9fafc;
 }
 
-.true, .result-true {
+.true,
+.result-true {
   background-color: rgba(72, 187, 120, 0.07);
   position: relative;
 }
 
-.true::before, .result-true::before {
+.true::before,
+.result-true::before {
   content: "✓";
   color: #48bb78;
   position: absolute;
@@ -503,12 +512,14 @@ tr:nth-child(even) {
   font-weight: bold;
 }
 
-.false, .result-false {
+.false,
+.result-false {
   background-color: rgba(245, 101, 101, 0.07);
   position: relative;
 }
 
-.false::before, .result-false::before {
+.false::before,
+.result-false::before {
   content: "✕";
   color: #f56565;
   position: absolute;
@@ -713,17 +724,17 @@ footer .container {
     overflow-x: hidden;
     margin-top: 0;
   }
-  
+
   /* Force the content width to match viewport */
-  .container, .content-container {
+  .container,
+  .content-container {
     width: 100%;
     max-width: 100%;
     padding-left: 10px;
     padding-right: 10px;
     box-sizing: border-box;
   }
-  
-  
+
   .sidebar {
     width: 100%;
     position: fixed;
@@ -746,30 +757,30 @@ footer .container {
     padding-bottom: 100px; /* Add space at the bottom for scrolling */
     -webkit-overflow-scrolling: touch; /* Smooth scrolling on iOS */
   }
-  
+
   /* Ensure sidebar content scrolls properly on mobile */
   .sidebar-content {
     overflow-y: auto;
     height: auto;
   }
-  
+
   .main-content {
     padding: 1.5rem 0;
   }
-  
+
   .content-container {
     padding: 0 1rem;
   }
-  
+
   header .container {
     flex-direction: column;
     gap: 1rem;
   }
-  
+
   .search-container {
     width: 100%;
   }
-  
+
   /* Mobile sidebar toggle */
   .sidebar-toggle {
     display: block;
@@ -778,7 +789,7 @@ footer .container {
     width: 56px;
     height: 56px;
     border-radius: 50%;
-    background-color: #0D4A86; /* Darker blue for visibility */
+    background-color: #0d4a86; /* Darker blue for visibility */
     color: white;
     border: 2px solid rgba(255, 255, 255, 0.25);
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
@@ -788,11 +799,11 @@ footer .container {
     transition: all 0.3s ease;
     padding: 0;
   }
-  
+
   .sidebar-toggle.hidden {
     transform: translateY(100px);
   }
-  
+
   .button-container {
     position: fixed;
     bottom: 20px;
@@ -801,11 +812,11 @@ footer .container {
     transition: transform 0.3s ease;
     display: none; /* Hide by default, show only on mobile */
   }
-  
+
   .button-container.hidden {
     transform: translateY(100px);
   }
-  
+
   .hamburger-icon {
     display: flex;
     align-items: center;
@@ -813,35 +824,41 @@ footer .container {
     width: 100%;
     height: 100%;
   }
-  
+
   .sidebar-toggle.attention {
     animation: pulse 1s ease;
   }
-  
+
   @keyframes pulse {
-    0% { transform: scale(1); }
-    50% { transform: scale(1.1); }
-    100% { transform: scale(1); }
+    0% {
+      transform: scale(1);
+    }
+    50% {
+      transform: scale(1.1);
+    }
+    100% {
+      transform: scale(1);
+    }
   }
-  
+
   .sidebar.mobile-open {
     transform: translateX(0);
   }
-  
+
   /* Show sidebar toggle on mobile */
   @media (max-width: 768px) {
     .button-container {
       display: block;
     }
-    
+
     .sidebar-toggle {
       display: flex;
     }
-    
+
     .sidebar-toggle.active {
       background-color: #1a365d;
     }
-    
+
     /* Overlay for when sidebar is open */
     .sidebar-overlay {
       display: block; /* Show on mobile */
@@ -856,7 +873,7 @@ footer .container {
       visibility: hidden;
       transition: opacity 0.3s ease;
     }
-    
+
     .sidebar-overlay.active {
       opacity: 1;
       visibility: visible;

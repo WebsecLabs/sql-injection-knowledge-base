@@ -33,15 +33,15 @@ SELECT privilege_type FROM information_schema.table_privileges WHERE grantee = C
 
 ### Important Privileges to Check
 
-| Privilege | Description | Exploitation Potential |
-|-----------|-------------|------------------------|
-| `FILE` | Allows reading and writing files | Read sensitive files; write web shells |
-| `SUPER` | Administrative privilege | Execute commands; manipulate server settings |
-| `SHUTDOWN` | Can shutdown the database | Denial of service |
-| `CREATE USER` | Can create new users | Create privileged users for persistence |
-| `PROCESS` | Can see all processes | View queries from other users |
-| `RELOAD` | Can reload server settings | Can flush privileges |
-| `ALL PRIVILEGES` | All privileges (admin) | Complete database control |
+| Privilege        | Description                      | Exploitation Potential                       |
+| ---------------- | -------------------------------- | -------------------------------------------- |
+| `FILE`           | Allows reading and writing files | Read sensitive files; write web shells       |
+| `SUPER`          | Administrative privilege         | Execute commands; manipulate server settings |
+| `SHUTDOWN`       | Can shutdown the database        | Denial of service                            |
+| `CREATE USER`    | Can create new users             | Create privileged users for persistence      |
+| `PROCESS`        | Can see all processes            | View queries from other users                |
+| `RELOAD`         | Can reload server settings       | Can flush privileges                         |
+| `ALL PRIVILEGES` | All privileges (admin)           | Complete database control                    |
 
 ### Checking for FILE Privilege
 
@@ -84,6 +84,7 @@ SELECT * FROM mysql.user WHERE user = SUBSTRING_INDEX(USER(), '@', 1);
 ### Practical Usage
 
 If you have the FILE privilege, you can:
+
 - Read sensitive files like `/etc/passwd` using `LOAD_FILE()`
 - Write web shells using `INTO OUTFILE`
 - Access database configuration files
@@ -101,6 +102,7 @@ SELECT LOAD_FILE('/etc/passwd');
 ### Note
 
 The actual privileges available to you depend on:
+
 1. The MySQL version
 2. Server configuration
 3. User account configuration

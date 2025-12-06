@@ -9,13 +9,13 @@ lastUpdated: 2025-03-16
 
 The following methods can be used to comment out the rest of a query after your injection:
 
-| Comment Syntax | Description |
-|----------------|-------------|
-| `#` | Hash comment |
-| `/*` | C-style comment |
-| `-- -` | SQL comment |
-| `;%00` | Nullbyte |
-| `` ` `` | Backtick |
+| Comment Syntax | Description     |
+| -------------- | --------------- |
+| `#`            | Hash comment    |
+| `/*`           | C-style comment |
+| `-- -`         | SQL comment     |
+| `;%00`         | Nullbyte        |
+| `` ` ``        | Backtick        |
 
 ## Examples
 
@@ -28,4 +28,5 @@ SELECT * FROM Users WHERE id = '' UNION SELECT 1, 2, 3`';
 ```
 
 ## Notes
+
 - The backtick can only be used to end a query when used as an alias

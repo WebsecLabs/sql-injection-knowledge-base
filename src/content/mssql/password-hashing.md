@@ -22,13 +22,13 @@ SQL Server supports two primary authentication modes:
 
 Password storage in SQL Server has evolved over time:
 
-| SQL Server Version | Hashing Algorithm | Description |
-|-------------------|-------------------|-------------|
+| SQL Server Version          | Hashing Algorithm     | Description                    |
+| --------------------------- | --------------------- | ------------------------------ |
 | SQL Server 2000 and earlier | Proprietary algorithm | Weak, reversible in some cases |
-| SQL Server 2005 | SHA-1 | 160-bit SHA-1 hash with salt |
-| SQL Server 2012+ | SHA-512 | Stronger algorithm with salt |
-| SQL Server 2017+ | Additional encryption | Password encryption at rest |
-| Azure SQL | SHA-256 or bcrypt | Cloud-specific implementations |
+| SQL Server 2005             | SHA-1                 | 160-bit SHA-1 hash with salt   |
+| SQL Server 2012+            | SHA-512               | Stronger algorithm with salt   |
+| SQL Server 2017+            | Additional encryption | Password encryption at rest    |
+| Azure SQL                   | SHA-256 or bcrypt     | Cloud-specific implementations |
 
 ### SQL Server Password Hash Locations
 
@@ -110,12 +110,12 @@ SQL Server can enforce Windows password policies:
 
 ```sql
 -- Create a login with password policy enforcement
-CREATE LOGIN TestUser WITH PASSWORD = 'StrongPwd123!', 
-    CHECK_POLICY = ON, 
+CREATE LOGIN TestUser WITH PASSWORD = 'StrongPwd123!',
+    CHECK_POLICY = ON,
     CHECK_EXPIRATION = ON;
 
 -- Check policy status for logins
-SELECT name, is_policy_checked, is_expiration_checked 
+SELECT name, is_policy_checked, is_expiration_checked
 FROM sys.sql_logins;
 ```
 

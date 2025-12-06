@@ -15,23 +15,23 @@ After extracting password hashes from Microsoft SQL Server, the next step in a p
 
 Before attempting to crack SQL Server password hashes, it's important to identify the hash type based on its format:
 
-| SQL Server Version | Hash Format | Example |
-|-------------------|-------------|---------|
-| SQL Server 2000 | 0x0100\[16-byte hash\] | 0x0100B58E58130D2B6FF57F70737D3978 |
-| SQL Server 2005+ | 0x0200\[SHA-1 hash\]\[salt\] | 0x020058CD420B993C1C32561C772608D549FCEDFA66C8B733C3270DD8D3D32385D6580A6D367B |
-| SQL Server 2012+ | 0x0200\[SHA-512 hash\]\[salt\] | (longer hash with same prefix) |
+| SQL Server Version | Hash Format                    | Example                                                                        |
+| ------------------ | ------------------------------ | ------------------------------------------------------------------------------ |
+| SQL Server 2000    | 0x0100\[16-byte hash\]         | 0x0100B58E58130D2B6FF57F70737D3978                                             |
+| SQL Server 2005+   | 0x0200\[SHA-1 hash\]\[salt\]   | 0x020058CD420B993C1C32561C772608D549FCEDFA66C8B733C3270DD8D3D32385D6580A6D367B |
+| SQL Server 2012+   | 0x0200\[SHA-512 hash\]\[salt\] | (longer hash with same prefix)                                                 |
 
 ### Cracking Tools
 
 Several tools can be used to crack SQL Server password hashes:
 
-| Tool | Description | Strengths |
-|------|-------------|-----------|
-| Hashcat | GPU-accelerated password cracker | Fast, supports many attack modes, highly customizable |
-| John the Ripper | CPU-based password cracker | Well-established, user-friendly, supports many hash types |
-| Metasploit | Framework with SQL Server modules | Integrated with pentesting workflow |
-| SQLPing/SQLPAT | Specialized SQL Server tools | SQL Server-specific capabilities |
-| Hydra/Medusa | Online password crackers | For direct SQL Server authentication attempts |
+| Tool            | Description                       | Strengths                                                 |
+| --------------- | --------------------------------- | --------------------------------------------------------- |
+| Hashcat         | GPU-accelerated password cracker  | Fast, supports many attack modes, highly customizable     |
+| John the Ripper | CPU-based password cracker        | Well-established, user-friendly, supports many hash types |
+| Metasploit      | Framework with SQL Server modules | Integrated with pentesting workflow                       |
+| SQLPing/SQLPAT  | Specialized SQL Server tools      | SQL Server-specific capabilities                          |
+| Hydra/Medusa    | Online password crackers          | For direct SQL Server authentication attempts             |
 
 ### Hashcat Commands for SQL Server Hashes
 
@@ -124,9 +124,11 @@ SQL Server hashes often need to be reformatted for cracking tools:
 
 ```markdown
 # Original format
+
 0x0100B58E58130D2B6FF57F70737D3978
 
 # Hashcat format (just remove 0x)
+
 0100B58E58130D2B6FF57F70737D3978
 ```
 
@@ -134,9 +136,11 @@ SQL Server hashes often need to be reformatted for cracking tools:
 
 ```markdown
 # Original format
+
 0x020058CD420B993C1C32561C772608D549FCEDFA66C8B733C3270DD8D3D32385D6580A6D367B
 
 # Hashcat format (remove 0x and separate hash and salt)
+
 020058CD420B993C1C32561C772608D549FCEDFA:66C8B733C3270DD8D3D32385D6580A6D367B
 ```
 
@@ -144,12 +148,12 @@ SQL Server hashes often need to be reformatted for cracking tools:
 
 Many SQL Server installations use default or weak passwords:
 
-| Username | Common Passwords |
-|----------|------------------|
-| sa | (empty), sa, password, Password123, sqlserver, sql, p@ssw0rd, admin |
-| admin | admin, password, Password123, Admin123 |
-| sqladmin | sqladmin, password, Password123 |
-| [company name] | [company name], [company name]123, Welcome123 |
+| Username       | Common Passwords                                                    |
+| -------------- | ------------------------------------------------------------------- |
+| sa             | (empty), sa, password, Password123, sqlserver, sql, p@ssw0rd, admin |
+| admin          | admin, password, Password123, Admin123                              |
+| sqladmin       | sqladmin, password, Password123                                     |
+| [company name] | [company name], [company name]123, Welcome123                       |
 
 ### Password Policy Considerations
 

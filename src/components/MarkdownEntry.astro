@@ -1,9 +1,9 @@
 ---
-import { type CollectionEntry } from 'astro:content';
-import { slide, fade } from 'astro:transitions';
+import { type CollectionEntry } from "astro:content";
+// Note: transition:animate directives use built-in Astro values, no import needed
 
 interface Props {
-  entry: CollectionEntry<'mysql' | 'mssql' | 'oracle' | 'extras'>;
+  entry: CollectionEntry<"mysql" | "mssql" | "oracle" | "extras">;
 }
 
 const { entry } = Astro.props;
@@ -13,26 +13,41 @@ const { Content } = await entry.render();
 <article class="markdown-entry" transition:animate="slide">
   <header class="entry-header">
     <h1 transition:name={`title-${entry.collection}-${entry.slug}`}>{entry.data.title}</h1>
-    {entry.data.description && <p class="entry-description" transition:name={`desc-${entry.collection}-${entry.slug}`}>{entry.data.description}</p>}
-    
+    {
+      entry.data.description && (
+        <p class="entry-description" transition:name={`desc-${entry.collection}-${entry.slug}`}>
+          {entry.data.description}
+        </p>
+      )
+    }
+
     <div class="entry-meta" transition:animate="fade">
       <span class="entry-category">{entry.data.category}</span>
-      {entry.data.lastUpdated && (
-        <span class="entry-date">
-          Last updated: {entry.data.lastUpdated.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}
-        </span>
-      )}
+      {
+        entry.data.lastUpdated && (
+          <span class="entry-date">
+            Last updated:{" "}
+            {entry.data.lastUpdated.toLocaleDateString("en-US", {
+              year: "numeric",
+              month: "long",
+              day: "numeric",
+            })}
+          </span>
+        )
+      }
     </div>
-    
-    {entry.data.tags && entry.data.tags.length > 0 && (
-      <div class="entry-tags" transition:animate="fade">
-        {entry.data.tags.map(tag => (
-          <span class="tag">{tag}</span>
-        ))}
-      </div>
-    )}
+
+    {
+      entry.data.tags && entry.data.tags.length > 0 && (
+        <div class="entry-tags" transition:animate="fade">
+          {entry.data.tags.map((tag) => (
+            <span class="tag">{tag}</span>
+          ))}
+        </div>
+      )
+    }
   </header>
-  
+
   <div class="entry-content" transition:animate="slide">
     <Content />
   </div>
@@ -46,24 +61,24 @@ const { Content } = await entry.render();
     padding: 2rem;
     margin-bottom: 2rem;
   }
-  
+
   .entry-header {
     margin-bottom: 2rem;
   }
-  
+
   .entry-header h1 {
     margin-top: 0;
     font-size: 2rem;
     color: var(--color-primary);
     border-bottom: none;
   }
-  
+
   .entry-description {
     font-size: 1.1rem;
     color: #4a5568;
     margin-bottom: 1rem;
   }
-  
+
   .entry-meta {
     display: flex;
     flex-wrap: wrap;
@@ -72,19 +87,19 @@ const { Content } = await entry.render();
     font-size: 0.9rem;
     color: #718096;
   }
-  
+
   .entry-category {
     font-weight: 500;
     color: var(--color-accent);
   }
-  
+
   .entry-tags {
     display: flex;
     flex-wrap: wrap;
     gap: 0.5rem;
     margin-bottom: 1rem;
   }
-  
+
   .tag {
     display: inline-block;
     background-color: #edf2f7;
@@ -94,49 +109,49 @@ const { Content } = await entry.render();
     font-size: 0.75rem;
     font-weight: 500;
   }
-  
+
   .entry-content {
     font-size: 1rem;
     line-height: 1.6;
   }
-  
+
   .entry-content :global(h2) {
     font-size: 1.5rem;
     margin-top: 2rem;
     margin-bottom: 1rem;
     color: #2d3748;
   }
-  
+
   .entry-content :global(h3) {
     font-size: 1.25rem;
     margin-top: 1.5rem;
     margin-bottom: 0.75rem;
     color: #2d3748;
   }
-  
+
   .entry-content :global(p) {
     margin-bottom: 1rem;
   }
-  
+
   .entry-content :global(a) {
     color: var(--color-primary);
     text-decoration: none;
   }
-  
+
   .entry-content :global(a:hover) {
     text-decoration: underline;
   }
-  
+
   .entry-content :global(ul),
   .entry-content :global(ol) {
     margin-bottom: 1rem;
     padding-left: 1.5rem;
   }
-  
+
   .entry-content :global(li) {
     margin-bottom: 0.5rem;
   }
-  
+
   .entry-content :global(blockquote) {
     border-left: 4px solid #cbd5e0;
     padding-left: 1rem;
@@ -144,7 +159,7 @@ const { Content } = await entry.render();
     margin-right: 0;
     color: #4a5568;
   }
-  
+
   .entry-content :global(pre) {
     background-color: #f8fafc;
     border-radius: 6px;
@@ -153,7 +168,7 @@ const { Content } = await entry.render();
     margin: 1rem 0;
     border: 1px solid #edf2f7;
   }
-  
+
   .entry-content :global(code) {
     font-family: var(--font-mono);
     font-size: 0.9em;
@@ -161,36 +176,36 @@ const { Content } = await entry.render();
     padding: 0.2rem 0.4rem;
     border-radius: 3px;
   }
-  
+
   .entry-content :global(pre code) {
     background-color: transparent;
     padding: 0;
     border-radius: 0;
   }
-  
+
   .entry-content :global(table) {
     width: 100%;
     border-collapse: collapse;
     margin: 1rem 0;
     font-size: 0.95rem;
   }
-  
-  .entry-content :global(th), 
+
+  .entry-content :global(th),
   .entry-content :global(td) {
     padding: 0.75rem 1rem;
     border: 1px solid #e2e8f0;
   }
-  
+
   .entry-content :global(th) {
     background-color: #f8fafc;
     font-weight: 600;
     text-align: left;
   }
-  
+
   .entry-content :global(tr:nth-child(even)) {
     background-color: #f9fafb;
   }
-  
+
   .entry-content :global(img) {
     max-width: 100%;
     height: auto;

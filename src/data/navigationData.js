@@ -27,8 +27,8 @@ export const dbSystems = [
       { text: "Operators", href: "#MySQL_Operators" },
       { text: "Constants", href: "#MySQL_Constants" },
       { text: "Password Hashing", href: "#MySQL_Password_Hashing" },
-      { text: "Password Cracking", href: "#MySQL_Password_Cracking" }
-    ]
+      { text: "Password Cracking", href: "#MySQL_Password_Cracking" },
+    ],
   },
   {
     name: "MSSQL",
@@ -51,8 +51,8 @@ export const dbSystems = [
       { text: "Stacked Queries", href: "#MSSQL_Stacked_Queries" },
       { text: "Fuzzing and Obfuscation", href: "#MSSQL_Fuzzing_Obfuscation" },
       { text: "Password Hashing", href: "#MSSQL_Password_Hashing" },
-      { text: "Password Cracking", href: "#MSSQL_Password_Cracking" }
-    ]
+      { text: "Password Cracking", href: "#MSSQL_Password_Cracking" },
+    ],
   },
   {
     name: "Oracle",
@@ -71,9 +71,9 @@ export const dbSystems = [
       { text: "Timing", href: "#Oracle_Timing" },
       { text: "Privileges", href: "#Oracle_Privileges" },
       { text: "Out Of Band Channeling", href: "#Oracle_OOB_Channeling" },
-      { text: "Password Cracking", href: "#Oracle_Password_Cracking" }
-    ]
-  }
+      { text: "Password Cracking", href: "#Oracle_Password_Cracking" },
+    ],
+  },
 ];
 
 // Extra links - internal and external
@@ -83,15 +83,43 @@ export const extraLinks = [
   { text: "Special Thanks", href: "#Extra_Special_Thanks" },
   { text: "Contributions", href: "#Extra_Contributions" },
   { text: "Acknowledgments", href: "#Extra_Acknowledgments" },
-  { text: "Google Docs Version", href: "https://docs.google.com/document/edit?id=1rO_LCBKJY0puvRhPhAfTD2iNVPfR4e9KiKDpDE2enMI", external: true },
+  {
+    text: "Google Docs Version",
+    href: "https://docs.google.com/document/edit?id=1rO_LCBKJY0puvRhPhAfTD2iNVPfR4e9KiKDpDE2enMI",
+    external: true,
+  },
   { text: "SQLi Challenges", href: "http://50.57.51.240/challenges/", external: true },
   { text: "SQL Fiddle", href: "http://sqlfiddle.com/", external: true },
-  { text: "Pentestmonkey Cheatsheet", href: "http://pentestmonkey.net/cheat-sheet", external: true },
-  { text: "Ferruh Mavituna Cheatsheet", href: "http://ferruh.mavituna.com/sql-injection-cheatsheet-oku/", external: true },
-  { text: "MS Access Cheatsheet", href: "http://nibblesec.org/files/MSAccessSQLi/MSAccessSQLi.html", external: true },
-  { text: "SQLite3 Cheatsheet", href: "https://sites.google.com/site/0x7674/home/sqlite3injectioncheatsheet", external: true },
-  { text: "Reiners Filter Evasion Cheatsheet", href: "https://websec.wordpress.com/2010/12/04/sqli-filter-evasion-cheat-sheet-mysql/", external: true },
-  { text: "OWASP Prevention Cheatsheet", href: "https://www.owasp.org/index.php/SQL_Injection_Prevention_Cheat_Sheet", external: true },
+  {
+    text: "Pentestmonkey Cheatsheet",
+    href: "http://pentestmonkey.net/cheat-sheet",
+    external: true,
+  },
+  {
+    text: "Ferruh Mavituna Cheatsheet",
+    href: "http://ferruh.mavituna.com/sql-injection-cheatsheet-oku/",
+    external: true,
+  },
+  {
+    text: "MS Access Cheatsheet",
+    href: "http://nibblesec.org/files/MSAccessSQLi/MSAccessSQLi.html",
+    external: true,
+  },
+  {
+    text: "SQLite3 Cheatsheet",
+    href: "https://sites.google.com/site/0x7674/home/sqlite3injectioncheatsheet",
+    external: true,
+  },
+  {
+    text: "Reiners Filter Evasion Cheatsheet",
+    href: "https://websec.wordpress.com/2010/12/04/sqli-filter-evasion-cheat-sheet-mysql/",
+    external: true,
+  },
+  {
+    text: "OWASP Prevention Cheatsheet",
+    href: "https://www.owasp.org/index.php/SQL_Injection_Prevention_Cheat_Sheet",
+    external: true,
+  },
   { text: "Bobby Tables Prevention Guide", href: "http://bobby-tables.com/", external: true },
-  { text: "HTML5 Security Cheatsheet", href: "http://html5sec.org/", external: true }
+  { text: "HTML5 Security Cheatsheet", href: "http://html5sec.org/", external: true },
 ];

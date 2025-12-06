@@ -73,7 +73,7 @@ Many MySQL operators have alternative representations:
 
 -- Equal alternatives
 id=1
-id<=>1 
+id<=>1
 ```
 
 ### String Representation

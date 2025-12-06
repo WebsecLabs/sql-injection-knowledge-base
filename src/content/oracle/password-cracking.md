@@ -15,11 +15,11 @@ Oracle database implements various password hashing algorithms depending on the 
 
 Oracle's password hashing has evolved over versions:
 
-| Oracle Version | Hash Format | Description | Storage Location |
-|----------------|-------------|-------------|------------------|
-| Oracle 7 - 10g | DES-based | Username case-insensitive, password case-insensitive | USER$ table |
-| Oracle 11g | SHA-1 | Includes password salt, case-sensitive | USER$ table |
-| Oracle 12c+ | SHA-2 (SHA-512) | Strong salted hash with PBKDF2 | USER$ table |
+| Oracle Version | Hash Format     | Description                                          | Storage Location |
+| -------------- | --------------- | ---------------------------------------------------- | ---------------- |
+| Oracle 7 - 10g | DES-based       | Username case-insensitive, password case-insensitive | USER$ table      |
+| Oracle 11g     | SHA-1           | Includes password salt, case-sensitive               | USER$ table      |
+| Oracle 12c+    | SHA-2 (SHA-512) | Strong salted hash with PBKDF2                       | USER$ table      |
 
 ### Password Hash Locations
 
@@ -196,4 +196,3 @@ If you can modify user accounts:
 -- Directly setting password hash (requires privileges)
 ' BEGIN EXECUTE IMMEDIATE 'ALTER USER target_user IDENTIFIED BY VALUES ''F894844C34402B67'''; END;--
 ```
-

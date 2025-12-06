@@ -3,14 +3,14 @@ interface Props {
   defaultTab?: string;
 }
 
-const { defaultTab } = Astro.props;
+const { defaultTab: _defaultTab } = Astro.props;
 ---
 
 <div class="tabs">
   <ul class="tab-list" id="tabList">
     <slot name="tab-list" />
   </ul>
-  
+
   <div class="tab-contents">
     <slot />
   </div>
@@ -19,53 +19,53 @@ const { defaultTab } = Astro.props;
 <script>
   // Initialize tabs
   function initializeTabs() {
-    const tabLists = document.querySelectorAll('.tabs');
-    
-    tabLists.forEach(tabContainer => {
-      const tabs = tabContainer.querySelectorAll('.tab-item');
-      const contents = tabContainer.querySelectorAll('.tab-content');
-      
+    const tabLists = document.querySelectorAll(".tabs");
+
+    tabLists.forEach((tabContainer) => {
+      const tabs = tabContainer.querySelectorAll(".tab-item");
+      const contents = tabContainer.querySelectorAll(".tab-content");
+
       // Set default active tab or use first tab
       let isAnyActive = false;
-      tabs.forEach(tab => {
-        if (tab.classList.contains('active')) {
+      tabs.forEach((tab) => {
+        if (tab.classList.contains("active")) {
           isAnyActive = true;
-          const tabId = tab.getAttribute('data-tab');
+          const tabId = tab.getAttribute("data-tab");
           activateTab(tabContainer, tabId);
         }
       });
-      
+
       if (!isAnyActive && tabs.length > 0) {
         const firstTab = tabs[0];
-        firstTab.classList.add('active');
-        const tabId = firstTab.getAttribute('data-tab');
+        firstTab.classList.add("active");
+        const tabId = firstTab.getAttribute("data-tab");
         activateTab(tabContainer, tabId);
       }
-      
+
       // Add click event listeners to all tabs
-      tabs.forEach(tab => {
-        tab.addEventListener('click', () => {
-          const tabId = tab.getAttribute('data-tab');
-          
+      tabs.forEach((tab) => {
+        tab.addEventListener("click", () => {
+          const tabId = tab.getAttribute("data-tab");
+
           // Remove active class from all tabs and contents
-          tabs.forEach(t => t.classList.remove('active'));
-          contents.forEach(c => c.classList.remove('active'));
-          
+          tabs.forEach((t) => t.classList.remove("active"));
+          contents.forEach((c) => c.classList.remove("active"));
+
           // Add active class to current tab and content
-          tab.classList.add('active');
+          tab.classList.add("active");
           activateTab(tabContainer, tabId);
         });
       });
     });
   }
-  
+
   function activateTab(container, tabId) {
     const content = container.querySelector(`.tab-content[data-tab="${tabId}"]`);
     if (content) {
-      content.classList.add('active');
+      content.classList.add("active");
     }
   }
-  
+
   // Initialize when DOM is loaded
-  document.addEventListener('DOMContentLoaded', initializeTabs);
+  document.addEventListener("DOMContentLoaded", initializeTabs);
 </script>

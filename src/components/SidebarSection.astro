@@ -1,0 +1,104 @@
+---
+/**
+ * SidebarSection component - Reusable collapsible section for the sidebar.
+ * Extracts common pattern used for MySQL, MSSQL, Oracle, and Extras sections.
+ */
+import type { CollectionEntry } from "astro:content";
+
+interface CategoryGroup {
+  [category: string]: CollectionEntry<"mysql" | "mssql" | "oracle" | "extras">[];
+}
+
+interface Props {
+  /** Section identifier used in data attributes and URL paths */
+  sectionId: string;
+  /** Display title for the section header */
+  title: string;
+  /** Whether this section is currently active/expanded */
+  isActive: boolean;
+  /** Current URL path for highlighting active links */
+  currentPath: string;
+  /** Entries grouped by category (for mysql/mssql/oracle) */
+  entriesByCategory?: CategoryGroup;
+  /** Flat list of entries (for extras) */
+  entries?: CollectionEntry<"extras">[];
+  /** Whether to show categories or a flat list */
+  showCategories?: boolean;
+}
+
+const {
+  sectionId,
+  title,
+  isActive,
+  currentPath,
+  entriesByCategory,
+  entries,
+  showCategories = true,
+} = Astro.props;
+
+// Sort categories alphabetically if provided
+const sortedCategories = entriesByCategory ? Object.keys(entriesByCategory).sort() : [];
+
+// Helper function for exact path matching (handles trailing slashes)
+function isActivePath(entrySlug: string): boolean {
+  const entryPath = `${import.meta.env.BASE_URL}${sectionId}/${entrySlug}`.replace(/\/+$/, "");
+  const normalizedCurrentPath = currentPath.replace(/\/+$/, "");
+  return normalizedCurrentPath === entryPath;
+}
+---
+
+<div class={`sidebar-section ${isActive ? "active" : ""}`} data-section={sectionId}>
+  <button class="sidebar-heading" aria-expanded={isActive ? "true" : "false"}>
+    <span>{title}</span>
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      width="16"
+      height="16"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      stroke-width="2.5"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+      class="toggle-icon"
+    >
+      <polyline points="6 9 12 15 18 9"></polyline>
+    </svg>
+  </button>
+  <div class="sidebar-items">
+    {
+      showCategories && entriesByCategory ? (
+        sortedCategories.map((category) => (
+          <div class="sidebar-category">
+            <div class="category-name">{category}</div>
+            <ul class="sidebar-nav">
+              {entriesByCategory[category].map((entry) => (
+                <li>
+                  <a
+                    href={`${import.meta.env.BASE_URL}${sectionId}/${entry.slug}`}
+                    class={isActivePath(entry.slug) ? "active" : ""}
+                  >
+                    {entry.data.title}
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </div>
+        ))
+      ) : entries ? (
+        <ul class="sidebar-nav">
+          {entries.map((entry) => (
+            <li>
+              <a
+                href={`${import.meta.env.BASE_URL}${sectionId}/${entry.slug}`}
+                class={isActivePath(entry.slug) ? "active" : ""}
+              >
+                {entry.data.title}
+              </a>
+            </li>
+          ))}
+        </ul>
+      ) : null
+    }
+  </div>
+</div>

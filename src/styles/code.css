@@ -1,6 +1,7 @@
 /* Code styling for the SQL Injection Knowledge Base */
 
-.astro-code, pre {
+.astro-code,
+pre {
   position: relative;
   border-radius: 6px;
   margin: 1.5rem 0;
@@ -36,7 +37,7 @@
     padding: 6px 10px !important;
     font-size: 14px !important;
   }
-  
+
   .astro-code {
     font-size: 14px;
     line-height: 1.5;

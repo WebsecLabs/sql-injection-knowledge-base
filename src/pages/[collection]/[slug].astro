@@ -1,0 +1,81 @@
+---
+/**
+ * Unified dynamic route for all content collections.
+ * Consolidates mysql/[slug], mssql/[slug], oracle/[slug], and extras/[slug] into a single template.
+ *
+ * This follows the DRY principle by eliminating 4 nearly-identical page files.
+ */
+import { getCollection, type CollectionEntry } from "astro:content";
+import Layout from "../../layouts/Layout.astro";
+import MarkdownEntry from "../../components/MarkdownEntry.astro";
+import BackLink from "../../components/BackLink.astro";
+
+// Type definitions
+type ValidCollection = "mysql" | "mssql" | "oracle" | "extras";
+type AnyEntry =
+  | CollectionEntry<"mysql">
+  | CollectionEntry<"mssql">
+  | CollectionEntry<"oracle">
+  | CollectionEntry<"extras">;
+
+// Collection display names for page titles
+const COLLECTION_TITLES: Record<ValidCollection, string> = {
+  mysql: "MySQL",
+  mssql: "MSSQL",
+  oracle: "Oracle",
+  extras: "Extras",
+};
+
+// Generate static paths for all entries across all collections
+export async function getStaticPaths() {
+  // Define collections inside getStaticPaths to ensure availability during build
+  const collections: ValidCollection[] = ["mysql", "mssql", "oracle", "extras"];
+
+  const paths: Array<{
+    params: { collection: string; slug: string };
+    props: { entry: AnyEntry; collectionName: ValidCollection };
+  }> = [];
+
+  for (const collectionName of collections) {
+    const entries = await getCollection(collectionName);
+    for (const entry of entries) {
+      paths.push({
+        params: { collection: collectionName, slug: entry.slug },
+        props: { entry, collectionName },
+      });
+    }
+  }
+
+  return paths;
+}
+
+interface Props {
+  entry: AnyEntry;
+  collectionName: ValidCollection;
+}
+
+const { entry, collectionName } = Astro.props;
+
+// Load all collections for sidebar navigation
+const mysqlEntries = await getCollection("mysql");
+const mssqlEntries = await getCollection("mssql");
+const oracleEntries = await getCollection("oracle");
+const extrasEntries = await getCollection("extras");
+
+// Build page title
+const collectionTitle = COLLECTION_TITLES[collectionName];
+const pageTitle = `${entry.data.title} | ${collectionTitle} | SQL Injection KB`;
+
+// Build collections object for Layout - only pass the current collection to avoid duplication
+const collections = {
+  mysqlEntries: collectionName === "mysql" ? mysqlEntries : undefined,
+  mssqlEntries: collectionName === "mssql" ? mssqlEntries : undefined,
+  oracleEntries: collectionName === "oracle" ? oracleEntries : undefined,
+  extrasEntries: collectionName === "extras" ? extrasEntries : undefined,
+};
+---
+
+<Layout title={pageTitle} collections={collections}>
+  <MarkdownEntry entry={entry} />
+  <BackLink />
+</Layout>

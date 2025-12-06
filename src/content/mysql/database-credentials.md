@@ -11,10 +11,10 @@ lastUpdated: 2025-03-15
 
 When performing SQL injection attacks against MySQL, extracting database credentials can provide valuable information for further exploitation.
 
-| Information | Query |
-|-------------|-------|
-| Table | `mysql.user` |
-| Columns | `user`, `password` |
+| Information  | Query                                                                         |
+| ------------ | ----------------------------------------------------------------------------- |
+| Table        | `mysql.user`                                                                  |
+| Columns      | `user`, `password`                                                            |
 | Current User | `user()`, `current_user()`, `current_user`, `system_user()`, `session_user()` |
 
 ### Examples

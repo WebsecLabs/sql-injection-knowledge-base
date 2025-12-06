@@ -15,12 +15,12 @@ Identifying the version of Microsoft SQL Server is an important reconnaissance s
 
 MSSQL provides several functions to determine the database version:
 
-| Function | Description |
-|----------|-------------|
-| `@@VERSION` | Returns complete version string with additional information |
-| `SERVERPROPERTY('ProductVersion')` | Returns the major.minor.build version number |
-| `SERVERPROPERTY('ProductLevel')` | Returns the update level (e.g., RTM, SP1, SP2) |
-| `SERVERPROPERTY('Edition')` | Returns the edition (e.g., Enterprise, Standard) |
+| Function                           | Description                                                 |
+| ---------------------------------- | ----------------------------------------------------------- |
+| `@@VERSION`                        | Returns complete version string with additional information |
+| `SERVERPROPERTY('ProductVersion')` | Returns the major.minor.build version number                |
+| `SERVERPROPERTY('ProductLevel')`   | Returns the update level (e.g., RTM, SP1, SP2)              |
+| `SERVERPROPERTY('Edition')`        | Returns the edition (e.g., Enterprise, Standard)            |
 
 ### Examples
 
@@ -54,17 +54,17 @@ END
 
 The `@@VERSION` output starts with different text depending on the version:
 
-| Version String | SQL Server Version |
-|----------------|-------------------|
-| Microsoft SQL Server 2019 | SQL Server 2019 (15.x) |
-| Microsoft SQL Server 2017 | SQL Server 2017 (14.x) |
-| Microsoft SQL Server 2016 | SQL Server 2016 (13.x) |
-| Microsoft SQL Server 2014 | SQL Server 2014 (12.x) |
-| Microsoft SQL Server 2012 | SQL Server 2012 (11.x) |
+| Version String               | SQL Server Version           |
+| ---------------------------- | ---------------------------- |
+| Microsoft SQL Server 2019    | SQL Server 2019 (15.x)       |
+| Microsoft SQL Server 2017    | SQL Server 2017 (14.x)       |
+| Microsoft SQL Server 2016    | SQL Server 2016 (13.x)       |
+| Microsoft SQL Server 2014    | SQL Server 2014 (12.x)       |
+| Microsoft SQL Server 2012    | SQL Server 2012 (11.x)       |
 | Microsoft SQL Server 2008 R2 | SQL Server 2008 R2 (10.50.x) |
-| Microsoft SQL Server 2008 | SQL Server 2008 (10.0.x) |
-| Microsoft SQL Server 2005 | SQL Server 2005 (9.x) |
-| Microsoft SQL Server 2000 | SQL Server 2000 (8.x) |
+| Microsoft SQL Server 2008    | SQL Server 2008 (10.0.x)     |
+| Microsoft SQL Server 2005    | SQL Server 2005 (9.x)        |
+| Microsoft SQL Server 2000    | SQL Server 2000 (8.x)        |
 
 ### Injection Examples
 

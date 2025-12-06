@@ -15,11 +15,11 @@ Identifying the Oracle database version is a crucial first step in SQL injection
 
 Oracle provides several ways to retrieve version information:
 
-| Method | Description | Example Output |
-|--------|-------------|----------------|
-| `SELECT BANNER FROM v$version` | Full version string | Oracle Database 19c Enterprise Edition Release 19.0.0.0.0 - Production |
-| `SELECT VERSION FROM v$instance` | Short version number | 19.0.0.0.0 |
-| `SELECT * FROM v$version` | Complete version details | Multiple rows with component details |
+| Method                              | Description                      | Example Output                                                                            |
+| ----------------------------------- | -------------------------------- | ----------------------------------------------------------------------------------------- |
+| `SELECT BANNER FROM v$version`      | Full version string              | Oracle Database 19c Enterprise Edition Release 19.0.0.0.0 - Production                    |
+| `SELECT VERSION FROM v$instance`    | Short version number             | 19.0.0.0.0                                                                                |
+| `SELECT * FROM v$version`           | Complete version details         | Multiple rows with component details                                                      |
 | `SELECT BANNER_FULL FROM v$version` | Full version with patches (12c+) | Oracle Database 19c Enterprise Edition Release 19.9.0.0.0 - Production Version 19.9.0.0.0 |
 
 ### Basic Version Queries
@@ -181,12 +181,12 @@ PL/SQL version might differ from database version:
 
 Once you know the version, you can plan more targeted attacks:
 
-| Version | Potential Vectors |
-|---------|-------------------|
-| 8i, 9i | Older PL/SQL package vulnerabilities |
-| 10g | PL/SQL injection, SYS.DBMS_EXPORT_EXTENSION |
-| 11g | DBMS_JVM_EXP_PERMS privilege escalation |
-| 12c+ | More restrictive by default, need targeted approaches |
+| Version | Potential Vectors                                     |
+| ------- | ----------------------------------------------------- |
+| 8i, 9i  | Older PL/SQL package vulnerabilities                  |
+| 10g     | PL/SQL injection, SYS.DBMS_EXPORT_EXTENSION           |
+| 11g     | DBMS_JVM_EXP_PERMS privilege escalation               |
+| 12c+    | More restrictive by default, need targeted approaches |
 
 #### Detection Accuracy
 
@@ -196,4 +196,3 @@ Some environments might hide version information:
 -- Check if version is being masked
 ' AND (SELECT COUNT(*) FROM v$version WHERE BANNER LIKE '%Production%')>0--
 ```
-
