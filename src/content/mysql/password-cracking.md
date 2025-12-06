@@ -143,22 +143,22 @@ Some useful wordlist sources:
 
    > **Note:** `INTO OUTFILE` requires MySQL's `secure_file_priv` system variable to allow writes to the target directory. Many modern MySQL installations restrict this to a specific directory or disable it entirely (`secure_file_priv = NULL`). This example may not work without adjusting server configuration or having appropriate privileges.
 
-2. **Prepare hash file** (remove '\*' if using hashcat mode 300):
+2. **Prepare hash file** (extract the password column and remove leading '\*'):
 
    ```bash
-   cat mysql_hashes.txt | cut -d '*' -f 2 > mysql_hashes_clean.txt
+   cut -f 2 mysql_hashes.txt | sed 's/^\*//' > mysql_hashes_clean.txt
    ```
 
 3. **Run cracking tool**:
 
    ```bash
-   hashcat -m 11200 -a 0 mysql_hashes.txt rockyou.txt -r rules/best64.rule
+   hashcat -m 300 -a 0 mysql_hashes_clean.txt rockyou.txt -r rules/best64.rule
    ```
 
 4. **Check results**:
 
    ```bash
-   hashcat -m 11200 mysql_hashes.txt --show
+   hashcat -m 300 mysql_hashes_clean.txt --show
    ```
 
 ### Ethical and Legal Considerations

@@ -262,12 +262,6 @@ function legacyCopy(text, button) {
   }, 2000);
 }
 
-// Run on initial page load
-document.addEventListener("DOMContentLoaded", function () {
-  // Remove tabindex from pre elements on initial load
-  removeTabindexFromPreElements();
-});
-
 // CSS for copy button
 document.addEventListener("DOMContentLoaded", function () {
   const style = document.createElement("style");

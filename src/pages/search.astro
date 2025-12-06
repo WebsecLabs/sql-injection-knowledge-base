@@ -138,8 +138,7 @@ const baseUrl = import.meta.env.BASE_URL;
       // Highlight matching text
       function highlightText(text: string, query: string): string {
         if (!query || !text) return escapeHtml(text || "");
-        const escaped = escapeHtml(text);
-        const lowerText = escaped.toLowerCase();
+        const lowerText = text.toLowerCase();
         const lowerQuery = query.toLowerCase();
 
         const matches: Array<{ start: number; end: number }> = [];
@@ -149,16 +148,16 @@ const baseUrl = import.meta.env.BASE_URL;
           pos += lowerQuery.length;
         }
 
-        if (matches.length === 0) return escaped;
+        if (matches.length === 0) return escapeHtml(text);
 
         let result = "";
         let lastEnd = 0;
         for (const match of matches) {
-          result += escaped.slice(lastEnd, match.start);
-          result += "<mark>" + escaped.slice(match.start, match.end) + "</mark>";
+          result += escapeHtml(text.slice(lastEnd, match.start));
+          result += "<mark>" + escapeHtml(text.slice(match.start, match.end)) + "</mark>";
           lastEnd = match.end;
         }
-        result += escaped.slice(lastEnd);
+        result += escapeHtml(text.slice(lastEnd));
         return result;
       }
 
