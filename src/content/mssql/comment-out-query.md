@@ -13,12 +13,11 @@ In SQL injection attacks, commenting out the remainder of a query is often neces
 
 In Microsoft SQL Server (MSSQL), you can use the following methods to comment out the rest of a query:
 
-| Comment Type         | Syntax       | Description                       |
-| -------------------- | ------------ | --------------------------------- |
-| Single-line comment  | `--`         | Requires a space after the dashes |
-| Inline/block comment | `/*...*/`    | Can span multiple lines           |
-| Batch separator      | `;`          | Terminates the current batch      |
-| Bracketed identifier | `[ANYTHING]` | In specific contexts only         |
+| Comment Type         | Syntax    | Description                       |
+| -------------------- | --------- | --------------------------------- |
+| Single-line comment  | `--`      | Requires a space after the dashes |
+| Inline/block comment | `/*...*/` | Can span multiple lines           |
+| Batch separator      | `;`       | Terminates the current statement  |
 
 ### Examples
 
@@ -31,9 +30,6 @@ SELECT * FROM Users WHERE username = 'admin'/* ' AND password = 'password' */
 
 -- Example 3: Using ; to terminate and start a new query
 SELECT * FROM Users WHERE username = 'admin'; EXEC sp_configure 'show advanced options', 1; RECONFIGURE;
-
--- Example 4: Brackets can sometimes be used in specific contexts
-SELECT * FROM Users WHERE username = 'admin'['];
 ```
 
 ### Notes
