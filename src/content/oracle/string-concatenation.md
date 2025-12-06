@@ -19,7 +19,7 @@ Oracle provides multiple ways to concatenate strings:
 | ---------------------- | ----------------------------------- | ---------------------------------------------------------------- | ------------------ |
 | Double pipe `\|\|`     | Standard SQL concatenation operator | `'ABC' \|\| 'DEF'`                                               | `ABCDEF`           |
 | `CONCAT()` function    | Two-argument concatenation function | `CONCAT('ABC', 'DEF')`                                           | `ABCDEF`           |
-| `CONCAT_WS()` function | Concatenation with separator (12c+) | `CONCAT_WS(',', 'A', 'B', 'C')`                                  | `A,B,C`            |
+| `LISTAGG()` function   | Aggregate with separator (11g R2+)  | `LISTAGG(col, ',') WITHIN GROUP (ORDER BY col)`                  | `A,B,C`            |
 | `XMLCONCAT()`          | XML-based concatenation             | `XMLCONCAT(XMLELEMENT(E, 'A'), XMLELEMENT(E, 'B')).GETCLOBVAL()` | Complex XML result |
 
 ### Using Double Pipe Operator
