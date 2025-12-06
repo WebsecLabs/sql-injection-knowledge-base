@@ -20,8 +20,13 @@ const HTML_ESCAPE_REGEX = /[&<>"']/g;
  * escapeHtml('<script>alert("xss")</script>')
  * // Returns: '&lt;script&gt;alert(&quot;xss&quot;)&lt;/script&gt;'
  */
-export function escapeHtml(text: unknown): string {
+export function escapeHtml(text: string | null | undefined): string {
   if (text == null) return "";
-  const str = String(text);
-  return str.replace(HTML_ESCAPE_REGEX, (char) => HTML_ESCAPE_MAP[char] || char);
+  return text.replace(HTML_ESCAPE_REGEX, (char) => {
+    const escaped = HTML_ESCAPE_MAP[char];
+    if (escaped === undefined) {
+      throw new Error(`Unmapped character in escapeHtml: ${char}`);
+    }
+    return escaped;
+  });
 }
