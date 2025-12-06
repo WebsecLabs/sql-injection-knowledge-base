@@ -1,6 +1,6 @@
 ---
-import { ViewTransitions } from "astro:transitions";
 import { getCollection, type CollectionEntry } from "astro:content";
+import { ClientRouter } from "astro:transitions";
 import NavBar from "../components/NavBar.astro";
 import Sidebar from "../components/Sidebar.astro";
 import websecLogo from "../assets/websec-logo.png";
@@ -10,7 +10,6 @@ import "../styles/main.css";
 import "../styles/navbar.css";
 import "../styles/code.css";
 
-// Import self-hosted fonts (privacy-friendly, no external requests)
 import "@fontsource/inter/400.css";
 import "@fontsource/inter/500.css";
 import "@fontsource/inter/600.css";
@@ -59,15 +58,15 @@ const extrasEntries = collections?.extrasEntries ?? (await getCollection("extras
     />
     <meta name="HandheldFriendly" content="true" />
 
-    <!-- Import main.js using Astro's component pipeline -->
     <script>
       import "/src/scripts/main.js";
     </script>
-
-    <!-- Add Astro's View Transitions for smooth page navigation -->
-    <ViewTransitions fallback="swap" />
-
-    <!-- Sidebar toggle functionality moved to /scripts/main.js -->
+    <ClientRouter />
+    <style is:global>
+      @view-transition {
+        navigation: auto;
+      }
+    </style>
   </head>
   <body>
     <NavBar

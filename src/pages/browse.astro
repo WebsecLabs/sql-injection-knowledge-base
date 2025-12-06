@@ -69,12 +69,7 @@ switch (type) {
 ---
 
 <Layout title={pageTitle} collections={collections}>
-  <div
-    class="browse-container"
-    transition:animate="slide"
-    data-base-url={import.meta.env.BASE_URL}
-    data-collection-types={JSON.stringify(COLLECTION_TYPES)}
-  >
+  <div class="browse-container" transition:animate="slide">
     <div class="browse-header" transition:animate="fade">
       <div class="breadcrumbs">
         <a href={import.meta.env.BASE_URL}>Home</a>
@@ -89,70 +84,6 @@ switch (type) {
 
     <MarkdownEntry entry={currentEntry} />
   </div>
-
-  <script>
-    import { navigate } from "astro:transitions/client";
-
-    // Enhance sidebar navigation to update URL parameters
-    document.addEventListener("DOMContentLoaded", () => {
-      const container = document.querySelector(".browse-container");
-      const baseUrl = container?.getAttribute("data-base-url") || "/";
-
-      // Parse collection types from data attribute (populated from COLLECTION_TYPES constant at build time)
-      // The data attribute is guaranteed present since it's set in the template above (line 76)
-      let collectionTypes: string[] = [];
-      try {
-        const typesAttr = container?.getAttribute("data-collection-types");
-        if (typesAttr) {
-          const parsed = JSON.parse(typesAttr);
-          if (Array.isArray(parsed) && parsed.every((t) => typeof t === "string")) {
-            collectionTypes = parsed;
-          }
-        }
-      } catch {
-        console.error("Failed to parse collection types from data attribute");
-      }
-
-      // Exit early if no collection types (shouldn't happen - defensive check only)
-      if (collectionTypes.length === 0) {
-        return;
-      }
-
-      const sidebarLinks = document.querySelectorAll(".sidebar-nav a");
-
-      sidebarLinks.forEach((link) => {
-        const href = link.getAttribute("href");
-
-        // We'll only modify the behavior if it's linking to a specific entry
-        // Use includes() to handle BASE_URL subdirectory deployments
-        if (href && collectionTypes.some((t) => href.includes(`/${t}/`))) {
-          link.addEventListener("click", (e) => {
-            e.preventDefault();
-
-            // Parse the href to get type and slug
-            let type = "";
-            let slug = "";
-
-            for (const collType of collectionTypes) {
-              const pattern = `/${collType}/`;
-              const idx = href.indexOf(pattern);
-              if (idx !== -1) {
-                type = collType;
-                // Get everything after the pattern as the slug
-                slug = href.slice(idx + pattern.length).replace(/\/$/, "");
-                break;
-              }
-            }
-
-            if (type && slug) {
-              // Navigate using Astro's API to preserve View Transitions
-              navigate(`${baseUrl}browse?type=${type}&slug=${slug}`);
-            }
-          });
-        }
-      });
-    });
-  </script>
 </Layout>
 
 <style>

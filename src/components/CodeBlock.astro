@@ -106,12 +106,13 @@ const highlightSet = new Set(highlightLines.map((n) => Number(n)));
   }
 
   .code-content .line.highlight {
-    display: inline;
+    display: inline-block;
     background-color: rgba(255, 255, 0, 0.2);
     border-left: 3px solid var(--color-accent, #f6ad55);
     margin-left: -1rem;
     padding-left: calc(1rem - 3px);
     margin-right: -1rem;
     padding-right: 1rem;
+    width: calc(100% + 2rem);
   }
 </style>

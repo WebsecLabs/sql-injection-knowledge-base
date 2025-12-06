@@ -1,7 +1,16 @@
 // Main JavaScript file for the SQL Injection Knowledge Base
 
+// Track initialization state per page to prevent duplicate runs
+let lastInitializedPath = null;
+
 // Global initialization function for sidebar
 window.initializeSidebar = function () {
+  // Prevent duplicate initialization for the same page
+  const currentPath = window.location.pathname + window.location.search;
+  if (lastInitializedPath === currentPath) {
+    return;
+  }
+  lastInitializedPath = currentPath;
   // Remove tabindex from pre elements (accessibility fix)
   removeTabindexFromPreElements();
 
@@ -139,7 +148,7 @@ window.initializeSidebar = function () {
 
 // Initialize on various events
 
-// 1. When DOM is ready
+// 1. When DOM is ready (initial page load)
 if (document.readyState === "loading") {
   document.addEventListener("DOMContentLoaded", window.initializeSidebar);
 } else {
@@ -148,13 +157,8 @@ if (document.readyState === "loading") {
 }
 
 // 2. On Astro page load (for View Transitions)
+// This fires after both initial load and client-side navigation
 document.addEventListener("astro:page-load", window.initializeSidebar);
-
-// 3. After page swap (for View Transitions)
-document.addEventListener("astro:after-swap", window.initializeSidebar);
-
-// 4. As a fallback, also run after a short delay
-setTimeout(window.initializeSidebar, 100);
 
 // Remove tabindex from pre elements
 function removeTabindexFromPreElements() {

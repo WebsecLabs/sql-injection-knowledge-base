@@ -57,8 +57,7 @@
     margin-top: 0;
   }
 
-  .container,
-  .content-container {
+  .container {
     width: 100%;
     max-width: 100%;
     padding-left: 10px;
@@ -66,12 +65,15 @@
     box-sizing: border-box;
   }
 
-  .main-content {
-    padding: 1.5rem 0;
+  .content-container {
+    width: 100%;
+    max-width: 100%;
+    padding: 0 1rem;
+    box-sizing: border-box;
   }
 
-  .content-container {
-    padding: 0 1rem;
+  .main-content {
+    padding: 1.5rem 0;
   }
 
   header .container {
