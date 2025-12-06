@@ -53,7 +53,7 @@ function processCode(rawCode: string) {
         <h4>Notes:</h4>
         <ul>
           {notes.map((note) => (
-            <li set:html={note} />
+            <li>{note}</li>
           ))}
         </ul>
       </div>

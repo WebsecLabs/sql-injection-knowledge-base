@@ -266,7 +266,6 @@ function legacyCopy(text, button) {
 document.addEventListener("DOMContentLoaded", function () {
   // Remove tabindex from pre elements on initial load
   removeTabindexFromPreElements();
-  document.dispatchEvent(new Event("astro:page-load"));
 });
 
 // CSS for copy button
