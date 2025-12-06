@@ -22,7 +22,7 @@
   "author": "WebsecLabs",
   "license": "MIT",
   "dependencies": {
-    "astro": "^5.15.9"
+    "astro": "^5.16.4"
   },
   "devDependencies": {
     "@astrojs/check": "^0.9.6",

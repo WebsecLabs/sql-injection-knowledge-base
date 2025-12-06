@@ -5,6 +5,14 @@
     "custom-property-pattern": null,
     "keyframes-name-pattern": null,
     "no-descending-specificity": null,
-    "declaration-block-no-redundant-longhand-properties": null
+    "declaration-block-no-redundant-longhand-properties": null,
+    "value-keyword-case": [
+      "lower",
+      {
+        "ignoreFunctions": ["local"],
+        "camelCaseSvgKeywords": true,
+        "ignoreKeywords": ["BlinkMacSystemFont", "Roboto", "Arial"]
+      }
+    ]
   }
 }

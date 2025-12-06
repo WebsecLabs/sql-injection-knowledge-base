@@ -17,11 +17,20 @@ const { defaultTab } = Astro.props;
 </div>
 
 <script>
+  // Track initialized containers to prevent duplicate event listeners
+  const initializedContainers = new WeakSet<Element>();
+
   // Initialize tabs with ARIA attributes and keyboard support
   function initializeTabs() {
     const tabContainers = document.querySelectorAll(".tabs");
 
     tabContainers.forEach((tabContainer) => {
+      // Skip if already initialized (prevents memory leaks from duplicate listeners)
+      if (initializedContainers.has(tabContainer)) {
+        return;
+      }
+      initializedContainers.add(tabContainer);
+
       const tabList = tabContainer.querySelector('[role="tablist"]');
       const tabs = Array.from(tabContainer.querySelectorAll(".tab-item"));
       const panels = tabContainer.querySelectorAll(".tab-content");
@@ -55,20 +64,21 @@ const { defaultTab } = Astro.props;
       });
 
       // Determine which tab to activate
+      // defaultTab prop takes precedence over existing active class
       let activeTabIndex = 0;
 
-      // Check for defaultTab prop
-      if (defaultTabId) {
-        const defaultIndex = tabs.findIndex((tab) => tab.getAttribute("data-tab") === defaultTabId);
-        if (defaultIndex !== -1) {
-          activeTabIndex = defaultIndex;
-        }
-      }
-
-      // Check for pre-existing active class
+      // First, check for pre-existing active class as fallback
       const existingActiveIndex = tabs.findIndex((tab) => tab.classList.contains("active"));
       if (existingActiveIndex !== -1) {
         activeTabIndex = existingActiveIndex;
+      }
+
+      // Then, check for defaultTab prop (takes precedence)
+      if (defaultTabId) {
+        const defaultIndex = tabs.findIndex((tab) => tab.getAttribute("data-tab") === defaultTabId);
+        if (defaultIndex !== -1 && defaultIndex < tabs.length) {
+          activeTabIndex = defaultIndex;
+        }
       }
 
       // Activate the determined tab

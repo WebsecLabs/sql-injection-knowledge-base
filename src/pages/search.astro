@@ -50,6 +50,14 @@ function escapeHtml(text: string): string {
   return text.replace(/[&<>"']/g, (char) => htmlEscapes[char]);
 }
 
+// Sanitize search query for use in page title (escaped + length-limited)
+const maxTitleQueryLength = 50;
+const sanitizedTitleQuery = escapeHtml(
+  searchQuery.length > maxTitleQueryLength
+    ? searchQuery.slice(0, maxTitleQueryLength) + "…"
+    : searchQuery
+);
+
 // Helper function to highlight search terms in text safely
 // Uses indexOf-based matching to avoid ReDoS, escapes HTML to prevent XSS
 function highlightText(text: string, query: string): string {
@@ -84,7 +92,7 @@ function highlightText(text: string, query: string): string {
 ---
 
 <Layout
-  title={`Search Results for "${searchQuery}" - SQL Injection KB`}
+  title={`Search Results for "${sanitizedTitleQuery}" - SQL Injection KB`}
   showSidebar={false}
   collections={{
     mysqlEntries,

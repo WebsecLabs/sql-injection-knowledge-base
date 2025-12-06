@@ -126,26 +126,10 @@ switch (type) {
         }
       });
 
-      // Function to load entry content via fetch
+      // Navigate to entry page
       function loadEntry(type: string, slug: string) {
-        try {
-          // Reload the page with the new parameters
-          window.location.href = `${baseUrl}browse?type=${type}&slug=${slug}`;
-        } catch (error) {
-          console.error("Error loading entry:", error);
-        }
+        window.location.href = `${baseUrl}browse?type=${type}&slug=${slug}`;
       }
-
-      // Handle back/forward browser navigation
-      window.addEventListener("popstate", () => {
-        const url = new URL(window.location.href);
-        const type = url.searchParams.get("type");
-        const slug = url.searchParams.get("slug");
-
-        if (type && slug) {
-          loadEntry(type, slug);
-        }
-      });
     });
   </script>
 </Layout>
