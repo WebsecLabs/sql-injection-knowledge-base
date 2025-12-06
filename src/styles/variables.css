@@ -9,10 +9,17 @@
   --color-border: #e2e8f0;
   --color-true: rgb(72 187 120 / 10%);
   --color-false: rgb(245 101 101 / 10%);
+  --color-mac-red: #fc8181;
+  --color-mac-yellow: #f6e05e;
+  --color-mac-green: #68d391;
   --color-code-bg: #f8fafc;
   --color-text-muted: #4a5568;
   --color-text-light: #718096;
   --color-border-light: #cbd5e0;
+  --color-search-bg: #f8f9fa;
+  --color-search-border: #ccc;
+  --color-mark-bg: #fff3cd;
+  --color-mark-text: #664d03;
   --font-sans:
     "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial,
     sans-serif;

@@ -1,5 +1,11 @@
 # SQL Injection Knowledge Base
 
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
+[![Built with Astro](https://img.shields.io/badge/Built%20with-Astro-BC52EE.svg?logo=astro)](https://astro.build/)
+[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](./src/content/extras/contributing.md)
+[![GitHub stars](https://img.shields.io/github/stars/WebsecLabs/sql-injection-knowledge-base)](https://github.com/WebsecLabs/sql-injection-knowledge-base/stargazers)
+[![GitHub last commit](https://img.shields.io/github/last-commit/WebsecLabs/sql-injection-knowledge-base)](https://github.com/WebsecLabs/sql-injection-knowledge-base/commits/main)
+
 A modern, comprehensive resource for SQL injection techniques, examples, and bypasses across multiple database platforms.
 
 ## About
@@ -48,6 +54,7 @@ Built with:
    ```
 
 4. Build for production:
+
    ```bash
    npm run build
    ```

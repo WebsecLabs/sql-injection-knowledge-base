@@ -40,12 +40,12 @@ const highlightSet = new Set(highlightLines.map((n) => Number(n)));
 <style>
   .modern-code-block {
     margin: 1.25rem 0;
-    background-color: #f8fafc;
+    background-color: var(--color-code-bg);
     border-radius: 8px;
     font-family: var(--font-mono);
     font-size: 0.9rem;
     line-height: 1.5;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    box-shadow: var(--shadow);
     overflow: hidden;
   }
 
@@ -54,15 +54,15 @@ const highlightSet = new Set(highlightLines.map((n) => Number(n)));
     justify-content: space-between;
     align-items: center;
     padding: 0.5rem 1rem;
-    background-color: #edf2f7;
-    border-bottom: 1px solid #e2e8f0;
+    background-color: var(--color-sidebar-bg);
+    border-bottom: 1px solid var(--color-border);
   }
 
   .code-label {
     font-size: 0.75rem;
     font-weight: 600;
     text-transform: uppercase;
-    color: #4a5568;
+    color: var(--color-text-muted);
   }
 
   .fake-buttons {
@@ -78,21 +78,21 @@ const highlightSet = new Set(highlightLines.map((n) => Number(n)));
   }
 
   .fake-buttons span:nth-child(1) {
-    background-color: #fc8181;
+    background-color: var(--color-mac-red);
   }
 
   .fake-buttons span:nth-child(2) {
-    background-color: #f6e05e;
+    background-color: var(--color-mac-yellow);
   }
 
   .fake-buttons span:nth-child(3) {
-    background-color: #68d391;
+    background-color: var(--color-mac-green);
   }
 
   .code-content {
     margin: 0;
     padding: 1rem;
-    background-color: white;
+    background-color: var(--color-card-bg);
     overflow-x: auto;
   }
 
@@ -108,7 +108,7 @@ const highlightSet = new Set(highlightLines.map((n) => Number(n)));
   .code-content .line.highlight {
     display: inline-block;
     background-color: rgba(255, 255, 0, 0.2);
-    border-left: 3px solid var(--color-accent, #f6ad55);
+    border-left: 3px solid var(--color-accent);
     margin-left: -1rem;
     padding-left: calc(1rem - 3px);
     margin-right: -1rem;
