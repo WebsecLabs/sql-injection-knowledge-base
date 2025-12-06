@@ -63,6 +63,12 @@ export function initSearch() {
     return result;
   }
 
+  // Escape control characters for safe text insertion
+  function escapeControlChars(text: string): string {
+    // eslint-disable-next-line no-control-regex
+    return text.replace(/[\x00-\x1F\x7F-\x9F]/g, "");
+  }
+
   // Search function
   function performSearch(query: string) {
     const normalizedQuery = query.toLowerCase().trim();
@@ -94,7 +100,7 @@ export function initSearch() {
     }
 
     // Update UI
-    searchStatus.textContent = `Found ${matches.length} ${matches.length === 1 ? "result" : "results"} for "${query}"`;
+    searchStatus.textContent = `Found ${matches.length} ${matches.length === 1 ? "result" : "results"} for "${escapeHtml(query)}"`;
 
     if (matches.length === 0) {
       noResults.style.display = "block";
@@ -119,7 +125,7 @@ export function initSearch() {
         <ul class="result-list">`;
 
       for (const entry of entries) {
-        const href = `${baseUrl}${collection}/${entry.slug}`;
+        const href = escapeHtml(`${baseUrl}${collection}/${entry.slug}`);
         html += `<li>
           <a href="${href}" class="result-card">
             <div class="result-title">${highlightText(entry.title, normalizedQuery)}</div>
@@ -148,7 +154,7 @@ export function initSearch() {
   if (queryParam) {
     const maxLen = 50;
     const truncated = queryParam.length > maxLen ? queryParam.slice(0, maxLen) + "…" : queryParam;
-    document.title = `Search Results for "${truncated}" - SQL Injection KB`;
+    document.title = `Search Results for "${escapeControlChars(truncated)}" - SQL Injection KB`;
   }
 }
 
