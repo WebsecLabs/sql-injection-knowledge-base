@@ -1,0 +1,82 @@
+---
+import { type CollectionEntry } from "astro:content";
+
+interface Props {
+  category: string;
+  entries: CollectionEntry<"mysql" | "mssql" | "oracle" | "extras">[];
+  baseUrl: string;
+  section: string;
+  isActivePath: (section: string, slug: string) => boolean;
+}
+
+const { category, entries, baseUrl, section, isActivePath } = Astro.props;
+---
+
+<div class="dropdown-submenu">
+  <div class="dropdown-header">{category}</div>
+  <ul class="dropdown-list">
+    {
+      entries.map((entry) => (
+        <li>
+          <a
+            href={`${baseUrl}${section}/${entry.slug}`}
+            class={isActivePath(section, entry.slug) ? "active" : ""}
+            aria-label={entry.data.title || `${section.toUpperCase()} ${entry.slug}`}
+          >
+            {entry.data.title || entry.slug}
+          </a>
+        </li>
+      ))
+    }
+  </ul>
+</div>
+
+<style>
+  .dropdown-submenu {
+    border-bottom: 1px solid #f0f0f0;
+  }
+
+  .dropdown-submenu:last-child {
+    border-bottom: none;
+  }
+
+  .dropdown-header {
+    padding: 0.75rem 1rem;
+    font-weight: 600;
+    color: #2d3748;
+    font-size: 0.85rem;
+    background-color: #f8fafc;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+  }
+
+  .dropdown-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+
+  .dropdown-list li a {
+    display: block;
+    padding: 0.75rem 1rem;
+    color: #4a5568;
+    text-decoration: none;
+    transition: all 0.2s ease;
+    font-size: 0.95rem;
+    border-left: 3px solid transparent;
+  }
+
+  .dropdown-list li a:hover {
+    background-color: #f7fafc;
+    color: var(--color-primary);
+    border-left-color: var(--color-primary);
+    padding-left: 1.25rem;
+  }
+
+  .dropdown-list li a.active {
+    background-color: #ebf8ff;
+    color: var(--color-primary);
+    border-left-color: var(--color-primary);
+    font-weight: 500;
+  }
+</style>

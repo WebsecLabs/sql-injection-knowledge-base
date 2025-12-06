@@ -113,18 +113,18 @@ const activeSection = getActiveSection(currentPath);
   function initSidebar() {
     // Add click handlers to sidebar headings
     document.querySelectorAll(".sidebar-heading").forEach((heading) => {
-      heading.removeEventListener("click", toggleSection);
-      heading.addEventListener("click", toggleSection);
+      heading.removeEventListener("click", toggleSection as EventListener);
+      heading.addEventListener("click", toggleSection as EventListener);
 
-      heading.removeEventListener("keydown", handleKeyDown);
-      heading.addEventListener("keydown", handleKeyDown);
+      heading.removeEventListener("keydown", handleKeyDown as EventListener);
+      heading.addEventListener("keydown", handleKeyDown as EventListener);
     });
 
     // Search functionality
     const searchInput = document.getElementById("sidebar-search-input");
     if (searchInput) {
-      searchInput.removeEventListener("input", handleSearch);
-      searchInput.addEventListener("input", handleSearch);
+      searchInput.removeEventListener("input", handleSearch as EventListener);
+      searchInput.addEventListener("input", handleSearch as EventListener);
     }
   }
 

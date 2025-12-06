@@ -93,7 +93,7 @@ const { defaultTab } = Astro.props;
 
       // Add keyboard navigation
       if (tabList) {
-        tabList.addEventListener("keydown", (e: KeyboardEvent) => {
+        tabList.addEventListener("keydown", ((e: KeyboardEvent) => {
           const currentIndex = tabs.findIndex((tab) => tab === document.activeElement);
           if (currentIndex === -1) return;
 
@@ -128,7 +128,7 @@ const { defaultTab } = Astro.props;
           // Move focus and activate the new tab
           (tabs[newIndex] as HTMLElement).focus();
           activateTab(tabContainer, tabs, panels, newIndex);
-        });
+        }) as EventListener);
       }
     });
   }

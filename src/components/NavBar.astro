@@ -1,6 +1,8 @@
 ---
 import { type CollectionEntry } from "astro:content";
 import websecLogo from "../assets/websec-logo.png";
+import NavDropdown from "./NavDropdown.astro";
+import { COLLECTION_LABELS } from "../utils/constants";
 
 interface Props {
   mysqlEntries?: CollectionEntry<"mysql">[];
@@ -17,9 +19,11 @@ const {
   extrasEntries = [],
 } = Astro.props;
 
+type AnyEntry = CollectionEntry<"mysql" | "mssql" | "oracle" | "extras">;
+
 // Helper function to group entries by category
-function groupByCategory(entries) {
-  return entries.reduce((acc, entry) => {
+function groupByCategory(entries: AnyEntry[]) {
+  return entries.reduce((acc: Record<string, AnyEntry[]>, entry) => {
     const category = entry.data.category;
     if (!acc[category]) {
       acc[category] = [];
@@ -30,27 +34,26 @@ function groupByCategory(entries) {
 }
 
 // Group entries by category
-const mysqlByCategory = groupByCategory(mysqlEntries);
-const mssqlByCategory = groupByCategory(mssqlEntries);
-const oracleByCategory = groupByCategory(oracleEntries);
+const entriesByCategory = {
+  mysql: groupByCategory(mysqlEntries),
+  mssql: groupByCategory(mssqlEntries),
+  oracle: groupByCategory(oracleEntries),
+};
 
 // Sort each category's entries by order
-Object.keys(mysqlByCategory).forEach((category) => {
-  mysqlByCategory[category].sort((a, b) => a.data.order - b.data.order);
-});
-
-Object.keys(mssqlByCategory).forEach((category) => {
-  mssqlByCategory[category].sort((a, b) => a.data.order - b.data.order);
-});
-
-Object.keys(oracleByCategory).forEach((category) => {
-  oracleByCategory[category].sort((a, b) => a.data.order - b.data.order);
+(Object.keys(entriesByCategory) as Array<keyof typeof entriesByCategory>).forEach((type) => {
+  const categoryGroup = entriesByCategory[type];
+  Object.keys(categoryGroup).forEach((category) => {
+    categoryGroup[category].sort((a: AnyEntry, b: AnyEntry) => a.data.order - b.data.order);
+  });
 });
 
 // Sort categories alphabetically
-const mysqlCategories = Object.keys(mysqlByCategory).sort();
-const mssqlCategories = Object.keys(mssqlByCategory).sort();
-const oracleCategories = Object.keys(oracleByCategory).sort();
+const categoriesByType = {
+  mysql: Object.keys(entriesByCategory.mysql).sort(),
+  mssql: Object.keys(entriesByCategory.mssql).sort(),
+  oracle: Object.keys(entriesByCategory.oracle).sort(),
+};
 
 // Filter out external links from extras
 const resourceLinks = extrasEntries.filter((entry) => entry.data.title === "External Resources");
@@ -113,128 +116,39 @@ function isActivePath(section: string, slug: string): boolean {
       </div>
 
       <ul class="nav-links">
-        <li class="nav-item dropdown">
-          <button class="nav-link dropdown-toggle">
-            MySQL
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              width="12"
-              height="12"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-            >
-              <polyline points="6 9 12 15 18 9"></polyline>
-            </svg>
-          </button>
-          <div class="dropdown-menu">
-            {
-              mysqlCategories.map((category) => (
-                <div class="dropdown-submenu">
-                  <div class="dropdown-header">{category}</div>
-                  <ul class="dropdown-list">
-                    {mysqlByCategory[category].map((entry) => (
-                      <li>
-                        <a
-                          href={`${import.meta.env.BASE_URL}mysql/${entry.slug}`}
-                          class={isActivePath("mysql", entry.slug) ? "active" : ""}
-                          aria-label={entry.data.title || `MySQL ${entry.slug}`}
-                        >
-                          {entry.data.title || entry.slug}
-                        </a>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              ))
-            }
-          </div>
-        </li>
-
-        <li class="nav-item dropdown">
-          <button class="nav-link dropdown-toggle">
-            MSSQL
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              width="12"
-              height="12"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-            >
-              <polyline points="6 9 12 15 18 9"></polyline>
-            </svg>
-          </button>
-          <div class="dropdown-menu">
-            {
-              mssqlCategories.map((category) => (
-                <div class="dropdown-submenu">
-                  <div class="dropdown-header">{category}</div>
-                  <ul class="dropdown-list">
-                    {mssqlByCategory[category].map((entry) => (
-                      <li>
-                        <a
-                          href={`${import.meta.env.BASE_URL}mssql/${entry.slug}`}
-                          class={isActivePath("mssql", entry.slug) ? "active" : ""}
-                          aria-label={entry.data.title || `MSSQL ${entry.slug}`}
-                        >
-                          {entry.data.title || entry.slug}
-                        </a>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              ))
-            }
-          </div>
-        </li>
-
-        <li class="nav-item dropdown">
-          <button class="nav-link dropdown-toggle">
-            Oracle
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              width="12"
-              height="12"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-            >
-              <polyline points="6 9 12 15 18 9"></polyline>
-            </svg>
-          </button>
-          <div class="dropdown-menu">
-            {
-              oracleCategories.map((category) => (
-                <div class="dropdown-submenu">
-                  <div class="dropdown-header">{category}</div>
-                  <ul class="dropdown-list">
-                    {oracleByCategory[category].map((entry) => (
-                      <li>
-                        <a
-                          href={`${import.meta.env.BASE_URL}oracle/${entry.slug}`}
-                          class={isActivePath("oracle", entry.slug) ? "active" : ""}
-                          aria-label={entry.data.title || `Oracle ${entry.slug}`}
-                        >
-                          {entry.data.title || entry.slug}
-                        </a>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              ))
-            }
-          </div>
-        </li>
+        {
+          (["mysql", "mssql", "oracle"] as const).map((type) => (
+            <li class="nav-item dropdown">
+              <button class="nav-link dropdown-toggle">
+                {COLLECTION_LABELS[type]}
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="12"
+                  height="12"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                >
+                  <polyline points="6 9 12 15 18 9" />
+                </svg>
+              </button>
+              <div class="dropdown-menu">
+                {categoriesByType[type].map((category) => (
+                  <NavDropdown
+                    category={category}
+                    entries={entriesByCategory[type][category]}
+                    baseUrl={import.meta.env.BASE_URL}
+                    section={type}
+                    isActivePath={isActivePath}
+                  />
+                ))}
+              </div>
+            </li>
+          ))
+        }
 
         <li class="nav-item dropdown">
           <button class="nav-link dropdown-toggle">
@@ -345,7 +259,7 @@ function isActivePath(section: string, slug: string): boolean {
         }
 
         // Add fresh event listener
-        newMobileToggle.addEventListener("click", function (e) {
+        newMobileToggle.addEventListener("click", function (this: HTMLButtonElement, e) {
           e.preventDefault();
           e.stopPropagation();
           const isExpanded = this.getAttribute("aria-expanded") === "true";
@@ -396,11 +310,11 @@ function isActivePath(section: string, slug: string): boolean {
           });
         } else {
           // On desktop, show on hover
-          dropdown.addEventListener("mouseenter", function () {
+          dropdown.addEventListener("mouseenter", function (this: Element) {
             this.classList.add("show");
           });
 
-          dropdown.addEventListener("mouseleave", function () {
+          dropdown.addEventListener("mouseleave", function (this: Element) {
             this.classList.remove("show");
           });
 
@@ -786,65 +700,28 @@ function isActivePath(section: string, slug: string): boolean {
     right: 0;
   }
 
-  .dropdown-submenu {
-    border-bottom: 1px solid #f0f0f0;
-  }
-
-  .dropdown-submenu:last-child {
-    border-bottom: none;
-  }
-
-  .dropdown-header {
-    padding: 0.75rem 1rem;
-    font-weight: 600;
-    color: #2d3748;
-    font-size: 0.9rem;
-    background-color: #f8fafc;
-  }
-
-  .dropdown-list {
-    list-style: none;
-    padding: 0.5rem 0;
-    margin: 0;
-  }
-
-  .dropdown-list a {
-    display: block;
-    padding: 0.5rem 1rem;
-    color: #4a5568;
-    text-decoration: none;
-    transition: background-color 0.2s ease;
-    font-size: 0.9rem;
-  }
-
-  .dropdown-list a:hover,
-  .dropdown-list a.active {
-    background-color: #f7fafc;
-    color: var(--color-primary);
-  }
-
   .dropdown-item {
     display: block;
-    padding: 0.5rem 1rem; /* Match the padding of dropdown-list a */
+    padding: 0.75rem 1rem;
     color: #4a5568;
     text-decoration: none;
-    transition: background-color 0.2s ease;
-    font-size: 0.9rem; /* Match the font-size of dropdown-list a */
+    transition: all 0.2s ease;
+    font-size: 0.95rem;
+    border-left: 3px solid transparent;
   }
 
   .dropdown-item:hover {
     background-color: #f7fafc;
+    color: var(--color-primary);
+    border-left-color: var(--color-primary);
+    padding-left: 1.25rem;
   }
 
   .dropdown-item.active {
-    background-color: #f7fafc;
+    background-color: #ebf8ff;
     color: var(--color-primary);
+    border-left-color: var(--color-primary);
     font-weight: 500;
-  }
-
-  .dropdown-item-link {
-    color: #4a5568;
-    text-decoration: none;
   }
 
   .dropdown-divider {
@@ -852,8 +729,6 @@ function isActivePath(section: string, slug: string): boolean {
     background-color: #e2e8f0;
     margin: 0.5rem 0;
   }
-
-  /* Navbar overlay for mobile */
 
   @media (max-width: 991px) {
     .container {
@@ -868,25 +743,21 @@ function isActivePath(section: string, slug: string): boolean {
       position: fixed;
       top: 70px;
       left: 0;
-      right: 0;
+      width: 100%;
+      height: calc(100vh - 70px);
+      background-color: white;
       flex-direction: column;
       align-items: flex-start;
-      background-color: white;
-      padding: 1rem;
+      padding: 1.5rem;
+      transform: translateX(100%);
+      transition: transform 0.3s ease-in-out;
+      overflow-y: auto;
+      gap: 1rem;
       box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-      visibility: hidden;
-      opacity: 0;
-      transform: translateY(-10px);
-      transition: all 0.3s ease;
-      z-index: 999;
-      /* Ensure dropdowns aren't clipped */
-      overflow: visible !important;
     }
 
     .navbar-menu.active {
-      visibility: visible;
-      opacity: 1;
-      transform: translateY(0);
+      transform: translateX(0);
     }
 
     .search-container {
@@ -897,8 +768,9 @@ function isActivePath(section: string, slug: string): boolean {
 
     #search-input {
       width: 100%;
-      background-color: #f1f5f9;
-      color: var(--color-text);
+      background-color: #f7fafc;
+      color: #2d3748;
+      border: 1px solid #e2e8f0;
     }
 
     #search-input::placeholder {
@@ -906,9 +778,9 @@ function isActivePath(section: string, slug: string): boolean {
     }
 
     #search-input:focus {
-      width: 100%;
       background-color: white;
-      box-shadow: 0 0 0 2px rgba(49, 130, 206, 0.2);
+      box-shadow: 0 0 0 2px rgba(66, 153, 225, 0.5);
+      width: 100%;
     }
 
     .search-icon {
@@ -918,62 +790,61 @@ function isActivePath(section: string, slug: string): boolean {
     .nav-links {
       flex-direction: column;
       width: 100%;
-      /* Ensure dropdowns aren't clipped */
-      overflow: visible !important;
+      gap: 0;
     }
 
     .nav-item {
-      /* Ensure dropdowns aren't clipped */
-      overflow: visible !important;
-      position: relative;
+      width: 100%;
+      border-bottom: 1px solid #e2e8f0;
     }
 
     .nav-link {
-      height: auto;
-      padding: 1rem;
-      justify-content: space-between;
+      color: #2d3748;
       width: 100%;
-      color: var(--color-text);
+      justify-content: space-between;
+      padding: 1rem 0;
+      height: auto;
     }
 
     .nav-link:hover {
-      background-color: #f8fafc;
+      background-color: transparent;
+      color: var(--color-primary);
+    }
+
+    .github-link svg {
+      stroke: #2d3748;
+    }
+
+    .nav-link:hover svg {
+      stroke: var(--color-primary);
     }
 
     .dropdown-menu {
       position: static;
       width: 100%;
       box-shadow: none;
+      visibility: visible;
+      opacity: 1;
+      transform: none;
       max-height: 0;
       overflow: hidden;
-      margin-top: 0;
-      margin-bottom: 0;
-      border-left: 2px solid #e2e8f0;
-      margin-left: 1rem;
-      border-radius: 0;
-      transform: none;
-      transition:
-        max-height 0.3s ease,
-        opacity 0.2s ease;
-      /* Mobile dropdown should start visible but with 0 height */
-      visibility: visible !important;
-      opacity: 1 !important;
-      /* Ensure background color is set */
-      background-color: white;
+      transition: max-height 0.3s ease-out;
+      background-color: #f8fafc;
+      padding: 0;
     }
 
     .dropdown.show .dropdown-menu {
-      max-height: 1000px;
-      visibility: visible;
-      opacity: 1;
-      margin-top: 0.5rem;
-      margin-bottom: 0.5rem;
-      display: block !important;
-      overflow: visible !important;
+      max-height: 1000px; /* Large enough value */
+      padding: 0.5rem 0;
     }
 
-    .github-link svg {
-      stroke: var(--color-primary);
+    .dropdown-submenu {
+      background-color: transparent;
+    }
+
+    .dropdown-header {
+      background-color: transparent;
+      color: #718096;
     }
   }
 </style>

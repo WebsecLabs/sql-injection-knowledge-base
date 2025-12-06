@@ -2,12 +2,22 @@
 import { getCollection } from "astro:content";
 import Layout from "../layouts/Layout.astro";
 import EntryList from "../components/EntryList.astro";
+import Tabs from "../components/Tabs.astro";
+import { COLLECTION_TYPES, COLLECTION_LABELS } from "../utils/constants";
 
 // Get entries from all collections
 const mysqlEntries = await getCollection("mysql");
 const mssqlEntries = await getCollection("mssql");
 const oracleEntries = await getCollection("oracle");
 const extrasEntries = await getCollection("extras");
+
+// Map entries to a convenient object
+const entries = {
+  mysql: mysqlEntries,
+  mssql: mssqlEntries,
+  oracle: oracleEntries,
+  extras: extrasEntries,
+};
 
 // Count total entries
 const totalEntries =
@@ -74,98 +84,31 @@ const activeDatabaseCount = [
   </div>
 
   <div class="database-tabs" transition:animate="slide">
-    <div class="tab-container">
-      <ul class="tab-list" role="tablist" transition:animate="fade">
-        <li class="tab" role="tab" aria-selected="true" data-tab="mysql">MySQL</li>
-        <li class="tab" role="tab" aria-selected="false" data-tab="mssql">MSSQL</li>
-        <li class="tab" role="tab" aria-selected="false" data-tab="oracle">Oracle</li>
-        <li class="tab" role="tab" aria-selected="false" data-tab="extras">Extras</li>
-      </ul>
-    </div>
+    <Tabs defaultTab="mysql">
+      <Fragment slot="tab-list">
+        {
+          COLLECTION_TYPES.map((type) => (
+            <li class="tab-item" data-tab={type}>
+              {COLLECTION_LABELS[type]}
+            </li>
+          ))
+        }
+      </Fragment>
 
-    <div class="tab-panels">
-      <div class="tab-panel active" data-panel="mysql">
-        <EntryList entries={mysqlEntries} title="MySQL" collectionType="mysql" />
-      </div>
-
-      <div class="tab-panel" data-panel="mssql">
-        <EntryList entries={mssqlEntries} title="MSSQL" collectionType="mssql" />
-      </div>
-
-      <div class="tab-panel" data-panel="oracle">
-        <EntryList entries={oracleEntries} title="Oracle" collectionType="oracle" />
-      </div>
-
-      <div class="tab-panel" data-panel="extras">
-        <EntryList entries={extrasEntries} title="Additional Resources" collectionType="extras" />
-      </div>
-    </div>
+      {
+        COLLECTION_TYPES.map((type) => (
+          <div class="tab-content" data-tab={type}>
+            <EntryList
+              entries={entries[type]}
+              title={type === "extras" ? "Additional Resources" : COLLECTION_LABELS[type]}
+              collectionType={type}
+            />
+          </div>
+        ))
+      }
+    </Tabs>
   </div>
 </Layout>
-
-<script>
-  // Initialize tab functionality
-  function initializeTabs() {
-    const tabs = document.querySelectorAll(".tab");
-
-    // Check URL for tab parameter
-    const urlParams = new URLSearchParams(window.location.search);
-    const tabParam = urlParams.get("tab");
-
-    // Function to select a tab
-    function selectTab(tabId) {
-      // Re-query DOM elements to ensure we have the current ones
-      const currentTabs = document.querySelectorAll(".tab");
-      const currentPanels = document.querySelectorAll(".tab-panel");
-
-      // Deactivate all tabs and panels
-      currentTabs.forEach((tab) => tab.setAttribute("aria-selected", "false"));
-      currentPanels.forEach((panel) => panel.classList.remove("active"));
-
-      // Activate the selected tab and panel
-      const selectedTab = document.querySelector(`[data-tab="${tabId}"]`);
-      const selectedPanel = document.querySelector(`[data-panel="${tabId}"]`);
-
-      if (selectedTab && selectedPanel) {
-        selectedTab.setAttribute("aria-selected", "true");
-        selectedPanel.classList.add("active");
-      }
-    }
-
-    // Initialize tabs
-    if (tabParam && document.querySelector(`[data-tab="${tabParam}"]`)) {
-      selectTab(tabParam);
-    }
-
-    // Add click handler to tabs
-    tabs.forEach((tab) => {
-      // Remove existing event listeners by cloning
-      const newTab = tab.cloneNode(true) as HTMLElement;
-      if (tab.parentNode) {
-        tab.parentNode.replaceChild(newTab, tab);
-      }
-
-      // Add event listener to new tab
-      newTab.addEventListener("click", () => {
-        const tabId = newTab.getAttribute("data-tab");
-        if (tabId) {
-          selectTab(tabId);
-
-          // Update URL without page reload
-          const url = new URL(window.location.href);
-          url.searchParams.set("tab", tabId);
-          window.history.pushState({}, "", url);
-        }
-      });
-    });
-  }
-
-  // Run initialization on DOMContentLoaded
-  document.addEventListener("DOMContentLoaded", initializeTabs);
-
-  // Run initialization after Astro View Transitions
-  document.addEventListener("astro:page-load", initializeTabs);
-</script>
 
 <style>
   .home-intro {
@@ -188,7 +131,7 @@ const activeDatabaseCount = [
     font-size: 1.2rem;
     max-width: 800px;
     margin: 1rem auto 2rem;
-    color: #4a5568;
+    color: var(--color-text-muted);
   }
 
   .stats {
@@ -253,7 +196,7 @@ const activeDatabaseCount = [
 
   .stat-label {
     font-size: 1rem;
-    color: #4a5568;
+    color: var(--color-text-muted);
     font-weight: 500;
     line-height: 1.3;
     max-width: 140px;
@@ -263,12 +206,8 @@ const activeDatabaseCount = [
     margin-top: 2rem;
   }
 
-  .tab-container {
-    position: relative;
-    margin-bottom: 2rem;
-  }
-
-  .tab-list {
+  /* Styles for the Tabs component integration */
+  :global(.tab-list) {
     display: flex;
     list-style: none;
     padding: 0;
@@ -278,41 +217,37 @@ const activeDatabaseCount = [
     scrollbar-width: none;
   }
 
-  .tab-list::-webkit-scrollbar {
+  :global(.tab-list::-webkit-scrollbar) {
     display: none;
   }
 
-  .tab {
+  :global(.tab-item) {
     padding: 1rem 1.5rem;
     cursor: pointer;
     font-weight: 600;
-    color: #4a5568;
+    color: var(--color-text-muted);
     border-bottom: 3px solid transparent;
     transition: all 0.3s ease;
     white-space: nowrap;
   }
 
-  .tab:hover {
+  :global(.tab-item:hover) {
     color: var(--color-primary);
     background-color: rgba(66, 153, 225, 0.05);
   }
 
-  .tab[aria-selected="true"] {
+  :global(.tab-item.active) {
     color: var(--color-primary);
     border-bottom-color: var(--color-primary);
   }
 
-  .tab-panels {
-    position: relative;
+  :global(.tab-content) {
+    display: none;
+    animation: fadeIn 0.5s ease;
     margin-top: 1rem;
   }
 
-  .tab-panel {
-    display: none;
-    animation: fadeIn 0.5s ease;
-  }
-
-  .tab-panel.active {
+  :global(.tab-content.active) {
     display: block;
   }
 
@@ -371,27 +306,9 @@ const activeDatabaseCount = [
       justify-content: center;
     }
 
-    .tab {
+    :global(.tab-item) {
       padding: 0.75rem 1rem;
       font-size: 0.9rem;
-    }
-
-    .tab-list {
-      padding-bottom: 2px;
-    }
-
-    /* Make tabs scrollable on mobile */
-    .tab-container {
-      position: relative;
-      width: 100%;
-      overflow-x: auto;
-      -webkit-overflow-scrolling: touch;
-    }
-
-    .tab-list {
-      flex-wrap: nowrap;
-      width: max-content;
-      min-width: 100%;
     }
   }
 </style>

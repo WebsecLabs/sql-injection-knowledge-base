@@ -6,20 +6,23 @@ import Layout from "../layouts/Layout.astro";
 const searchQuery = Astro.url.searchParams.get("q") || "";
 const normalizedQuery = searchQuery.toLowerCase().trim();
 
-// Function to check if an entry matches the search query
-function matchesSearch(entry) {
+import { type CollectionEntry } from "astro:content";
+
+// Helper function to check if an entry matches the search query
+function matchesSearch(entry: CollectionEntry<"mysql" | "mssql" | "oracle" | "extras">) {
+  // Use the outer normalizedQuery
   if (!normalizedQuery) return false;
 
-  // Search in title, description, and content
   const titleMatch = entry.data.title.toLowerCase().includes(normalizedQuery);
-  const descMatch = entry.data.description?.toLowerCase().includes(normalizedQuery) || false;
+  const descriptionMatch = entry.data.description?.toLowerCase().includes(normalizedQuery);
+  const contentMatch = entry.body?.toLowerCase().includes(normalizedQuery) || false; // Added content search
   const tagsMatch =
-    entry.data.tags?.some((tag) => tag.toLowerCase().includes(normalizedQuery)) || false;
-  const categoryMatch = entry.data.category.toLowerCase().includes(normalizedQuery);
+    entry.data.tags?.some((tag: string) => tag.toLowerCase().includes(normalizedQuery)) || false;
+  const categoryMatch = entry.data.category.toLowerCase().includes(normalizedQuery); // Kept category search
 
-  // Search in metadata
+  // Search in metadata (this comment was in the original, keeping it)
 
-  return titleMatch || descMatch || tagsMatch || categoryMatch;
+  return titleMatch || descriptionMatch || contentMatch || tagsMatch || categoryMatch;
 }
 
 // Load all entries
