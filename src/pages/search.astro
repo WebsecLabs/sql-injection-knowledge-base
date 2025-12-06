@@ -2,100 +2,62 @@
 import { getCollection } from "astro:content";
 import Layout from "../layouts/Layout.astro";
 
-// Get the search query from URL
-const searchQuery = Astro.url.searchParams.get("q") || "";
-const normalizedQuery = searchQuery.toLowerCase().trim();
-
-import { type CollectionEntry } from "astro:content";
-
-// Helper function to check if an entry matches the search query
-function matchesSearch(entry: CollectionEntry<"mysql" | "mssql" | "oracle" | "extras">) {
-  // Use the outer normalizedQuery
-  if (!normalizedQuery) return false;
-
-  const titleMatch = entry.data.title.toLowerCase().includes(normalizedQuery);
-  const descriptionMatch = entry.data.description?.toLowerCase().includes(normalizedQuery);
-  const contentMatch = entry.body?.toLowerCase().includes(normalizedQuery) || false; // Added content search
-  const tagsMatch =
-    entry.data.tags?.some((tag: string) => tag.toLowerCase().includes(normalizedQuery)) || false;
-  const categoryMatch = entry.data.category.toLowerCase().includes(normalizedQuery); // Kept category search
-
-  // Search in metadata (this comment was in the original, keeping it)
-
-  return titleMatch || descriptionMatch || contentMatch || tagsMatch || categoryMatch;
-}
-
-// Load all entries
+// Load all entries at build time for client-side search
 const mysqlEntries = await getCollection("mysql");
 const mssqlEntries = await getCollection("mssql");
 const oracleEntries = await getCollection("oracle");
 const extrasEntries = await getCollection("extras");
 
-// Filter entries based on search query
-const matchingMysql = mysqlEntries.filter(matchesSearch);
-const matchingMssql = mssqlEntries.filter(matchesSearch);
-const matchingOracle = oracleEntries.filter(matchesSearch);
-const matchingExtras = extrasEntries.filter(matchesSearch);
-
-// Total results
-const totalResults =
-  matchingMysql.length + matchingMssql.length + matchingOracle.length + matchingExtras.length;
-
-// Helper function to escape HTML special characters (prevents XSS)
-function escapeHtml(text: string): string {
-  const htmlEscapes: Record<string, string> = {
-    "&": "&amp;",
-    "<": "&lt;",
-    ">": "&gt;",
-    '"': "&quot;",
-    "'": "&#39;",
-  };
-  return text.replace(/[&<>"']/g, (char) => htmlEscapes[char]);
+// Prepare searchable data for client-side (minimal data to reduce payload)
+interface SearchEntry {
+  slug: string;
+  title: string;
+  description?: string;
+  category: string;
+  tags?: string[];
+  collection: string;
 }
 
-// Sanitize search query for use in page title (escaped + length-limited)
-const maxTitleQueryLength = 50;
-const sanitizedTitleQuery = escapeHtml(
-  searchQuery.length > maxTitleQueryLength
-    ? searchQuery.slice(0, maxTitleQueryLength) + "…"
-    : searchQuery
-);
+const searchData: SearchEntry[] = [
+  ...mysqlEntries.map((e) => ({
+    slug: e.slug,
+    title: e.data.title,
+    description: e.data.description,
+    category: e.data.category,
+    tags: e.data.tags,
+    collection: "mysql",
+  })),
+  ...mssqlEntries.map((e) => ({
+    slug: e.slug,
+    title: e.data.title,
+    description: e.data.description,
+    category: e.data.category,
+    tags: e.data.tags,
+    collection: "mssql",
+  })),
+  ...oracleEntries.map((e) => ({
+    slug: e.slug,
+    title: e.data.title,
+    description: e.data.description,
+    category: e.data.category,
+    tags: e.data.tags,
+    collection: "oracle",
+  })),
+  ...extrasEntries.map((e) => ({
+    slug: e.slug,
+    title: e.data.title,
+    description: e.data.description,
+    category: e.data.category,
+    tags: e.data.tags,
+    collection: "extras",
+  })),
+];
 
-// Helper function to highlight search terms in text safely
-// Uses indexOf-based matching to avoid ReDoS, escapes HTML to prevent XSS
-function highlightText(text: string, query: string): string {
-  if (!query || !text) return escapeHtml(text || "");
-
-  const escapedText = escapeHtml(text);
-  const lowerText = escapedText.toLowerCase();
-  const lowerQuery = query.toLowerCase();
-
-  // Find all match positions using indexOf (no regex, no ReDoS risk)
-  const matches: Array<{ start: number; end: number }> = [];
-  let pos = 0;
-  while ((pos = lowerText.indexOf(lowerQuery, pos)) !== -1) {
-    matches.push({ start: pos, end: pos + lowerQuery.length });
-    pos += lowerQuery.length;
-  }
-
-  if (matches.length === 0) return escapedText;
-
-  // Build result with <mark> tags around matches
-  let result = "";
-  let lastEnd = 0;
-  for (const match of matches) {
-    result += escapedText.slice(lastEnd, match.start);
-    result += "<mark>" + escapedText.slice(match.start, match.end) + "</mark>";
-    lastEnd = match.end;
-  }
-  result += escapedText.slice(lastEnd);
-
-  return result;
-}
+const baseUrl = import.meta.env.BASE_URL;
 ---
 
 <Layout
-  title={`Search Results for "${sanitizedTitleQuery}" - SQL Injection KB`}
+  title="Search - SQL Injection KB"
   showSidebar={false}
   collections={{
     mysqlEntries,
@@ -104,172 +66,193 @@ function highlightText(text: string, query: string): string {
     extrasEntries,
   }}
 >
-  <div class="search-results">
+  <div
+    class="search-results"
+    data-base-url={baseUrl}
+    data-search-entries={JSON.stringify(searchData)}
+  >
     <h1>Search Results</h1>
 
-    {
-      normalizedQuery ? (
-        <>
-          <div class="search-info">
-            <p>
-              Found {totalResults} {totalResults === 1 ? "result" : "results"} for "{searchQuery}"
-            </p>
-            <div class="search-form">
-              <form action={`${import.meta.env.BASE_URL}search`} method="get">
-                <input
-                  type="text"
-                  name="q"
-                  placeholder="Search again..."
-                  value={searchQuery}
-                  aria-label="Search"
-                />
-                <button type="submit">Search</button>
-              </form>
-            </div>
-          </div>
+    <div class="search-info">
+      <p id="search-status">Loading...</p>
+      <div class="search-form">
+        <form id="search-form" action={`${baseUrl}search`} method="get">
+          <input
+            type="text"
+            id="search-input"
+            name="q"
+            placeholder="Search..."
+            aria-label="Search"
+          />
+          <button type="submit">Search</button>
+        </form>
+      </div>
+    </div>
 
-          {totalResults === 0 && (
-            <div class="no-results">
-              <p>No entries found matching your query. Please try a different search term.</p>
-            </div>
-          )}
+    <div id="no-results" class="no-results" style="display: none;">
+      <p>No entries found matching your query. Please try a different search term.</p>
+    </div>
 
-          {matchingMysql.length > 0 && (
-            <div class="result-section">
-              <h2>MySQL ({matchingMysql.length})</h2>
-              <ul class="result-list">
-                {matchingMysql.map((entry) => (
-                  <li>
-                    <a href={`${import.meta.env.BASE_URL}mysql/${entry.slug}`} class="result-card">
-                      <div
-                        class="result-title"
-                        set:html={highlightText(entry.data.title, normalizedQuery)}
-                      />
-                      <div class="result-category">{entry.data.category}</div>
-                      {entry.data.description && (
-                        <div
-                          class="result-description"
-                          set:html={highlightText(entry.data.description, normalizedQuery)}
-                        />
-                      )}
-                      {entry.data.tags && (
-                        <div class="result-tags">
-                          {entry.data.tags.map((tag) => (
-                            <span class="tag">{tag}</span>
-                          ))}
-                        </div>
-                      )}
-                    </a>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          )}
+    <div id="initial-search" class="search-form initial-search" style="display: none;">
+      <p>Enter a search term to find entries across all database types</p>
+    </div>
 
-          {matchingMssql.length > 0 && (
-            <div class="result-section">
-              <h2>MSSQL ({matchingMssql.length})</h2>
-              <ul class="result-list">
-                {matchingMssql.map((entry) => (
-                  <li>
-                    <a href={`${import.meta.env.BASE_URL}mssql/${entry.slug}`} class="result-card">
-                      <div
-                        class="result-title"
-                        set:html={highlightText(entry.data.title, normalizedQuery)}
-                      />
-                      <div class="result-category">{entry.data.category}</div>
-                      {entry.data.description && (
-                        <div
-                          class="result-description"
-                          set:html={highlightText(entry.data.description, normalizedQuery)}
-                        />
-                      )}
-                      {entry.data.tags && (
-                        <div class="result-tags">
-                          {entry.data.tags.map((tag) => (
-                            <span class="tag">{tag}</span>
-                          ))}
-                        </div>
-                      )}
-                    </a>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          )}
-
-          {matchingOracle.length > 0 && (
-            <div class="result-section">
-              <h2>Oracle ({matchingOracle.length})</h2>
-              <ul class="result-list">
-                {matchingOracle.map((entry) => (
-                  <li>
-                    <a href={`${import.meta.env.BASE_URL}oracle/${entry.slug}`} class="result-card">
-                      <div
-                        class="result-title"
-                        set:html={highlightText(entry.data.title, normalizedQuery)}
-                      />
-                      <div class="result-category">{entry.data.category}</div>
-                      {entry.data.description && (
-                        <div
-                          class="result-description"
-                          set:html={highlightText(entry.data.description, normalizedQuery)}
-                        />
-                      )}
-                      {entry.data.tags && (
-                        <div class="result-tags">
-                          {entry.data.tags.map((tag) => (
-                            <span class="tag">{tag}</span>
-                          ))}
-                        </div>
-                      )}
-                    </a>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          )}
-
-          {matchingExtras.length > 0 && (
-            <div class="result-section">
-              <h2>Other Resources ({matchingExtras.length})</h2>
-              <ul class="result-list">
-                {matchingExtras.map((entry) => (
-                  <li>
-                    <a href={`${import.meta.env.BASE_URL}extras/${entry.slug}`} class="result-card">
-                      <div
-                        class="result-title"
-                        set:html={highlightText(entry.data.title, normalizedQuery)}
-                      />
-                      {entry.data.description && (
-                        <div
-                          class="result-description"
-                          set:html={highlightText(entry.data.description, normalizedQuery)}
-                        />
-                      )}
-                    </a>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          )}
-        </>
-      ) : (
-        <div class="search-form initial-search">
-          <p>Enter a search term to find entries across all database types</p>
-          <form action={`${import.meta.env.BASE_URL}search`} method="get">
-            <input
-              type="text"
-              name="q"
-              placeholder="Search for techniques, keywords, etc..."
-              aria-label="Search"
-            />
-            <button type="submit">Search</button>
-          </form>
-        </div>
-      )
-    }
+    <div id="results-container"></div>
   </div>
+
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+      const container = document.querySelector(".search-results") as HTMLElement;
+      const baseUrl = container?.dataset.baseUrl || "/";
+      const searchDataJson = container?.dataset.searchEntries || "[]";
+
+      interface SearchEntry {
+        slug: string;
+        title: string;
+        description?: string;
+        category: string;
+        tags?: string[];
+        collection: string;
+      }
+
+      let searchData: SearchEntry[] = [];
+      try {
+        searchData = JSON.parse(searchDataJson);
+      } catch {
+        console.error("Failed to parse search data");
+      }
+
+      const searchInput = document.getElementById("search-input") as HTMLInputElement;
+      const searchStatus = document.getElementById("search-status") as HTMLElement;
+      const noResults = document.getElementById("no-results") as HTMLElement;
+      const initialSearch = document.getElementById("initial-search") as HTMLElement;
+      const resultsContainer = document.getElementById("results-container") as HTMLElement;
+
+      // Escape HTML to prevent XSS
+      function escapeHtml(text: string): string {
+        const div = document.createElement("div");
+        div.textContent = text;
+        return div.innerHTML;
+      }
+
+      // Highlight matching text
+      function highlightText(text: string, query: string): string {
+        if (!query || !text) return escapeHtml(text || "");
+        const escaped = escapeHtml(text);
+        const lowerText = escaped.toLowerCase();
+        const lowerQuery = query.toLowerCase();
+
+        const matches: Array<{ start: number; end: number }> = [];
+        let pos = 0;
+        while ((pos = lowerText.indexOf(lowerQuery, pos)) !== -1) {
+          matches.push({ start: pos, end: pos + lowerQuery.length });
+          pos += lowerQuery.length;
+        }
+
+        if (matches.length === 0) return escaped;
+
+        let result = "";
+        let lastEnd = 0;
+        for (const match of matches) {
+          result += escaped.slice(lastEnd, match.start);
+          result += "<mark>" + escaped.slice(match.start, match.end) + "</mark>";
+          lastEnd = match.end;
+        }
+        result += escaped.slice(lastEnd);
+        return result;
+      }
+
+      // Search function
+      function performSearch(query: string) {
+        const normalizedQuery = query.toLowerCase().trim();
+
+        if (!normalizedQuery) {
+          searchStatus.textContent = "";
+          noResults.style.display = "none";
+          initialSearch.style.display = "block";
+          resultsContainer.innerHTML = "";
+          return;
+        }
+
+        initialSearch.style.display = "none";
+
+        // Filter entries
+        const matches = searchData.filter((entry) => {
+          const titleMatch = entry.title.toLowerCase().includes(normalizedQuery);
+          const descMatch = entry.description?.toLowerCase().includes(normalizedQuery) || false;
+          const categoryMatch = entry.category.toLowerCase().includes(normalizedQuery);
+          const tagsMatch =
+            entry.tags?.some((t) => t.toLowerCase().includes(normalizedQuery)) || false;
+          return titleMatch || descMatch || categoryMatch || tagsMatch;
+        });
+
+        // Group by collection
+        const grouped: Record<string, SearchEntry[]> = {};
+        for (const entry of matches) {
+          if (!grouped[entry.collection]) grouped[entry.collection] = [];
+          grouped[entry.collection].push(entry);
+        }
+
+        // Update UI
+        searchStatus.textContent = `Found ${matches.length} ${matches.length === 1 ? "result" : "results"} for "${query}"`;
+
+        if (matches.length === 0) {
+          noResults.style.display = "block";
+          resultsContainer.innerHTML = "";
+          return;
+        }
+
+        noResults.style.display = "none";
+
+        // Render results
+        const collectionLabels: Record<string, string> = {
+          mysql: "MySQL",
+          mssql: "MSSQL",
+          oracle: "Oracle",
+          extras: "Other Resources",
+        };
+
+        let html = "";
+        for (const [collection, entries] of Object.entries(grouped)) {
+          html += `<div class="result-section">
+            <h2>${collectionLabels[collection] || collection} (${entries.length})</h2>
+            <ul class="result-list">`;
+
+          for (const entry of entries) {
+            const href = `${baseUrl}${collection}/${entry.slug}`;
+            html += `<li>
+              <a href="${href}" class="result-card">
+                <div class="result-title">${highlightText(entry.title, normalizedQuery)}</div>
+                <div class="result-category">${escapeHtml(entry.category)}</div>
+                ${entry.description ? `<div class="result-description">${highlightText(entry.description, normalizedQuery)}</div>` : ""}
+                ${entry.tags?.length ? `<div class="result-tags">${entry.tags.map((t) => `<span class="tag">${escapeHtml(t)}</span>`).join("")}</div>` : ""}
+              </a>
+            </li>`;
+          }
+
+          html += `</ul></div>`;
+        }
+
+        resultsContainer.innerHTML = html;
+      }
+
+      // Get query from URL
+      const urlParams = new URLSearchParams(window.location.search);
+      const queryParam = urlParams.get("q") || "";
+
+      // Set input value and perform search
+      searchInput.value = queryParam;
+      performSearch(queryParam);
+
+      // Update title if query exists
+      if (queryParam) {
+        const maxLen = 50;
+        const truncated =
+          queryParam.length > maxLen ? queryParam.slice(0, maxLen) + "…" : queryParam;
+        document.title = `Search Results for "${truncated}" - SQL Injection KB`;
+      }
+    });
+  </script>
 </Layout>
 
 <style>
