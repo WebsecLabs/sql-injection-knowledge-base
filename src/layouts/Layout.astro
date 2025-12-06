@@ -10,6 +10,14 @@ import "../styles/main.css";
 import "../styles/navbar.css";
 import "../styles/code.css";
 
+// Import self-hosted fonts (privacy-friendly, no external requests)
+import "@fontsource/inter/400.css";
+import "@fontsource/inter/500.css";
+import "@fontsource/inter/600.css";
+import "@fontsource/inter/700.css";
+import "@fontsource/jetbrains-mono/400.css";
+import "@fontsource/jetbrains-mono/500.css";
+
 interface Props {
   title: string;
   description?: string;
@@ -50,12 +58,6 @@ const extrasEntries = collections?.extrasEntries ?? (await getCollection("extras
       content="SQL Injection, SQLi, Knowledge Base, KB, CS, PR, MySQL, MSSQL, Oracle, PostgreSQL, SQLite, MS Access, Cheatsheet, Pocket Reference"
     />
     <meta name="HandheldFriendly" content="true" />
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap"
-      rel="stylesheet"
-    />
 
     <!-- Import main.js using Astro's component pipeline -->
     <script>

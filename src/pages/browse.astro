@@ -91,6 +91,8 @@ switch (type) {
   </div>
 
   <script>
+    import { navigate } from "astro:transitions/client";
+
     // Enhance sidebar navigation to update URL parameters
     document.addEventListener("DOMContentLoaded", () => {
       const container = document.querySelector(".browse-container");
@@ -143,17 +145,12 @@ switch (type) {
             }
 
             if (type && slug) {
-              // Navigate to the entry (full page navigation updates history automatically)
-              loadEntry(type, slug);
+              // Navigate using Astro's API to preserve View Transitions
+              navigate(`${baseUrl}browse?type=${type}&slug=${slug}`);
             }
           });
         }
       });
-
-      // Navigate to entry page
-      function loadEntry(type: string, slug: string) {
-        window.location.href = `${baseUrl}browse?type=${type}&slug=${slug}`;
-      }
     });
   </script>
 </Layout>

@@ -68,10 +68,10 @@ const pageTitle = `${entry.data.title} | ${collectionTitle} | SQL Injection KB`;
 
 // Build collections object for Layout - only pass the current collection to avoid duplication
 const collections = {
-  mysqlEntries: collectionName === "mysql" ? mysqlEntries : undefined,
-  mssqlEntries: collectionName === "mssql" ? mssqlEntries : undefined,
-  oracleEntries: collectionName === "oracle" ? oracleEntries : undefined,
-  extrasEntries: collectionName === "extras" ? extrasEntries : undefined,
+  mysqlEntries,
+  mssqlEntries,
+  oracleEntries,
+  extrasEntries,
 };
 ---
 

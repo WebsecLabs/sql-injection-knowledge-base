@@ -173,7 +173,7 @@ SELECT owner, name, text FROM all_source
 WHERE UPPER(text) LIKE '%PASSWORD%' OR UPPER(text) LIKE '%CREDENTIALS%';
 
 -- Look for encrypted strings that might be credentials
-SELECT owner, object_name, text FROM all_source
+SELECT owner, name, text FROM all_source
 WHERE text LIKE '%DBMS_CRYPTO%' OR text LIKE '%DBMS_OBFUSCATION_TOOLKIT%';
 ```
 

@@ -63,17 +63,16 @@ const { defaultTab } = Astro.props;
         }
       });
 
-      // Determine which tab to activate
-      // defaultTab prop takes precedence over existing active class
+      // Determine which tab to activate (priority: defaultTab > existing .active > first tab)
       let activeTabIndex = 0;
 
-      // First, check for pre-existing active class as fallback
+      // Check for pre-existing active class (fallback if no defaultTab)
       const existingActiveIndex = tabs.findIndex((tab) => tab.classList.contains("active"));
       if (existingActiveIndex !== -1) {
         activeTabIndex = existingActiveIndex;
       }
 
-      // Then, check for defaultTab prop (takes precedence)
+      // Override with defaultTab prop if provided
       if (defaultTabId) {
         const defaultIndex = tabs.findIndex((tab) => tab.getAttribute("data-tab") === defaultTabId);
         if (defaultIndex !== -1 && defaultIndex < tabs.length) {

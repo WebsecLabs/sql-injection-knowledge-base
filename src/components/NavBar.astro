@@ -354,12 +354,21 @@ function isActivePath(section: string, slug: string): boolean {
 
       document.addEventListener("click", window.navbarDocumentClickHandler);
 
-      // Ensure dropdown menu stays within viewport
-      document.querySelectorAll(".dropdown-menu").forEach((menu) => {
-        const rect = menu.getBoundingClientRect();
-        if (rect.right > window.innerWidth) {
-          menu.classList.add("dropdown-menu-right");
-        }
+      // Check viewport boundaries when dropdown is first shown (hidden elements have zero dimensions)
+      freshDropdowns.forEach((dropdown) => {
+        dropdown.addEventListener(
+          "mouseenter",
+          function (this: Element) {
+            const menu = this.querySelector(".dropdown-menu");
+            if (menu) {
+              const rect = menu.getBoundingClientRect();
+              if (rect.right > window.innerWidth) {
+                menu.classList.add("dropdown-menu-right");
+              }
+            }
+          },
+          { once: true }
+        );
       });
     }
 
