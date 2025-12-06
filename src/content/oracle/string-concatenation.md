@@ -15,12 +15,12 @@ String concatenation plays a crucial role in crafting complex SQL injection payl
 
 Oracle provides multiple ways to concatenate strings:
 
-| Method                 | Description                         | Example                                                          | Result             |
-| ---------------------- | ----------------------------------- | ---------------------------------------------------------------- | ------------------ |
-| Double pipe `\|\|`     | Standard SQL concatenation operator | `'ABC' \|\| 'DEF'`                                               | `ABCDEF`           |
-| `CONCAT()` function    | Two-argument concatenation function | `CONCAT('ABC', 'DEF')`                                           | `ABCDEF`           |
-| `LISTAGG()` function   | Aggregate with separator (11g R2+)  | `LISTAGG(col, ',') WITHIN GROUP (ORDER BY col)`                  | `A,B,C`            |
-| `XMLCONCAT()`          | XML-based concatenation             | `XMLCONCAT(XMLELEMENT(E, 'A'), XMLELEMENT(E, 'B')).GETCLOBVAL()` | Complex XML result |
+| Method               | Description                         | Example                                                          | Result             |
+| -------------------- | ----------------------------------- | ---------------------------------------------------------------- | ------------------ |
+| Double pipe `\|\|`   | Standard SQL concatenation operator | `'ABC' \|\| 'DEF'`                                               | `ABCDEF`           |
+| `CONCAT()` function  | Two-argument concatenation function | `CONCAT('ABC', 'DEF')`                                           | `ABCDEF`           |
+| `LISTAGG()` function | Aggregate with separator (11g R2+)  | `LISTAGG(col, ',') WITHIN GROUP (ORDER BY col)`                  | `A,B,C`            |
+| `XMLCONCAT()`        | XML-based concatenation             | `XMLCONCAT(XMLELEMENT(E, 'A'), XMLELEMENT(E, 'B')).GETCLOBVAL()` | Complex XML result |
 
 ### Using Double Pipe Operator
 

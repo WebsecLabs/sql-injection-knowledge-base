@@ -96,24 +96,24 @@ switch (type) {
       const container = document.querySelector(".browse-container");
       const baseUrl = container?.getAttribute("data-base-url") || "/";
 
-      // Parse collection types from data attribute, with fallback
-      const defaultCollectionTypes = ["mysql", "mssql", "oracle", "extras"];
-      let collectionTypes: string[] = defaultCollectionTypes;
+      // Parse collection types from data attribute (populated from COLLECTION_TYPES constant at build time)
+      // The data attribute is guaranteed present since it's set in the template above (line 76)
+      let collectionTypes: string[] = [];
       try {
         const typesAttr = container?.getAttribute("data-collection-types");
         if (typesAttr) {
           const parsed = JSON.parse(typesAttr);
-          if (
-            Array.isArray(parsed) &&
-            parsed.length > 0 &&
-            parsed.every((t) => typeof t === "string")
-          ) {
+          if (Array.isArray(parsed) && parsed.every((t) => typeof t === "string")) {
             collectionTypes = parsed;
           }
         }
       } catch {
-        // Parsing failed, use default
-        console.warn("Failed to parse collection types, using defaults");
+        console.error("Failed to parse collection types from data attribute");
+      }
+
+      // Exit early if no collection types (shouldn't happen - defensive check only)
+      if (collectionTypes.length === 0) {
+        return;
       }
 
       const sidebarLinks = document.querySelectorAll(".sidebar-nav a");

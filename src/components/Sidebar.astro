@@ -168,8 +168,8 @@ const activeSection = getActiveSection(currentPath);
     }
 
     // Remember which sections were active before searching
-    document.querySelectorAll(".sidebar-section.active").forEach((section) => {
-      section.setAttribute("data-was-active", "true");
+    document.querySelectorAll<HTMLElement>(".sidebar-section.active").forEach((section) => {
+      section.dataset.wasActive = "true";
     });
 
     // Hide all categories initially

@@ -5,7 +5,9 @@ interface Props {
 }
 
 const { title, defaultOpen = false } = Astro.props;
-const contentId = `collapsible-content-${Math.random().toString(36).slice(2, 9)}`;
+
+// Generate unique ID using crypto.randomUUID() for guaranteed uniqueness
+const contentId = `collapsible-content-${crypto.randomUUID()}`;
 ---
 
 <div class={`collapsible ${defaultOpen ? "active" : ""}`}>
@@ -38,19 +40,37 @@ const contentId = `collapsible-content-${Math.random().toString(36).slice(2, 9)}
 </div>
 
 <script>
-  document.addEventListener("DOMContentLoaded", () => {
-    const headers = document.querySelectorAll(".collapsible-header");
+  declare global {
+    interface Window {
+      __collapsibleInitialized?: boolean;
+    }
+  }
 
-    headers.forEach((header) => {
-      header.addEventListener("click", () => {
-        const collapsible = header.closest(".collapsible");
-        if (!collapsible) return;
+  function initCollapsibles() {
+    // Guard against multiple initializations
+    if (window.__collapsibleInitialized) return;
+    window.__collapsibleInitialized = true;
 
-        const isActive = collapsible.classList.toggle("active");
-        header.setAttribute("aria-expanded", String(isActive));
-      });
+    // Use event delegation with a single global handler
+    document.addEventListener("click", (e) => {
+      if (!(e.target instanceof Element)) return;
+      const header = e.target.closest(".collapsible-header");
+      if (!header) return;
+
+      const collapsible = header.closest(".collapsible");
+      if (!collapsible) return;
+
+      const isActive = collapsible.classList.toggle("active");
+      header.setAttribute("aria-expanded", String(isActive));
     });
-  });
+  }
+
+  // Initialize immediately if DOM is ready, otherwise wait for DOMContentLoaded
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", initCollapsibles);
+  } else {
+    initCollapsibles();
+  }
 </script>
 
 <style>
