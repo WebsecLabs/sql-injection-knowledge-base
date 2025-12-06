@@ -119,13 +119,7 @@ switch (type) {
             }
 
             if (type && slug) {
-              // Build the URL for the browse page with parameters
-              const newUrl = `${baseUrl}browse?type=${type}&slug=${slug}`;
-
-              // Update the browser history without a page reload
-              window.history.pushState({}, "", newUrl);
-
-              // Load the content for the selected entry
+              // Navigate to the entry (full page navigation updates history automatically)
               loadEntry(type, slug);
             }
           });

@@ -1,0 +1,67 @@
+/* Footer styles */
+footer {
+  background-color: var(--color-primary);
+  background-image: linear-gradient(135deg, var(--color-primary), #1a365d);
+  color: white;
+  height: 70px;
+  padding: 0;
+  text-align: center;
+  box-shadow: 0 -4px 6px rgb(0 0 0 / 5%);
+  margin-bottom: 0;
+  margin-top: auto;
+  display: flex;
+  align-items: center;
+}
+
+footer .container {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+}
+
+.footer-content {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+}
+
+.footer-branding {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.footer-text {
+  color: white;
+  font-size: 0.9rem;
+  font-weight: 500;
+  opacity: 0.9;
+}
+
+.footer-logo {
+  display: flex;
+  align-items: center;
+}
+
+.footer-logo-link {
+  display: flex;
+  align-items: center;
+  text-decoration: none;
+  transition: transform 0.2s ease;
+}
+
+.footer-logo-link:hover {
+  transform: scale(1.05);
+  text-decoration: none;
+}
+
+.footer-logo-img {
+  height: 34px;
+  width: auto;
+  object-fit: contain;
+  opacity: 0.95;
+  filter: brightness(1.1);
+}

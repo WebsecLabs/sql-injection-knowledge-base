@@ -7,8 +7,6 @@ tags: ["introduction", "overview", "mysql"]
 lastUpdated: 2025-03-16
 ---
 
-# MySQL Introduction
-
 This section provides a comprehensive collection of SQL injection techniques specific to MySQL databases. The techniques are organized into the following categories:
 
 ## Basics

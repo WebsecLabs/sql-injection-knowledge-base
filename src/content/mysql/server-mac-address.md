@@ -17,7 +17,7 @@ UUID()
 
 ### Example Output
 
-```
+```text
 aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee
 ```
 

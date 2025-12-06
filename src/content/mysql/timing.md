@@ -77,7 +77,7 @@ A time-based attack to extract data usually involves:
 2. For each position, testing possible characters
 3. Measuring response time to determine the correct character
 
-#### Example for Extracting Database Version:
+#### Example for Extracting Database Version
 
 ```sql
 -- Testing if MySQL version starts with '5'

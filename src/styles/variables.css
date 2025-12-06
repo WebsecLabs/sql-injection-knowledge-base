@@ -1,0 +1,21 @@
+:root {
+  --color-background: #f9fafb;
+  --color-text: #1a202c;
+  --color-primary: #3182ce;
+  --color-secondary: #e53e3e;
+  --color-accent: #4299e1;
+  --color-card-bg: #fff;
+  --color-sidebar-bg: #f1f5f9;
+  --color-border: #e2e8f0;
+  --color-true: rgb(72 187 120 / 10%);
+  --color-false: rgb(245 101 101 / 10%);
+  --color-code-bg: #f8fafc;
+  --font-sans:
+    "Inter", -apple-system, blinkmacsystemfont, "Segoe UI", roboto, "Helvetica Neue", arial,
+    sans-serif;
+  --font-mono: "JetBrains Mono", "SFMono-Regular", consolas, "Liberation Mono", menlo, monospace;
+  --shadow: 0 2px 4px rgb(0 0 0 / 5%);
+  --shadow-md: 0 4px 6px rgb(0 0 0 / 7%);
+  --shadow-lg: 0 10px 15px rgb(0 0 0 / 10%);
+  --transition: all 0.2s ease;
+}

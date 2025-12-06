@@ -171,18 +171,11 @@ To prevent stacked query attacks:
 
 1. Use parameterized queries or stored procedures instead of string concatenation
 
-2. Use database connectors or configurations that limit multiple statements
+2. Use parameterized queries consistently
 
-   **Note:** `SqlConnection` in ADO.NET does not have a built-in property to disable batching. Stacked query prevention depends on the library or ORM layer:
+   **Note:** ORMs like Entity Framework Core protect against SQL injection (including stacked queries) by using parameterized queries by default. There is no connection-level or batching setting that prevents stacked queries—the protection comes entirely from parameterization.
 
-   ```csharp
-   // EF Core - Disable batching by setting MaxBatchSize to 1
-   services.AddDbContext<MyDbContext>(options =>
-       options.UseSqlServer(connectionString, sqlOptions =>
-           sqlOptions.MaxBatchSize(1)));
-   ```
-
-   For raw ADO.NET with `SqlClient`, **connection-level settings do not prevent stacked queries** if the SQL string itself is dynamically constructed from user input. Stacked query prevention relies entirely on **never constructing `CommandText` from untrusted input**. Always use parameterized `SqlCommand` parameters so that injected semicolons or SQL fragments in parameter values are treated only as literal data, not as executable SQL:
+   For raw ADO.NET with `SqlClient`, **connection-level settings do not prevent stacked queries**. Stacked query prevention relies entirely on **never constructing `CommandText` from untrusted input**. Always use parameterized `SqlCommand` parameters so that injected semicolons or SQL fragments in parameter values are treated only as literal data, not as executable SQL:
 
    ```csharp
    // SAFE: User input passed as parameter (semicolons are data, not SQL)

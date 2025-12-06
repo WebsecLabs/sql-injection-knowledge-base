@@ -156,6 +156,7 @@ Some useful wordlist sources:
    ```
 
 4. **Check results**:
+
    ```bash
    hashcat -m 11200 mysql_hashes.txt --show
    ```

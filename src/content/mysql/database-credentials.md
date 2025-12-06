@@ -27,4 +27,4 @@ SELECT current_user;
 SELECT CONCAT_WS(0x3A, user, password) FROM mysql.user WHERE user = 'root';
 ```
 
-Note that the password column in MySQL contains hashed values, not plaintext passwords. For more information on password hashing and cracking, see the related entries on [Password Hashing](#) and [Password Cracking](#).
+Note that the password column in MySQL contains hashed values, not plaintext passwords. For more information on password hashing and cracking, see the related entries on [Password Hashing](password-hashing) and [Password Cracking](password-cracking).

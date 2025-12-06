@@ -7,7 +7,7 @@
   position: sticky;
   top: 0;
   z-index: 1000;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 2px 8px rgb(0 0 0 / 10%);
 }
 
 .navbar .container {
@@ -97,23 +97,23 @@
   color: #a0aec0;
 }
 
-#navSearch {
+#nav-search {
   width: 100%;
   padding: 0.5rem 1rem 0.5rem 2.25rem;
   border: none;
   border-radius: 4px;
-  background-color: rgba(255, 255, 255, 0.1);
+  background-color: rgb(255 255 255 / 10%);
   color: white;
   transition: background-color 0.2s ease;
 }
 
-#navSearch::placeholder {
-  color: rgba(255, 255, 255, 0.7);
+#nav-search::placeholder {
+  color: rgb(255 255 255 / 70%);
 }
 
-#navSearch:focus {
+#nav-search:focus {
   outline: none;
-  background-color: rgba(255, 255, 255, 0.2);
+  background-color: rgb(255 255 255 / 20%);
 }
 
 .navbar-nav {
@@ -138,7 +138,7 @@
 }
 
 .nav-link:hover {
-  background-color: rgba(255, 255, 255, 0.1);
+  background-color: rgb(255 255 255 / 10%);
   text-decoration: none;
 }
 
@@ -148,7 +148,7 @@
   left: 0;
   min-width: 200px;
   background-color: white;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 4px 12px rgb(0 0 0 / 10%);
   border-radius: 4px;
   opacity: 0;
   visibility: hidden;
@@ -210,7 +210,7 @@
   top: 0;
   min-width: 200px;
   background-color: white;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 4px 12px rgb(0 0 0 / 10%);
   border-radius: 4px;
   opacity: 0;
   visibility: hidden;
@@ -275,7 +275,7 @@
 }
 
 /* Responsive Navbar */
-@media (max-width: 991px) {
+@media (width <= 991px) {
   .navbar .container {
     padding: 0 1rem;
   }
@@ -290,12 +290,12 @@
     margin: 0.5rem 0 1rem;
   }
 
-  #navSearch {
+  #nav-search {
     background-color: #f1f5f9;
     color: var(--color-text);
   }
 
-  #navSearch::placeholder {
+  #nav-search::placeholder {
     color: #a0aec0;
   }
 

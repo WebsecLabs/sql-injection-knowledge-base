@@ -79,7 +79,7 @@ When exploiting SQL injection vulnerabilities, password hashes can be obtained:
 
 ### Password Hash Formats Examples
 
-```
+```text
 -- Pre-4.1 hash for 'password'
 5d2e19393cc5ef67
 
@@ -94,7 +94,7 @@ $A$005$XKK#jY,d89Z0s8Xn1n8.8OaGl7NJ2fmWJKiLZ78XDOXbGXOX0d4InvT2
 
 MySQL uses special values for certain account states:
 
-```
+```text
 -- Empty string: User can connect without password
 ''
 

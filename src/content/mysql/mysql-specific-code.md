@@ -21,7 +21,7 @@ MySQL supports a special comment syntax that executes code only on specific vers
 
 This will execute `SELECT * FROM users` only on MySQL version 5.0.0 and higher.
 
-### Examples:
+### Examples
 
 ```sql
 -- This executes on MySQL 5.5 and later
