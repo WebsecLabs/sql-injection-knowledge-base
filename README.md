@@ -16,7 +16,7 @@ This project is a modern rebuild of the original SQLi Knowledge Base, featuring 
 
 ## Features
 
-- **Comprehensive Coverage**: Techniques for MySQL, MSSQL, and Oracle databases
+- **Comprehensive Coverage**: Techniques for MySQL, MSSQL, Oracle, and PostgreSQL databases
 - **User-Friendly Navigation**: Organized by database type and technique categories
 - **Modern Interface**: Fast, responsive design that works across all devices
 - **Searchable Content**: Quick access to specific techniques

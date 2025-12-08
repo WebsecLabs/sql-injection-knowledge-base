@@ -2,7 +2,6 @@
 import { getCollection, type CollectionEntry } from "astro:content";
 import Layout from "../../layouts/Layout.astro";
 import MarkdownEntry from "../../components/MarkdownEntry.astro";
-import BackLink from "../../components/BackLink.astro";
 import { COLLECTION_TYPES, COLLECTION_LABELS, type ValidCollection } from "../../utils/constants";
 
 // Union type for entries from any valid collection
@@ -57,6 +56,49 @@ const collections = {
 ---
 
 <Layout title={pageTitle} collections={collections}>
-  <MarkdownEntry entry={entry} />
-  <BackLink />
+  <div class="entry-container" transition:animate="slide">
+    <div class="entry-header" transition:animate="fade">
+      <nav class="breadcrumbs" aria-label="Breadcrumb">
+        <a href={import.meta.env.BASE_URL}>Home</a>
+        <span class="separator" aria-hidden="true">/</span>
+        <a href={`${import.meta.env.BASE_URL}${collectionName}/intro`}>{collectionTitle}</a>
+        <span class="separator" aria-hidden="true">/</span>
+        <span aria-current="page">{entry.data.title}</span>
+      </nav>
+    </div>
+
+    <MarkdownEntry entry={entry} />
+  </div>
 </Layout>
+
+<style>
+  .entry-container {
+    max-width: 900px;
+    margin: 0 auto;
+  }
+
+  .entry-header {
+    margin-bottom: 1.5rem;
+  }
+
+  .breadcrumbs {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.875rem;
+    color: var(--color-text-light);
+  }
+
+  .breadcrumbs a {
+    color: var(--color-primary);
+    text-decoration: none;
+  }
+
+  .breadcrumbs a:hover {
+    text-decoration: underline;
+  }
+
+  .separator {
+    color: var(--color-border-light);
+  }
+</style>

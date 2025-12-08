@@ -78,8 +78,8 @@ When `pg_sleep()` is blocked, use computation-heavy operations:
 -- Sleep for interval
 SELECT pg_sleep_for('5 seconds');
 
--- Sleep until specific time
-SELECT pg_sleep_until('2024-01-01 00:00:00');
+-- Sleep until specific time (5 seconds from now)
+SELECT pg_sleep_until(now() + interval '5 seconds');
 ```
 
 ### Practical Examples

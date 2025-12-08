@@ -1,7 +1,15 @@
 /* Sidebar styles */
 
-/* Hide sidebar overlay by default (desktop) */
+/* Hide sidebar overlay and toggle button by default (desktop) */
 .sidebar-overlay {
+  display: none;
+}
+
+.button-container {
+  display: none;
+}
+
+.sidebar-toggle {
   display: none;
 }
 
