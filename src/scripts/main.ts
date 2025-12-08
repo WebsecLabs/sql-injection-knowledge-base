@@ -1,23 +1,45 @@
-// Main JavaScript file for the SQL Injection Knowledge Base
+/**
+ * Main TypeScript file for the SQL Injection Knowledge Base
+ */
+
+import { initSidebar } from "./sidebar";
+
+// Make this a module
+export {};
+
+// Define types for global window properties
+declare global {
+  interface Window {
+    initializeSidebar: () => void;
+    sidebarResizeListenerAdded?: boolean;
+    sidebarScrollListenerAdded?: boolean;
+    overlayListenerAdded?: boolean;
+    escapeListenerAdded?: boolean;
+  }
+}
 
 // Track initialization state per page to prevent duplicate runs
-let lastInitializedPath = null;
+let lastInitializedPath: string | null = null;
 
 // Global initialization function for sidebar
-window.initializeSidebar = function () {
+window.initializeSidebar = function (): void {
   // Prevent duplicate initialization for the same page
   const currentPath = window.location.pathname + window.location.search;
   if (lastInitializedPath === currentPath) {
     return;
   }
   lastInitializedPath = currentPath;
+
   // Remove tabindex from pre elements (accessibility fix)
   removeTabindexFromPreElements();
 
+  // Initialize sidebar section toggles, search, and keyboard navigation
+  initSidebar();
+
   // Handle mobile toggle for sidebar
   const toggleButton = document.getElementById("sidebar-toggle");
-  const buttonContainer = document.querySelector(".button-container");
-  const sidebar = document.querySelector(".sidebar");
+  const buttonContainer = document.querySelector(".button-container") as HTMLElement | null;
+  const sidebar = document.querySelector(".sidebar") as HTMLElement | null;
   const overlay = document.getElementById("sidebar-overlay");
   const body = document.body;
 
@@ -73,15 +95,15 @@ window.initializeSidebar = function () {
     window.addEventListener("scroll", function () {
       if (!ticking) {
         window.requestAnimationFrame(function () {
-          let currentScroll = window.pageYOffset || document.documentElement.scrollTop;
+          const currentScroll = window.pageYOffset || document.documentElement.scrollTop;
 
           // Hide button when scrolling down, show when scrolling up
           if (currentScroll > lastScrollTop && currentScroll > 100) {
             // Scrolling down
-            if (buttonContainer) buttonContainer.classList.add("hidden");
+            buttonContainer!.classList.add("hidden");
           } else {
             // Scrolling up or near top
-            if (buttonContainer) buttonContainer.classList.remove("hidden");
+            buttonContainer!.classList.remove("hidden");
           }
 
           lastScrollTop = currentScroll <= 0 ? 0 : currentScroll;
@@ -101,7 +123,7 @@ window.initializeSidebar = function () {
       toggleButton.parentNode.replaceChild(newToggleButton, toggleButton);
     }
 
-    newToggleButton.addEventListener("click", function (e) {
+    newToggleButton.addEventListener("click", function (e: Event) {
       e.preventDefault();
       e.stopPropagation();
 
@@ -148,20 +170,22 @@ window.initializeSidebar = function () {
 
 // Initialize on various events
 
-// 1. When DOM is ready (initial page load)
-if (document.readyState === "loading") {
-  document.addEventListener("DOMContentLoaded", window.initializeSidebar);
-} else {
-  // DOM is already ready
-  window.initializeSidebar();
+if (typeof document !== "undefined") {
+  // 1. When DOM is ready (initial page load)
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", window.initializeSidebar);
+  } else {
+    // DOM is already ready
+    window.initializeSidebar();
+  }
+
+  // 2. On Astro page load (for View Transitions)
+  // This fires after both initial load and client-side navigation
+  document.addEventListener("astro:page-load", window.initializeSidebar);
 }
 
-// 2. On Astro page load (for View Transitions)
-// This fires after both initial load and client-side navigation
-document.addEventListener("astro:page-load", window.initializeSidebar);
-
 // Remove tabindex from pre elements
-function removeTabindexFromPreElements() {
+function removeTabindexFromPreElements(): void {
   // Find all pre elements and remove tabindex attribute
   const preElements = document.querySelectorAll("pre[tabindex]");
   preElements.forEach((pre) => {
@@ -176,7 +200,7 @@ function removeTabindexFromPreElements() {
 }
 
 // Add copy buttons to code blocks
-function addCopyButtons() {
+function addCopyButtons(): void {
   // Remove any existing copy buttons to avoid duplicates
   document.querySelectorAll(".copy-button").forEach((button) => {
     button.remove();
@@ -187,12 +211,10 @@ function addCopyButtons() {
 
   codeBlocks.forEach((block) => {
     // Get the parent element
-    const pre = block.parentNode;
+    const pre = block.parentNode as HTMLElement;
 
     // Ensure pre has relative positioning
-    if (pre.tagName === "PRE" || pre.classList.contains("astro-code")) {
-      pre.style.position = "relative";
-
+    if (pre && (pre.tagName === "PRE" || pre.classList.contains("astro-code"))) {
       // Create button
       const button = document.createElement("button");
       button.className = "copy-button";
@@ -212,7 +234,7 @@ function addCopyButtons() {
 }
 
 // Copy code to clipboard with fallback
-function copyCode(codeBlock, button) {
+function copyCode(codeBlock: Element, button: HTMLElement): void {
   const text = codeBlock.textContent || "";
 
   // Try modern clipboard API first
@@ -238,7 +260,7 @@ function copyCode(codeBlock, button) {
 }
 
 // Legacy copy method for older browsers or mobile
-function legacyCopy(text, button) {
+function legacyCopy(text: string, button: HTMLElement): void {
   try {
     const textarea = document.createElement("textarea");
     textarea.value = text;
@@ -266,55 +288,8 @@ function legacyCopy(text, button) {
   }, 2000);
 }
 
-// CSS for copy button
-document.addEventListener("DOMContentLoaded", function () {
-  const style = document.createElement("style");
-  style.textContent = `
-    .copy-button {
-      position: absolute;
-      top: 5px;
-      right: 5px;
-      background-color: rgba(0, 0, 0, 0.1);
-      color: #fff;
-      border: none;
-      border-radius: 4px;
-      padding: 4px 8px;
-      font-size: 12px;
-      cursor: pointer;
-      transition: all 0.2s ease;
-      opacity: 0;
-    }
-
-    pre:hover .copy-button {
-      opacity: 1;
-    }
-
-    .copy-button:hover {
-      background-color: rgba(0, 0, 0, 0.3);
-    }
-
-    .copy-button.success {
-      background-color: var(--color-true-text);
-    }
-
-    .copy-button.error {
-      background-color: var(--color-false-text);
-    }
-
-    /* Mobile enhancements */
-    @media (max-width: 768px) {
-      .copy-button {
-        opacity: 1;
-        padding: 6px 10px;
-        font-size: 14px;
-      }
-    }
-  `;
-  document.head.appendChild(style);
-});
-
 // Theme toggle functionality
-function initializeThemeToggle() {
+function initializeThemeToggle(): void {
   const themeToggle = document.getElementById("theme-toggle");
   if (!themeToggle) return;
 
@@ -355,11 +330,13 @@ function initializeThemeToggle() {
 }
 
 // Initialize theme toggle on page load
-if (document.readyState === "loading") {
-  document.addEventListener("DOMContentLoaded", initializeThemeToggle);
-} else {
-  initializeThemeToggle();
-}
+if (typeof document !== "undefined") {
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", initializeThemeToggle);
+  } else {
+    initializeThemeToggle();
+  }
 
-// Also initialize on Astro page load for View Transitions
-document.addEventListener("astro:page-load", initializeThemeToggle);
+  // Also initialize on Astro page load for View Transitions
+  document.addEventListener("astro:page-load", initializeThemeToggle);
+}

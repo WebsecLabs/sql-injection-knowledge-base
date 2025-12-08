@@ -4,8 +4,8 @@
 set -e
 
 # Stop and remove existing containers
-docker stop websec-sqli-kb sqli-kb 2>/dev/null || true
-docker rm websec-sqli-kb sqli-kb 2>/dev/null || true
+docker stop sqli-kb 2>/dev/null || true
+docker rm sqli-kb 2>/dev/null || true
 
 # Build the image
 echo "Building sqli-kb image..."

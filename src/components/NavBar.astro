@@ -917,14 +917,12 @@ function isActivePath(section: string, slug: string): boolean {
     display: none;
   }
 
-  /* In dark mode, show moon icon, hide sun */
-  :global(.dark) .sun-icon,
-  :global(html:not(.light)) .sun-icon {
+  /* In explicit dark mode, show moon icon, hide sun */
+  :global(.dark) .sun-icon {
     display: none;
   }
 
-  :global(.dark) .moon-icon,
-  :global(html:not(.light)) .moon-icon {
+  :global(.dark) .moon-icon {
     display: block;
   }
 
@@ -939,29 +937,24 @@ function isActivePath(section: string, slug: string): boolean {
     }
   }
 
-  /* Dark mode dropdown menu styles */
-  :global(.dark) .dropdown-menu,
-  :global(html:not(.light)) .dropdown-menu {
+  /* Explicit dark mode dropdown menu styles */
+  :global(.dark) .dropdown-menu {
     background-color: var(--color-card-bg);
   }
 
-  :global(.dark) .dropdown-item,
-  :global(html:not(.light)) .dropdown-item {
+  :global(.dark) .dropdown-item {
     color: var(--color-text);
   }
 
-  :global(.dark) .dropdown-item:hover,
-  :global(html:not(.light)) .dropdown-item:hover {
+  :global(.dark) .dropdown-item:hover {
     background-color: var(--color-code-bg);
   }
 
-  :global(.dark) .dropdown-item.active,
-  :global(html:not(.light)) .dropdown-item.active {
+  :global(.dark) .dropdown-item.active {
     background-color: var(--color-code-bg);
   }
 
-  :global(.dark) .dropdown-divider,
-  :global(html:not(.light)) .dropdown-divider {
+  :global(.dark) .dropdown-divider {
     background-color: var(--color-border);
   }
 
@@ -992,28 +985,23 @@ function isActivePath(section: string, slug: string): boolean {
       stroke: var(--color-text);
     }
 
-    :global(.dark) .navbar-menu,
-    :global(html:not(.light)) .navbar-menu {
+    :global(.dark) .navbar-menu {
       background-color: var(--color-card-bg);
     }
 
-    :global(.dark) .nav-link,
-    :global(html:not(.light)) .nav-link {
+    :global(.dark) .nav-link {
       color: var(--color-text);
     }
 
-    :global(.dark) .nav-item,
-    :global(html:not(.light)) .nav-item {
+    :global(.dark) .nav-item {
       border-bottom-color: var(--color-border);
     }
 
-    :global(.dark) .dropdown-menu,
-    :global(html:not(.light)) .dropdown-menu {
+    :global(.dark) .dropdown-menu {
       background-color: var(--color-sidebar-bg);
     }
 
-    :global(.dark) #search-input,
-    :global(html:not(.light)) #search-input {
+    :global(.dark) #search-input {
       background-color: var(--color-code-bg);
       color: var(--color-text);
       border-color: var(--color-border);

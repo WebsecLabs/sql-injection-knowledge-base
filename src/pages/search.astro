@@ -101,7 +101,17 @@ const baseUrl = import.meta.env.BASE_URL;
   </div>
 
   <script>
-    import "../scripts/search";
+    import { initSearch } from "../scripts/search";
+
+    // Ensure search is initialized (module has event listeners, but explicit call ensures inclusion)
+    if (typeof document !== "undefined") {
+      if (document.readyState === "loading") {
+        document.addEventListener("DOMContentLoaded", initSearch);
+      } else {
+        initSearch();
+      }
+      document.addEventListener("astro:page-load", initSearch);
+    }
   </script>
 </Layout>
 

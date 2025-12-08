@@ -9,9 +9,25 @@ interface SearchEntry {
   collection: string;
 }
 
+// Simple debounce utility
+function debounce<T extends (...args: Parameters<T>) => void>(func: T, wait: number) {
+  let timeout: number | undefined;
+  return function executedFunction(...args: Parameters<T>) {
+    const later = () => {
+      clearTimeout(timeout);
+      func(...args);
+    };
+    clearTimeout(timeout);
+    timeout = window.setTimeout(later, wait);
+  };
+}
+
 export function initSearch() {
   const container = document.querySelector(".search-results") as HTMLElement;
   if (!container) return;
+
+  // Prevent duplicate initialization on the same container
+  if (container.dataset.initialized === "true") return;
 
   const baseUrl = container.dataset.baseUrl || "/";
   const searchDataJson = container.dataset.searchEntries || "[]";
@@ -33,6 +49,9 @@ export function initSearch() {
     console.error("Missing search DOM elements");
     return;
   }
+
+  // Ensure status region is polite for screen readers
+  searchStatus.setAttribute("aria-live", "polite");
 
   // Highlight matching text
   function highlightText(text: string, query: string): string {
@@ -142,21 +161,31 @@ export function initSearch() {
     resultsContainer.innerHTML = html;
   }
 
+  // Debounced search handler
+  const performSearchDebounced = debounce((query: string) => performSearch(query), 300);
+
   // Get query from URL
   const urlParams = new URLSearchParams(window.location.search);
   const queryParam = urlParams.get("q") || "";
 
-  // Set input value and perform search
+  // Set input value and perform search immediately if URL param exists
   searchInput.value = queryParam;
-  performSearch(queryParam);
-
-  // Update title if query exists
   if (queryParam) {
+    performSearch(queryParam);
+    // Update title
     const maxLen = 50;
     const truncated = queryParam.length > maxLen ? queryParam.slice(0, maxLen) + "…" : queryParam;
     document.title = `Search Results for "${escapeControlChars(truncated)}" - SQL Injection KB`;
   }
+
+  // Add input listener with debounce
+  searchInput.addEventListener("input", (e) => {
+    const target = e.target as HTMLInputElement;
+    performSearchDebounced(target.value);
+  });
+
+  // Mark as initialized only after successful setup
+  container.dataset.initialized = "true";
 }
 
-// Run on load
-document.addEventListener("DOMContentLoaded", initSearch);
+// Note: Event listeners are set up in search.astro to ensure the module is not tree-shaken
