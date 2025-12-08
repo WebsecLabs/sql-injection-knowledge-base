@@ -20,28 +20,27 @@ The hash is: `MD5(password + username)`
 #### Using Hashcat
 
 ```bash
-# Hash format: username:md5hash
-# Example: postgres:md5d578ec61fc8a2bdbe7df2c3096b34e02
+# Hash format: hash:username (strip "md5" prefix, username is salt)
+# Example: d578ec61fc8a2bdbe7df2c3096b34e02:postgres
 
-# Hashcat mode 11 for PostgreSQL
-hashcat -m 11 -a 0 hash.txt wordlist.txt
+# Hashcat mode 12 for PostgreSQL
+hashcat -m 12 -a 0 hash.txt wordlist.txt
 
 # With rules
-hashcat -m 11 -a 0 hash.txt wordlist.txt -r rules/best64.rule
+hashcat -m 12 -a 0 hash.txt wordlist.txt -r rules/best64.rule
 ```
 
 #### Using John the Ripper
 
 ```bash
-# Format the hash as: username:$postgres$hash
-# Or use raw format: username:hash
+# Format: username:$dynamic_1$<32-hex-hash>$username
+# Strip "md5" prefix, username is the salt
 
-# Create hash file
-echo 'postgres:md5d578ec61fc8a2bdbe7df2c3096b34e02' > postgres_hash.txt
+# Create hash file (dynamic_1 = MD5(password + username))
+echo 'postgres:$dynamic_1$d578ec61fc8a2bdbe7df2c3096b34e02$postgres' > postgres_hash.txt
 
 # Run John
-john --format=raw-md5 postgres_hash.txt
-john --format=dynamic_1 postgres_hash.txt  # MD5(password.salt)
+john --format=dynamic_1 postgres_hash.txt
 ```
 
 #### Manual Python Cracker
@@ -149,20 +148,20 @@ cat wordlist1.txt wordlist2.txt | sort -u > combined.txt
 # 1. Extract hash from database
 # postgres:md5d578ec61fc8a2bdbe7df2c3096b34e02
 
-# 2. Prepare hash file
-echo 'postgres:md5d578ec61fc8a2bdbe7df2c3096b34e02' > pg_hash.txt
+# 2. Prepare hash file (strip "md5" prefix, format as hash:username)
+echo 'd578ec61fc8a2bdbe7df2c3096b34e02:postgres' > pg_hash.txt
 
 # 3. Quick dictionary attack
-hashcat -m 11 -a 0 pg_hash.txt rockyou.txt
+hashcat -m 12 -a 0 pg_hash.txt rockyou.txt
 
 # 4. Dictionary with rules
-hashcat -m 11 -a 0 pg_hash.txt rockyou.txt -r best64.rule
+hashcat -m 12 -a 0 pg_hash.txt rockyou.txt -r best64.rule
 
 # 5. Brute force short passwords
-hashcat -m 11 -a 3 pg_hash.txt ?a?a?a?a?a?a
+hashcat -m 12 -a 3 pg_hash.txt ?a?a?a?a?a?a
 
 # 6. Check results
-hashcat -m 11 pg_hash.txt --show
+hashcat -m 12 pg_hash.txt --show
 ```
 
 ### Notes

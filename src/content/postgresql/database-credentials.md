@@ -29,8 +29,9 @@ SELECT usename FROM pg_user;
 -- List all roles
 SELECT rolname FROM pg_roles;
 
--- Get user details
-SELECT usename, usecreatedb, usesuper, usecatupd FROM pg_user;
+-- Get user details (usecatupd column removed in PostgreSQL 10+)
+SELECT usename, usecreatedb, usesuper, usecatupd FROM pg_user;  -- PostgreSQL < 10
+SELECT usename, usecreatedb, usesuper FROM pg_user;             -- PostgreSQL 10+
 
 -- Find superuser accounts
 SELECT usename FROM pg_user WHERE usesuper = true;

