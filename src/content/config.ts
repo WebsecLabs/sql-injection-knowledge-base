@@ -21,6 +21,9 @@ export const collections = {
   oracle: defineCollection({
     schema: entrySchema,
   }),
+  postgresql: defineCollection({
+    schema: entrySchema,
+  }),
   extras: defineCollection({
     schema: entrySchema,
   }),

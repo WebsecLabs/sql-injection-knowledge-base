@@ -10,13 +10,14 @@ interface Props {
   mysqlEntries: CollectionEntry<"mysql">[];
   mssqlEntries: CollectionEntry<"mssql">[];
   oracleEntries: CollectionEntry<"oracle">[];
+  postgresqlEntries: CollectionEntry<"postgresql">[];
   extrasEntries: CollectionEntry<"extras">[];
 }
 
-const { mysqlEntries, mssqlEntries, oracleEntries, extrasEntries } = Astro.props;
+const { mysqlEntries, mssqlEntries, oracleEntries, postgresqlEntries, extrasEntries } = Astro.props;
 
 // Type-safe helper function to group entries by category
-type AnyEntry = CollectionEntry<"mysql" | "mssql" | "oracle" | "extras">;
+type AnyEntry = CollectionEntry<"mysql" | "mssql" | "oracle" | "postgresql" | "extras">;
 
 interface CategoryGroup {
   [category: string]: AnyEntry[];
@@ -45,6 +46,7 @@ function sortCategoryEntries(grouped: CategoryGroup): CategoryGroup {
 const mysqlByCategory = sortCategoryEntries(groupByCategory(mysqlEntries));
 const mssqlByCategory = sortCategoryEntries(groupByCategory(mssqlEntries));
 const oracleByCategory = sortCategoryEntries(groupByCategory(oracleEntries));
+const postgresqlByCategory = sortCategoryEntries(groupByCategory(postgresqlEntries));
 
 // Sort extras entries by order
 const sortedExtras = [...extrasEntries].sort((a, b) => a.data.order - b.data.order);
@@ -56,6 +58,7 @@ const currentPath = Astro.url.pathname;
 function getActiveSection(path: string): string {
   if (path.includes("/mssql/")) return "mssql";
   if (path.includes("/oracle/")) return "oracle";
+  if (path.includes("/postgresql/")) return "postgresql";
   if (path.includes("/extras/")) return "extras";
   return "mysql";
 }
@@ -95,6 +98,14 @@ const activeSection = getActiveSection(currentPath);
       isActive={activeSection === "oracle"}
       currentPath={currentPath}
       entriesByCategory={oracleByCategory}
+    />
+
+    <SidebarSection
+      sectionId="postgresql"
+      title="PostgreSQL"
+      isActive={activeSection === "postgresql"}
+      currentPath={currentPath}
+      entriesByCategory={postgresqlByCategory}
     />
 
     <SidebarSection

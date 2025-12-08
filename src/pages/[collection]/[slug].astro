@@ -39,6 +39,7 @@ const { entry, collectionName } = Astro.props;
 const mysqlEntries = await getCollection("mysql");
 const mssqlEntries = await getCollection("mssql");
 const oracleEntries = await getCollection("oracle");
+const postgresqlEntries = await getCollection("postgresql");
 const extrasEntries = await getCollection("extras");
 
 // Build page title
@@ -50,6 +51,7 @@ const collections = {
   mysqlEntries,
   mssqlEntries,
   oracleEntries,
+  postgresqlEntries,
   extrasEntries,
 };
 ---

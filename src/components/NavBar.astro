@@ -8,6 +8,7 @@ interface Props {
   mysqlEntries?: CollectionEntry<"mysql">[];
   mssqlEntries?: CollectionEntry<"mssql">[];
   oracleEntries?: CollectionEntry<"oracle">[];
+  postgresqlEntries?: CollectionEntry<"postgresql">[];
   extrasEntries?: CollectionEntry<"extras">[];
 }
 
@@ -16,10 +17,11 @@ const {
   mysqlEntries = [],
   mssqlEntries = [],
   oracleEntries = [],
+  postgresqlEntries = [],
   extrasEntries = [],
 } = Astro.props;
 
-type AnyEntry = CollectionEntry<"mysql" | "mssql" | "oracle" | "extras">;
+type AnyEntry = CollectionEntry<"mysql" | "mssql" | "oracle" | "postgresql" | "extras">;
 
 // Helper function to group entries by category
 function groupByCategory(entries: AnyEntry[]) {
@@ -38,6 +40,7 @@ const entriesByCategory = {
   mysql: groupByCategory(mysqlEntries),
   mssql: groupByCategory(mssqlEntries),
   oracle: groupByCategory(oracleEntries),
+  postgresql: groupByCategory(postgresqlEntries),
 };
 
 // Sort each category's entries by order
@@ -53,6 +56,7 @@ const categoriesByType = {
   mysql: Object.keys(entriesByCategory.mysql).sort(),
   mssql: Object.keys(entriesByCategory.mssql).sort(),
   oracle: Object.keys(entriesByCategory.oracle).sort(),
+  postgresql: Object.keys(entriesByCategory.postgresql).sort(),
 };
 
 // Filter out external links from extras
@@ -117,7 +121,7 @@ function isActivePath(section: string, slug: string): boolean {
 
       <ul class="nav-links">
         {
-          (["mysql", "mssql", "oracle"] as const).map((type) => (
+          (["mysql", "mssql", "oracle", "postgresql"] as const).map((type) => (
             <li class="nav-item dropdown">
               <button class="nav-link dropdown-toggle">
                 {COLLECTION_LABELS[type]}

@@ -4,9 +4,9 @@ import { getEntryURL } from "../utils/entryUtils";
 // Note: transition:animate="fade" is a built-in Astro directive, no import needed
 
 interface Props {
-  entries: CollectionEntry<"mysql" | "mssql" | "oracle" | "extras">[];
+  entries: CollectionEntry<"mysql" | "mssql" | "oracle" | "postgresql" | "extras">[];
   title: string;
-  collectionType: "mysql" | "mssql" | "oracle" | "extras";
+  collectionType: "mysql" | "mssql" | "oracle" | "postgresql" | "extras";
 }
 
 const { entries, title, collectionType } = Astro.props;

@@ -53,8 +53,9 @@ const handleSearch = (e: Event): void => {
   }
 
   // Remember which sections were active before searching (only on first search)
-  const hasStoredState = Array.from(document.querySelectorAll<HTMLElement>(".sidebar-section"))
-    .some(s => s.dataset.wasActive !== undefined);
+  const hasStoredState = Array.from(
+    document.querySelectorAll<HTMLElement>(".sidebar-section")
+  ).some((s) => s.dataset.wasActive !== undefined);
   if (!hasStoredState) {
     document.querySelectorAll<HTMLElement>(".sidebar-section.active").forEach((section) => {
       section.dataset.wasActive = "true";

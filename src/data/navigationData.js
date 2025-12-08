@@ -74,6 +74,31 @@ export const dbSystems = [
       { text: "Password Cracking", href: "#Oracle_Password_Cracking" },
     ],
   },
+  {
+    name: "PostgreSQL",
+    id: "postgresql",
+    links: [
+      { text: "Default Databases", href: "#PostgreSQL_Default_Databases" },
+      { text: "Comment Out Query", href: "#PostgreSQL_Comment_Out_Query" },
+      { text: "Testing Injection", href: "#PostgreSQL_Testing_Injection" },
+      { text: "Testing Version", href: "#PostgreSQL_Testing_Version" },
+      { text: "Database Credentials", href: "#PostgreSQL_Database_Credentials" },
+      { text: "Database Names", href: "#PostgreSQL_Database_Names" },
+      { text: "Server Hostname", href: "#PostgreSQL_Server_Hostname" },
+      { text: "Tables and Columns", href: "#PostgreSQL_Tables_And_Columns" },
+      { text: "Avoiding Quotations", href: "#PostgreSQL_Avoiding_Quotations" },
+      { text: "String Concatenation", href: "#PostgreSQL_String_Concatenation" },
+      { text: "Conditional Statements", href: "#PostgreSQL_Conditional_Statements" },
+      { text: "Timing", href: "#PostgreSQL_Timing" },
+      { text: "Stacked Queries", href: "#PostgreSQL_Stacked_Queries" },
+      { text: "Privileges", href: "#PostgreSQL_Privileges" },
+      { text: "Reading Files", href: "#PostgreSQL_Reading_Files" },
+      { text: "Writing Files", href: "#PostgreSQL_Writing_Files" },
+      { text: "Command Execution", href: "#PostgreSQL_Command_Execution" },
+      { text: "Password Hashing", href: "#PostgreSQL_Password_Hashing" },
+      { text: "Password Cracking", href: "#PostgreSQL_Password_Cracking" },
+    ],
+  },
 ];
 
 // Extra links - internal and external

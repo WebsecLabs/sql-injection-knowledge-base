@@ -3,7 +3,7 @@ import { type CollectionEntry } from "astro:content";
 
 interface Props {
   category: string;
-  entries: CollectionEntry<"mysql" | "mssql" | "oracle" | "extras">[];
+  entries: CollectionEntry<"mysql" | "mssql" | "oracle" | "postgresql" | "extras">[];
   baseUrl: string;
   section: string;
   isActivePath: (section: string, slug: string) => boolean;

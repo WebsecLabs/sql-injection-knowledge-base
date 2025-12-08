@@ -9,6 +9,7 @@ import { COLLECTION_TYPES, COLLECTION_LABELS } from "../utils/constants";
 const mysqlEntries = await getCollection("mysql");
 const mssqlEntries = await getCollection("mssql");
 const oracleEntries = await getCollection("oracle");
+const postgresqlEntries = await getCollection("postgresql");
 const extrasEntries = await getCollection("extras");
 
 // Map entries to a convenient object
@@ -16,18 +17,24 @@ const entries = {
   mysql: mysqlEntries,
   mssql: mssqlEntries,
   oracle: oracleEntries,
+  postgresql: postgresqlEntries,
   extras: extrasEntries,
 };
 
 // Count total entries
 const totalEntries =
-  mysqlEntries.length + mssqlEntries.length + oracleEntries.length + extrasEntries.length;
+  mysqlEntries.length +
+  mssqlEntries.length +
+  oracleEntries.length +
+  postgresqlEntries.length +
+  extrasEntries.length;
 
 // Count actual database platforms (collections with at least one entry)
 const activeDatabaseCount = [
   mysqlEntries.length > 0,
   mssqlEntries.length > 0,
   oracleEntries.length > 0,
+  postgresqlEntries.length > 0,
 ].filter(Boolean).length;
 ---
 
@@ -38,6 +45,7 @@ const activeDatabaseCount = [
     mysqlEntries,
     mssqlEntries,
     oracleEntries,
+    postgresqlEntries,
     extrasEntries,
   }}
 >

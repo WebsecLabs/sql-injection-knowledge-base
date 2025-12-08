@@ -15,13 +15,16 @@ const type = (
 ) as (typeof COLLECTION_TYPES)[number];
 
 // Only load the collection we actually need
-let entries: CollectionEntry<"mysql" | "mssql" | "oracle" | "extras">[];
+let entries: CollectionEntry<"mysql" | "mssql" | "oracle" | "postgresql" | "extras">[];
 switch (type) {
   case "mssql":
     entries = await getCollection("mssql");
     break;
   case "oracle":
     entries = await getCollection("oracle");
+    break;
+  case "postgresql":
+    entries = await getCollection("postgresql");
     break;
   case "extras":
     entries = await getCollection("extras");
@@ -32,7 +35,9 @@ switch (type) {
 }
 
 // Find the entry to display
-let currentEntry: CollectionEntry<"mysql" | "mssql" | "oracle" | "extras"> | undefined;
+let currentEntry:
+  | CollectionEntry<"mysql" | "mssql" | "oracle" | "postgresql" | "extras">
+  | undefined;
 if (slug) {
   currentEntry = entries.find((entry) => entry.slug === slug);
 }
@@ -58,6 +63,9 @@ switch (type) {
     break;
   case "oracle":
     collections.oracleEntries = entries;
+    break;
+  case "postgresql":
+    collections.postgresqlEntries = entries;
     break;
   case "extras":
     collections.extrasEntries = entries;
