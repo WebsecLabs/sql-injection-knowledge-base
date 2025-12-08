@@ -14,8 +14,14 @@ if ! docker build -t sqli-kb .; then
   exit 1
 fi
 
-# Run container on the websec network so the proxy can reach it
-docker run -d --name sqli-kb --network websec-site_websec-network -p 8080:80 sqli-kb
-
-echo "Container started on websec-site_websec-network"
-echo "  - sqli-kb: http://localhost:8080 (proxy: http://localhost/sql-injection-knowledge-base)"
+# Check if websec network exists and join it if available
+NETWORK="websec-site_websec-network"
+if docker network inspect "$NETWORK" >/dev/null 2>&1; then
+  docker run -d --name sqli-kb --network "$NETWORK" -p 8080:80 sqli-kb
+  echo "Container started on $NETWORK"
+  echo "  - sqli-kb: http://localhost:8080 (proxy: http://localhost/sql-injection-knowledge-base)"
+else
+  docker run -d --name sqli-kb -p 8080:80 sqli-kb
+  echo "Container started (standalone mode)"
+  echo "  - sqli-kb: http://localhost:8080/sql-injection-knowledge-base/"
+fi
