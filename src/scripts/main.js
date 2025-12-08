@@ -284,23 +284,23 @@ document.addEventListener("DOMContentLoaded", function () {
       transition: all 0.2s ease;
       opacity: 0;
     }
-    
+
     pre:hover .copy-button {
       opacity: 1;
     }
-    
+
     .copy-button:hover {
       background-color: rgba(0, 0, 0, 0.3);
     }
-    
+
     .copy-button.success {
-      background-color: #48bb78;
+      background-color: var(--color-true-text);
     }
-    
+
     .copy-button.error {
-      background-color: #f56565;
+      background-color: var(--color-false-text);
     }
-    
+
     /* Mobile enhancements */
     @media (max-width: 768px) {
       .copy-button {
@@ -312,3 +312,54 @@ document.addEventListener("DOMContentLoaded", function () {
   `;
   document.head.appendChild(style);
 });
+
+// Theme toggle functionality
+function initializeThemeToggle() {
+  const themeToggle = document.getElementById("theme-toggle");
+  if (!themeToggle) return;
+
+  // Clone to remove existing listeners
+  const newThemeToggle = themeToggle.cloneNode(true);
+  if (themeToggle.parentNode) {
+    themeToggle.parentNode.replaceChild(newThemeToggle, themeToggle);
+  }
+
+  newThemeToggle.addEventListener("click", function () {
+    const html = document.documentElement;
+    const currentTheme = localStorage.getItem("theme");
+
+    // Determine current effective theme
+    let isDark = false;
+    if (currentTheme === "dark") {
+      isDark = true;
+    } else if (currentTheme === "light") {
+      isDark = false;
+    } else {
+      // No manual override, check system preference
+      isDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+    }
+
+    // Toggle theme
+    if (isDark) {
+      // Switch to light
+      html.classList.remove("dark");
+      html.classList.add("light");
+      localStorage.setItem("theme", "light");
+    } else {
+      // Switch to dark
+      html.classList.remove("light");
+      html.classList.add("dark");
+      localStorage.setItem("theme", "dark");
+    }
+  });
+}
+
+// Initialize theme toggle on page load
+if (document.readyState === "loading") {
+  document.addEventListener("DOMContentLoaded", initializeThemeToggle);
+} else {
+  initializeThemeToggle();
+}
+
+// Also initialize on Astro page load for View Transitions
+document.addEventListener("astro:page-load", initializeThemeToggle);

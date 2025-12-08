@@ -64,9 +64,9 @@ function processCode(rawCode: string) {
 <style>
   .sql-example {
     margin: 1.25rem 0;
-    background-color: white;
+    background-color: var(--color-card-bg);
     border-radius: 8px;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    box-shadow: var(--shadow);
     overflow: hidden;
   }
 
@@ -74,12 +74,12 @@ function processCode(rawCode: string) {
     margin: 0;
     padding: 0.75rem 1rem;
     font-style: italic;
-    border-bottom: 1px solid #edf2f7;
+    border-bottom: 1px solid var(--color-border);
   }
 
   .modern-code-block {
     margin: 0;
-    background-color: #f8fafc;
+    background-color: var(--color-code-bg);
     font-family: var(--font-mono);
     font-size: 0.9rem;
     line-height: 1.5;
@@ -90,15 +90,15 @@ function processCode(rawCode: string) {
     justify-content: space-between;
     align-items: center;
     padding: 0.5rem 1rem;
-    background-color: #edf2f7;
-    border-bottom: 1px solid #e2e8f0;
+    background-color: var(--color-sidebar-bg);
+    border-bottom: 1px solid var(--color-border);
   }
 
   .code-label {
     font-size: 0.75rem;
     font-weight: 600;
     text-transform: uppercase;
-    color: #4a5568;
+    color: var(--color-text-muted);
   }
 
   .fake-buttons {
@@ -114,15 +114,15 @@ function processCode(rawCode: string) {
   }
 
   .fake-buttons span:nth-child(1) {
-    background-color: #fc8181;
+    background-color: var(--color-mac-red);
   }
 
   .fake-buttons span:nth-child(2) {
-    background-color: #f6e05e;
+    background-color: var(--color-mac-yellow);
   }
 
   .fake-buttons span:nth-child(3) {
-    background-color: #68d391;
+    background-color: var(--color-mac-green);
   }
 
   .code-content {
@@ -134,15 +134,15 @@ function processCode(rawCode: string) {
   .example-notes {
     padding: 0.75rem 1rem;
     font-size: 0.9rem;
-    background-color: #f8fafc;
-    border-top: 1px solid #edf2f7;
+    background-color: var(--color-code-bg);
+    border-top: 1px solid var(--color-border);
   }
 
   .example-notes h4 {
     margin-top: 0;
     margin-bottom: 0.5rem;
     font-size: 0.95rem;
-    color: #4a5568;
+    color: var(--color-text-muted);
   }
 
   .example-notes ul {
@@ -151,8 +151,8 @@ function processCode(rawCode: string) {
   }
 
   .injection {
-    background-color: rgba(237, 100, 166, 0.1);
-    color: #d53f8c;
+    background-color: var(--color-injection-bg);
+    color: var(--color-injection-text);
     font-weight: bold;
     padding: 0.125rem 0.25rem;
     border-radius: 3px;

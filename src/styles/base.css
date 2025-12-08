@@ -57,7 +57,7 @@ h1 {
   margin-top: 0;
   padding-bottom: 0.75rem;
   border-bottom: 1px solid var(--color-border);
-  color: #1a365d;
+  color: var(--color-heading-1);
   font-weight: 700;
 }
 
@@ -66,7 +66,7 @@ h2 {
   border-bottom: 1px solid var(--color-border);
   padding-bottom: 0.6rem;
   margin-top: 2.5rem;
-  color: #2a4365;
+  color: var(--color-heading-2);
   position: relative;
 }
 
@@ -83,7 +83,7 @@ h2::before {
 
 h3 {
   font-size: 1.25rem;
-  color: #2d3748;
+  color: var(--color-heading-3);
 }
 
 p {

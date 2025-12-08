@@ -55,9 +55,9 @@ const { Content } = await entry.render();
 
 <style>
   .markdown-entry {
-    background-color: white;
+    background-color: var(--color-card-bg);
     border-radius: 8px;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    box-shadow: var(--shadow);
     padding: 2rem;
     margin-bottom: 2rem;
   }
@@ -75,7 +75,7 @@ const { Content } = await entry.render();
 
   .entry-description {
     font-size: 1.1rem;
-    color: #4a5568;
+    color: var(--color-text-muted);
     margin-bottom: 1rem;
   }
 
@@ -85,7 +85,7 @@ const { Content } = await entry.render();
     gap: 1rem;
     margin-bottom: 1rem;
     font-size: 0.9rem;
-    color: #718096;
+    color: var(--color-text-light);
   }
 
   .entry-category {
@@ -102,8 +102,8 @@ const { Content } = await entry.render();
 
   .tag {
     display: inline-block;
-    background-color: #edf2f7;
-    color: #4a5568;
+    background-color: var(--color-sidebar-bg);
+    color: var(--color-text-muted);
     padding: 0.25rem 0.75rem;
     border-radius: 9999px;
     font-size: 0.75rem;
@@ -119,14 +119,14 @@ const { Content } = await entry.render();
     font-size: 1.5rem;
     margin-top: 2rem;
     margin-bottom: 1rem;
-    color: #2d3748;
+    color: var(--color-heading-3);
   }
 
   .entry-content :global(h3) {
     font-size: 1.25rem;
     margin-top: 1.5rem;
     margin-bottom: 0.75rem;
-    color: #2d3748;
+    color: var(--color-heading-3);
   }
 
   .entry-content :global(p) {
@@ -153,26 +153,26 @@ const { Content } = await entry.render();
   }
 
   .entry-content :global(blockquote) {
-    border-left: 4px solid #cbd5e0;
+    border-left: 4px solid var(--color-border-light);
     padding-left: 1rem;
     margin-left: 0;
     margin-right: 0;
-    color: #4a5568;
+    color: var(--color-text-muted);
   }
 
   .entry-content :global(pre) {
-    background-color: #f8fafc;
+    background-color: var(--color-code-bg);
     border-radius: 6px;
     padding: 1rem;
     overflow-x: auto;
     margin: 1rem 0;
-    border: 1px solid #edf2f7;
+    border: 1px solid var(--color-border);
   }
 
   .entry-content :global(code) {
     font-family: var(--font-mono);
     font-size: 0.9em;
-    background-color: #f1f5f9;
+    background-color: var(--color-sidebar-bg);
     padding: 0.2rem 0.4rem;
     border-radius: 3px;
   }
@@ -193,17 +193,17 @@ const { Content } = await entry.render();
   .entry-content :global(th),
   .entry-content :global(td) {
     padding: 0.75rem 1rem;
-    border: 1px solid #e2e8f0;
+    border: 1px solid var(--color-border);
   }
 
   .entry-content :global(th) {
-    background-color: #f8fafc;
+    background-color: var(--color-table-header-bg);
     font-weight: 600;
     text-align: left;
   }
 
   .entry-content :global(tr:nth-child(even)) {
-    background-color: #f9fafb;
+    background-color: var(--color-table-row-alt);
   }
 
   .entry-content :global(img) {

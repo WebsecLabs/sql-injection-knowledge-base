@@ -33,7 +33,7 @@
   padding-top: 0;
   margin-top: 0;
   overflow-x: hidden;
-  background-color: #fff;
+  background-color: var(--color-card-bg);
   flex: 1;
 }
 

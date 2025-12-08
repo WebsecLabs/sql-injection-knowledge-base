@@ -58,6 +58,18 @@ const extrasEntries = collections?.extrasEntries ?? (await getCollection("extras
     />
     <meta name="HandheldFriendly" content="true" />
 
+    <!-- Theme initialization - runs before page renders to prevent flash -->
+    <script is:inline>
+      (function () {
+        const theme = localStorage.getItem("theme");
+        if (theme === "dark") {
+          document.documentElement.classList.add("dark");
+        } else if (theme === "light") {
+          document.documentElement.classList.add("light");
+        }
+      })();
+    </script>
+
     <script>
       import "/src/scripts/main.js";
     </script>
