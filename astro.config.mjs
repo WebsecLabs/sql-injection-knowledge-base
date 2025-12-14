@@ -3,10 +3,12 @@ import tsconfigPaths from "vite-tsconfig-paths";
 import sitemap from "@astrojs/sitemap";
 import { remarkBasePath } from "./src/plugins/remark-base-path.mjs";
 
-const base = "/sql-injection-knowledge-base/";
+// Use "/" for standalone mode, "/sql-injection-knowledge-base/" for integrated mode
+const isStandalone = process.env.STANDALONE === "true";
+const base = isStandalone ? "/" : "/sql-injection-knowledge-base/";
 
 export default defineConfig({
-  site: "https://websec.ca",
+  site: isStandalone ? "http://localhost:8080" : "https://websec.ca",
   outDir: "./dist",
   publicDir: "./public",
   base,
