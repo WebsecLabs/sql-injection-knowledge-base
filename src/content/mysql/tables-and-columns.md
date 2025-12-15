@@ -175,4 +175,4 @@ This advanced payload retrieves all databases, tables, and columns in a single q
 SELECT (@) FROM (SELECT(@:=0x00),(SELECT (@) FROM (information_schema.columns) WHERE (table_schema>=@) AND (@)IN (@:=CONCAT(@,0x0a,' [ ',table_schema,' ]>',table_name,' > ',column_name))))x
 ```
 
-This technique uses variable assignment within a subquery to concatenate all schema information into a single result.
+This technique uses a MySQL user-defined variable (`@`) to accumulate results across rows. The subquery iterates over `information_schema.columns`, and for each row, concatenates the schema name, table name, and column name into the `@` variable using `@:=CONCAT(...)`. The `0x0a` is a hex-encoded newline character that separates each entry in the output. The `WHERE (table_schema>=@) AND (@)IN (@:=...)` construct forces MySQL to evaluate the assignment for every row, building up the complete list in a single query result.

@@ -1,10 +1,72 @@
+import type { CollectionEntry } from "astro:content";
+import type { ValidCollection } from "./constants";
+
+type AnyEntry = CollectionEntry<ValidCollection>;
+
+interface AdjacentEntry {
+  slug: string;
+  title: string;
+  category: string;
+}
+
+interface AdjacentEntries {
+  previous: AdjacentEntry | null;
+  next: AdjacentEntry | null;
+}
+
 /**
  * Generate a URL for a content entry
  */
 export function getEntryURL(
-  collection: "mysql" | "mssql" | "oracle" | "postgresql" | "extras",
+  collection: ValidCollection,
   slug: string,
   baseUrl: string = "/"
 ): string {
   return `${baseUrl}${collection}/${slug}`;
+}
+
+/**
+ * Sort entries by category (alphabetically) then by order within each category.
+ * This creates a consistent reading order across all entries.
+ */
+function sortEntriesByCategory(entries: AnyEntry[]): AnyEntry[] {
+  return [...entries].sort((a, b) => {
+    const categoryCompare = a.data.category.localeCompare(b.data.category);
+    if (categoryCompare !== 0) return categoryCompare;
+    return a.data.order - b.data.order;
+  });
+}
+
+/**
+ * Get adjacent (previous/next) entries for navigation.
+ * Entries are ordered by category then by order field, enabling
+ * continuous navigation across category boundaries.
+ */
+export function getAdjacentEntries(allEntries: AnyEntry[], currentSlug: string): AdjacentEntries {
+  const sorted = sortEntriesByCategory(allEntries);
+  const currentIndex = sorted.findIndex((e) => e.slug === currentSlug);
+
+  if (currentIndex === -1) {
+    return { previous: null, next: null };
+  }
+
+  const previous =
+    currentIndex > 0
+      ? {
+          slug: sorted[currentIndex - 1].slug,
+          title: sorted[currentIndex - 1].data.title,
+          category: sorted[currentIndex - 1].data.category,
+        }
+      : null;
+
+  const next =
+    currentIndex < sorted.length - 1
+      ? {
+          slug: sorted[currentIndex + 1].slug,
+          title: sorted[currentIndex + 1].data.title,
+          category: sorted[currentIndex + 1].data.category,
+        }
+      : null;
+
+  return { previous, next };
 }

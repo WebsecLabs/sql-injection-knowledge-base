@@ -112,6 +112,8 @@ SELECT LEAST(1, 2, 3);     -- 1
 ' AND CASE WHEN (SUBSTRING(current_database(),1,1)='p') THEN pg_sleep(5) ELSE pg_sleep(0) END--
 ```
 
+**Note:** `pg_sleep()` returns void, not a boolean. The CASE expression exploits the function's side-effect (the delay) rather than any return value. The condition determines which branch executes, and the observable delay reveals whether the condition was true or false.
+
 ### Comparing Values
 
 ```sql

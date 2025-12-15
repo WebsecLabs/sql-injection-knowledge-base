@@ -1,6 +1,6 @@
 /* Sidebar styles */
 
-/* Hide sidebar overlay and toggle button by default (desktop) */
+/* Hide sidebar overlay, toggle button, and button container by default (desktop) */
 .sidebar-overlay {
   display: none;
 }

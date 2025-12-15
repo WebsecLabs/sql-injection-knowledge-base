@@ -44,7 +44,8 @@ $mysqli->multi_query("SELECT 1; SELECT 2;");
 $pdo->query("SELECT 1; SELECT 2;");
 
 // mysqli_query - does NOT support stacked queries
-mysqli_query($conn, "SELECT 1; SELECT 2;"); // Only executes first query
+// Only the first query before semicolon is executed; subsequent queries are ignored
+mysqli_query($conn, "SELECT 1; SELECT 2;");
 ```
 
 ### Detection

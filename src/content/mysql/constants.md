@@ -51,15 +51,15 @@ Date and time constants:
 
 MySQL has several special values:
 
-| Constant            | Description                          |
-| ------------------- | ------------------------------------ |
-| `NULL`              | Represents a NULL value              |
-| `\N`                | Alias for NULL                       |
-| `current_user`      | Current authenticated user           |
-| `DEFAULT`           | Used to specify default column value |
-| `CURRENT_TIMESTAMP` | Current date and time                |
-| `CURRENT_DATE`      | Current date                         |
-| `CURRENT_TIME`      | Current time                         |
+| Constant            | Description                                                                                                        |
+| ------------------- | ------------------------------------------------------------------------------------------------------------------ |
+| `NULL`              | Represents a NULL value                                                                                            |
+| `\N`                | NULL in LOAD DATA/SELECT INTO OUTFILE only; deprecated in 5.7.18, removed in 8.0                                   |
+| `CURRENT_USER()`    | Returns authenticated account as `user@host` (username may be empty for anonymous connections, e.g., `@localhost`) |
+| `DEFAULT`           | Used to specify default column value                                                                               |
+| `CURRENT_TIMESTAMP` | Current date and time                                                                                              |
+| `CURRENT_DATE`      | Current date                                                                                                       |
+| `CURRENT_TIME`      | Current time                                                                                                       |
 
 ### System Constants
 

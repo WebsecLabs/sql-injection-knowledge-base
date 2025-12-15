@@ -263,19 +263,21 @@ Use backticks to quote identifiers:
 
 Wrap keywords in version-specific comments:
 
-````sql
+```sql
 -- Only executes on MySQL 5+
 /*!information_schema.tables*/
 /*!50000 SELECT */ * FROM users
+```
 
 #### Symbol Spam
+
 Using valid arithmetic operators to confuse WAFs:
 
 ```sql
 -- Valid SQL using multiple operators
 1 AND -+--+--+~0
 1 AND -+--+--+~~((1))
-````
+```
 
 #### Quote Flooding
 

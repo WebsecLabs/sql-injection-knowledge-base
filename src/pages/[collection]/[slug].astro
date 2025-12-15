@@ -2,7 +2,9 @@
 import { getCollection, type CollectionEntry } from "astro:content";
 import Layout from "../../layouts/Layout.astro";
 import MarkdownEntry from "../../components/MarkdownEntry.astro";
+import EntryNavigation from "../../components/EntryNavigation.astro";
 import { COLLECTION_TYPES, COLLECTION_LABELS, type ValidCollection } from "../../utils/constants";
+import { getAdjacentEntries } from "../../utils/entryUtils";
 
 // Union type for entries from any valid collection
 type AnyEntry = CollectionEntry<ValidCollection>;
@@ -53,6 +55,17 @@ const collections = {
   postgresqlEntries,
   extrasEntries,
 };
+
+// Get current collection entries for navigation
+const collectionEntriesMap: Record<ValidCollection, AnyEntry[]> = {
+  mysql: mysqlEntries,
+  mssql: mssqlEntries,
+  oracle: oracleEntries,
+  postgresql: postgresqlEntries,
+  extras: extrasEntries,
+};
+const currentCollectionEntries = collectionEntriesMap[collectionName];
+const { previous, next } = getAdjacentEntries(currentCollectionEntries, entry.slug);
 ---
 
 <Layout title={pageTitle} collections={collections}>
@@ -68,6 +81,8 @@ const collections = {
     </div>
 
     <MarkdownEntry entry={entry} />
+
+    <EntryNavigation collection={collectionName} previous={previous} next={next} />
   </div>
 </Layout>
 

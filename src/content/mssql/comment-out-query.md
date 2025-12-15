@@ -13,12 +13,12 @@ In SQL injection attacks, commenting out the remainder of a query is often neces
 
 In Microsoft SQL Server (MSSQL), you can use the following methods to comment out the rest of a query:
 
-| Comment Type         | Syntax    | Description                       |
-| -------------------- | --------- | --------------------------------- |
-| Single-line comment  | `--`      | Requires a space after the dashes |
-| Inline/block comment | `/*...*/` | Can span multiple lines           |
-| Batch separator      | `;`       | Terminates the current statement  |
-| Nullbyte             | `;%00`    | Null byte terminates the query    |
+| Comment Type         | Syntax    | Description                                     |
+| -------------------- | --------- | ----------------------------------------------- |
+| Single-line comment  | `--`      | Requires a space after the dashes               |
+| Inline/block comment | `/*...*/` | Can span multiple lines                         |
+| Batch separator      | `;`       | Terminates the current statement                |
+| Nullbyte             | `%00`     | Application-layer string truncation (see notes) |
 
 ### Examples
 
@@ -39,3 +39,4 @@ SELECT * FROM Users WHERE username = 'admin'; EXEC sp_configure 'show advanced o
 2. In some cases, MSSQL ignores comment syntax in strings, so ensure that your injection point has proper quoting.
 3. Using the `;` batch separator can be particularly powerful as it allows execution of additional SQL statements.
 4. When using batch separators, be aware that permissions and error handling may differ from the original query.
+5. The null byte (`%00`) is not recognized by SQL Server itself — it works by truncating the string at the application layer before the query reaches the database. This behavior depends on the web framework/driver (e.g., classic ASP, certain PHP configurations) and may not work in modern stacks.

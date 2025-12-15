@@ -4,7 +4,7 @@ description: Using time-based techniques in PostgreSQL injections
 category: Injection Techniques
 order: 13
 tags: ["time-based", "blind injection", "sleep"]
-lastUpdated: 2025-12-07
+lastUpdated: 2025-12-15
 ---
 
 ## Timing
@@ -73,6 +73,8 @@ When `pg_sleep()` is blocked, use computation-heavy operations:
 ```
 
 #### Using pg_sleep_for() and pg_sleep_until()
+
+Both functions are available since PostgreSQL 9.4:
 
 ```sql
 -- Sleep for interval

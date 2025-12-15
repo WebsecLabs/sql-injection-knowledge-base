@@ -121,7 +121,11 @@ Boolean expressions evaluate to true or false:
 
 ### Using Constants in SQL Injection
 
+**Important:** The techniques below are environment- and configuration-dependent. Factors affecting success include PostgreSQL version, installed extensions, input sanitization/WAF rules, role privileges, and server encoding settings. Always validate prerequisites before attempting these techniques. See also: [Privileges](/postgresql/privileges) and [Command Execution](/postgresql/command-execution) for permission requirements.
+
 #### Dollar Quote Bypasses
+
+**Caveat:** Dollar-quoting may be blocked by input sanitizers or strict SQL parsers that don't expect this syntax.
 
 ```sql
 -- Avoid single quotes entirely
@@ -132,6 +136,8 @@ Boolean expressions evaluate to true or false:
 ```
 
 #### Numeric Constants in Bypasses
+
+**Caveat:** The `::` casting shorthand is PostgreSQL-specific and may be blocked by sanitizers expecting standard SQL syntax.
 
 ```sql
 -- Boolean as condition
@@ -145,6 +151,8 @@ Boolean expressions evaluate to true or false:
 ```
 
 #### String Encoding Bypasses
+
+**Caveat:** `CHR()` and `convert_from()` require those functions to be available (standard in PostgreSQL). Escape string syntax (`E'...'`) and encoding conversions depend on server encoding settings (typically UTF8).
 
 ```sql
 -- Using CHR() to avoid quotes
@@ -170,15 +178,19 @@ SELECT convert_from('\x61646d696e', 'UTF8');  -- 'admin'
 
 ##### Using System Functions
 
+**Note:** Some system functions and settings require elevated privileges. Functions like `current_setting('data_directory')` may be restricted to superusers or specific roles, and settings such as `restrict_superuser_variables` (PostgreSQL 15+) can further limit access. UNION-based injections also require matching column counts and compatible data types. Validate the DB user's privilege level and test prerequisites before attempting these techniques.
+
 ```sql
--- Information gathering
+-- Information gathering (generally accessible)
 ' UNION SELECT version(), current_database() --
 
--- Path disclosure
+-- Path disclosure (may require superuser or elevated privileges)
 ' UNION SELECT current_setting('data_directory'), 2 --
 ```
 
 ### Error-Based Injection with Constants
+
+**Caveat:** Error-based techniques require verbose error messages to be returned to the client (not always enabled in production). The `::` casting shorthand is PostgreSQL-specific.
 
 ```sql
 -- Using type casting to reveal data
@@ -189,6 +201,8 @@ SELECT convert_from('\x61646d696e', 'UTF8');  -- 'admin'
 ```
 
 ### Constants in Time-Based Attacks
+
+**Caveat:** `pg_sleep()` is generally available to all roles by default, but may be restricted by `statement_timeout`, connection poolers, or security policies. High sleep values may trigger timeouts or monitoring alerts.
 
 ```sql
 -- Sleep based on condition

@@ -84,11 +84,6 @@ function isActivePath(section: string, slug: string): boolean {
         <span class="logo-text logo-text-full">SQL Injection Knowledge Base</span>
         <span class="logo-text logo-text-short">SQL Injection KB</span>
       </a>
-      <button id="mobile-toggle" aria-label="Menu" aria-expanded="false">
-        <span class="bar"></span>
-        <span class="bar"></span>
-        <span class="bar"></span>
-      </button>
     </div>
 
     <div class="navbar-menu" id="navbar-menu">
@@ -275,6 +270,11 @@ function isActivePath(section: string, slug: string): boolean {
         </li>
       </ul>
     </div>
+    <button id="mobile-toggle" aria-label="Menu" aria-expanded="false">
+      <span class="bar"></span>
+      <span class="bar"></span>
+      <span class="bar"></span>
+    </button>
   </div>
 </nav>
 
@@ -315,7 +315,7 @@ function isActivePath(section: string, slug: string): boolean {
       }
 
       // Handle dropdown toggle on mobile and desktop differently
-      const isMobile = window.innerWidth < 992;
+      const isMobile = window.innerWidth < 1200;
       const dropdowns = document.querySelectorAll(".dropdown");
 
       // Clear any existing click handlers from dropdown toggles
@@ -454,7 +454,7 @@ function isActivePath(section: string, slug: string): boolean {
 
     // Handle window resize
     function handleResize() {
-      if (window.innerWidth < 992) {
+      if (window.innerWidth < 1200) {
         // On mobile, reset all dropdowns
         document.querySelectorAll(".dropdown").forEach((dropdown) => {
           dropdown.classList.remove("show");
@@ -530,10 +530,10 @@ function isActivePath(section: string, slug: string): boolean {
     overflow: visible;
   }
 
-  /* On mobile, hide overflow to prevent horizontal scroll */
-  @media (max-width: 991px) {
+  /* On mobile, remove overflow hidden which might clip the toggle button */
+  @media (max-width: 1199px) {
     .navbar {
-      overflow: hidden;
+      overflow: visible;
     }
   }
 
@@ -615,7 +615,6 @@ function isActivePath(section: string, slug: string): boolean {
     background: none;
     border: none;
     padding: 0.5rem;
-    margin-left: 1rem;
     cursor: pointer;
   }
 
@@ -643,12 +642,12 @@ function isActivePath(section: string, slug: string): boolean {
   .navbar-menu {
     display: flex;
     align-items: center;
-    gap: 2rem;
+    gap: 1rem;
   }
 
   .search-container {
     position: relative;
-    margin-right: 1.5rem;
+    margin-right: 0.5rem;
   }
 
   #search-form {
@@ -663,7 +662,7 @@ function isActivePath(section: string, slug: string): boolean {
     border: none;
     border-radius: 4px;
     font-size: 0.9rem;
-    width: 220px;
+    width: 180px;
     transition: all 0.2s ease;
     background-color: rgba(255, 255, 255, 0.1);
     color: white;
@@ -677,7 +676,7 @@ function isActivePath(section: string, slug: string): boolean {
     outline: none;
     background-color: rgba(255, 255, 255, 0.2);
     box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.25);
-    width: 280px;
+    width: 240px;
   }
 
   .search-icon {
@@ -705,7 +704,7 @@ function isActivePath(section: string, slug: string): boolean {
     display: flex;
     align-items: center;
     gap: 0.25rem;
-    padding: 0 1rem;
+    padding: 0 0.75rem;
     height: 70px;
     font-weight: 500;
     color: white;
@@ -784,13 +783,14 @@ function isActivePath(section: string, slug: string): boolean {
     margin: 0.5rem 0;
   }
 
-  @media (max-width: 991px) {
+  @media (max-width: 1199px) {
     .container {
       padding: 0 1rem;
     }
 
     #mobile-toggle {
       display: block;
+      margin-right: 0.5rem; /* Prevent scrollbar overlap */
     }
 
     .navbar-menu {
@@ -863,6 +863,13 @@ function isActivePath(section: string, slug: string): boolean {
     .nav-link:hover {
       background-color: transparent;
       color: var(--color-primary);
+    }
+
+    /* Force left alignment for standard links (like GitHub) that have icons + text */
+    .github-link,
+    .theme-toggle {
+      justify-content: flex-start;
+      gap: 0.75rem;
     }
 
     .github-link svg {

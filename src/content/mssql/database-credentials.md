@@ -34,8 +34,16 @@ SELECT loginame FROM master..sysprocesses WHERE spid=@@SPID;
 -- Check if current user is sysadmin
 SELECT (CASE WHEN (IS_SRVROLEMEMBER('sysadmin')=1) THEN '1' ELSE '0' END);
 
--- Retrieve credentials from legacy table (requires privileges)
-SELECT user, password FROM master.dbo.sysxlogins;
+-- Legacy table (SQL Server 2000 only - removed in 2005+)
+-- SELECT name, password FROM master.dbo.sysxlogins;
+```
+
+**Note:** `sysxlogins` was an undocumented table removed in SQL Server 2005. For modern instances, use `sys.sql_logins` or `sys.server_principals`:
+
+```sql
+-- Modern alternative (SQL Server 2005+)
+SELECT name, type_desc, is_disabled FROM sys.server_principals WHERE type IN ('S', 'U');
+SELECT name, is_disabled, is_policy_checked FROM sys.sql_logins;
 ```
 
 ### Examples

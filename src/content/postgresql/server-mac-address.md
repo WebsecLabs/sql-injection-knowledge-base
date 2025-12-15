@@ -67,7 +67,8 @@ SELECT pg_read_file('/sys/class/net/eth0/address');
 
 -- Alternative using large objects
 SELECT lo_import('/sys/class/net/eth0/address');
-SELECT convert_from(lo_get(<oid>), 'UTF8');
+-- Returns OID (e.g., 12345)
+SELECT convert_from(lo_get(12345), 'UTF8');  -- Replace 12345 with actual OID
 ```
 
 ### Command Execution Methods
@@ -113,7 +114,7 @@ COPY mac_output FROM PROGRAM 'ip -o link show | cut -d: -f2';
 
 1. **No direct SQL function**: PostgreSQL doesn't expose MAC addresses through built-in functions
 2. **Privilege requirements**: File reading or command execution requires elevated privileges
-3. **Platform dependent**: Linux `/sys/class/net/` paths don't exist on Windows
+3. **Platform dependent**: `/sys/class/net/` is Linux-specific; BSDs expose interfaces via `/dev` or sysctl/ifconfig, macOS uses system APIs/ifconfig, and Windows has no equivalent path. Use OS-specific commands (`ip link`, `ifconfig`, `Get-NetAdapter`) or programmatic APIs for cross-platform retrieval
 4. **Network configuration**: Docker containers and VMs may have virtual/different MAC addresses
 5. **Extension requirements**: Some methods require extensions like `plpython3u`
 
