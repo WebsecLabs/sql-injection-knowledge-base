@@ -13,21 +13,25 @@ Understanding MySQL operators is essential for crafting effective SQL injection 
 
 ### Comparison Operators
 
-| Operator      | Description           | Example                                         |
-| ------------- | --------------------- | ----------------------------------------------- |
-| `=`           | Equal                 | `SELECT * FROM users WHERE id = 1`              |
-| `<=>`         | NULL-safe equal       | `SELECT * FROM users WHERE name <=> NULL`       |
-| `<>` or `!=`  | Not equal             | `SELECT * FROM users WHERE id <> 1`             |
-| `>`           | Greater than          | `SELECT * FROM users WHERE id > 1`              |
-| `>=`          | Greater than or equal | `SELECT * FROM users WHERE id >= 1`             |
-| `<`           | Less than             | `SELECT * FROM users WHERE id < 10`             |
-| `<=`          | Less than or equal    | `SELECT * FROM users WHERE id <= 10`            |
-| `BETWEEN`     | Between range         | `SELECT * FROM users WHERE id BETWEEN 1 AND 10` |
-| `IS NULL`     | Null check            | `SELECT * FROM users WHERE email IS NULL`       |
-| `IS NOT NULL` | Not null check        | `SELECT * FROM users WHERE email IS NOT NULL`   |
-| `LIKE`        | Pattern matching      | `SELECT * FROM users WHERE name LIKE 'a%'`      |
-| `REGEXP`      | Regular expression    | `SELECT * FROM users WHERE name REGEXP '^a'`    |
-| `IN`          | In set                | `SELECT * FROM users WHERE id IN (1,2,3)`       |
+| Operator      | Description           | Example                                             |
+| ------------- | --------------------- | --------------------------------------------------- |
+| `=`           | Equal                 | `SELECT * FROM users WHERE id = 1`                  |
+| `<=>`         | NULL-safe equal       | `SELECT * FROM users WHERE name <=> NULL`           |
+| `<>` or `!=`  | Not equal             | `SELECT * FROM users WHERE id <> 1`                 |
+| `>`           | Greater than          | `SELECT * FROM users WHERE id > 1`                  |
+| `>=`          | Greater than or equal | `SELECT * FROM users WHERE id >= 1`                 |
+| `<`           | Less than             | `SELECT * FROM users WHERE id < 10`                 |
+| `<=`          | Less than or equal    | `SELECT * FROM users WHERE id <= 10`                |
+| `BETWEEN`     | Between range         | `SELECT * FROM users WHERE id BETWEEN 1 AND 10`     |
+| `IS NULL`     | Null check            | `SELECT * FROM users WHERE email IS NULL`           |
+| `IS NOT NULL` | Not null check        | `SELECT * FROM users WHERE email IS NOT NULL`       |
+| `LIKE`        | Pattern matching      | `SELECT * FROM users WHERE name LIKE 'a%'`          |
+| `NOT LIKE`    | Negated pattern match | `SELECT * FROM users WHERE name NOT LIKE 'a%'`      |
+| `REGEXP`      | Regular expression    | `SELECT * FROM users WHERE name REGEXP '^a'`        |
+| `NOT REGEXP`  | Negated regex match   | `SELECT * FROM users WHERE name NOT REGEXP '^a'`    |
+| `RLIKE`       | Alias for REGEXP      | `SELECT * FROM users WHERE name RLIKE '^a'`         |
+| `SOUNDS LIKE` | Phonetic comparison   | `SELECT * FROM users WHERE name SOUNDS LIKE 'john'` |
+| `IN`          | In set                | `SELECT * FROM users WHERE id IN (1,2,3)`           |
 
 ### Logical Operators
 

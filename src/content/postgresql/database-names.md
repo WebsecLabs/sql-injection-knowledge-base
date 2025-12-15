@@ -21,6 +21,19 @@ SELECT current_database();
 SELECT current_catalog;
 ```
 
+### Current Schema
+
+```sql
+-- Get current schema (search path)
+SELECT current_schema();
+
+-- Get full search path
+SELECT current_schemas(true);
+
+-- Show search_path setting
+SHOW search_path;
+```
+
 ### List All Databases
 
 ```sql

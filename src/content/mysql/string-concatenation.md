@@ -11,6 +11,20 @@ lastUpdated: 2025-03-15
 
 String concatenation is essential for constructing complex queries or bypassing filters during SQL injection. MySQL provides several methods to concatenate strings.
 
+### Direct String Adjacency
+
+MySQL automatically concatenates adjacent string literals (without any operator):
+
+```sql
+SELECT 'a' 'd' 'mi' 'n';
+-- Result: 'admin'
+
+SELECT 'sel' 'ect';
+-- Result: 'select'
+```
+
+This technique is useful for bypassing keyword filters since the string is never written as a single token.
+
 ### CONCAT() Function
 
 The most common method for string concatenation in MySQL is the `CONCAT()` function:

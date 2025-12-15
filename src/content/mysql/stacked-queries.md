@@ -28,10 +28,24 @@ For stacked queries to work, two conditions must be met:
 1. The database API must support multiple statements in a single query
 2. The application must use a database connector that supports multi-queries
 
-In PHP, for example:
+### PHP Driver Support
 
-- `mysqli_multi_query()` supports stacked queries
-- `mysqli_query()` does not support stacked queries
+| Driver/Extension | Multi-Query Support | Notes                                        |
+| ---------------- | ------------------- | -------------------------------------------- |
+| PDO_MYSQL        | Yes                 | Supports stacked queries by default          |
+| MySQLi           | Yes                 | Only via `mysqli_multi_query()` function     |
+| mysql\_\*        | No                  | Deprecated functions, no multi-query support |
+
+```php
+// MySQLi - supports stacked queries
+$mysqli->multi_query("SELECT 1; SELECT 2;");
+
+// PDO - supports stacked queries
+$pdo->query("SELECT 1; SELECT 2;");
+
+// mysqli_query - does NOT support stacked queries
+mysqli_query($conn, "SELECT 1; SELECT 2;"); // Only executes first query
+```
 
 ### Detection
 

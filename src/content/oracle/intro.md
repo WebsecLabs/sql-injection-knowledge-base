@@ -7,7 +7,17 @@ tags: ["introduction", "overview", "oracle"]
 lastUpdated: 2025-03-16
 ---
 
-This section provides a comprehensive collection of SQL injection techniques specific to Oracle databases. The techniques are organized into the following categories:
+This section provides a comprehensive collection of SQL injection techniques specific to Oracle databases.
+
+## Oracle Syntax Specifics
+
+Unlike MySQL or PostgreSQL, Oracle has strict requirements for SELECT statements:
+
+1. **FROM Clause is Mandatory**: Every `SELECT` statement must have a `FROM` clause.
+2. **DUAL Table**: Use the `dual` dummy table when you need to select literals or call functions without a real table (e.g., `SELECT 'A' FROM dual`).
+3. **Concatenation**: Use `||` for string concatenation (e.g., `'A'||'B'`), not `+` (SQL Server) or space (MySQL).
+
+The techniques are organized into the following categories:
 
 ## Basics
 

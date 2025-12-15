@@ -18,6 +18,7 @@ In Microsoft SQL Server (MSSQL), you can use the following methods to comment ou
 | Single-line comment  | `--`      | Requires a space after the dashes |
 | Inline/block comment | `/*...*/` | Can span multiple lines           |
 | Batch separator      | `;`       | Terminates the current statement  |
+| Nullbyte             | `;%00`    | Null byte terminates the query    |
 
 ### Examples
 

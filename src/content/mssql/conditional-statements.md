@@ -31,7 +31,12 @@ IF (SELECT COUNT(*) FROM users) > 10
   SELECT 'Many users'
 ELSE
   SELECT 'Few users'
+
+-- Simple inline example
+IF 1=1 SELECT 'true' ELSE SELECT 'false';
 ```
+
+**Note:** The `IF` statement cannot be used inside a `SELECT` statement. Use `CASE` expressions instead for inline conditional logic within queries.
 
 #### CASE Expression
 

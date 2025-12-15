@@ -54,6 +54,8 @@ MySQL has several special values:
 | Constant            | Description                          |
 | ------------------- | ------------------------------------ |
 | `NULL`              | Represents a NULL value              |
+| `\N`                | Alias for NULL                       |
+| `current_user`      | Current authenticated user           |
 | `DEFAULT`           | Used to specify default column value |
 | `CURRENT_TIMESTAMP` | Current date and time                |
 | `CURRENT_DATE`      | Current date                         |
