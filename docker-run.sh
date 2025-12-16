@@ -78,7 +78,12 @@ if ! docker build -t sqli-kb .; then
 fi
 
 # Run container with mode-specific arguments
-if ! docker run -d --name sqli-kb "${DOCKER_RUN_ARGS[@]}" -p "${PORT}:80" sqli-kb; then
+if [ ${#DOCKER_RUN_ARGS[@]} -gt 0 ]; then
+  NETWORK_ARGS=("${DOCKER_RUN_ARGS[@]}")
+else
+  NETWORK_ARGS=()
+fi
+if ! docker run -d --name sqli-kb ${NETWORK_ARGS[@]+"${NETWORK_ARGS[@]}"} -p "${PORT}:80" sqli-kb; then
   echo "Error: Failed to start sqli-kb container" >&2
   exit 1
 fi

@@ -54,9 +54,11 @@ def crack_postgres_md5(username, hash_value, wordlist):
     if hash_value.startswith('md5'):
         hash_value = hash_value[3:]
 
-    with open(wordlist, 'r') as f:
-        for password in f:
-            password = password.strip()
+    with open(wordlist, 'r', encoding='utf-8', errors='replace') as f:
+        for line in f:
+            password = line.strip()
+            if not password:
+                continue
             test_hash = hashlib.md5((password + username).encode()).hexdigest()
             if test_hash == hash_value:
                 return password

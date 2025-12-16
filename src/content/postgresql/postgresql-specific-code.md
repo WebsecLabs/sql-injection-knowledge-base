@@ -346,10 +346,10 @@ CALL schema.procedure_name(arg1, arg2);
 
 | Version | Feature                 | Injection Relevance                        |
 | ------- | ----------------------- | ------------------------------------------ |
+| 9.1+    | `pg_read_binary_file()` | File reading without encoding issues       |
 | 9.6+    | Parallel query          | Performance only, not directly exploitable |
 | 10+     | Logical replication     | Administrative, requires superuser         |
 | 12+     | Generated columns       | Schema feature, not directly exploitable   |
-| 14+     | `pg_read_binary_file()` | File reading without encoding issues       |
 
 ### Key Differences from MySQL
 

@@ -211,18 +211,18 @@ SELECT rolname, rolpassword FROM pg_authid;
 
 **Password Hash Formats:**
 
-| Format        | Example                               | Notes                                      |
-| ------------- | ------------------------------------- | ------------------------------------------ |
-| MD5           | `md5d8578edf8458ce06fbc5bb76a58c5ca4` | 35 chars: "md5" prefix + 32 hex characters |
-| SCRAM-SHA-256 | `SCRAM-SHA-256$4096:salt$key:key`     | PostgreSQL 10+ default                     |
-| Plaintext     | (raw password)                        | Only if `password_encryption = plain`      |
+| Format        | Example                               | Notes                                       |
+| ------------- | ------------------------------------- | ------------------------------------------- |
+| MD5           | `md5d8578edf8458ce06fbc5bb76a58c5ca4` | 35 chars: "md5" prefix + 32 hex characters  |
+| SCRAM-SHA-256 | `SCRAM-SHA-256$4096:salt$key:key`     | PostgreSQL 10+ default                      |
+| Plaintext     | (raw password)                        | Legacy only (<10); removed in PostgreSQL 10 |
 
 **Checking Password Encryption Setting:**
 
 ```sql
 -- Check current password encryption method
 SELECT current_setting('password_encryption');
--- Returns: md5, scram-sha-256, or plain
+-- Returns: md5 or scram-sha-256 (PostgreSQL 10+)
 
 -- Check when passwords were last set
 SELECT rolname, rolpassword IS NOT NULL as has_password

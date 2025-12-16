@@ -29,7 +29,7 @@ Extracting database credentials from Microsoft SQL Server can provide valuable i
 
 - `sys.sql_logins`: `name`, `password_hash`, `is_disabled`, `is_policy_checked`
 - `sys.server_principals`: `name`, `type_desc`, `is_disabled`, `create_date`
-- `master..syslogins` (legacy): `name`, `loginname`, `password` (NULL in 2005+)
+- `master..syslogins` (legacy): `name`, `loginname`, `password` (returns hash in 2005–2017, NULL in 2019+)
 - `master..sysprocesses` (legacy): `loginame`, `spid`, `dbid`
 
 ### Legacy Credential Retrieval
@@ -43,11 +43,11 @@ SELECT loginame FROM master..sysprocesses WHERE spid=@@SPID;
 -- Check if current user is sysadmin (returns 1, 0, or NULL)
 SELECT IS_SRVROLEMEMBER('sysadmin');
 
--- Legacy table (SQL Server 2000 only - removed in 2005+)
+-- Legacy table (undocumented, removed in SQL Server 2005)
 -- SELECT name, password FROM master.dbo.sysxlogins;
 ```
 
-**Note:** `sysxlogins` was an undocumented table removed in SQL Server 2005. For modern instances, use `sys.sql_logins` or `sys.server_principals`:
+**Note:** `sysxlogins` was an undocumented system table in SQL Server 2000 and earlier; it was removed in SQL Server 2005. For modern instances, use `sys.sql_logins` or `sys.server_principals`:
 
 ```sql
 -- Modern alternative (SQL Server 2005+)
@@ -118,4 +118,4 @@ ORDER BY r.name, m.name;
 1. Access to credential information typically requires high privileges (sysadmin or similar).
 2. `sys.sql_logins` replaced `master.dbo.syslogins` in SQL Server 2005. The legacy view still exists for compatibility but `password` column returns NULL.
 3. Password hashes in SQL Server are salted and difficult to crack without specialized tools.
-4. SQL Server 2005+ uses SHA-1 hashing. SQL Server 2012+ uses SHA-512. SQL Server 2022+ requires VIEW ANY CRYPTOGRAPHICALLY SECURED DEFINITION to see `password_hash`.
+4. SQL Server 2005+ uses SHA-1 hashing. SQL Server 2012+ uses SHA-512. SQL Server 2022+ requires both CONTROL SERVER and VIEW ANY CRYPTOGRAPHICALLY SECURED DEFINITION to see `password_hash`.

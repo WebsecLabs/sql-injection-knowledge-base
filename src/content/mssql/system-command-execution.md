@@ -91,10 +91,11 @@ EXEC sp_OACreate 'WScript.Shell', @shell OUTPUT;
 EXEC sp_OAMethod @shell, 'Run', @result OUTPUT, 'cmd.exe /c dir C:\ > C:\output.txt', 0, 0;
 EXEC sp_OADestroy @shell;
 
--- Alternative: Minimal version (still requires return variable - OUTPUT param cannot be NULL literal)
+-- Alternative: Minimal version (OUTPUT parameters must be variables, not literals)
 DECLARE @sh INT, @ret INT;
 EXEC sp_OACreate 'WScript.Shell', @sh OUTPUT;
 EXEC sp_OAMethod @sh, 'Run', @ret OUTPUT, 'cmd /c whoami > C:\temp\out.txt', 0, 1;
+-- Run parameters: windowStyle=0 (hidden), waitOnReturn=1 (wait for completion)
 EXEC sp_OADestroy @sh;
 ```
 

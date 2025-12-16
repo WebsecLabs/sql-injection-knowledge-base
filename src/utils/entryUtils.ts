@@ -50,7 +50,8 @@ function sortEntriesByCategory(entries: AnyEntry[]): AnyEntry[] {
     const aOrder = CATEGORY_ORDER[a.data.category] ?? DEFAULT_CATEGORY_ORDER;
     const bOrder = CATEGORY_ORDER[b.data.category] ?? DEFAULT_CATEGORY_ORDER;
     if (aOrder !== bOrder) return aOrder - bOrder;
-    return a.data.order - b.data.order;
+    if (a.data.order !== b.data.order) return a.data.order - b.data.order;
+    return a.slug.localeCompare(b.slug); // Stable tiebreaker
   });
 }
 

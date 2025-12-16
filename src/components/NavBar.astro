@@ -2,7 +2,7 @@
 import { type CollectionEntry } from "astro:content";
 import websecLogo from "../assets/websec-logo.png";
 import NavDropdown from "./NavDropdown.astro";
-import { COLLECTION_LABELS } from "../utils/constants";
+import { COLLECTION_LABELS, type ValidCollection } from "../utils/constants";
 
 interface Props {
   mysqlEntries?: CollectionEntry<"mysql">[];
@@ -21,7 +21,7 @@ const {
   extrasEntries = [],
 } = Astro.props;
 
-type AnyEntry = CollectionEntry<"mysql" | "mssql" | "oracle" | "postgresql" | "extras">;
+type AnyEntry = CollectionEntry<ValidCollection>;
 
 // Helper function to group entries by category
 function groupByCategory(entries: AnyEntry[]) {
@@ -288,6 +288,9 @@ function isActivePath(section: string, slug: string): boolean {
     }
   }
 
+  // Breakpoint for mobile/desktop behavior (CSS media queries use 1199px = MOBILE_BREAKPOINT - 1)
+  const MOBILE_BREAKPOINT = 1200;
+
   // Main initialization function
   window.initializeNavbar = function () {
     // Initialize navbar functionality
@@ -315,7 +318,7 @@ function isActivePath(section: string, slug: string): boolean {
       }
 
       // Handle dropdown toggle on mobile and desktop differently
-      const isMobile = window.innerWidth < 1200;
+      const isMobile = window.innerWidth < MOBILE_BREAKPOINT;
       const dropdowns = document.querySelectorAll(".dropdown");
 
       // Clear any existing click handlers from dropdown toggles
@@ -454,7 +457,7 @@ function isActivePath(section: string, slug: string): boolean {
 
     // Handle window resize
     function handleResize() {
-      if (window.innerWidth < 1200) {
+      if (window.innerWidth < MOBILE_BREAKPOINT) {
         // On mobile, reset all dropdowns
         document.querySelectorAll(".dropdown").forEach((dropdown) => {
           dropdown.classList.remove("show");
@@ -531,6 +534,7 @@ function isActivePath(section: string, slug: string): boolean {
   }
 
   /* On mobile, remove overflow hidden which might clip the toggle button */
+  /* NOTE: 1199px must match MOBILE_BREAKPOINT (1200) - 1 in the script section */
   @media (max-width: 1199px) {
     .navbar {
       overflow: visible;
@@ -783,6 +787,7 @@ function isActivePath(section: string, slug: string): boolean {
     margin: 0.5rem 0;
   }
 
+  /* NOTE: 1199px must match MOBILE_BREAKPOINT (1200) - 1 in the script section */
   @media (max-width: 1199px) {
     .container {
       padding: 0 1rem;
