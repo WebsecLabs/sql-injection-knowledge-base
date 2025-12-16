@@ -216,6 +216,8 @@ AND 1=0; DROP TABLE TMP_DB;
 ' AND 1=(SELECT TOP 1 column_name FROM information_schema.columns WHERE column_name NOT IN('id'))--
 ```
 
+This accumulating exclusion pattern is most effective when the injection produces visible output (error-based, UNION-based, or direct result display) so the attacker can observe each returned value. In fully blind contexts where no output is visible, use boolean-based or time-based techniques instead (see Blind Extraction below).
+
 #### Hex Encoding for WAF Bypass
 
 Hex encoding can bypass simple keyword-based WAFs that block strings like `SELECT` or `FROM`. The actual SQL keywords are hidden inside a hex literal, decoded at runtime via `CAST`, and executed dynamically with `EXEC`:

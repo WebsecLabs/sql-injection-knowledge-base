@@ -30,22 +30,34 @@ For stacked queries to work, two conditions must be met:
 
 ### PHP Driver Support
 
-| Driver/Extension | Multi-Query Support | Notes                                        |
-| ---------------- | ------------------- | -------------------------------------------- |
-| PDO_MYSQL        | Yes                 | Supports stacked queries by default          |
-| MySQLi           | Yes                 | Only via `mysqli_multi_query()` function     |
-| mysql\_\*        | No                  | Deprecated functions, no multi-query support |
+| Driver/Extension | Multi-Query Support | Notes                                                                 |
+| ---------------- | ------------------- | --------------------------------------------------------------------- |
+| PDO_MYSQL        | Yes (by default)    | Enabled with emulated prepares (default); can be disabled (see below) |
+| MySQLi           | Yes                 | Only via `mysqli_multi_query()` function                              |
+| mysql\_\*        | No                  | Deprecated functions, no multi-query support                          |
+
+**PDO Multi-Statement Details:**
+
+- **Default behavior**: Multi-statements work via `query()` when `PDO::ATTR_EMULATE_PREPARES` is `true` (default)
+- **Disabling**: Set `PDO::MYSQL_ATTR_MULTI_STATEMENTS => false` in connection options (PHP 5.5.21+/5.6.5+)
+- **Native prepares**: Setting `PDO::ATTR_EMULATE_PREPARES => false` also disables multi-statements
+- **Result handling**: Only the first result set is returned; use `nextRowset()` for additional results
 
 ```php
-// MySQLi - supports stacked queries
+// MySQLi - supports stacked queries via multi_query()
 $mysqli->multi_query("SELECT 1; SELECT 2;");
 
-// PDO - supports stacked queries
+// PDO - supports stacked queries by default (emulated prepares)
 $pdo->query("SELECT 1; SELECT 2;");
+// Note: Only first result set returned; use $stmt->nextRowset() for others
+
+// PDO - disable multi-statements for security (PHP 5.5.21+/5.6.5+)
+$pdo = new PDO($dsn, $user, $pass, [
+    PDO::MYSQL_ATTR_MULTI_STATEMENTS => false
+]);
 
 // mysqli_query - does NOT support stacked queries
-// Only the first query before semicolon is executed; subsequent queries are ignored
-mysqli_query($conn, "SELECT 1; SELECT 2;");
+mysqli_query($conn, "SELECT 1; SELECT 2;"); // Only first query executes
 ```
 
 ### Detection

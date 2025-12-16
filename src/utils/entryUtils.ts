@@ -3,13 +3,13 @@ import type { ValidCollection } from "./constants";
 
 type AnyEntry = CollectionEntry<ValidCollection>;
 
-interface AdjacentEntry {
+export interface AdjacentEntry {
   slug: string;
   title: string;
   category: string;
 }
 
-interface AdjacentEntries {
+export interface AdjacentEntries {
   previous: AdjacentEntry | null;
   next: AdjacentEntry | null;
 }

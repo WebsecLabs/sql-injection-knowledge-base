@@ -1,12 +1,7 @@
 ---
 import type { ValidCollection } from "../utils/constants";
+import type { AdjacentEntry } from "../utils/entryUtils";
 import { getEntryURL } from "../utils/entryUtils";
-
-interface AdjacentEntry {
-  slug: string;
-  title: string;
-  category: string;
-}
 
 interface Props {
   collection: ValidCollection;

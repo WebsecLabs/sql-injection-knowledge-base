@@ -6,9 +6,10 @@ import { remarkBasePath } from "./src/plugins/remark-base-path.mjs";
 // Use "/" for standalone mode, "/sql-injection-knowledge-base/" for integrated mode
 const isStandalone = process.env.STANDALONE === "true";
 const base = isStandalone ? "/" : "/sql-injection-knowledge-base/";
+const standaloneSiteUrl = process.env.SITE_URL || "http://localhost:3000";
 
 export default defineConfig({
-  site: isStandalone ? "http://localhost:8080" : "https://websec.ca",
+  site: isStandalone ? standaloneSiteUrl : "https://websec.ca",
   outDir: "./dist",
   publicDir: "./public",
   base,

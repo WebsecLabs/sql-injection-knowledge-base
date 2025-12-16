@@ -12,11 +12,11 @@ MSSQL comes with several default databases that can be useful during SQL injecti
 | Database             | Description                                                         |
 | -------------------- | ------------------------------------------------------------------- |
 | `master`             | System-level metadata and configuration — commonly targeted in SQLi |
-| `pubs`               | Sample database (not available on MSSQL 2005+)                      |
+| `pubs`               | Legacy sample database (manual install, rarely on production)       |
 | `model`              | Template for new databases                                          |
 | `msdb`               | SQL Server Agent                                                    |
 | `tempdb`             | Temporary objects                                                   |
-| `northwind`          | Sample database (all versions)                                      |
+| `northwind`          | Legacy sample database (manual install, rarely on production)       |
 | `information_schema` | ANSI standard metadata (MSSQL 2000+)                                |
 
 The `master` database contains system-level information, making it especially valuable during SQL injection.

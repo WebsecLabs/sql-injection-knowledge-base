@@ -35,11 +35,21 @@ Stacked queries work in PostgreSQL when:
 
 1. The database driver supports multiple statements
 2. The application doesn't filter semicolons
-3. Common drivers that support stacked queries:
-   - psycopg2 (Python) - with certain configurations
-   - node-postgres (Node.js)
-   - JDBC PostgreSQL driver
-   - PHP pg_query with multiple statements
+
+### Driver Support
+
+| Driver                  | Multi-Statement | With Params | Notes                                          |
+| ----------------------- | --------------- | ----------- | ---------------------------------------------- |
+| PHP `pg_query()`        | Yes             | N/A         | Fully supports; executes as single transaction |
+| PHP `pg_query_params()` | No              | No          | Server-side prepared; single statement only    |
+| psycopg2 (Python)       | Yes             | Yes         | Client-side interpolation; returns last result |
+| node-postgres           | Yes             | No          | Server-side prepared; params = single only     |
+| JDBC PostgreSQL         | Yes             | Varies      | Use `getMoreResults()` for multiple results    |
+
+**Key differences:**
+
+- **Server-side prepared statements** (node-postgres with params, PHP `pg_query_params()`): PostgreSQL protocol restricts to single statements
+- **Client-side interpolation** (psycopg2): Parameters substituted before sending, so multi-statements work but offer no SQL injection protection
 
 ### Examples of Stacked Queries
 

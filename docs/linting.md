@@ -18,10 +18,45 @@ Configuration file: `.markdownlint.json`
 
 Configuration file: `eslint.config.js`
 
-Standard ESLint configuration for JavaScript/TypeScript files. No notable disabled rules.
+Uses the flat config format with TypeScript and Astro support.
+
+**Ignored paths:**
+
+- `node_modules/`, `dist/`, `.astro/`, `public/`, `**/*.min.js`
+
+**Applied configurations:**
+
+| Config                            | Scope                   | Description                        |
+| --------------------------------- | ----------------------- | ---------------------------------- |
+| `@eslint/js` recommended          | `*.js`, `*.ts`, `*.tsx` | Standard JavaScript best practices |
+| `typescript-eslint` recommended   | `*.ts`, `*.tsx`         | TypeScript-specific rules          |
+| `eslint-plugin-astro` recommended | `*.astro`               | Astro component linting            |
+
+**Custom rules:**
+
+| Rule                                | Setting                                              | Rationale                                                                |
+| ----------------------------------- | ---------------------------------------------------- | ------------------------------------------------------------------------ |
+| `@typescript-eslint/no-unused-vars` | `argsIgnorePattern: "^_"`, `varsIgnorePattern: "^_"` | Variables prefixed with `_` are intentionally unused (common convention) |
+
+**Global variables:**
+
+- Browser, Node.js, and ES2021 globals enabled
+- `Astro` defined as readonly global
 
 ## Prettier Configuration
 
 Configuration file: `.prettierrc.json`
 
-Standard Prettier configuration for code formatting. Uses project defaults.
+**Formatting standards:**
+
+| Option          | Value   | Description                                          |
+| --------------- | ------- | ---------------------------------------------------- |
+| `printWidth`    | `100`   | Line width before wrapping                           |
+| `tabWidth`      | `2`     | 2-space indentation                                  |
+| `semi`          | `true`  | Always use semicolons                                |
+| `singleQuote`   | `false` | Use double quotes for strings                        |
+| `trailingComma` | `es5`   | Trailing commas where valid in ES5 (objects, arrays) |
+
+**Astro support:**
+
+Uses `prettier-plugin-astro` with the `astro` parser for `.astro` files.

