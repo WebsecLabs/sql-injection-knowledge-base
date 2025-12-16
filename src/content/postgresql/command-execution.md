@@ -4,7 +4,7 @@ description: Executing operating system commands through PostgreSQL
 category: Advanced Techniques
 order: 18
 tags: ["command execution", "rce", "copy program"]
-lastUpdated: 2025-12-07
+lastUpdated: 2025-12-16
 ---
 
 ## Command Execution
@@ -73,7 +73,7 @@ LANGUAGE C STRICT;
 SELECT system('id');
 ```
 
-**Note:** This technique may not work on modern PostgreSQL due to security restrictions.
+**Note:** This technique requires superuser privileges (a restriction in place since PostgreSQL's earliest versions, as C is an untrusted language). Additionally, managed cloud services (AWS RDS, Azure, GCP Cloud SQL) typically don't grant superuser access, and OS-level mechanisms like SELinux or AppArmor may block loading arbitrary shared libraries.
 
 #### Using PL/Python
 

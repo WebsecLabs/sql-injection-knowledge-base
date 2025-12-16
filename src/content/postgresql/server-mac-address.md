@@ -144,13 +144,13 @@ SELECT * FROM mac_output;
 
 ### Comparison with MySQL
 
-| Feature              | MySQL                       | PostgreSQL          |
-| -------------------- | --------------------------- | ------------------- |
-| UUID with MAC        | `UUID()` (older versions)   | Not available       |
-| Random UUID          | `UUID()` (newer versions)   | `gen_random_uuid()` |
-| Direct MAC function  | Partial (version dependent) | Not available       |
-| File-based retrieval | `LOAD_FILE()`               | `pg_read_file()`    |
-| Command execution    | N/A                         | `COPY TO PROGRAM`   |
+| Feature              | MySQL                       | PostgreSQL                                           |
+| -------------------- | --------------------------- | ---------------------------------------------------- |
+| UUID with MAC        | `UUID()` (older versions)   | Not available                                        |
+| Random UUID          | `UUID()` (newer versions)   | `gen_random_uuid()`                                  |
+| Direct MAC function  | Partial (version dependent) | Not available                                        |
+| File-based retrieval | `LOAD_FILE()`               | `pg_read_file()`                                     |
+| Command execution    | N/A                         | `COPY FROM PROGRAM` (retrieve) / `TO PROGRAM` (send) |
 
 ### Security Considerations
 

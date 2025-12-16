@@ -4,7 +4,7 @@ description: Techniques to avoid using quotes in PostgreSQL injection
 category: Injection Techniques
 order: 10
 tags: ["quotes", "evasion", "bypass"]
-lastUpdated: 2025-12-07
+lastUpdated: 2025-12-16
 ---
 
 ## Avoiding Quotations
@@ -124,7 +124,7 @@ SELECT * FROM users WHERE username=$$admin$$;
 
 ### Notes
 
-- `CHR()` is the PostgreSQL equivalent of MySQL's `CHAR()`
+- PostgreSQL's `CHR()` function is similar to MySQL's `CHAR()` string function
 - Dollar-quoting is PostgreSQL-specific and very useful for bypass
 - The `||` operator is used for concatenation (not `+` or `CONCAT()`)
 - These techniques are useful for bypassing WAFs and quote filters

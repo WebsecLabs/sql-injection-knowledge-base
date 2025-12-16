@@ -99,6 +99,8 @@ SELECT 1::boolean;          -- Cast to boolean (true)
 | `\|\|`   | Array concatenation | `ARRAY[1,2] \|\| ARRAY[3,4]`    |
 | `[n]`    | Array subscript     | `(ARRAY[1,2,3])[1]` (returns 1) |
 
+**Note:** PostgreSQL arrays are 1-based, so `[1]` returns the first element, not the second.
+
 ### JSON/JSONB Operators
 
 | Operator | Description              | Example                                |

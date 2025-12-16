@@ -1,15 +1,15 @@
 ---
-title: Privilege Escalation
-description: Techniques for escalating privileges in PostgreSQL
+title: Privilege Enumeration and Escalation
+description: Techniques for enumerating privileges and escalating access in PostgreSQL
 category: Advanced Techniques
 order: 24
-tags: ["privesc", "createrole", "security definer", "filenode"]
-lastUpdated: 2025-12-14
+tags: ["privesc", "createrole", "security definer", "filenode", "enumeration"]
+lastUpdated: 2025-12-15
 ---
 
-## Privilege Escalation
+## Privilege Enumeration and Escalation
 
-PostgreSQL has several privilege escalation vectors that can be exploited to gain higher privileges within the database or on the underlying system.
+PostgreSQL has several privilege escalation vectors that can be exploited to gain higher privileges within the database or on the underlying system. This document covers both **enumeration techniques** (identifying escalation opportunities) and **exploitation techniques** (executing privilege escalation).
 
 ### CREATEROLE Privilege Escalation
 
@@ -59,6 +59,8 @@ GRANT pg_read_server_files TO backdoor;
 **Escalating to Superuser via Trust Auth + Command Execution:**
 
 Trust authentication (`host all all 127.0.0.1/32 trust` in `pg_hba.conf`) only grants passwordless database access for local connections — it does not itself provide OS-level or superuser privileges. The actual escalation requires **command execution capability** via `COPY TO PROGRAM`, which requires either superuser or membership in `pg_execute_server_program` (PostgreSQL 11+).
+
+**Key insight:** Trust auth is only useful if you can already execute commands with elevated privileges.
 
 ```sql
 -- Step 1: Grant command execution capability (requires CREATEROLE)
@@ -347,6 +349,8 @@ $$;
 SELECT brute_force('admin', ARRAY['password', 'admin', '123456', 'postgres']);
 ```
 
+**Limitation:** The `EXCEPTION WHEN OTHERS` clause catches **all** exceptions, including network errors, DNS failures, connection timeouts, and server unavailability—not just authentication failures. In production use, consider narrowing exception handling to `SQLSTATE '28P01'` (invalid password) or logging/re-raising non-authentication errors to avoid masking real connection problems.
+
 ### Exploiting Row Level Security (RLS) Bypass
 
 Users with `BYPASSRLS` attribute can bypass row-level security policies:
@@ -367,7 +371,13 @@ AS $$
 $$ LANGUAGE sql;
 ```
 
-### Checking Escalation Opportunities
+---
+
+## Privilege Enumeration
+
+Before attempting escalation, enumerate current privileges and identify potential attack vectors.
+
+### Enumerating Current Role Privileges
 
 ```sql
 -- Check current privileges
@@ -387,7 +397,11 @@ FROM pg_auth_members am
 JOIN pg_roles r ON am.roleid = r.oid
 JOIN pg_roles m ON am.member = m.oid
 WHERE r.rolname IN ('pg_read_server_files', 'pg_write_server_files', 'pg_execute_server_program');
+```
 
+### Finding Exploitable Objects
+
+```sql
 -- Check for SECURITY DEFINER functions you can call
 SELECT proname, prosecdef, pg_get_userbyid(proowner) AS owner
 FROM pg_proc

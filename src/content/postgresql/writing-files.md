@@ -4,7 +4,7 @@ description: Techniques for writing files to the filesystem using PostgreSQL
 category: File Operations
 order: 17
 tags: ["file operations", "copy", "web shell"]
-lastUpdated: 2025-12-07
+lastUpdated: 2025-12-15
 ---
 
 ## Writing Files
@@ -140,6 +140,8 @@ SELECT pg_ls_dir('/var/www/html');
 ```
 
 ### Injection Examples
+
+**Note:** These examples assume the database connection has superuser privileges or `pg_write_server_files` membership—conditions typically arising from server misconfiguration or prior privilege escalation. See [Privilege Escalation](/postgresql/privilege-escalation) for techniques to obtain these privileges.
 
 ```sql
 -- Write web shell (stacked query)
