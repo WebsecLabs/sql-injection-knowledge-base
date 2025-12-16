@@ -136,7 +136,7 @@ SELECT 'md5' || md5('password' || 'username');
 To verify an MD5 hash is valid:
 
 ```python
-# Python verification
+# Python 3
 import hashlib
 password = 'secret'
 username = 'postgres'
@@ -155,6 +155,8 @@ SELECT current_setting('hba_file');
 -- Read the file (requires superuser)
 SELECT pg_read_file(current_setting('hba_file'));
 ```
+
+**Security warning:** `pg_read_file()` requires superuser privileges (or `pg_read_server_files` role in PostgreSQL 11+) and can read arbitrary files from the server filesystem. This creates significant information-disclosure risk if credentials are compromised. Restrict superuser access and avoid using this function in untrusted environments.
 
 ### Notes
 

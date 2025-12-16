@@ -27,7 +27,8 @@ interface Props {
 }
 
 const { firstSlug, collectionName } = Astro.props;
-const redirectUrl = `${import.meta.env.BASE_URL}${collectionName}/${firstSlug}`;
+const baseUrl = import.meta.env.BASE_URL.replace(/\/$/, "");
+const redirectUrl = `${baseUrl}/${collectionName}/${firstSlug}`;
 
 return Astro.redirect(redirectUrl, 301);
 ---

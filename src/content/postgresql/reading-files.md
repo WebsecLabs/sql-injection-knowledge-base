@@ -15,9 +15,10 @@ PostgreSQL provides functionality to read files from the server's filesystem, wh
 
 To read files from PostgreSQL, you typically need:
 
-1. Superuser privileges, OR
-2. Membership in the `pg_read_server_files` role (PostgreSQL 11+)
-3. The file must be readable by the `postgres` OS user
+- **One of the following privileges:**
+  - Superuser privileges, OR
+  - Membership in the `pg_read_server_files` role (PostgreSQL 11+)
+- **Additionally:** The file must be readable by the `postgres` OS user
 
 ### pg_read_file() Function
 
@@ -123,7 +124,7 @@ SELECT pg_ls_dir(current_setting('data_directory'));
 | `/var/www/html/config.php`                 | Web application config            |
 | `/proc/version`                            | Kernel version                    |
 | `/proc/self/environ`                       | Environment variables             |
-| `~/.pgpass`                                | PostgreSQL password file          |
+| `/var/lib/postgresql/.pgpass`              | PostgreSQL password file          |
 
 ### Configuration File Locations
 
