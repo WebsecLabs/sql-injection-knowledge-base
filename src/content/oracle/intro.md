@@ -4,7 +4,7 @@ description: Overview of Oracle SQL injection techniques and categories
 category: Basics
 order: 1
 tags: ["introduction", "overview", "oracle"]
-lastUpdated: 2025-03-16
+lastUpdated: 2025-12-16
 ---
 
 This section provides a comprehensive collection of SQL injection techniques specific to Oracle databases.

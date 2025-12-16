@@ -15,6 +15,22 @@ interface AdjacentEntries {
 }
 
 /**
+ * Category display order by learning progression/complexity.
+ * Lower numbers appear first. Unknown categories sort to the end.
+ */
+export const CATEGORY_ORDER: Record<string, number> = {
+  Basics: 1,
+  "Information Gathering": 2,
+  "Injection Techniques": 3,
+  Authentication: 4,
+  "File Operations": 5,
+  "Advanced Techniques": 6,
+  Reference: 7,
+};
+
+const DEFAULT_CATEGORY_ORDER = 99;
+
+/**
  * Generate a URL for a content entry
  */
 export function getEntryURL(
@@ -26,13 +42,14 @@ export function getEntryURL(
 }
 
 /**
- * Sort entries by category (alphabetically) then by order within each category.
+ * Sort entries by category (by learning progression) then by order within each category.
  * This creates a consistent reading order across all entries.
  */
 function sortEntriesByCategory(entries: AnyEntry[]): AnyEntry[] {
   return [...entries].sort((a, b) => {
-    const categoryCompare = a.data.category.localeCompare(b.data.category);
-    if (categoryCompare !== 0) return categoryCompare;
+    const aOrder = CATEGORY_ORDER[a.data.category] ?? DEFAULT_CATEGORY_ORDER;
+    const bOrder = CATEGORY_ORDER[b.data.category] ?? DEFAULT_CATEGORY_ORDER;
+    if (aOrder !== bOrder) return aOrder - bOrder;
     return a.data.order - b.data.order;
   });
 }

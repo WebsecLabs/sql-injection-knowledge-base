@@ -142,6 +142,15 @@ EXEC sp_OADestroy @fso;
 | `C:\Windows\Microsoft.NET\Framework64\*\Config\web.config`                                   | .NET machine config                 |
 | `C:\Users\*\AppData\Roaming\Microsoft\Windows\PowerShell\PSReadLine\ConsoleHost_history.txt` | PowerShell history                  |
 
+**Path variability:** Paths with `*` are wildcards requiring enumeration. Actual paths vary by version:
+
+- **.NET Framework:** `v4.0.30319`, `v2.0.50727`, etc. — check `C:\Windows\Microsoft.NET\Framework64\` for installed versions
+- **IIS config:** May be at `%systemroot%\System32\inetsrv\config\` (IIS 7+) or `%systemroot%\system32\inetsrv\MetaBase.xml` (IIS 6)
+- **User profiles:** Replace `*` with discovered usernames from `C:\Users\` directory listing
+- **Web roots:** Custom IIS sites may use paths other than `C:\inetpub\wwwroot\`
+
+Verify paths on the target system using directory listing (`xp_dirtree`, `xp_cmdshell 'dir'`) before attempting file reads.
+
 ### SQL Injection Examples
 
 ```sql

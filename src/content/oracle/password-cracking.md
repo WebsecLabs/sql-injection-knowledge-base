@@ -1,7 +1,7 @@
 ---
 title: Password Cracking
 description: Techniques for extracting and cracking Oracle database password hashes
-category: Advanced Techniques
+category: Authentication
 order: 14
 tags: ["password", "hash", "cracking", "authentication"]
 lastUpdated: 2025-03-15

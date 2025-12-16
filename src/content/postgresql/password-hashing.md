@@ -1,7 +1,7 @@
 ---
 title: Password Hashing
 description: Understanding PostgreSQL password storage and hashing
-category: Advanced Techniques
+category: Authentication
 order: 19
 tags: ["password", "hashing", "authentication"]
 lastUpdated: 2025-12-07

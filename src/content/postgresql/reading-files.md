@@ -1,7 +1,7 @@
 ---
 title: Reading Files
 description: Techniques for reading files from the filesystem using PostgreSQL
-category: Advanced Techniques
+category: File Operations
 order: 16
 tags: ["file operations", "pg_read_file", "privilege escalation"]
 lastUpdated: 2025-12-07

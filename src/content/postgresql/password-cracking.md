@@ -1,7 +1,7 @@
 ---
 title: Password Cracking
 description: Techniques to recover passwords from PostgreSQL hashes
-category: Advanced Techniques
+category: Authentication
 order: 20
 tags: ["password", "cracking", "hashcat", "john"]
 lastUpdated: 2025-12-16
@@ -70,25 +70,33 @@ result = crack_postgres_md5(username, hash_val, '/usr/share/wordlists/rockyou.tx
 
 ### SCRAM-SHA-256 Cracking
 
-SCRAM-SHA-256 is significantly harder to crack.
+SCRAM-SHA-256 is significantly harder to crack than MD5 due to PBKDF2 key derivation with multiple iterations. The default 4096 iterations (based on RFC 7677's 2015 minimum) makes each password guess ~4096x slower than a single hash operation. PostgreSQL 16+ allows increasing this via `scram_iterations`.
 
 Format: `SCRAM-SHA-256$<iterations>:<salt>$<StoredKey>:<ServerKey>`
 
-#### Using Hashcat
+#### Using Hashcat (Recommended)
 
 ```bash
-# Hashcat mode 28600 for SCRAM-SHA-256
-# Format: SCRAM-SHA-256$4096:salt$storedkey:serverkey
+# Hashcat mode 28600 for PostgreSQL SCRAM-SHA-256
+# Performance: ~1M guesses/sec on RTX 3090 (vs billions/sec for MD5)
 
 hashcat -m 28600 -a 0 scram_hash.txt wordlist.txt
+
+# With rules for better coverage
+hashcat -m 28600 -a 0 -r rules/best64.rule scram_hash.txt wordlist.txt
 ```
 
 #### Using John the Ripper
 
 ```bash
-# John supports SCRAM-SHA-256 with the right format
-john --format=postgres-scram scram_hash.txt
+# JtR bleeding-jumbo (April 2025+) added PostgreSQL SCRAM-SHA-256 support
+# Check available formats: john --list=formats | grep -i scram
+# Standard JtR releases may not include this format yet
+
+john --format=SCRAM-SHA-256 scram_hash.txt  # Verify format name with --list=formats
 ```
+
+**Note:** For reliable SCRAM-SHA-256 cracking, Hashcat mode 28600 is recommended as it has stable, well-tested support.
 
 ### Rainbow Tables
 

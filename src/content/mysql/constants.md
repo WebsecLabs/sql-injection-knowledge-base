@@ -54,7 +54,7 @@ MySQL has several special values:
 | Constant            | Description                                                                                                        |
 | ------------------- | ------------------------------------------------------------------------------------------------------------------ |
 | `NULL`              | Represents a NULL value                                                                                            |
-| `\N`                | NULL in LOAD DATA/SELECT INTO OUTFILE only; deprecated in 5.7.18, removed in 8.0                                   |
+| `\N`                | NULL synonym in SQL statements (deprecated 5.7.18, removed 8.0); still valid as NULL marker in LOAD DATA/OUTFILE   |
 | `CURRENT_USER()`    | Returns authenticated account as `user@host` (username may be empty for anonymous connections, e.g., `@localhost`) |
 | `DEFAULT`           | Used to specify default column value                                                                               |
 | `CURRENT_TIMESTAMP` | Current date and time                                                                                              |

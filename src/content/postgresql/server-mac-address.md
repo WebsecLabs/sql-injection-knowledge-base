@@ -53,8 +53,8 @@ SELECT current_setting('unix_socket_directories');
 -- Server version
 SELECT version();
 
--- PostgreSQL-specific system identifier
-SELECT system_identifier FROM pg_control_system();  -- Requires superuser
+-- PostgreSQL-specific system identifier (no special privileges required)
+SELECT system_identifier FROM pg_control_system();
 ```
 
 ### File-Based MAC Address Retrieval
@@ -89,11 +89,11 @@ COPY mac_output FROM PROGRAM 'ip link show eth0';
 
 ```sql
 -- If PL/Python extension is installed
-CREATE OR REPLACE FUNCTION get_mac() RETURNS TEXT AS $$
+CREATE OR REPLACE FUNCTION get_mac() RETURNS TEXT AS $
 import subprocess
-result = subprocess.run(['cat', '/sys/class/net/eth0/address'], capture_output=True, text=True)
+result = subprocess.run(['cat', '/sys/class/net/eth0/address'], capture_output=True, text=True, timeout=5)
 return result.stdout.strip()
-$$ LANGUAGE plpython3u;
+$ LANGUAGE plpython3u;
 
 SELECT get_mac();
 ```
@@ -110,6 +110,21 @@ COPY (SELECT '') TO PROGRAM 'ls /sys/class/net/';
 COPY mac_output FROM PROGRAM 'ip -o link show | cut -d: -f2';
 ```
 
+### Windows-Specific Methods
+
+On Windows servers, use PowerShell via `COPY FROM PROGRAM`:
+
+```sql
+-- Get MAC address using PowerShell (requires superuser or pg_execute_server_program)
+CREATE TEMP TABLE mac_output (line TEXT);
+COPY mac_output FROM PROGRAM 'powershell -Command "Get-NetAdapter | Select-Object -First 1 -ExpandProperty MacAddress"';
+SELECT * FROM mac_output;
+
+-- List all adapters with their MAC addresses
+COPY mac_output FROM PROGRAM 'powershell -Command "Get-NetAdapter | Select-Object Name, MacAddress | ConvertTo-Csv -NoTypeInformation"';
+SELECT * FROM mac_output;
+```
+
 ### Limitations
 
 1. **No direct SQL function**: PostgreSQL doesn't expose MAC addresses through built-in functions
@@ -117,9 +132,8 @@ COPY mac_output FROM PROGRAM 'ip -o link show | cut -d: -f2';
 3. **Platform dependent**:
    - Linux: `/sys/class/net/` or `ip link` command
    - BSD: `/dev` or `sysctl`/`ifconfig` commands
-   - macOS: system APIs or `ifconfig` command
-   - Windows: no equivalent path, use `Get-NetAdapter` PowerShell cmdlet
-   - For cross-platform scripts, use programmatic APIs specific to each OS
+   - macOS: `ifconfig` command
+   - Windows: `Get-NetAdapter` PowerShell cmdlet (see example above)
 4. **Network configuration**: Docker containers and VMs may have virtual/different MAC addresses
 5. **Extension requirements**: Some methods require extensions like `plpython3u`
 

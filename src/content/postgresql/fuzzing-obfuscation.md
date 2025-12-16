@@ -50,6 +50,8 @@ PostgreSQL accepts only **5 characters** as whitespace (tested across Unicode ra
 | 0x0D | 13  | Carriage Return | %0D         |
 | 0x20 | 32  | Space           | %20         |
 
+**Note:** Vertical tab (0x0B) is NOT valid whitespace in PostgreSQL—it causes syntax errors.
+
 ```sql
 -- Tab and newline as separators
 SELECT%09username%0AFROM%0Dusers
@@ -139,11 +141,13 @@ SELECT * FROM users WHERE username = $💀$admin$💀$  -- PG12+
 0 UNION SELECT 1,$α$test$α$,$β$email$β$,$γ$role$γ$--
 ```
 
-**Tag Rules:**
+**Tag Rules** (tags follow unquoted identifier rules per PostgreSQL docs):
 
-- Tags can contain letters (including Unicode), digits, and underscores
-- Tags **cannot** start with a digit (`$1$` fails)
+- Tags can contain letters (including Unicode letters like α, 日, 💀), digits, and underscores
+- Tags **cannot** start with a digit (`$1tag$` fails)
+- Tags **cannot** contain dollar signs (the `$` delimiters are separate)
 - Tags are case-sensitive (`$Tag$` ≠ `$tag$`)
+- Empty tags are valid (`$$` with no tag name)
 
 ### String Representation Alternatives
 

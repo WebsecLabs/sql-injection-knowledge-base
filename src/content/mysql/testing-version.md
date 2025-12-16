@@ -1,7 +1,7 @@
 ---
 title: Testing Version
 description: Techniques for determining MySQL version information
-category: Reconnaissance
+category: Information Gathering
 order: 4
 tags: ["version", "reconnaissance"]
 lastUpdated: 2025-03-16

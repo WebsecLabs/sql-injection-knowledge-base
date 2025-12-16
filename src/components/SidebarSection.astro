@@ -4,6 +4,7 @@
  * Extracts common pattern used for MySQL, MSSQL, Oracle, and Extras sections.
  */
 import type { CollectionEntry } from "astro:content";
+import { CATEGORY_ORDER } from "../utils/entryUtils";
 
 interface CategoryGroup {
   [category: string]: CollectionEntry<"mysql" | "mssql" | "oracle" | "postgresql" | "extras">[];
@@ -36,8 +37,14 @@ const {
   showCategories = true,
 } = Astro.props;
 
-// Sort categories alphabetically if provided
-const sortedCategories = entriesByCategory ? Object.keys(entriesByCategory).sort() : [];
+// Sort categories by learning progression order
+const sortedCategories = entriesByCategory
+  ? Object.keys(entriesByCategory).sort((a, b) => {
+      const aOrder = CATEGORY_ORDER[a] ?? 99;
+      const bOrder = CATEGORY_ORDER[b] ?? 99;
+      return aOrder - bOrder;
+    })
+  : [];
 
 // Helper function for exact path matching (handles trailing slashes)
 function isActivePath(entrySlug: string): boolean {

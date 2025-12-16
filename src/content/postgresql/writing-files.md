@@ -1,7 +1,7 @@
 ---
 title: Writing Files
 description: Techniques for writing files to the filesystem using PostgreSQL
-category: Advanced Techniques
+category: File Operations
 order: 17
 tags: ["file operations", "copy", "web shell"]
 lastUpdated: 2025-12-07

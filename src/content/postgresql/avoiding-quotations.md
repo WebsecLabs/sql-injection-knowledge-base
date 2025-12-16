@@ -67,15 +67,36 @@ SELECT E'\x61\x64\x6d\x69\x6e';
 -- Result: 'admin'
 ```
 
-### Using ASCII Values with Bit Operations
+### Using ASCII and CHR Functions
 
 ```sql
--- Get ASCII value
+-- Get ASCII value of a character
 SELECT ASCII('A');  -- Returns 65
 
--- Convert back to character
+-- Convert ASCII value back to character
 SELECT CHR(65);  -- Returns 'A'
 ```
+
+### Using Bitwise Operations for Obfuscation
+
+Bitwise operators can obscure numeric ASCII values to evade pattern-based WAFs:
+
+```sql
+-- XOR: 65 XOR 255 XOR 255 = 65 (double XOR restores original)
+SELECT CHR(65 # 255 # 255);  -- Returns 'A'
+
+-- OR: Build 65 from bit components (64 | 1 = 65)
+SELECT CHR(64 | 1);  -- Returns 'A' (0x40 | 0x01)
+
+-- Shift: 130 >> 1 = 65 (right shift divides by 2)
+SELECT CHR(130 >> 1);  -- Returns 'A'
+
+-- Combined: Build 'admin' with mixed operations
+SELECT CHR(96 | 1) || CHR(50 << 1) || CHR(218 >> 1) || CHR(52 << 1 | 1) || CHR(110 # 0);
+-- 97='a', 100='d', 109='m', 105='i', 110='n'
+```
+
+**Operators:** `&` (AND), `|` (OR), `#` (XOR), `~` (NOT), `<<` (left shift), `>>` (right shift)
 
 ### Injection Examples
 

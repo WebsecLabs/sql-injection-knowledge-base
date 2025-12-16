@@ -27,11 +27,13 @@ For numeric parameters:
 
 ```sql
 -- Original: SELECT * FROM products WHERE id = 1
-1 AND 1=1    -- True, should return same result
-1 AND 1=2    -- False, should return different/no result
-1-false      -- Returns 1 (false = 0)
-1-true       -- Returns 0 (true = 1)
+1 AND 1=1        -- True, should return same result
+1 AND 1=2        -- False, should return different/no result
+1-false::int     -- Returns 1 (false = 0)
+1-true::int      -- Returns 0 (true = 1)
 ```
+
+**Note:** PostgreSQL does not implicitly convert booleans to integers in arithmetic expressions. Unlike MySQL where `1-false` works directly, PostgreSQL requires explicit casting (`::int`) or the query fails with "operator does not exist: integer - boolean".
 
 ### String Concatenation Tests
 

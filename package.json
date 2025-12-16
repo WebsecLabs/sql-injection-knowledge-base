@@ -7,6 +7,7 @@
     "dev": "astro dev",
     "start": "astro dev",
     "build": "astro build",
+    "build:standalone": "STANDALONE=true astro build",
     "preview": "astro preview",
     "lint": "eslint . && stylelint 'src/**/*.css' && markdownlint 'src/content/**/*.md' && prettier --check .",
     "lint:fix": "eslint --fix . && stylelint --fix 'src/**/*.css' && markdownlint --fix 'src/content/**/*.md' && prettier --write .",

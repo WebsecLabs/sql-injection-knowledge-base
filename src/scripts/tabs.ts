@@ -81,7 +81,7 @@ export function initializeTabs(): void {
         const currentIndex = tabs.findIndex((tab) => tab === document.activeElement);
         if (currentIndex === -1) return;
 
-        let newIndex: number;
+        let newIndex = currentIndex;
 
         switch (e.key) {
           case "ArrowRight":
