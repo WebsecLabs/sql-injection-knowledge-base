@@ -2,7 +2,11 @@
 import { type CollectionEntry } from "astro:content";
 import websecLogo from "../assets/websec-logo.png";
 import NavDropdown from "./NavDropdown.astro";
-import { COLLECTION_LABELS, type ValidCollection } from "../utils/constants";
+import {
+  COLLECTION_LABELS,
+  DATABASE_COLLECTION_TYPES,
+  type ValidCollection,
+} from "../utils/constants";
 
 interface Props {
   mysqlEntries?: CollectionEntry<"mysql">[];
@@ -116,7 +120,7 @@ function isActivePath(section: string, slug: string): boolean {
 
       <ul class="nav-links">
         {
-          (["mysql", "mssql", "oracle", "postgresql"] as const).map((type) => (
+          DATABASE_COLLECTION_TYPES.map((type) => (
             <li class="nav-item dropdown">
               <button class="nav-link dropdown-toggle">
                 {COLLECTION_LABELS[type]}

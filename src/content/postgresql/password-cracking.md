@@ -72,7 +72,7 @@ result = crack_postgres_md5(username, hash_val, '/usr/share/wordlists/rockyou.tx
 
 ### SCRAM-SHA-256 Cracking
 
-SCRAM-SHA-256 is significantly harder to crack than MD5 due to PBKDF2 key derivation with multiple iterations. The default 4096 iterations (based on RFC 7677's 2015 minimum) makes each password guess ~4096x slower than a single hash operation. PostgreSQL 16+ allows increasing this via `scram_iterations`.
+SCRAM-SHA-256 is significantly harder to crack than MD5 due to PBKDF2 key derivation with multiple iterations. PostgreSQL defaults to 4096 iterations, which is RFC 7677's minimum recommendation (the RFC's "rule of thumb" for 0.1 second computation suggests ~15,000 iterations). Each password guess requires ~4096x more computation than a single hash. PostgreSQL 16+ allows increasing this via `scram_iterations`.
 
 Format: `SCRAM-SHA-256$<iterations>:<salt>$<StoredKey>:<ServerKey>`
 
@@ -87,18 +87,6 @@ hashcat -m 28600 -a 0 scram_hash.txt wordlist.txt
 # With rules for better coverage
 hashcat -m 28600 -a 0 -r rules/best64.rule scram_hash.txt wordlist.txt
 ```
-
-#### Using John the Ripper
-
-```bash
-# JtR bleeding-jumbo (2025) added PostgreSQL SCRAM-SHA-256 support
-# Check available formats: john --list=formats | grep -i scram
-# Standard JtR releases may not include this format yet
-
-john --format=SCRAM-SHA-256 scram_hash.txt  # Verify format name with --list=formats
-```
-
-**Note:** For reliable SCRAM-SHA-256 cracking, Hashcat mode 28600 is recommended as it has stable, well-tested support.
 
 ### Rainbow Tables
 

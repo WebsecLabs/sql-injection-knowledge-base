@@ -71,7 +71,8 @@ if [ "$MODE" = "integrated" ]; then
 else
   # Standalone mode requires SITE_URL for sitemap generation
   SITE_URL="${SQLI_KB_SITE_URL:-http://localhost:${PORT}}"
-  if ! SITE_URL="$SITE_URL" npm run build:standalone; then
+  export SITE_URL
+  if ! npm run build:standalone; then
     echo "Error: Failed to build application (standalone mode)" >&2
     exit 1
   fi

@@ -4,7 +4,7 @@ description: Understanding PostgreSQL password storage and hashing
 category: Authentication
 order: 19
 tags: ["password", "hashing", "authentication"]
-lastUpdated: 2025-12-07
+lastUpdated: 2025-12-16
 ---
 
 ## Password Hashing
@@ -68,6 +68,13 @@ Example:
 ```text
 SCRAM-SHA-256$4096:salt$StoredKey:ServerKey
 ```
+
+Where:
+
+- **iterations**: Number of PBKDF2 iterations (e.g., 4096)
+- **salt**: Base64-encoded random salt
+- **StoredKey**: Base64-encoded derived key used for client authentication
+- **ServerKey**: Base64-encoded server verification key
 
 ### Extracting Password Hashes
 
@@ -133,7 +140,7 @@ To verify an MD5 hash is valid:
 import hashlib
 password = 'secret'
 username = 'postgres'
-expected_hash = 'md5' + hashlib.md5((password + username).encode()).hexdigest()
+expected_hash = 'md5' + hashlib.md5((password + username).encode('utf-8')).hexdigest()
 print(expected_hash)
 ```
 

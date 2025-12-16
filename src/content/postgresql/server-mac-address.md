@@ -4,7 +4,7 @@ description: Techniques to retrieve server hardware information in PostgreSQL
 category: Information Gathering
 order: 8
 tags: ["MAC address", "hardware information", "network"]
-lastUpdated: 2025-12-14
+lastUpdated: 2025-12-16
 ---
 
 ## Server MAC Address
@@ -144,13 +144,13 @@ SELECT * FROM mac_output;
 
 ### Comparison with MySQL
 
-| Feature              | MySQL                       | PostgreSQL                                           |
-| -------------------- | --------------------------- | ---------------------------------------------------- |
-| UUID with MAC        | `UUID()` (older versions)   | Not available                                        |
-| Random UUID          | `UUID()` (newer versions)   | `gen_random_uuid()`                                  |
-| Direct MAC function  | Partial (version dependent) | Not available                                        |
-| File-based retrieval | `LOAD_FILE()`               | `pg_read_file()`                                     |
-| Command execution    | N/A                         | `COPY FROM PROGRAM` (retrieve) / `TO PROGRAM` (send) |
+| Feature              | MySQL                       | PostgreSQL                                                           |
+| -------------------- | --------------------------- | -------------------------------------------------------------------- |
+| UUID with MAC        | `UUID()` (older versions)   | Not available                                                        |
+| Random UUID          | `UUID()` (newer versions)   | `gen_random_uuid()`                                                  |
+| Direct MAC function  | Partial (version dependent) | Not available                                                        |
+| File-based retrieval | `LOAD_FILE()`               | `pg_read_file()`                                                     |
+| Command execution    | N/A                         | `COPY FROM PROGRAM` (capture output) / `COPY TO PROGRAM` (send data) |
 
 ### Security Considerations
 
@@ -163,6 +163,6 @@ MAC addresses can be useful for:
 Organizations should:
 
 - Restrict file reading privileges
-- Disable `COPY TO PROGRAM` for non-admin users
+- Disable `COPY FROM/TO PROGRAM` for non-admin users
 - Consider using MAC address randomization on sensitive systems
 - Monitor for unusual file access patterns

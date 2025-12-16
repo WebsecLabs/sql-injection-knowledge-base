@@ -13,7 +13,7 @@ Modern web applications often employ Web Application Firewalls (WAFs) and other 
 
 ### Comment Variations
 
-MySQL supports various comment styles that can be inserted between SQL tokens (keywords, identifiers, operators). Note: comments cannot split keywords (e.g., `SEL/**/ECT` is invalid) - see [Keyword Splitting Myth](#keyword-splitting-myth).
+MySQL supports various comment styles that can be inserted between SQL tokens (keywords, identifiers, operators), but cannot split tokens themselves (e.g., `SEL/**/ECT` is invalid).
 
 ```sql
 -- Comments BETWEEN tokens (valid)
@@ -324,23 +324,6 @@ SELECT 1 FROM dual WHERE 1 = '1'''''''''''''UNION SELECT '2';
 -- Alternative to 'users' table name
 SELECT * FROM (SELECT table_name FROM information_schema.tables WHERE table_name LIKE 0x7573657273 LIMIT 1)x -- 'users' in hex
 ```
-
-#### Keyword Splitting Myth
-
-Splitting keywords with inline comments (e.g., `SEL/**/ECT`) does NOT work and never has in any MySQL version. This is a widespread misconception in security literature.
-
-```sql
--- VALID: Comments between complete tokens
-SELECT/**/ username /**/FROM/**/ users
-
--- INVALID: Splitting keywords (syntax error)
-SEL/**/ECT username FROM users      -- ERROR 1064
-
--- VALID: Spaces/comments around dots in qualified names
-information_schema/**/./**/columns
-```
-
-Likely sources of confusion: executable comments (`/*! SELECT */`) which do work, and comments between tokens (`SELECT/**/username`) which is also valid.
 
 #### HTTP Parameter Pollution
 

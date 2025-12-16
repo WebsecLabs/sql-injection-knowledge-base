@@ -18,7 +18,7 @@ const nextUrl = next ? getEntryURL(collection, next.slug, baseUrl) : null;
 
 <nav class="entry-navigation" aria-label="Entry navigation">
   {
-    previous && previousUrl ? (
+    previousUrl ? (
       <a href={previousUrl} class="nav-link nav-previous">
         <div class="nav-arrow-wrapper">
           <svg
@@ -40,7 +40,7 @@ const nextUrl = next ? getEntryURL(collection, next.slug, baseUrl) : null;
         </div>
         <div class="nav-content">
           <span class="nav-label">Previous</span>
-          <span class="nav-title">{previous.title}</span>
+          <span class="nav-title">{previous!.title}</span>
         </div>
       </a>
     ) : (
@@ -49,11 +49,11 @@ const nextUrl = next ? getEntryURL(collection, next.slug, baseUrl) : null;
   }
 
   {
-    next && nextUrl ? (
+    nextUrl ? (
       <a href={nextUrl} class="nav-link nav-next">
         <div class="nav-content">
           <span class="nav-label">Next</span>
-          <span class="nav-title">{next.title}</span>
+          <span class="nav-title">{next!.title}</span>
         </div>
         <div class="nav-arrow-wrapper">
           <svg

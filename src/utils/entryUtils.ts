@@ -59,9 +59,17 @@ export function sortEntriesByCategory(entries: AnyEntry[]): AnyEntry[] {
  * Get adjacent (previous/next) entries for navigation.
  * Entries are ordered by category then by order field, enabling
  * continuous navigation across category boundaries.
+ *
+ * @param allEntries - The entries to search (will be sorted if sortedEntries not provided)
+ * @param currentSlug - The slug of the current entry
+ * @param sortedEntries - Optional pre-sorted entries to avoid re-sorting
  */
-export function getAdjacentEntries(allEntries: AnyEntry[], currentSlug: string): AdjacentEntries {
-  const sorted = sortEntriesByCategory(allEntries);
+export function getAdjacentEntries(
+  allEntries: AnyEntry[],
+  currentSlug: string,
+  sortedEntries?: AnyEntry[]
+): AdjacentEntries {
+  const sorted = sortedEntries ?? sortEntriesByCategory(allEntries);
   const currentIndex = sorted.findIndex((e) => e.slug === currentSlug);
 
   if (currentIndex === -1) {
@@ -93,9 +101,12 @@ export function getAdjacentEntries(allEntries: AnyEntry[], currentSlug: string):
  * Get the first (canonical) entry slug for a collection.
  * Returns the slug of the first entry after sorting by category/order,
  * or null if the collection is empty.
+ *
+ * @param entries - The entries to search (will be sorted if sortedEntries not provided)
+ * @param sortedEntries - Optional pre-sorted entries to avoid re-sorting
  */
-export function getFirstEntrySlug(entries: AnyEntry[]): string | null {
+export function getFirstEntrySlug(entries: AnyEntry[], sortedEntries?: AnyEntry[]): string | null {
   if (entries.length === 0) return null;
-  const sorted = sortEntriesByCategory(entries);
+  const sorted = sortedEntries ?? sortEntriesByCategory(entries);
   return sorted[0].slug;
 }

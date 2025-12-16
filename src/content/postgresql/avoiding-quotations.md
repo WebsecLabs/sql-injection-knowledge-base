@@ -69,9 +69,11 @@ SELECT E'\x61\x64\x6d\x69\x6e';
 
 ### Using ASCII and CHR Functions
 
+`ASCII()` expects text input and returns its numeric code, while `CHR()` does the reverse—producing a text character from a numeric code. You can avoid explicit quotes by composing `ASCII(CHR(...))`.
+
 ```sql
--- Get ASCII value of a character
-SELECT ASCII('A');  -- Returns 65
+-- Get ASCII value without quotes (CHR produces the character)
+SELECT ASCII(CHR(65));  -- Returns 65
 
 -- Convert ASCII value back to character
 SELECT CHR(65);  -- Returns 'A'

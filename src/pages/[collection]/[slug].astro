@@ -4,7 +4,11 @@ import Layout from "../../layouts/Layout.astro";
 import MarkdownEntry from "../../components/MarkdownEntry.astro";
 import EntryNavigation from "../../components/EntryNavigation.astro";
 import { COLLECTION_TYPES, COLLECTION_LABELS, type ValidCollection } from "../../utils/constants";
-import { getAdjacentEntries, getFirstEntrySlug } from "../../utils/entryUtils";
+import {
+  getAdjacentEntries,
+  getFirstEntrySlug,
+  sortEntriesByCategory,
+} from "../../utils/entryUtils";
 
 // Union type for entries from any valid collection
 type AnyEntry = CollectionEntry<ValidCollection>;
@@ -47,7 +51,7 @@ const extrasEntries = await getCollection("extras");
 const collectionTitle = COLLECTION_LABELS[collectionName];
 const pageTitle = `${entry.data.title} | ${collectionTitle} | SQL Injection KB`;
 
-// Build collections object for Layout - includes all collections for sidebar navigation
+// Build collections object for Layout (uses *Entries key naming for sidebar)
 const collections = {
   mysqlEntries,
   mssqlEntries,
@@ -56,21 +60,14 @@ const collections = {
   extrasEntries,
 };
 
-// Map collection names to their entries (references collections object to avoid duplication)
-const collectionEntriesMap: Record<ValidCollection, AnyEntry[]> = {
-  mysql: collections.mysqlEntries,
-  mssql: collections.mssqlEntries,
-  oracle: collections.oracleEntries,
-  postgresql: collections.postgresqlEntries,
-  extras: collections.extrasEntries,
-};
+// Get current collection entries for navigation (sort once and reuse)
+const entriesKey = `${collectionName}Entries` as keyof typeof collections;
+const currentCollectionEntries = collections[entriesKey] as AnyEntry[];
+const sortedEntries = sortEntriesByCategory(currentCollectionEntries);
+const { previous, next } = getAdjacentEntries(currentCollectionEntries, entry.slug, sortedEntries);
 
-// Get current collection entries for navigation
-const currentCollectionEntries = collectionEntriesMap[collectionName];
-const { previous, next } = getAdjacentEntries(currentCollectionEntries, entry.slug);
-
-// Get first entry slug for breadcrumb (dynamically resolved, fallback to "intro" if empty)
-const firstEntrySlug = getFirstEntrySlug(currentCollectionEntries) ?? "intro";
+// Get first entry slug for breadcrumb (uses pre-sorted entries to avoid re-sorting)
+const firstEntrySlug = getFirstEntrySlug(currentCollectionEntries, sortedEntries) ?? "intro";
 ---
 
 <Layout title={pageTitle} collections={collections}>

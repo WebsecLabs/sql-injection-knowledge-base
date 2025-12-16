@@ -16,10 +16,9 @@ if (isStandalone && !process.env.SITE_URL) {
       "or http://localhost:3000 for local development."
   );
 }
-const standaloneSiteUrl = process.env.SITE_URL;
 
 export default defineConfig({
-  site: isStandalone ? standaloneSiteUrl : "https://websec.ca",
+  site: isStandalone ? process.env.SITE_URL : "https://websec.ca",
   outDir: "./dist",
   publicDir: "./public",
   base,
