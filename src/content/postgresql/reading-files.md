@@ -156,14 +156,16 @@ SELECT current_setting('data_directory');
 
 ### Bypassing Restrictions
 
-#### Using Symlinks
+#### Using Symlinks (Linux only)
 
-If direct paths are blocked:
+If direct paths are blocked, `/proc` filesystem paths may bypass restrictions on Linux systems:
 
 ```sql
--- May follow symlinks if they exist
+-- Linux: /proc/self/root provides an alternate path to the filesystem root
 SELECT pg_read_file('/proc/self/root/etc/passwd');
 ```
+
+**Note:** The `/proc` filesystem is Linux-specific. On Windows, PostgreSQL paths and bypass techniques differ entirely (e.g., `C:\Windows\System32\drivers\etc\hosts`).
 
 #### Encoding Output
 

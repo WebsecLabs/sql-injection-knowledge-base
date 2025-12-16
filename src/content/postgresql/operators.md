@@ -159,16 +159,18 @@ From highest to lowest (per [PostgreSQL documentation](https://www.postgresql.or
 2. `::` (typecast)
 3. `[]` (array element selection)
 4. `+`, `-` (unary plus, unary minus)
-5. `^` (exponentiation)
-6. `*`, `/`, `%` (multiplication, division, modulo)
-7. `+`, `-` (addition, subtraction)
-8. `||` (string concatenation)
-9. `BETWEEN`, `IN`, `LIKE`, `ILIKE`, `SIMILAR`
-10. `<`, `>`, `=`, `<=`, `>=`, `<>`
-11. `IS`, `IS NULL`, `IS NOT NULL`
-12. `NOT`
-13. `AND`
-14. `OR`
+5. `COLLATE` (collation selection)
+6. `AT` (AT TIME ZONE, AT LOCAL)
+7. `^` (exponentiation)
+8. `*`, `/`, `%` (multiplication, division, modulo)
+9. `+`, `-` (addition, subtraction)
+10. (any other operator) — includes `||`, user-defined operators
+11. `BETWEEN`, `IN`, `LIKE`, `ILIKE`, `SIMILAR`
+12. `<`, `>`, `=`, `<=`, `>=`, `<>`
+13. `IS`, `ISNULL`, `NOTNULL` (IS TRUE, IS FALSE, IS NULL, IS DISTINCT FROM, etc.)
+14. `NOT`
+15. `AND`
+16. `OR`
 
 ### Truth Table for Logical Operators
 

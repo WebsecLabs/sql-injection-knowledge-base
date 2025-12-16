@@ -89,7 +89,7 @@ hashcat -m 28600 -a 0 -r rules/best64.rule scram_hash.txt wordlist.txt
 #### Using John the Ripper
 
 ```bash
-# JtR bleeding-jumbo (April 2025+) added PostgreSQL SCRAM-SHA-256 support
+# JtR bleeding-jumbo (2025) added PostgreSQL SCRAM-SHA-256 support
 # Check available formats: john --list=formats | grep -i scram
 # Standard JtR releases may not include this format yet
 

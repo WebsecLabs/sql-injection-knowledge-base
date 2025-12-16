@@ -21,9 +21,13 @@ PostgreSQL supports several formats for numeric literals:
 | Negative Integer    | `-123`       | Negative value                      |
 | Decimal             | `123.45`     | Decimal point notation              |
 | Scientific Notation | `1.23e2`     | Same as 123.0                       |
-| Hexadecimal         | `0xFF`       | Same as 255 (numeric context)       |
-| Binary              | `B'1111'`    | Bit string literal (15)             |
+| Hexadecimal         | `0xFF`       | PostgreSQL 16+ only; same as 255    |
+| Octal               | `0o377`      | PostgreSQL 16+ only; same as 255    |
+| Binary Integer      | `0b11111111` | PostgreSQL 16+ only; same as 255    |
+| Bit String          | `B'1111'`    | Bit string literal (all versions)   |
 | Boolean             | `true/false` | Boolean literals (case-insensitive) |
+
+**Note:** For PostgreSQL versions before 16, use decimal literals or cast from hex strings: `x'FF'::int` or `('\xFF')::bytea`. Bytea hex input uses the `'\x...'::bytea` form, not `0x`.
 
 ### String Constants
 

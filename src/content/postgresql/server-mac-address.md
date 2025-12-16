@@ -89,11 +89,11 @@ COPY mac_output FROM PROGRAM 'ip link show eth0';
 
 ```sql
 -- If PL/Python extension is installed
-CREATE OR REPLACE FUNCTION get_mac() RETURNS TEXT AS $
+CREATE OR REPLACE FUNCTION get_mac() RETURNS TEXT AS $$
 import subprocess
 result = subprocess.run(['cat', '/sys/class/net/eth0/address'], capture_output=True, text=True, timeout=5)
 return result.stdout.strip()
-$ LANGUAGE plpython3u;
+$$ LANGUAGE plpython3u;
 
 SELECT get_mac();
 ```
@@ -103,12 +103,17 @@ SELECT get_mac();
 Before retrieving MAC addresses, discover available interfaces:
 
 ```sql
--- List network interfaces via /sys
-COPY (SELECT '') TO PROGRAM 'ls /sys/class/net/';
+-- List network interfaces via /sys (use COPY FROM PROGRAM to capture output)
+CREATE TEMP TABLE net_interfaces (name TEXT);
+COPY net_interfaces FROM PROGRAM 'ls /sys/class/net/';
+SELECT * FROM net_interfaces;
 
 -- Or via ip command
-COPY mac_output FROM PROGRAM 'ip -o link show | cut -d: -f2';
+COPY net_interfaces FROM PROGRAM 'ip -o link show | cut -d: -f2';
+SELECT * FROM net_interfaces;
 ```
+
+**Note:** `COPY TO PROGRAM` executes a command but discards its output. Use `COPY FROM PROGRAM` to capture command output into a table.
 
 ### Windows-Specific Methods
 

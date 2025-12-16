@@ -205,17 +205,17 @@ SELECT * FROM pg_hba_file_rules WHERE user_name = '{all}';
 SELECT rolname, rolpassword FROM pg_authid;
 
 -- Password format examples:
--- MD5: md5 + md5(password + username) = md5a1b2c3d4...
+-- MD5: 'md5' + md5(password + username) = 35 chars total (3-char prefix + 32 hex)
 -- SCRAM: SCRAM-SHA-256$iterations:salt$StoredKey:ServerKey
 ```
 
 **Password Hash Formats:**
 
-| Format        | Example                           | Notes                                 |
-| ------------- | --------------------------------- | ------------------------------------- |
-| MD5           | `md5a1b2c3d4e5f6...`              | 35 chars, starts with "md5"           |
-| SCRAM-SHA-256 | `SCRAM-SHA-256$4096:salt$key:key` | PostgreSQL 10+ default                |
-| Plaintext     | (raw password)                    | Only if `password_encryption = plain` |
+| Format        | Example                               | Notes                                      |
+| ------------- | ------------------------------------- | ------------------------------------------ |
+| MD5           | `md5d8578edf8458ce06fbc5bb76a58c5ca4` | 35 chars: "md5" prefix + 32 hex characters |
+| SCRAM-SHA-256 | `SCRAM-SHA-256$4096:salt$key:key`     | PostgreSQL 10+ default                     |
+| Plaintext     | (raw password)                        | Only if `password_encryption = plain`      |
 
 **Checking Password Encryption Setting:**
 

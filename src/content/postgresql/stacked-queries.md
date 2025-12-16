@@ -38,18 +38,20 @@ Stacked queries work in PostgreSQL when:
 
 ### Driver Support
 
-| Driver                  | Multi-Statement | With Params | Notes                                          |
-| ----------------------- | --------------- | ----------- | ---------------------------------------------- |
-| PHP `pg_query()`        | Yes             | N/A         | Fully supports; executes as single transaction |
-| PHP `pg_query_params()` | No              | No          | Server-side prepared; single statement only    |
-| psycopg2 (Python)       | Yes             | Yes         | Client-side interpolation; returns last result |
-| node-postgres           | Yes             | No          | Server-side prepared; params = single only     |
-| JDBC PostgreSQL         | Yes             | Varies      | Use `getMoreResults()` for multiple results    |
+| Driver                  | Multi-Statement | With Params | Notes                                             |
+| ----------------------- | --------------- | ----------- | ------------------------------------------------- |
+| PHP `pg_query()`        | Yes             | N/A         | Simple query protocol; no parameter support       |
+| PHP `pg_query_params()` | No              | No          | Server-side prepared; single statement only       |
+| psycopg2 (Python)       | Yes             | Yes         | Client-side substitution; returns last result     |
+| psycopg3 (Python)       | Yes             | No          | Server-side binding; use ClientCursor for params  |
+| node-postgres           | Yes             | No          | Simple query without params; prepared with params |
+| JDBC PostgreSQL         | Yes             | Varies      | Use `getMoreResults()` for multiple results       |
 
 **Key differences:**
 
-- **Server-side prepared statements** (node-postgres with params, PHP `pg_query_params()`): PostgreSQL protocol restricts to single statements
-- **Client-side interpolation** (psycopg2): Parameters substituted before sending, so multi-statements work but offer no SQL injection protection
+- **Simple query protocol** (PHP `pg_query()`, node-postgres without params, psycopg3 without params): Sends raw SQL text allowing multiple statements, but has no parameter binding support
+- **Client-side substitution** (psycopg2, psycopg3 ClientCursor): Parameters are substituted locally before sending SQL to server, so multi-statements work but this offers no SQL injection protection
+- **Server-side prepared statements** (psycopg3 with params, node-postgres with params, PHP `pg_query_params()`): PostgreSQL extended query protocol restricts to single statements; multi-statement queries are rejected
 
 ### Examples of Stacked Queries
 
