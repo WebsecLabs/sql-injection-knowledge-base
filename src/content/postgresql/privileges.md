@@ -240,8 +240,9 @@ WHERE r.rolname IN (
 
 **Granting Dangerous Roles (if CREATEROLE):**
 
+If the current user has the `CREATEROLE` privilege, they can grant these predefined roles to themselves:
+
 ```sql
--- If user has CREATEROLE privilege, they can grant these roles
 GRANT pg_read_server_files TO current_user;
 GRANT pg_write_server_files TO current_user;
 GRANT pg_execute_server_program TO current_user;

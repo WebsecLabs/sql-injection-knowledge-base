@@ -112,7 +112,7 @@ SELECT IF(SUBSTRING(@@version,1,1)='5', BENCHMARK(5000000,MD5('x')), 0)
 
 **Performance warning:** High iteration counts (5M+) cause significant CPU load and may trigger slow query logs, monitoring alerts, or rate limiting. Start with lower values (10000-100000), verify timing works, then increase only if needed. In production environments, excessive BENCHMARK calls can cause denial of service.
 
-**Function alternatives:** `MID()` ↔ `SUBSTRING()`, `version()` ↔ `@@version`, `SHA1()` ↔ `MD5()`, `LIKE` ↔ `=`. Use whichever bypasses the target's filters.
+**Function alternatives:** `MID()` ↔ `SUBSTRING()`, `version()` ↔ `@@version`, `SHA1()` ↔ `MD5()`. For operators, note that `LIKE` supports pattern matching (useful for partial matches), while `=` performs exact comparison—each has different WAF evasion implications.
 
 **Why version detection matters:** Different MySQL versions expose different functions, keywords, and vulnerabilities. For example:
 

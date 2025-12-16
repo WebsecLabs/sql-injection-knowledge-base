@@ -43,7 +43,7 @@ Understanding PostgreSQL operators is essential for crafting effective SQL injec
 | `OR`     | Logical OR  | `SELECT * FROM users WHERE id=1 OR username='admin'`   |
 | `NOT`    | Logical NOT | `SELECT * FROM users WHERE NOT id=1`                   |
 
-**Important**: Unlike MySQL, PostgreSQL does NOT use `&&` and `||` for logical AND/OR. The `||` operator is string concatenation in PostgreSQL.
+**Important**: PostgreSQL uses `||` for string/array concatenation and `&&` for array overlap—not for logical operations (use `AND`/`OR` instead). This differs from some databases but both PostgreSQL and MySQL require explicit `AND`/`OR` keywords for logical operations.
 
 ### String Operators
 
@@ -194,4 +194,4 @@ From highest to lowest (per [PostgreSQL documentation](https://www.postgresql.or
 4. `~` and `~*` are regex operators
 5. `::` is the cast operator (unique to PostgreSQL)
 6. No `<=>` NULL-safe equal (use `IS NOT DISTINCT FROM`)
-7. No `XOR` keyword (use `(A OR B) AND NOT (A AND B)`)
+7. No logical `XOR` keyword (bitwise XOR is `#`; for logical XOR use `A != B` or `(A OR B) AND NOT (A AND B)`)

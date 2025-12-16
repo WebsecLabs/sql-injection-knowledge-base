@@ -13,10 +13,13 @@ Understanding how PostgreSQL stores passwords is crucial for exploiting extracte
 
 ### Password Storage Location
 
-PostgreSQL stores password hashes in the `pg_shadow` system catalog:
+PostgreSQL stores password hashes in the `pg_authid` system catalog (rolpassword column). The `pg_shadow` view is a backwards-compatibility layer that exposes this data for legacy clients—it existed as a table before PostgreSQL 8.1 and became a view afterward. Both require superuser privileges to access.
 
 ```sql
--- Requires superuser privilege
+-- Primary catalog (PostgreSQL 8.1+, requires superuser)
+SELECT rolname, rolpassword FROM pg_authid WHERE rolcanlogin;
+
+-- Legacy compatibility view (requires superuser)
 SELECT usename, passwd FROM pg_shadow;
 ```
 

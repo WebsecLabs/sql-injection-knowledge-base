@@ -7,6 +7,9 @@
 
 set -e
 
+# Change to script directory so relative paths work regardless of where script is invoked
+cd "$(dirname "$0")"
+
 # Configuration (override with environment variables)
 NETWORK="${SQLI_KB_NETWORK:-websec-site_websec-network}"
 PORT="${SQLI_KB_PORT:-8080}"
@@ -78,12 +81,7 @@ if ! docker build -t sqli-kb .; then
 fi
 
 # Run container with mode-specific arguments
-if [ ${#DOCKER_RUN_ARGS[@]} -gt 0 ]; then
-  NETWORK_ARGS=("${DOCKER_RUN_ARGS[@]}")
-else
-  NETWORK_ARGS=()
-fi
-if ! docker run -d --name sqli-kb ${NETWORK_ARGS[@]+"${NETWORK_ARGS[@]}"} -p "${PORT}:80" sqli-kb; then
+if ! docker run -d --name sqli-kb ${DOCKER_RUN_ARGS[@]+"${DOCKER_RUN_ARGS[@]}"} -p "${PORT}:80" sqli-kb; then
   echo "Error: Failed to start sqli-kb container" >&2
   exit 1
 fi

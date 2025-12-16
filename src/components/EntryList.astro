@@ -1,12 +1,12 @@
 ---
 import { type CollectionEntry } from "astro:content";
 import { getEntryURL } from "../utils/entryUtils";
-// Note: transition:animate="fade" is a built-in Astro directive, no import needed
+import type { ValidCollection } from "../utils/constants";
 
 interface Props {
-  entries: CollectionEntry<"mysql" | "mssql" | "oracle" | "postgresql" | "extras">[];
+  entries: CollectionEntry<ValidCollection>[];
   title: string;
-  collectionType: "mysql" | "mssql" | "oracle" | "postgresql" | "extras";
+  collectionType: ValidCollection;
 }
 
 const { entries, title, collectionType } = Astro.props;

