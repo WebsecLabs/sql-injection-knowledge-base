@@ -63,6 +63,10 @@ Built with:
 
 Contributions are welcome! Please see our [Contributing Guide](./src/content/extras/contributing.md) for more details on how to contribute to this project.
 
+## Development
+
+For information about linting configuration and disabled rules, see [docs/linting.md](./docs/linting.md).
+
 ## Disclaimer
 
 The techniques documented in this knowledge base are for educational and authorized security testing purposes only. Always obtain proper authorization before testing systems for security vulnerabilities.

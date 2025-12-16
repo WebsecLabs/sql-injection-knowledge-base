@@ -1,5 +1,8 @@
 #!/bin/bash
 # Script to run sqli-kb container with proper network configuration
+#
+# Environment variables:
+#   SQLI_KB_NETWORK - Docker network to join (default: websec-site_websec-network)
 
 set -e
 
@@ -7,8 +10,10 @@ set -e
 docker stop sqli-kb 2>/dev/null || true
 docker rm sqli-kb 2>/dev/null || true
 
-# Check if websec network exists and set mode-specific variables
-NETWORK="websec-site_websec-network"
+# Network configuration (override with SQLI_KB_NETWORK env var)
+NETWORK="${SQLI_KB_NETWORK:-websec-site_websec-network}"
+
+# Check if network exists and set mode-specific variables
 if docker network inspect "$NETWORK" >/dev/null 2>&1; then
   MODE="integrated"
   DOCKER_RUN_ARGS=(--network "$NETWORK")
@@ -21,9 +26,15 @@ fi
 
 # Build the application
 if [ "$MODE" = "integrated" ]; then
-  npm run build
+  if ! npm run build; then
+    echo "Error: Failed to build application (integrated mode)" >&2
+    exit 1
+  fi
 else
-  STANDALONE=true npm run build
+  if ! STANDALONE=true npm run build; then
+    echo "Error: Failed to build application (standalone mode)" >&2
+    exit 1
+  fi
 fi
 
 # Build Docker image
@@ -33,7 +44,10 @@ if ! docker build -t sqli-kb .; then
 fi
 
 # Run container with mode-specific arguments
-docker run -d --name sqli-kb "${DOCKER_RUN_ARGS[@]}" -p 8080:80 sqli-kb
+if ! docker run -d --name sqli-kb "${DOCKER_RUN_ARGS[@]}" -p 8080:80 sqli-kb; then
+  echo "Error: Failed to start sqli-kb container" >&2
+  exit 1
+fi
 
 # Output mode-specific message
 if [ "$MODE" = "integrated" ]; then

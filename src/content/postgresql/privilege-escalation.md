@@ -209,7 +209,13 @@ SELECT lo_get(OID);
 
 **Step 3: Modify Filenode:**
 
-Use a tool like [PostgreSQL Filenode Editor](https://github.com/adeadfed/postgresql-filenode-editor) to:
+Use a hex editor or custom script to modify the raw filenode data. PostgreSQL provides built-in tools for filenode mapping:
+
+- [`pg_relation_filenode()`](https://www.postgresql.org/docs/current/functions-admin.html#FUNCTIONS-ADMIN-DBOBJECT) - returns the filenode number for a relation
+- [`pg_filenode_relation()`](https://www.postgresql.org/docs/current/functions-admin.html#FUNCTIONS-ADMIN-DBOBJECT) - returns the relation OID for a given filenode
+- [`oid2name`](https://www.postgresql.org/docs/current/oid2name.html) - contrib utility that maps OIDs to table/filenode names
+
+Modifications to pg_authid typically involve:
 
 - Set `rolsuper = true`
 - Set `rolcreaterole = true`

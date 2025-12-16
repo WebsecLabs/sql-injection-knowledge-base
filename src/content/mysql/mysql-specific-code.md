@@ -51,11 +51,7 @@ UNION SELECT 1/*!50000,2,3*/
 -- MySQL >= 4.0.0 but < 5.0.0: returns 2 columns (1,3)
 -- MySQL < 4.0.0: returns 1 column (1)
 UNION SELECT 1/*!50000,2*//*!40000,3*/
-```
 
-**Note on null bytes (`%00`):** In web injection contexts, URL-encoded null bytes may truncate strings at the application layer before reaching MySQL. This is application-dependent behavior, not MySQL syntax.
-
-```sql
 -- Version detection: different results based on MySQL version
 -- MySQL >= 5.0.94: comment content executes, WHERE becomes "1=0 OR 1=1" (TRUE)
 -- MySQL < 5.0.94: comment ignored, WHERE remains "1=0" (FALSE)

