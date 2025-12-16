@@ -212,18 +212,20 @@ UNION attacks can be obfuscated:
 #### URL Encoding
 
 ```text
--- Standard URL encoding
+-- Standard URL encoding (RFC 3986)
 %74able_%6eame → table_name
 
 -- Double URL encoding (decoded twice by server)
 %2574able_%256eame → table_name
 
--- Unicode encoding
+-- Legacy %uXXXX encoding (non-standard, see note below)
 %u0074able_%u006eame → table_name
 
 -- Invalid hex encoding (ASP/IIS specific)
 %tab%le_%na%me → table_name
 ```
+
+**Note on `%uXXXX` encoding:** This is a legacy JavaScript escape format (`escape()`/`unescape()`), not RFC 3986 compliant. Modern servers don't reliably interpret it, but it may still work for WAF bypasses due to inconsistent decoding across layers (browser URL bar, proxy, WAF, application server). Standard Unicode in URLs uses UTF-8 percent-encoding (e.g., `é` = `%C3%A9`).
 
 #### Comment Obfuscation with Newlines
 

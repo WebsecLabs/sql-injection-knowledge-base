@@ -11,18 +11,20 @@ docker rm sqli-kb 2>/dev/null || true
 NETWORK="websec-site_websec-network"
 if docker network inspect "$NETWORK" >/dev/null 2>&1; then
   MODE="integrated"
-  BUILD_CMD="npm run build"
-  DOCKER_RUN_ARGS="--network $NETWORK"
+  DOCKER_RUN_ARGS=(--network "$NETWORK")
   echo "Building sqli-kb image (integrated mode)..."
 else
   MODE="standalone"
-  BUILD_CMD="STANDALONE=true npm run build"
-  DOCKER_RUN_ARGS=""
+  DOCKER_RUN_ARGS=()
   echo "Building sqli-kb image (standalone mode)..."
 fi
 
 # Build the application
-eval "$BUILD_CMD"
+if [ "$MODE" = "integrated" ]; then
+  npm run build
+else
+  STANDALONE=true npm run build
+fi
 
 # Build Docker image
 if ! docker build -t sqli-kb .; then
@@ -31,7 +33,7 @@ if ! docker build -t sqli-kb .; then
 fi
 
 # Run container with mode-specific arguments
-docker run -d --name sqli-kb $DOCKER_RUN_ARGS -p 8080:80 sqli-kb
+docker run -d --name sqli-kb "${DOCKER_RUN_ARGS[@]}" -p 8080:80 sqli-kb
 
 # Output mode-specific message
 if [ "$MODE" = "integrated" ]; then

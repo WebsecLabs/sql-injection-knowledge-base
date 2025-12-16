@@ -91,9 +91,10 @@ EXEC sp_OACreate 'WScript.Shell', @shell OUTPUT;
 EXEC sp_OAMethod @shell, 'Run', @result OUTPUT, 'cmd.exe /c dir C:\ > C:\output.txt', 0, 0;
 EXEC sp_OADestroy @shell;
 
--- Alternative syntax using SP_OACREATE (simpler)
+-- Alternative: Fewer variables, but discards return code (cannot detect success/failure)
+-- The original captures @result via OUTPUT; this passes null and ignores the Run method's return value
 DECLARE @execmd INT;
-EXEC sp_OACreate 'wscript.shell', @execmd OUTPUT;
+EXEC sp_OACreate 'WScript.Shell', @execmd OUTPUT;
 EXEC sp_OAMethod @execmd, 'run', null, '%systemroot%\system32\cmd.exe /c dir C:\ > C:\output.txt', 0, 0;
 EXEC sp_OADestroy @execmd;
 ```

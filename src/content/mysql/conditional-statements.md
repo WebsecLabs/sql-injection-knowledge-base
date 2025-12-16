@@ -97,20 +97,31 @@ Time-based blind injection uses conditional logic with time delays:
 
 ### Version Detection with IF and BENCHMARK
 
-Combine conditional logic with BENCHMARK for version-based timing attacks:
+Combine conditional logic with BENCHMARK for version-based timing attacks. Multiple variations shown for WAF/filter evasion - use whichever functions aren't blocked:
 
 ```sql
--- Causes delay if MySQL version starts with 5
+-- Using MID() + version() + LIKE (alternative to SUBSTRING/@@version/=)
 IF(MID(version(),1,1) LIKE 5, BENCHMARK(100000,SHA1('true')), false)
 
--- More precise version check
+-- Using MID() + equality check for specific version (5.7)
 IF(MID(version(),1,3)='5.7', BENCHMARK(100000,SHA1(1)), 0)
 
--- Check if version is 5.x.x
+-- Using SUBSTRING() + @@version + MD5 (higher iterations for reliable timing)
 SELECT IF(SUBSTRING(@@version,1,1)='5', BENCHMARK(5000000,MD5('x')), 0)
 ```
 
-This technique combines version detection with timing-based data extraction.
+**Function alternatives:** `MID()` ↔ `SUBSTRING()`, `version()` ↔ `@@version`, `SHA1()` ↔ `MD5()`, `LIKE` ↔ `=`. Use whichever bypasses the target's filters.
+
+**Why version detection matters:** Different MySQL versions expose different functions, keywords, and vulnerabilities. For example:
+
+- `JSON_EXTRACT()` is only available in MySQL 5.7+
+- `BENCHMARK()` behavior and iteration counts vary by version
+- Error message verbosity and format differ across versions
+- Some versions have known CVEs or configuration weaknesses
+
+Attackers use version detection to select compatible payloads and exploit version-specific weaknesses. Knowing the exact version (e.g., 5.7.32 vs 8.0.23) helps choose the right functions, avoid syntax errors, and target known vulnerabilities.
+
+**Caution:** BENCHMARK timing can be unreliable due to server load, network latency, and query caching—use multiple samples and adjust iteration counts for consistent results.
 
 ### Boolean-based Injection Example
 

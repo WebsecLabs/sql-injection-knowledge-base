@@ -4,7 +4,7 @@ description: Techniques for enumerating tables and columns in PostgreSQL
 category: Information Gathering
 order: 14
 tags: ["schema enumeration", "tables", "columns", "xml"]
-lastUpdated: 2025-12-14
+lastUpdated: 2025-12-15
 ---
 
 ## Tables and Columns

@@ -4,7 +4,7 @@ description: Techniques to recover passwords from PostgreSQL hashes
 category: Advanced Techniques
 order: 20
 tags: ["password", "cracking", "hashcat", "john"]
-lastUpdated: 2025-12-07
+lastUpdated: 2025-12-16
 ---
 
 ## Password Cracking

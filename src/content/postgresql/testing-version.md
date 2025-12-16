@@ -1,10 +1,10 @@
 ---
 title: Testing Version
 description: Techniques for determining PostgreSQL version information
-category: Reconnaissance
+category: Information Gathering
 order: 5
 tags: ["version", "reconnaissance"]
-lastUpdated: 2025-12-07
+lastUpdated: 2025-12-16
 ---
 
 ## Determining PostgreSQL Version

@@ -4,7 +4,7 @@ description: Overview of PostgreSQL SQL injection techniques and categories
 category: Basics
 order: 1
 tags: ["introduction", "overview", "postgresql"]
-lastUpdated: 2025-12-07
+lastUpdated: 2025-12-16
 ---
 
 This section provides a comprehensive collection of SQL injection techniques specific to PostgreSQL databases. The techniques are organized into the following categories:
