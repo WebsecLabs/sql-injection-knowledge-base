@@ -153,12 +153,12 @@ SELECT 1::boolean;          -- Cast to boolean (true)
 
 ### Operator Precedence in PostgreSQL
 
-From highest to lowest:
+From highest to lowest (per [PostgreSQL documentation](https://www.postgresql.org/docs/current/sql-syntax-lexical.html#SQL-PRECEDENCE)):
 
-1. `::` (typecast)
-2. `[]` (array element selection)
-3. `.` (table/column name separator)
-4. `-` (unary minus)
+1. `.` (table/column name separator)
+2. `::` (typecast)
+3. `[]` (array element selection)
+4. `+`, `-` (unary plus, unary minus)
 5. `^` (exponentiation)
 6. `*`, `/`, `%` (multiplication, division, modulo)
 7. `+`, `-` (addition, subtraction)

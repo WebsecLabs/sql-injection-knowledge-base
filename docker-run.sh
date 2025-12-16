@@ -7,28 +7,37 @@ set -e
 docker stop sqli-kb 2>/dev/null || true
 docker rm sqli-kb 2>/dev/null || true
 
-# Check if websec network exists
+# Check if websec network exists and set mode-specific variables
 NETWORK="websec-site_websec-network"
 if docker network inspect "$NETWORK" >/dev/null 2>&1; then
-  # Integrated mode - build with base path for websec.ca
+  MODE="integrated"
+  BUILD_CMD="npm run build"
+  DOCKER_RUN_ARGS="--network $NETWORK"
   echo "Building sqli-kb image (integrated mode)..."
-  npm run build
-  if ! docker build -t sqli-kb .; then
-    echo "Error: Failed to build sqli-kb image" >&2
-    exit 1
-  fi
-  docker run -d --name sqli-kb --network "$NETWORK" -p 8080:80 sqli-kb
+else
+  MODE="standalone"
+  BUILD_CMD="STANDALONE=true npm run build"
+  DOCKER_RUN_ARGS=""
+  echo "Building sqli-kb image (standalone mode)..."
+fi
+
+# Build the application
+eval "$BUILD_CMD"
+
+# Build Docker image
+if ! docker build -t sqli-kb .; then
+  echo "Error: Failed to build sqli-kb image" >&2
+  exit 1
+fi
+
+# Run container with mode-specific arguments
+docker run -d --name sqli-kb $DOCKER_RUN_ARGS -p 8080:80 sqli-kb
+
+# Output mode-specific message
+if [ "$MODE" = "integrated" ]; then
   echo "Container started on $NETWORK"
   echo "  - sqli-kb: http://localhost:8080 (proxy: http://localhost/sql-injection-knowledge-base)"
 else
-  # Standalone mode - build with root base path
-  echo "Building sqli-kb image (standalone mode)..."
-  STANDALONE=true npm run build
-  if ! docker build -t sqli-kb .; then
-    echo "Error: Failed to build sqli-kb image" >&2
-    exit 1
-  fi
-  docker run -d --name sqli-kb -p 8080:80 sqli-kb
   echo "Container started (standalone mode)"
   echo "  - sqli-kb: http://localhost:8080/"
 fi
