@@ -1,0 +1,33 @@
+---
+import { getCollection } from "astro:content";
+import { COLLECTION_TYPES, type ValidCollection } from "../../utils/constants";
+import { getFirstEntrySlug } from "../../utils/entryUtils";
+
+export async function getStaticPaths() {
+  const paths = [];
+
+  for (const collectionName of COLLECTION_TYPES) {
+    const entries = await getCollection(collectionName);
+    const firstSlug = getFirstEntrySlug(entries);
+
+    if (firstSlug) {
+      paths.push({
+        params: { collection: collectionName },
+        props: { firstSlug, collectionName },
+      });
+    }
+  }
+
+  return paths;
+}
+
+interface Props {
+  firstSlug: string;
+  collectionName: ValidCollection;
+}
+
+const { firstSlug, collectionName } = Astro.props;
+const redirectUrl = `${import.meta.env.BASE_URL}${collectionName}/${firstSlug}`;
+
+return Astro.redirect(redirectUrl, 301);
+---

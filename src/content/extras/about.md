@@ -3,7 +3,7 @@ title: About
 description: About the SQL Injection Knowledge Base
 category: Information
 order: 1
-lastUpdated: 2025-03-16
+lastUpdated: 2025-12-16
 ---
 
 ## About the SQL Injection Knowledge Base
@@ -29,6 +29,10 @@ This version of the SQL Injection Knowledge Base is built using:
 - Markdown for content management
 - Modern JavaScript (ES6+) for interactive features
 - Responsive design for all device sizes
+
+## Verification
+
+The techniques, payloads, and claims documented in this knowledge base are verified against real database instances using the [SQL Injection Testing Framework](https://github.com/lightos/sqli-testing-framework). This companion project provides automated tests that validate the accuracy of the documented SQL injection techniques.
 
 ## Disclaimer
 

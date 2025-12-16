@@ -22,12 +22,13 @@ const entries = {
 };
 
 // Count total entries
-const totalEntries =
-  mysqlEntries.length +
-  mssqlEntries.length +
-  oracleEntries.length +
-  postgresqlEntries.length +
-  extrasEntries.length;
+const totalEntries = [
+  mysqlEntries,
+  mssqlEntries,
+  oracleEntries,
+  postgresqlEntries,
+  extrasEntries,
+].reduce((sum, arr) => sum + arr.length, 0);
 
 // Count actual database platforms (collections with at least one entry)
 const activeDatabaseCount = [

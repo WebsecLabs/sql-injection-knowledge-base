@@ -4,7 +4,7 @@ description: How to discover and extract table and column information in MySQL
 category: Information Gathering
 order: 9
 tags: ["schema", "tables", "columns", "enumeration"]
-lastUpdated: 2025-03-15
+lastUpdated: 2025-12-16
 ---
 
 ## Tables and Columns
@@ -156,6 +156,13 @@ Available in MySQL 5.1.7+, you can view the currently executing query:
 
 ```sql
 SELECT info FROM information_schema.processlist;
+```
+
+**Deprecation Warning (MySQL 8.0+):** `INFORMATION_SCHEMA.PROCESSLIST` is deprecated and subject to removal in a future MySQL release. Use the Performance Schema alternative instead:
+
+```sql
+-- MySQL 8.0+ recommended approach
+SELECT info FROM performance_schema.processlist;
 ```
 
 This can reveal the full query structure including parts you cannot see in the application response.

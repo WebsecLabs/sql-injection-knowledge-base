@@ -380,7 +380,7 @@ $$;
 
 ### Version-specific Features
 
-#### JSON/JSONB (9.2+/9.4+)
+#### JSON (9.2+), JSONB (9.4+)
 
 JSON functions are useful for extracting structured data:
 

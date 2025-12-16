@@ -2,8 +2,9 @@
 # Script to run sqli-kb container with proper network configuration
 #
 # Environment variables:
-#   SQLI_KB_NETWORK - Docker network to join (default: websec-site_websec-network)
-#   SQLI_KB_PORT    - Host port to expose (default: 8080)
+#   SQLI_KB_NETWORK  - Docker network to join (default: websec-site_websec-network)
+#   SQLI_KB_PORT     - Host port to expose (default: 8080)
+#   SQLI_KB_SITE_URL - Site URL for standalone mode (default: http://localhost:$PORT)
 
 set -e
 
@@ -61,14 +62,16 @@ else
 fi
 
 # Build the application
-# Note: STANDALONE env var is read by astro.config.mjs to set the base path
+# Note: STANDALONE and SITE_URL env vars are read by astro.config.mjs
 if [ "$MODE" = "integrated" ]; then
   if ! npm run build; then
     echo "Error: Failed to build application (integrated mode)" >&2
     exit 1
   fi
 else
-  if ! npm run build:standalone; then
+  # Standalone mode requires SITE_URL for sitemap generation
+  SITE_URL="${SQLI_KB_SITE_URL:-http://localhost:${PORT}}"
+  if ! SITE_URL="$SITE_URL" npm run build:standalone; then
     echo "Error: Failed to build application (standalone mode)" >&2
     exit 1
   fi

@@ -4,7 +4,7 @@ This document explains the linting rules that have been disabled or modified in 
 
 ## Markdownlint Disabled Rules
 
-Configuration file: `.markdownlint.json`
+Configuration file: [`.markdownlint.json`](../.markdownlint.json)
 
 | Rule  | Name                | Status   | Rationale                                                                                                               |
 | ----- | ------------------- | -------- | ----------------------------------------------------------------------------------------------------------------------- |
@@ -16,7 +16,7 @@ Configuration file: `.markdownlint.json`
 
 ## ESLint Configuration
 
-Configuration file: `eslint.config.js`
+Configuration file: [`eslint.config.js`](../eslint.config.js)
 
 Uses the flat config format with TypeScript and Astro support.
 
@@ -45,7 +45,7 @@ Uses the flat config format with TypeScript and Astro support.
 
 ## Prettier Configuration
 
-Configuration file: `.prettierrc.json`
+Configuration file: [`.prettierrc.json`](../.prettierrc.json)
 
 **Formatting standards:**
 

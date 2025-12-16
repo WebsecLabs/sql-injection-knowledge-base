@@ -45,7 +45,7 @@ export function getEntryURL(
  * Sort entries by category (by learning progression) then by order within each category.
  * This creates a consistent reading order across all entries.
  */
-function sortEntriesByCategory(entries: AnyEntry[]): AnyEntry[] {
+export function sortEntriesByCategory(entries: AnyEntry[]): AnyEntry[] {
   return [...entries].sort((a, b) => {
     const aOrder = CATEGORY_ORDER[a.data.category] ?? DEFAULT_CATEGORY_ORDER;
     const bOrder = CATEGORY_ORDER[b.data.category] ?? DEFAULT_CATEGORY_ORDER;
@@ -87,4 +87,15 @@ export function getAdjacentEntries(allEntries: AnyEntry[], currentSlug: string):
       : null;
 
   return { previous, next };
+}
+
+/**
+ * Get the first (canonical) entry slug for a collection.
+ * Returns the slug of the first entry after sorting by category/order,
+ * or null if the collection is empty.
+ */
+export function getFirstEntrySlug(entries: AnyEntry[]): string | null {
+  if (entries.length === 0) return null;
+  const sorted = sortEntriesByCategory(entries);
+  return sorted[0].slug;
 }

@@ -177,12 +177,13 @@ const nextUrl = next ? getEntryURL(collection, next.slug, baseUrl) : null;
     font-size: 1rem;
     font-weight: 600;
     color: var(--color-heading-2);
+    /* Multi-line truncation with fallbacks */
     overflow: hidden;
     text-overflow: ellipsis;
-    /* Limit to 2 lines if needed, but usually 1 line is better for buttons */
     display: -webkit-box;
     -webkit-line-clamp: 2;
     -webkit-box-orient: vertical;
+    /* -webkit-line-clamp supported in Firefox 68+; older browsers fall back to text-overflow */
     line-height: 1.4;
   }
 
