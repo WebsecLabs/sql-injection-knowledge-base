@@ -51,15 +51,15 @@ Date and time constants:
 
 MySQL has several special values:
 
-| Constant            | Description                                                                                                        |
-| ------------------- | ------------------------------------------------------------------------------------------------------------------ |
-| `NULL`              | Represents a NULL value                                                                                            |
-| `\N`                | NULL synonym in SQL statements (deprecated 5.7.18, removed 8.0); still valid as NULL marker in LOAD DATA/OUTFILE   |
-| `CURRENT_USER()`    | Returns authenticated account as `user@host` (username may be empty for anonymous connections, e.g., `@localhost`) |
-| `DEFAULT`           | Used to specify default column value                                                                               |
-| `CURRENT_TIMESTAMP` | Current date and time                                                                                              |
-| `CURRENT_DATE`      | Current date                                                                                                       |
-| `CURRENT_TIME`      | Current time                                                                                                       |
+| Constant            | Description                                                                                                                                                                              |
+| ------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `NULL`              | Represents a NULL value                                                                                                                                                                  |
+| `\N`                | NULL synonym in SQL statements (deprecated 5.7.18, removed from SQL parser in 8.0); still recognized as NULL marker in LOAD DATA, SELECT ... INTO OUTFILE, and other file I/O operations |
+| `CURRENT_USER()`    | Returns authenticated account as `user@host` (username may be empty for anonymous connections, e.g., `@localhost`)                                                                       |
+| `DEFAULT`           | Used to specify default column value                                                                                                                                                     |
+| `CURRENT_TIMESTAMP` | Current date and time                                                                                                                                                                    |
+| `CURRENT_DATE`      | Current date                                                                                                                                                                             |
+| `CURRENT_TIME`      | Current time                                                                                                                                                                             |
 
 ### System Constants
 

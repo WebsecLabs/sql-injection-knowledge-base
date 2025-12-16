@@ -41,7 +41,7 @@ For stacked queries to work, two conditions must be met:
 - **Default behavior**: Multi-statements work via `query()` when `PDO::ATTR_EMULATE_PREPARES` is `true` (default)
 - **Disabling**: Set `PDO::MYSQL_ATTR_MULTI_STATEMENTS => false` in connection options (PHP 5.5.21+/5.6.5+)
 - **Native prepares**: Setting `PDO::ATTR_EMULATE_PREPARES => false` also disables multi-statements
-- **Result handling**: Only the first result set is returned; use `nextRowset()` for additional results
+- **Result handling**: Only the first result set is returned to the application (all statements still execute)
 
 ```php
 // MySQLi - supports stacked queries via multi_query()
@@ -49,7 +49,7 @@ $mysqli->multi_query("SELECT 1; SELECT 2;");
 
 // PDO - supports stacked queries by default (emulated prepares)
 $pdo->query("SELECT 1; SELECT 2;");
-// Note: Only first result set returned; use $stmt->nextRowset() for others
+// All statements execute; app only sees first result set (irrelevant for injection)
 
 // PDO - disable multi-statements for security (PHP 5.5.21+/5.6.5+)
 $pdo = new PDO($dsn, $user, $pass, [
@@ -59,6 +59,8 @@ $pdo = new PDO($dsn, $user, $pass, [
 // mysqli_query - does NOT support stacked queries
 mysqli_query($conn, "SELECT 1; SELECT 2;"); // Only first query executes
 ```
+
+**SQL injection implication:** With PDO's default settings, injected statements like `'; DROP TABLE users; --` will execute even though the application only receives results from the original query. The attacker doesn't need to see the output—data modification, privilege escalation, and file operations all succeed silently.
 
 ### Detection
 
