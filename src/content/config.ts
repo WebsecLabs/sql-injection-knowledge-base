@@ -15,6 +15,9 @@ export const collections = {
   mysql: defineCollection({
     schema: entrySchema,
   }),
+  mariadb: defineCollection({
+    schema: entrySchema,
+  }),
   mssql: defineCollection({
     schema: entrySchema,
   }),
