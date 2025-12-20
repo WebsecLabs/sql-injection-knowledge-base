@@ -10,6 +10,7 @@ import {
 
 interface Props {
   mysqlEntries?: CollectionEntry<"mysql">[];
+  mariadbEntries?: CollectionEntry<"mariadb">[];
   mssqlEntries?: CollectionEntry<"mssql">[];
   oracleEntries?: CollectionEntry<"oracle">[];
   postgresqlEntries?: CollectionEntry<"postgresql">[];
@@ -19,6 +20,7 @@ interface Props {
 // Get entries from props, defaulting to empty arrays
 const {
   mysqlEntries = [],
+  mariadbEntries = [],
   mssqlEntries = [],
   oracleEntries = [],
   postgresqlEntries = [],
@@ -42,6 +44,7 @@ function groupByCategory(entries: AnyEntry[]) {
 // Group entries by category
 const entriesByCategory = {
   mysql: groupByCategory(mysqlEntries),
+  mariadb: groupByCategory(mariadbEntries),
   mssql: groupByCategory(mssqlEntries),
   oracle: groupByCategory(oracleEntries),
   postgresql: groupByCategory(postgresqlEntries),
@@ -58,6 +61,7 @@ const entriesByCategory = {
 // Sort categories alphabetically
 const categoriesByType = {
   mysql: Object.keys(entriesByCategory.mysql).sort(),
+  mariadb: Object.keys(entriesByCategory.mariadb).sort(),
   mssql: Object.keys(entriesByCategory.mssql).sort(),
   oracle: Object.keys(entriesByCategory.oracle).sort(),
   postgresql: Object.keys(entriesByCategory.postgresql).sort(),

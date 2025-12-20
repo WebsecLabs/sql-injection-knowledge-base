@@ -24,6 +24,7 @@ interface Props {
   // Allow pages to pass their own collections to avoid duplicate loading
   collections?: {
     mysqlEntries?: CollectionEntry<"mysql">[];
+    mariadbEntries?: CollectionEntry<"mariadb">[];
     mssqlEntries?: CollectionEntry<"mssql">[];
     oracleEntries?: CollectionEntry<"oracle">[];
     postgresqlEntries?: CollectionEntry<"postgresql">[];
@@ -40,6 +41,7 @@ const {
 
 // Load collections only if not provided by the page
 const mysqlEntries = collections?.mysqlEntries ?? (await getCollection("mysql"));
+const mariadbEntries = collections?.mariadbEntries ?? (await getCollection("mariadb"));
 const mssqlEntries = collections?.mssqlEntries ?? (await getCollection("mssql"));
 const oracleEntries = collections?.oracleEntries ?? (await getCollection("oracle"));
 const postgresqlEntries = collections?.postgresqlEntries ?? (await getCollection("postgresql"));
@@ -120,6 +122,7 @@ const extrasEntries = collections?.extrasEntries ?? (await getCollection("extras
     <a href="#main-content" class="skip-link">Skip to main content</a>
     <NavBar
       mysqlEntries={mysqlEntries}
+      mariadbEntries={mariadbEntries}
       mssqlEntries={mssqlEntries}
       oracleEntries={oracleEntries}
       postgresqlEntries={postgresqlEntries}
@@ -133,6 +136,7 @@ const extrasEntries = collections?.extrasEntries ?? (await getCollection("extras
             <div id="sidebar-overlay" class="sidebar-overlay" />
             <Sidebar
               mysqlEntries={mysqlEntries}
+              mariadbEntries={mariadbEntries}
               mssqlEntries={mssqlEntries}
               oracleEntries={oracleEntries}
               postgresqlEntries={postgresqlEntries}

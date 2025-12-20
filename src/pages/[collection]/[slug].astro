@@ -42,6 +42,7 @@ const { entry, collectionName } = Astro.props;
 
 // Load all collections for sidebar navigation
 const mysqlEntries = await getCollection("mysql");
+const mariadbEntries = await getCollection("mariadb");
 const mssqlEntries = await getCollection("mssql");
 const oracleEntries = await getCollection("oracle");
 const postgresqlEntries = await getCollection("postgresql");
@@ -54,6 +55,7 @@ const pageTitle = `${entry.data.title} | ${collectionTitle} | SQL Injection KB`;
 // Build collections object for Layout (uses *Entries key naming for sidebar)
 const collections = {
   mysqlEntries,
+  mariadbEntries,
   mssqlEntries,
   oracleEntries,
   postgresqlEntries,

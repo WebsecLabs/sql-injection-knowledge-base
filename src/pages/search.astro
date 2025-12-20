@@ -4,8 +4,10 @@ import Layout from "../layouts/Layout.astro";
 
 // Load all entries at build time for client-side search
 const mysqlEntries = await getCollection("mysql");
+const mariadbEntries = await getCollection("mariadb");
 const mssqlEntries = await getCollection("mssql");
 const oracleEntries = await getCollection("oracle");
+const postgresqlEntries = await getCollection("postgresql");
 const extrasEntries = await getCollection("extras");
 
 // Prepare searchable data for client-side (minimal data to reduce payload)
@@ -27,6 +29,14 @@ const searchData: SearchEntry[] = [
     tags: e.data.tags,
     collection: "mysql",
   })),
+  ...mariadbEntries.map((e) => ({
+    slug: e.slug,
+    title: e.data.title,
+    description: e.data.description,
+    category: e.data.category,
+    tags: e.data.tags,
+    collection: "mariadb",
+  })),
   ...mssqlEntries.map((e) => ({
     slug: e.slug,
     title: e.data.title,
@@ -42,6 +52,14 @@ const searchData: SearchEntry[] = [
     category: e.data.category,
     tags: e.data.tags,
     collection: "oracle",
+  })),
+  ...postgresqlEntries.map((e) => ({
+    slug: e.slug,
+    title: e.data.title,
+    description: e.data.description,
+    category: e.data.category,
+    tags: e.data.tags,
+    collection: "postgresql",
   })),
   ...extrasEntries.map((e) => ({
     slug: e.slug,
@@ -61,8 +79,10 @@ const baseUrl = import.meta.env.BASE_URL;
   showSidebar={false}
   collections={{
     mysqlEntries,
+    mariadbEntries,
     mssqlEntries,
     oracleEntries,
+    postgresqlEntries,
     extrasEntries,
   }}
 >

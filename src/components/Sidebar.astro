@@ -8,16 +8,24 @@ import SidebarSection from "./SidebarSection.astro";
 
 interface Props {
   mysqlEntries: CollectionEntry<"mysql">[];
+  mariadbEntries: CollectionEntry<"mariadb">[];
   mssqlEntries: CollectionEntry<"mssql">[];
   oracleEntries: CollectionEntry<"oracle">[];
   postgresqlEntries: CollectionEntry<"postgresql">[];
   extrasEntries: CollectionEntry<"extras">[];
 }
 
-const { mysqlEntries, mssqlEntries, oracleEntries, postgresqlEntries, extrasEntries } = Astro.props;
+const {
+  mysqlEntries,
+  mariadbEntries,
+  mssqlEntries,
+  oracleEntries,
+  postgresqlEntries,
+  extrasEntries,
+} = Astro.props;
 
 // Type-safe helper function to group entries by category
-type AnyEntry = CollectionEntry<"mysql" | "mssql" | "oracle" | "postgresql" | "extras">;
+type AnyEntry = CollectionEntry<"mysql" | "mariadb" | "mssql" | "oracle" | "postgresql" | "extras">;
 
 interface CategoryGroup {
   [category: string]: AnyEntry[];
@@ -44,6 +52,7 @@ function sortCategoryEntries(grouped: CategoryGroup): CategoryGroup {
 
 // Group and sort entries by category
 const mysqlByCategory = sortCategoryEntries(groupByCategory(mysqlEntries));
+const mariadbByCategory = sortCategoryEntries(groupByCategory(mariadbEntries));
 const mssqlByCategory = sortCategoryEntries(groupByCategory(mssqlEntries));
 const oracleByCategory = sortCategoryEntries(groupByCategory(oracleEntries));
 const postgresqlByCategory = sortCategoryEntries(groupByCategory(postgresqlEntries));
@@ -56,6 +65,7 @@ const currentPath = Astro.url.pathname;
 
 // Determine active section based on current path
 function getActiveSection(path: string): string {
+  if (path.includes("/mariadb/")) return "mariadb";
   if (path.includes("/mssql/")) return "mssql";
   if (path.includes("/oracle/")) return "oracle";
   if (path.includes("/postgresql/")) return "postgresql";
@@ -82,6 +92,14 @@ const activeSection = getActiveSection(currentPath);
       isActive={activeSection === "mysql"}
       currentPath={currentPath}
       entriesByCategory={mysqlByCategory}
+    />
+
+    <SidebarSection
+      sectionId="mariadb"
+      title="MariaDB"
+      isActive={activeSection === "mariadb"}
+      currentPath={currentPath}
+      entriesByCategory={mariadbByCategory}
     />
 
     <SidebarSection

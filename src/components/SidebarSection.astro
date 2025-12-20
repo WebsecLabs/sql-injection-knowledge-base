@@ -7,7 +7,9 @@ import type { CollectionEntry } from "astro:content";
 import { CATEGORY_ORDER } from "../utils/entryUtils";
 
 interface CategoryGroup {
-  [category: string]: CollectionEntry<"mysql" | "mssql" | "oracle" | "postgresql" | "extras">[];
+  [category: string]: CollectionEntry<
+    "mysql" | "mariadb" | "mssql" | "oracle" | "postgresql" | "extras"
+  >[];
 }
 
 interface Props {

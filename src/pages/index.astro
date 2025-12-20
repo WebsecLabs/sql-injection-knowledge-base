@@ -7,6 +7,7 @@ import { COLLECTION_TYPES, COLLECTION_LABELS } from "../utils/constants";
 
 // Get entries from all collections
 const mysqlEntries = await getCollection("mysql");
+const mariadbEntries = await getCollection("mariadb");
 const mssqlEntries = await getCollection("mssql");
 const oracleEntries = await getCollection("oracle");
 const postgresqlEntries = await getCollection("postgresql");
@@ -15,6 +16,7 @@ const extrasEntries = await getCollection("extras");
 // Map entries to a convenient object
 const entries = {
   mysql: mysqlEntries,
+  mariadb: mariadbEntries,
   mssql: mssqlEntries,
   oracle: oracleEntries,
   postgresql: postgresqlEntries,
@@ -24,6 +26,7 @@ const entries = {
 // Count total entries
 const totalEntries = [
   mysqlEntries,
+  mariadbEntries,
   mssqlEntries,
   oracleEntries,
   postgresqlEntries,
@@ -33,6 +36,7 @@ const totalEntries = [
 // Count actual database platforms (collections with at least one entry)
 const activeDatabaseCount = [
   mysqlEntries.length > 0,
+  mariadbEntries.length > 0,
   mssqlEntries.length > 0,
   oracleEntries.length > 0,
   postgresqlEntries.length > 0,
@@ -44,6 +48,7 @@ const activeDatabaseCount = [
   showSidebar={false}
   collections={{
     mysqlEntries,
+    mariadbEntries,
     mssqlEntries,
     oracleEntries,
     postgresqlEntries,
