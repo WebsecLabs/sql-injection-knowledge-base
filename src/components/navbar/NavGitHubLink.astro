@@ -20,7 +20,6 @@ const githubUrl = normalizedProp || import.meta.env.PUBLIC_GITHUB_URL || default
 
 // Allowed GitHub hostnames (lowercase, no trailing dot)
 const ALLOWED_GITHUB_HOSTS = ["github.com", "www.github.com"] as const;
-const GITHUB_ENTERPRISE_SUFFIX = ".github.com";
 
 /**
  * Normalize a hostname for comparison:
@@ -33,14 +32,18 @@ function normalizeHostname(hostname: string): string {
 
 /**
  * Check if a hostname is a valid GitHub host.
- * Accepts github.com, www.github.com, or GitHub Enterprise hosts (*.github.com)
+ * Accepts github.com, www.github.com, or GitHub Enterprise hosts (subdomains of github.com).
+ * Security: Uses exact match or ".github.com" suffix to prevent matching domains like "evil-github.com"
  */
 function isValidGitHubHost(hostname: string): boolean {
   const normalized = normalizeHostname(hostname);
-  return (
-    ALLOWED_GITHUB_HOSTS.includes(normalized as (typeof ALLOWED_GITHUB_HOSTS)[number]) ||
-    normalized.endsWith(GITHUB_ENTERPRISE_SUFFIX)
-  );
+  // Exact match for github.com or www.github.com
+  if (ALLOWED_GITHUB_HOSTS.includes(normalized as (typeof ALLOWED_GITHUB_HOSTS)[number])) {
+    return true;
+  }
+  // GitHub Enterprise: must be a subdomain of github.com (e.g., enterprise.github.com)
+  // The dot prefix ensures we don't match "evil-github.com"
+  return normalized.endsWith(".github.com");
 }
 
 /**

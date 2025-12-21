@@ -1,0 +1,60 @@
+---
+/**
+ * Table of Contents component
+ * Displays a navigable outline of H2 and H3 headings on the current page
+ * with scroll-spy highlighting and collapsible functionality
+ */
+
+interface Heading {
+  depth: number;
+  slug: string;
+  text: string;
+}
+
+interface Props {
+  headings: Heading[];
+}
+
+const { headings } = Astro.props;
+---
+
+<aside class="toc" id="toc" aria-label="Table of contents">
+  <div class="toc-header">
+    <span class="toc-title">On this page</span>
+    <button
+      class="toc-toggle"
+      id="toc-toggle"
+      aria-expanded="true"
+      aria-controls="toc-content"
+      aria-label="Toggle table of contents"
+    >
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        width="16"
+        height="16"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        aria-hidden="true"
+      >
+        <polyline points="6 9 12 15 18 9"></polyline>
+      </svg>
+    </button>
+  </div>
+  <nav id="toc-content" class="toc-content">
+    <ul class="toc-list">
+      {
+        headings.map((heading) => (
+          <li class={`toc-item toc-item-h${heading.depth}`}>
+            <a href={`#${heading.slug}`} class="toc-link" data-heading-id={heading.slug}>
+              {heading.text}
+            </a>
+          </li>
+        ))
+      }
+    </ul>
+  </nav>
+</aside>

@@ -321,8 +321,8 @@ SELECT IF(MID(version(),1,2)='10', 'MariaDB 10.x', 'other')
 -- Check if MariaDB 11.x
 SELECT IF(MID(version(),1,2)='11', 'MariaDB 11.x', 'other')
 
--- Using LIKE for pattern matching
-SELECT IF(MID(version(),1,1) LIKE '1', 'MariaDB 10.x or 11.x', 'other')
+-- Using equality check for single character
+SELECT IF(MID(version(),1,1) = '1', 'MariaDB 10.x or 11.x', 'other')
 ```
 
 ### Using SUBSTRING() and @@version

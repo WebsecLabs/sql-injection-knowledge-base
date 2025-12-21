@@ -70,9 +70,16 @@ const { previous, next } = getAdjacentEntries(currentCollectionEntries, entry.sl
 
 // Get first entry slug for breadcrumb (uses pre-sorted entries to avoid re-sorting)
 const firstEntrySlug = getFirstEntrySlug(currentCollectionEntries, sortedEntries) ?? "intro";
+
+// Render entry to extract headings for Table of Contents
+// Note: Astro caches render() calls, so this doesn't duplicate work done in MarkdownEntry
+const { headings } = await entry.render();
+
+// Filter to H2 and H3 headings for TOC (depth 2 and 3)
+const tocHeadings = headings.filter((h) => h.depth === 2 || h.depth === 3);
 ---
 
-<Layout title={pageTitle} collections={collections}>
+<Layout title={pageTitle} collections={collections} tocHeadings={tocHeadings}>
   <div class="entry-container" transition:animate="slide">
     <div class="entry-header" transition:animate="fade">
       <nav class="breadcrumbs" aria-label="Breadcrumb">

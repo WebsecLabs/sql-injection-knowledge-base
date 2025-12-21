@@ -382,7 +382,18 @@ INSERT INTO logs (action) VALUES ('test'); SELECT * FROM logs
 SELECT * FROM users WHERE id = 1; UPDATE users SET last_login = NOW() WHERE id = 1
 ```
 
-**Note:** Stacked query support depends on the database driver configuration. The `mysql2` driver supports multi-statement queries by default, but other drivers may require explicit configuration.
+**Note:** Stacked query support depends on the database driver configuration. Most modern drivers **block multi-statements by default** as a security measure:
+
+| Driver/Connector         | Default | Enable Flag                                         |
+| ------------------------ | ------- | --------------------------------------------------- |
+| Node.js `mysql2`         | Blocked | `multipleStatements: true`                          |
+| Node.js `mariadb`        | Blocked | `multipleStatements: true`                          |
+| Python `pymysql`         | Blocked | `client_flag=CLIENT.MULTI_STATEMENTS`               |
+| Python `mysql-connector` | Blocked | `allow_multi_statements=True`                       |
+| PHP PDO (emulated)       | Allowed | Disable with `MYSQL_ATTR_MULTI_STATEMENTS => false` |
+| JDBC Connector/J         | Blocked | `allowMultiQueries=true`                            |
+
+**Security:** Enabling multi-statements significantly increases SQL injection risk. Prefer parameterized queries and keep multi-statements disabled in production.
 
 ### In Injection Context
 

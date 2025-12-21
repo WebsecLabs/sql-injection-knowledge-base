@@ -108,13 +108,22 @@ export function cloneAndReplace(element: Element): Element {
 }
 
 /**
+ * Interface for debounced functions that includes a cancel method
+ */
+export interface DebouncedFunction<T extends (...args: Parameters<T>) => void> {
+  (...args: Parameters<T>): void;
+  /** Cancel any pending invocation */
+  cancel: () => void;
+}
+
+/**
  * Creates a debounced version of a function that delays execution until
  * after the specified wait time has elapsed since the last call.
  *
  * @template T - The function type to debounce
  * @param func - The function to debounce
  * @param wait - The number of milliseconds to delay
- * @returns A debounced version of the function
+ * @returns A debounced version of the function with a cancel method
  *
  * @example
  * ```typescript
@@ -128,6 +137,9 @@ export function cloneAndReplace(element: Element): Element {
  * debouncedSearch('a');
  * debouncedSearch('ab');
  * debouncedSearch('abc'); // Only this will run after 300ms
+ *
+ * // Cancel any pending execution (useful for cleanup/unmount)
+ * debouncedSearch.cancel();
  * ```
  *
  * @remarks
@@ -135,20 +147,31 @@ export function cloneAndReplace(element: Element): Element {
  * - Each call resets the timer, so rapid successive calls will only execute once
  * - The debounced function preserves the original function's type signature
  * - Works in both browser and SSR contexts
+ * - The cancel method clears any pending timeout, useful for cleanup during unmount
  */
 export function debounce<T extends (...args: Parameters<T>) => void>(
   func: T,
   wait: number
-): (...args: Parameters<T>) => void {
+): DebouncedFunction<T> {
   let timeoutId: ReturnType<typeof setTimeout> | undefined;
 
-  return function (this: unknown, ...args: Parameters<T>): void {
+  const debounced = function (this: unknown, ...args: Parameters<T>): void {
     if (timeoutId !== undefined) {
       clearTimeout(timeoutId);
     }
 
     timeoutId = setTimeout(() => {
       func.apply(this, args);
+      timeoutId = undefined;
     }, wait);
+  } as DebouncedFunction<T>;
+
+  debounced.cancel = function (): void {
+    if (timeoutId !== undefined) {
+      clearTimeout(timeoutId);
+      timeoutId = undefined;
+    }
   };
+
+  return debounced;
 }

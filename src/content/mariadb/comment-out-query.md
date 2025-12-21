@@ -50,11 +50,15 @@ SELECT * FROM users WHERE username = 'admin'/*' AND password = '*/ OR '1'='1'
 
 ### Nested Comments
 
-MariaDB does **NOT** support nested C-style comments:
+MariaDB does **NOT** support nested C-style comments. While they may appear to work in limited cases, the behavior is undefined and not recommended. The parser treats the first `*/` as closing the comment, regardless of any inner `/*`:
 
 ```sql
+-- The first */ closes the comment, leaving 'visible' AS result as exposed SQL
 SELECT /* outer /* inner */ 'visible' AS result
+-- Returns: 'visible' (the inner /* is treated as part of the comment text)
 ```
+
+> **Warning:** Do not rely on nested comment behavior. Different MariaDB versions or SQL modes may handle this differently.
 
 ## SQL Comment (-- -)
 
@@ -86,9 +90,15 @@ SELECT id, username FROM users WHERE id = 1 UNION SELECT 1, 2`'
 -- The trailing ' becomes part of the unclosed identifier started by `
 ```
 
+> **Limitations:** This technique only neutralizes a trailing delimiter when the original query places that delimiter after the injection point (e.g., a trailing single-quote inside a queried string). It will not work if the application uses different quoting, escapes user input, or uses prepared statements. SQL modes that restrict identifier characters may also affect this behavior. Always validate this vector in the specific target environment, as ORM escaping or API-level sanitization can prevent it entirely.
+
 ## Important Notes
 
-- Comments inside string literals are NOT treated as comments: `SELECT '# not a comment'`
+- **Comments inside string literals are NOT treated as comments:** `SELECT '# not a comment'` returns the literal string `# not a comment`. Comment markers are only parsed as comments when they appear outside of quoted strings.
+- **Injection context matters:** The effectiveness of comment-out techniques depends on where your injection occurs:
+  - **String value injection** (inside quotes): You must first break out of the string before comments work
+  - **Numeric/unquoted injection**: Comments work immediately after your payload
+  - **Identifier injection** (column/table names): Different escaping rules may apply
 - Multiple comment styles can be used in one query: `SELECT * /* c-style */ FROM users # hash`
 
 ## Injection Examples

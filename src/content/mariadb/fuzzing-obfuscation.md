@@ -182,8 +182,11 @@ SELECT!0 AS val
 -- Parentheses work without space
 SELECT(1) AS val
 
--- Note: Scientific notation does NOT work immediately after SELECT
-SELECT.1e1 AS val  -- Syntax error in MariaDB (parser sees SELECT.1e1 as invalid)
+-- Note: Decimal literals starting with a dot require whitespace after SELECT
+SELECT.1e1 AS val   -- Syntax error (parser sees SELECT.1e1 as identifier)
+SELECT .1e1 AS val  -- Valid: space before dot-decimal (returns 1)
+SELECT 1e1 AS val   -- Valid: scientific notation with space (returns 10)
+SELECT(1e1) AS val  -- Valid: parentheses (returns 10)
 ```
 
 #### Parentheses as Whitespace Alternatives
@@ -378,7 +381,7 @@ UNION ALL SELECT 999, (CASE WHEN (1=1) THEN 'true_branch' ELSE 'false_branch' EN
 %u0074able_%u006eame → table_name
 ```
 
-**Note on `%uXXXX` encoding:** This is a legacy JavaScript escape format, not RFC 3986 compliant. Modern servers don't reliably interpret it, but it may still work for WAF bypasses due to inconsistent decoding across layers.
+**Note on `%uXXXX` encoding:** This is a legacy JavaScript escape format, not RFC 3986 compliant. The MariaDB SQL parser does **not** decode this encoding - decoding must occur at the application/middleware layer (web server, framework, WAF, or JavaScript) before the query reaches the database. Bypass potential exists when there's inconsistent handling between WAF decoding and backend application processing.
 
 ### Comment Obfuscation with Newlines
 

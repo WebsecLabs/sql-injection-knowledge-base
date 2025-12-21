@@ -1,6 +1,7 @@
 import { defineConfig } from "astro/config";
 import tsconfigPaths from "vite-tsconfig-paths";
 import sitemap from "@astrojs/sitemap";
+import rehypeSlug from "rehype-slug";
 import { remarkBasePath } from "./src/plugins/remark-base-path.mjs";
 
 // Use "/" for standalone mode, "/sql-injection-knowledge-base/" for integrated mode
@@ -33,6 +34,7 @@ export default defineConfig({
 
   markdown: {
     remarkPlugins: [[remarkBasePath, { base }]],
+    rehypePlugins: [rehypeSlug],
   },
 
   integrations: [sitemap()],

@@ -121,6 +121,19 @@ describe("themeToggle", () => {
   });
 
   describe("setupThemeToggle", () => {
+    // Capture and restore original readyState descriptor to prevent test pollution
+    let originalReadyStateDescriptor: PropertyDescriptor | undefined;
+
+    beforeEach(() => {
+      originalReadyStateDescriptor = Object.getOwnPropertyDescriptor(document, "readyState");
+    });
+
+    afterEach(() => {
+      if (originalReadyStateDescriptor) {
+        Object.defineProperty(document, "readyState", originalReadyStateDescriptor);
+      }
+    });
+
     it("sets up event listeners for DOMContentLoaded when DOM is loading", () => {
       document.body.innerHTML = '<button id="theme-toggle">Toggle</button>';
 

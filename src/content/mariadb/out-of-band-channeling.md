@@ -137,6 +137,17 @@ To capture this data, you need:
 2. A DNS server configured to log all requests (or a service like Burp Collaborator)
 3. Proper network connectivity (the MariaDB server must be able to resolve external domains)
 
+### Ethical and Legal Considerations
+
+Out-of-band exfiltration techniques can extract sensitive data without visible application responses. Use these techniques responsibly:
+
+- Only perform OOB attacks on systems with explicit written authorization
+- Ensure your data capture infrastructure is properly secured
+- Document all testing activities and findings
+- Never exfiltrate actual sensitive data from production during assessments
+- Consider legal implications in your jurisdiction - data exfiltration may have specific legal consequences
+- Report findings through proper responsible disclosure channels
+
 ### Advanced Techniques
 
 #### Encoding Data for DNS Transport

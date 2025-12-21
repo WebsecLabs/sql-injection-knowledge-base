@@ -252,7 +252,20 @@ SELECT GROUP_CONCAT(username) FROM users WHERE id = 99999
 -- Result: NULL
 ```
 
-> **Note:** GROUP_CONCAT output is limited by `group_concat_max_len` (default 1MB) and `max_allowed_packet`. Results exceeding these limits are silently truncated. For very large aggregations, increase both settings or use iterative queries.
+> **Note:** GROUP_CONCAT output is limited by `group_concat_max_len` (default 1024 bytes, increased in newer versions) and `max_allowed_packet`. Results exceeding these limits are silently truncated - no error is thrown.
+
+**Detecting truncation:**
+
+```sql
+-- Check if result length equals limit (likely truncated)
+SELECT
+  LENGTH(GROUP_CONCAT(col)) AS result_len,
+  @@group_concat_max_len AS max_len
+FROM table_name;
+-- If result_len = max_len, data was likely truncated
+```
+
+**Workarounds:** Increase limit with `SET SESSION group_concat_max_len = 1000000;` or use LIMIT/OFFSET pagination.
 
 ## String Building Techniques
 

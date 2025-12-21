@@ -72,6 +72,8 @@ Given the query:
 SELECT * FROM Table WHERE id = 1;
 ```
 
+> **Note:** Rows marked with `-` in the Result column test whether arithmetic expressions are evaluated rather than returning True/False. Compare the returned value against expected results to detect injection.
+
 | Test Payload | Result | Description                                           |
 | ------------ | ------ | ----------------------------------------------------- |
 | `AND 1`      | True   | Logical truth maintains query validity                |

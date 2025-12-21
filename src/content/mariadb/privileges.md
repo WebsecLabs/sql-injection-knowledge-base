@@ -96,15 +96,15 @@ LIMIT 10
 
 ### Important Privileges to Check
 
-| Privilege        | Description                      | Exploitation Potential                       |
-| ---------------- | -------------------------------- | -------------------------------------------- |
-| `FILE`           | Allows reading and writing files | Read sensitive files; write web shells       |
-| `SUPER`          | Administrative privilege         | Execute commands; manipulate server settings |
-| `SHUTDOWN`       | Can shutdown the database        | Denial of service                            |
-| `CREATE USER`    | Can create new users             | Create privileged users for persistence      |
-| `PROCESS`        | Can see all processes            | View queries from other users                |
-| `RELOAD`         | Can reload server settings       | Can flush privileges                         |
-| `ALL PRIVILEGES` | All privileges (admin)           | Complete database control                    |
+| Privilege        | Description                      | Exploitation Potential                                                      |
+| ---------------- | -------------------------------- | --------------------------------------------------------------------------- |
+| `FILE`           | Allows reading and writing files | Read sensitive files; write web shells                                      |
+| `SUPER`          | Administrative privilege         | Kill threads; change system variables; manage replication; bypass read-only |
+| `SHUTDOWN`       | Can shutdown the database        | Denial of service                                                           |
+| `CREATE USER`    | Can create new users             | Create privileged users for persistence                                     |
+| `PROCESS`        | Can see all processes            | View queries from other users                                               |
+| `RELOAD`         | Can reload server settings       | Can flush privileges                                                        |
+| `ALL PRIVILEGES` | All privileges (admin)           | Complete database control                                                   |
 
 ### Checking for FILE Privilege
 
@@ -114,6 +114,8 @@ The FILE privilege is particularly important as it allows reading from and writi
 -- Quick check for FILE privilege
 SELECT COUNT(*) FROM mysql.user WHERE user = SUBSTRING_INDEX(USER(), '@', 1) AND File_priv = 'Y';
 ```
+
+> **Caution:** This query only matches by username, ignoring the host. If the same username exists with different hosts (e.g., `admin@localhost` vs `admin@%`), results may be incorrect. Use the `information_schema.user_privileges` approach below for accurate checks.
 
 Or more generally using information_schema:
 

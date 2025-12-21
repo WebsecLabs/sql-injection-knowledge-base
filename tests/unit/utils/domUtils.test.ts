@@ -220,5 +220,58 @@ describe("domUtils", () => {
       vi.advanceTimersByTime(0);
       expect(func).toHaveBeenCalledTimes(1);
     });
+
+    it("has cancel method that prevents pending execution", () => {
+      const func = vi.fn();
+      const debounced = debounce(func, 100);
+
+      debounced();
+      expect(func).not.toHaveBeenCalled();
+
+      debounced.cancel();
+
+      vi.advanceTimersByTime(100);
+      expect(func).not.toHaveBeenCalled();
+    });
+
+    it("cancel method is idempotent (safe to call multiple times)", () => {
+      const func = vi.fn();
+      const debounced = debounce(func, 100);
+
+      debounced();
+      debounced.cancel();
+      debounced.cancel(); // Should not throw
+      debounced.cancel();
+
+      vi.advanceTimersByTime(100);
+      expect(func).not.toHaveBeenCalled();
+    });
+
+    it("can be called again after cancel", () => {
+      const func = vi.fn();
+      const debounced = debounce(func, 100);
+
+      debounced("first");
+      debounced.cancel();
+
+      debounced("second");
+      vi.advanceTimersByTime(100);
+
+      expect(func).toHaveBeenCalledTimes(1);
+      expect(func).toHaveBeenCalledWith("second");
+    });
+
+    it("cancel has no effect when no pending execution", () => {
+      const func = vi.fn();
+      const debounced = debounce(func, 100);
+
+      // Cancel before any call
+      debounced.cancel();
+
+      debounced();
+      vi.advanceTimersByTime(100);
+
+      expect(func).toHaveBeenCalledTimes(1);
+    });
   });
 });

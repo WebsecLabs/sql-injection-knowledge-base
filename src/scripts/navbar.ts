@@ -22,6 +22,7 @@ import { cloneAndReplace } from "../utils/domUtils";
 declare global {
   interface Window {
     initializeNavbar?: () => void;
+    __navbarLastPath?: string;
   }
 }
 
@@ -80,6 +81,13 @@ function resetDatabaseSections(): void {
 
 // Main initialization function
 window.initializeNavbar = function () {
+  // Per-path deduplication: skip re-initialization if we're on the same path
+  // This prevents redundant DOM cloning and handler re-attachment during same-route transitions
+  const currentPath = window.location.pathname;
+  if (window.__navbarLastPath === currentPath && navbarInitialized) {
+    return;
+  }
+
   // Initialize navbar functionality
   function initNavbar() {
     // Mobile menu toggle
@@ -356,6 +364,9 @@ window.initializeNavbar = function () {
   prevIsMobile = window.innerWidth < MOBILE_BREAKPOINT;
   initNavbar();
   initSearch();
+
+  // Update the last-initialized path after successful initialization
+  window.__navbarLastPath = currentPath;
 
   // Set up resize listener only once
   if (!navbarInitialized) {

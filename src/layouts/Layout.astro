@@ -3,12 +3,15 @@ import { getCollection, type CollectionEntry } from "astro:content";
 import { ClientRouter } from "astro:transitions";
 import NavBar from "../components/NavBar.astro";
 import Sidebar from "../components/Sidebar.astro";
+import TableOfContents from "../components/TableOfContents.astro";
 import websecLogo from "../assets/websec-logo.png";
+import { TOC_MIN_HEADINGS } from "../utils/uiConstants";
 
 // Import CSS files
 import "../styles/main.css";
 import "../styles/navbar.css";
 import "../styles/code.css";
+import "../styles/toc.css";
 
 import "@fontsource/inter/400.css";
 import "@fontsource/inter/500.css";
@@ -17,10 +20,19 @@ import "@fontsource/inter/700.css";
 import "@fontsource/jetbrains-mono/400.css";
 import "@fontsource/jetbrains-mono/500.css";
 
+/** Heading type from Astro's render() */
+interface Heading {
+  depth: number;
+  slug: string;
+  text: string;
+}
+
 interface Props {
   title: string;
   description?: string;
   showSidebar?: boolean;
+  /** Headings for Table of Contents (H2 and H3) */
+  tocHeadings?: Heading[];
   // Allow pages to pass their own collections to avoid duplicate loading
   collections?: {
     mysqlEntries?: CollectionEntry<"mysql">[];
@@ -36,8 +48,12 @@ const {
   title,
   description = "The SQL Injection Knowledge Base is a comprehensive reference and educational resource on identifying, testing, and preventing SQL injection vulnerabilities across various database systems.",
   showSidebar = true,
+  tocHeadings = [],
   collections,
 } = Astro.props;
+
+// Show TOC only if there are enough headings
+const showToc = tocHeadings.length >= TOC_MIN_HEADINGS;
 
 // Load collections only if not provided by the page
 const mysqlEntries = collections?.mysqlEntries ?? (await getCollection("mysql"));
@@ -129,7 +145,7 @@ const extrasEntries = collections?.extrasEntries ?? (await getCollection("extras
       extrasEntries={extrasEntries}
     />
 
-    <div class="page-layout">
+    <div class={`page-layout ${showToc ? "with-toc" : ""}`}>
       {
         showSidebar && (
           <>
@@ -178,6 +194,8 @@ const extrasEntries = collections?.extrasEntries ?? (await getCollection("extras
           <slot />
         </div>
       </main>
+
+      {showToc && <TableOfContents headings={tocHeadings} />}
     </div>
 
     <footer>

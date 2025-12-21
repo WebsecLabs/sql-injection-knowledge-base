@@ -38,3 +38,12 @@ export const SIDEBAR_ATTENTION_DELAY_MS = 1000;
 
 /** Fallback initialization delay (milliseconds) */
 export const INIT_FALLBACK_DELAY_MS = 100;
+
+/** Breakpoint for hiding TOC on smaller screens (pixels) */
+export const TOC_HIDE_BREAKPOINT = 1024;
+
+/** localStorage key for TOC collapsed state */
+export const TOC_STORAGE_KEY = "toc-collapsed";
+
+/** Minimum number of headings required to show TOC */
+export const TOC_MIN_HEADINGS = 2;

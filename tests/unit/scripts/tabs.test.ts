@@ -121,9 +121,17 @@ describe("initializeTabs", () => {
       const tabs = container.querySelectorAll(".tab-item");
       const panels = container.querySelectorAll(".tab-content");
 
-      panels.forEach((panel, index) => {
+      // Match panels to tabs by data-tab attribute instead of relying on DOM order
+      panels.forEach((panel) => {
+        const dataTab = panel.getAttribute("data-tab");
+        const matchingTab = Array.from(tabs).find(
+          (tab) => tab.getAttribute("data-tab") === dataTab
+        );
+
+        expect(matchingTab, `Tab not found for panel with data-tab="${dataTab}"`).toBeTruthy();
+
         const panelLabelledBy = panel.getAttribute("aria-labelledby");
-        const tabId = tabs[index].getAttribute("id");
+        const tabId = matchingTab!.getAttribute("id");
         expect(panelLabelledBy).toBe(tabId);
       });
     });

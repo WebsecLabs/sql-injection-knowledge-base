@@ -100,6 +100,10 @@ test.describe("Code Tabs", () => {
 });
 
 test.describe("Collection Pages", () => {
+  test.beforeEach(async ({ page }) => {
+    await page.setViewportSize({ width: 1920, height: 1080 });
+  });
+
   test("should navigate to MySQL content", async ({ page }) => {
     // Collection URLs may redirect to first entry
     await page.goto("/mysql/intro");
@@ -159,9 +163,15 @@ test.describe("Home Page", () => {
     await page.goto("/");
 
     // Open Databases dropdown and navigate
-    await page.hover('button.dropdown-toggle:has-text("Databases")');
+    const databasesButton = page.locator('button.dropdown-toggle:has-text("Databases")');
+    await databasesButton.hover();
+
+    // Wait for dropdown to be visible after hover
+    const dropdownMenu = page.locator(".dropdown-menu-databases");
+    await expect(dropdownMenu).toBeVisible();
 
     const mysqlHeader = page.locator('.database-section-header:has-text("MySQL")');
+    await expect(mysqlHeader).toBeVisible();
     await mysqlHeader.click();
 
     // Wait for the database section to expand and show content

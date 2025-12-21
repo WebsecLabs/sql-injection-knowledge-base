@@ -5,12 +5,14 @@
  * - Sidebar functionality (mobile toggle, resize handling)
  * - Code block copy buttons
  * - Theme toggle
+ * - Table of Contents (scroll-spy, toggle)
  * - Accessibility fixes
  */
 
 import { initSidebar } from "./sidebar";
 import { addCopyButtons } from "./copyCode";
 import { setupThemeToggle } from "./themeToggle";
+import { initToc } from "./toc";
 import {
   SIDEBAR_MOBILE_BREAKPOINT,
   SCROLL_HIDE_THRESHOLD,
@@ -33,7 +35,7 @@ declare global {
 let lastInitializedPath: string | null = null;
 let sidebarResizeListenerAdded = false;
 let sidebarScrollListenerAdded = false;
-let overlayListenerAdded = false;
+let overlayClickHandler: ((e: Event) => void) | null = null;
 let escapeListenerAdded = false;
 let resizeDebounceTimer: ReturnType<typeof setTimeout> | null = null;
 
@@ -162,6 +164,29 @@ function setupScrollHandler(buttonContainer: HTMLElement | null): void {
 }
 
 /**
+ * Set up overlay click handler using event delegation.
+ * Attaches to document to survive View Transitions.
+ */
+function setupOverlayHandler(): void {
+  if (overlayClickHandler) return;
+
+  overlayClickHandler = function (e: Event) {
+    const target = e.target as HTMLElement | null;
+    if (target?.id !== "sidebar-overlay") return;
+
+    e.preventDefault();
+    e.stopPropagation();
+
+    const currentSidebar = document.querySelector(".sidebar") as HTMLElement | null;
+    if (currentSidebar) currentSidebar.classList.remove("mobile-open");
+    target.classList.remove("active");
+    document.body.style.overflow = "";
+  };
+
+  document.addEventListener("click", overlayClickHandler, true);
+}
+
+/**
  * Set up sidebar toggle button and related handlers.
  */
 function setupSidebarToggle(
@@ -183,21 +208,7 @@ function setupSidebarToggle(
     document.body.style.overflow = sidebar.classList.contains("mobile-open") ? "hidden" : "";
   });
 
-  // Close sidebar when clicking on overlay
-  // Re-query DOM inside handler to avoid stale references after View Transitions
-  if (overlay && !overlayListenerAdded) {
-    overlayListenerAdded = true;
-    overlay.addEventListener("click", function (e) {
-      e.preventDefault();
-      e.stopPropagation();
-      // Re-query current DOM elements to handle View Transitions
-      const currentSidebar = document.querySelector(".sidebar") as HTMLElement | null;
-      const currentOverlay = document.getElementById("sidebar-overlay");
-      if (currentSidebar) currentSidebar.classList.remove("mobile-open");
-      if (currentOverlay) currentOverlay.classList.remove("active");
-      document.body.style.overflow = "";
-    });
-  }
+  // NOTE: Overlay click handling uses event delegation via setupOverlayHandler()
 
   // Close sidebar when escape key is pressed
   // Re-query DOM inside handler to avoid stale references after View Transitions
@@ -246,9 +257,13 @@ window.initializeSidebar = function (): void {
   setupResizeHandler();
   setupScrollHandler(buttonContainer);
   setupSidebarToggle(toggleButton, sidebar, overlay);
+  setupOverlayHandler();
 
   // Add copy buttons to code blocks
   addCopyButtons();
+
+  // Initialize Table of Contents (scroll-spy and toggle)
+  initToc();
 };
 
 // Initialize on page events

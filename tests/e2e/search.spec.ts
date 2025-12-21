@@ -182,9 +182,13 @@ test.describe("Navbar Search", () => {
     const searchIcon = page.locator(".navbar-search .search-icon, .navbar-search button");
     const iconExists = await searchIcon.count();
 
-    if (iconExists > 0) {
-      await searchIcon.click();
-      await expect(page).toHaveURL(/\/search/);
+    // Explicitly skip test when search icon is not present, rather than silently passing
+    if (iconExists === 0) {
+      test.skip(true, "Search icon not present in current navbar implementation");
+      return;
     }
+
+    await searchIcon.click();
+    await expect(page).toHaveURL(/\/search/);
   });
 });

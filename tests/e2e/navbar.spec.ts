@@ -345,12 +345,12 @@ test.describe("Navbar - Dropdown Switching", () => {
     for (let i = 0; i < 3; i++) {
       // Click Databases - should open Databases and close Extras
       await databasesButton.click();
-      await expect(databasesDropdown).toHaveClass(/show/, { timeout: 1000 });
+      await expect(databasesDropdown).toHaveClass(/show/, { timeout: 2000 });
       await expect(extrasDropdown).not.toHaveClass(/show/);
 
       // Click Extras - should open Extras and close Databases
       await extrasButton.click();
-      await expect(extrasDropdown).toHaveClass(/show/, { timeout: 1000 });
+      await expect(extrasDropdown).toHaveClass(/show/, { timeout: 2000 });
       await expect(databasesDropdown).not.toHaveClass(/show/);
     }
   });

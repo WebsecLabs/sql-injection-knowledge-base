@@ -1,0 +1,151 @@
+/**
+ * Table of Contents Styles
+ * Right-side sticky navigation for content pages
+ */
+
+/* TOC Container */
+.toc {
+  width: 250px;
+  flex-shrink: 0;
+  position: sticky;
+  top: 70px; /* Below navbar */
+  height: calc(100vh - 70px);
+  padding: 1rem 0;
+  background-color: var(--color-card-bg);
+  border-left: 1px solid var(--color-border);
+  z-index: 40;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-scrollbar-thumb) var(--color-scrollbar-track);
+}
+
+/* Scrollbar styling for webkit browsers */
+.toc::-webkit-scrollbar {
+  width: 6px;
+}
+
+.toc::-webkit-scrollbar-track {
+  background: var(--color-scrollbar-track);
+}
+
+.toc::-webkit-scrollbar-thumb {
+  background-color: var(--color-scrollbar-thumb);
+  border-radius: 10px;
+}
+
+/* TOC Header */
+.toc-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 1rem 0.75rem;
+  border-bottom: 1px solid var(--color-border);
+  margin-bottom: 0.75rem;
+}
+
+.toc-title {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--color-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+/* TOC Toggle Button */
+.toc-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  padding: 0;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  color: var(--color-text-muted);
+  transition: var(--transition);
+  border-radius: 4px;
+}
+
+.toc-toggle:hover {
+  background-color: var(--color-code-bg);
+  color: var(--color-text);
+}
+
+.toc-toggle:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
+.toc-toggle svg {
+  transition: transform 0.3s ease;
+}
+
+/* Rotate chevron when collapsed */
+.toc-collapsed .toc-toggle svg {
+  transform: rotate(180deg);
+}
+
+/* TOC Content - Collapsible */
+.toc-content {
+  max-height: 2000px;
+  overflow: hidden;
+  transition: max-height 0.3s ease;
+}
+
+.toc-collapsed .toc-content {
+  max-height: 0;
+}
+
+/* TOC List */
+.toc-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.toc-item {
+  margin: 0;
+  padding: 0;
+}
+
+/* TOC Links */
+.toc-link {
+  display: block;
+  padding: 0.35rem 1rem;
+  color: var(--color-text-light);
+  font-size: 0.875rem;
+  text-decoration: none;
+  border-left: 2px solid transparent;
+  transition: var(--transition);
+  line-height: 1.4;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.toc-link:hover {
+  color: var(--color-primary);
+  background-color: rgb(66 153 225 / 5%);
+}
+
+/* Active link state */
+.toc-link-active {
+  color: var(--color-primary);
+  border-left-color: var(--color-primary);
+  font-weight: 500;
+  background-color: rgb(66 153 225 / 10%);
+}
+
+/* Heading depth indentation */
+.toc-item-h3 .toc-link {
+  padding-left: 1.75rem;
+  font-size: 0.825rem;
+}
+
+/* Responsive: Hide on mobile/tablet */
+@media (width <= 1024px) {
+  .toc {
+    display: none;
+  }
+}

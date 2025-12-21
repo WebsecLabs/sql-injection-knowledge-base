@@ -37,6 +37,18 @@
   flex: 1;
 }
 
+/* Three-column layout when TOC is present */
+.page-layout.with-toc .content-container {
+  max-width: 850px; /* Slightly narrower to accommodate TOC */
+}
+
+/* On tablet/mobile, revert to full width when TOC is hidden */
+@media (width <= 1024px) {
+  .page-layout.with-toc .content-container {
+    max-width: 1000px; /* Full width when TOC is hidden */
+  }
+}
+
 /* Content sections */
 .section {
   margin-bottom: 3.5rem;

@@ -22,9 +22,21 @@ async function isSidebarHiddenOnMobile(
   const boundingBox = await sidebar.boundingBox();
 
   // Check if sidebar uses CSS transform to hide (common mobile pattern)
+  // The sidebar uses translateX(-100%) when hidden, which becomes matrix(1, 0, 0, 1, -width, 0)
+  // Parse matrix to specifically detect significant negative horizontal translation
   const transform = await sidebar.evaluate((el) => window.getComputedStyle(el).transform);
-  const isTransformedOffScreen =
-    transform.includes("matrix") && !transform.includes("matrix(1, 0, 0, 1, 0, 0)");
+  let isTransformedOffScreen = false;
+  if (transform && transform !== "none") {
+    // Parse matrix(a, b, c, d, tx, ty) - tx is the horizontal translation (5th value)
+    const matrixMatch = transform.match(
+      /matrix\(([^,]+),\s*([^,]+),\s*([^,]+),\s*([^,]+),\s*([^,]+),\s*([^)]+)\)/
+    );
+    if (matrixMatch) {
+      const tx = parseFloat(matrixMatch[5]);
+      // Significant negative X translation indicates off-screen to the left
+      isTransformedOffScreen = tx < -10;
+    }
+  }
 
   // Element is considered hidden if:
   // - boundingBox is null (not rendered)

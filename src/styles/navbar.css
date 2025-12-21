@@ -57,6 +57,7 @@
 
 .navbar-logo .websec-logo {
   height: 34px;
+  width: auto;
 }
 
 .navbar-logo .logo-text {
@@ -132,6 +133,7 @@
 .navbar .search-container {
   position: relative;
   margin-right: 0.5rem;
+  min-width: 240px; /* Reserve space for expanded input to prevent layout shift on focus */
 }
 
 .navbar #navbar-search-form {
@@ -764,6 +766,12 @@
 /* ============================================
    Mobile Dark Mode Styles
    NOTE: 1023px = MOBILE_BREAKPOINT (1024) - 1 to match main mobile layout
+
+   The nested @media (prefers-color-scheme: dark) query is intentional:
+   - Outer query: Only applies to mobile viewport (width <= 1023px)
+   - Inner query: Only applies when system prefers dark AND no manual theme is set
+   - This creates an intersection condition that cannot be flattened without duplication
+   - CSS nested media queries are valid per CSS Nesting spec (fully supported in modern browsers)
    ============================================ */
 
 @media (width <= 1023px) {
@@ -789,7 +797,7 @@
     border-color: var(--color-border);
   }
 
-  /* System dark mode on mobile */
+  /* System dark mode on mobile - applies when user has not manually set theme */
   @media (prefers-color-scheme: dark) {
     html:not(.light, .dark) .navbar-menu {
       background-color: var(--color-card-bg);
