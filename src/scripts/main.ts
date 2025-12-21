@@ -15,6 +15,7 @@ import {
   SIDEBAR_MOBILE_BREAKPOINT,
   SCROLL_HIDE_THRESHOLD,
   SIDEBAR_ATTENTION_DELAY_MS,
+  RESIZE_DEBOUNCE_MS,
 } from "../utils/uiConstants";
 import { cloneAndReplace } from "../utils/domUtils";
 
@@ -34,6 +35,7 @@ let sidebarResizeListenerAdded = false;
 let sidebarScrollListenerAdded = false;
 let overlayListenerAdded = false;
 let escapeListenerAdded = false;
+let resizeDebounceTimer: ReturnType<typeof setTimeout> | null = null;
 
 /**
  * Remove tabindex from pre elements for accessibility.
@@ -68,13 +70,17 @@ function initializeSidebarVisibility(
 
 /**
  * Add attention animation to hamburger button on mobile.
+ * Uses isConnected checks to avoid operating on detached elements after View Transitions.
  */
 function addMobileButtonAttention(toggleButton: HTMLElement | null): void {
   if (!toggleButton || window.innerWidth > SIDEBAR_MOBILE_BREAKPOINT) return;
 
   setTimeout(() => {
+    // Check element is still in DOM before modifying (View Transitions may have removed it)
+    if (!toggleButton.isConnected) return;
     toggleButton.classList.add("attention");
     setTimeout(() => {
+      if (!toggleButton.isConnected) return;
       toggleButton.classList.remove("attention");
     }, SIDEBAR_ATTENTION_DELAY_MS);
   }, SIDEBAR_ATTENTION_DELAY_MS);
@@ -82,30 +88,41 @@ function addMobileButtonAttention(toggleButton: HTMLElement | null): void {
 
 /**
  * Set up window resize handler for sidebar responsiveness.
+ * Re-queries DOM inside handler to avoid stale references after View Transitions.
  */
-function setupResizeHandler(
-  sidebar: HTMLElement | null,
-  buttonContainer: HTMLElement | null,
-  overlay: HTMLElement | null
-): void {
+function setupResizeHandler(): void {
   if (sidebarResizeListenerAdded) return;
   sidebarResizeListenerAdded = true;
 
   window.addEventListener("resize", function () {
-    if (!buttonContainer) return;
-
-    if (window.innerWidth > SIDEBAR_MOBILE_BREAKPOINT) {
-      buttonContainer.style.display = "none";
-      if (sidebar) {
-        sidebar.classList.remove("mobile-open");
-        document.body.style.overflow = "";
-      }
-      if (overlay) {
-        overlay.classList.remove("active");
-      }
-    } else {
-      buttonContainer.style.display = "block";
+    // Debounce resize handler to avoid excessive DOM updates
+    if (resizeDebounceTimer) {
+      clearTimeout(resizeDebounceTimer);
     }
+
+    resizeDebounceTimer = setTimeout(() => {
+      // Re-query current DOM elements to handle View Transitions
+      const currentButtonContainer = document.querySelector(
+        ".button-container"
+      ) as HTMLElement | null;
+      const currentSidebar = document.querySelector(".sidebar") as HTMLElement | null;
+      const currentOverlay = document.getElementById("sidebar-overlay");
+
+      if (!currentButtonContainer) return;
+
+      if (window.innerWidth > SIDEBAR_MOBILE_BREAKPOINT) {
+        currentButtonContainer.style.display = "none";
+        if (currentSidebar) {
+          currentSidebar.classList.remove("mobile-open");
+          document.body.style.overflow = "";
+        }
+        if (currentOverlay) {
+          currentOverlay.classList.remove("active");
+        }
+      } else {
+        currentButtonContainer.style.display = "block";
+      }
+    }, RESIZE_DEBOUNCE_MS);
   });
 }
 
@@ -128,7 +145,7 @@ function setupScrollHandler(buttonContainer: HTMLElement | null): void {
     if (ticking) return;
 
     window.requestAnimationFrame(function () {
-      const currentScroll = window.pageYOffset || document.documentElement.scrollTop;
+      const currentScroll = window.scrollY ?? document.documentElement.scrollTop;
 
       if (currentScroll > lastScrollTop && currentScroll > SCROLL_HIDE_THRESHOLD) {
         buttonContainer.classList.add("hidden");
@@ -167,24 +184,32 @@ function setupSidebarToggle(
   });
 
   // Close sidebar when clicking on overlay
+  // Re-query DOM inside handler to avoid stale references after View Transitions
   if (overlay && !overlayListenerAdded) {
     overlayListenerAdded = true;
     overlay.addEventListener("click", function (e) {
       e.preventDefault();
       e.stopPropagation();
-      sidebar.classList.remove("mobile-open");
-      overlay.classList.remove("active");
+      // Re-query current DOM elements to handle View Transitions
+      const currentSidebar = document.querySelector(".sidebar") as HTMLElement | null;
+      const currentOverlay = document.getElementById("sidebar-overlay");
+      if (currentSidebar) currentSidebar.classList.remove("mobile-open");
+      if (currentOverlay) currentOverlay.classList.remove("active");
       document.body.style.overflow = "";
     });
   }
 
   // Close sidebar when escape key is pressed
+  // Re-query DOM inside handler to avoid stale references after View Transitions
   if (!escapeListenerAdded) {
     escapeListenerAdded = true;
     document.addEventListener("keydown", function (e) {
-      if (e.key === "Escape" && sidebar.classList.contains("mobile-open")) {
-        sidebar.classList.remove("mobile-open");
-        if (overlay) overlay.classList.remove("active");
+      // Re-query current DOM elements to handle View Transitions
+      const currentSidebar = document.querySelector(".sidebar") as HTMLElement | null;
+      const currentOverlay = document.getElementById("sidebar-overlay");
+      if (e.key === "Escape" && currentSidebar?.classList.contains("mobile-open")) {
+        currentSidebar.classList.remove("mobile-open");
+        if (currentOverlay) currentOverlay.classList.remove("active");
         document.body.style.overflow = "";
       }
     });
@@ -218,7 +243,7 @@ window.initializeSidebar = function (): void {
   // Initialize mobile sidebar functionality
   initializeSidebarVisibility(sidebar, buttonContainer);
   addMobileButtonAttention(toggleButton);
-  setupResizeHandler(sidebar, buttonContainer, overlay);
+  setupResizeHandler();
   setupScrollHandler(buttonContainer);
   setupSidebarToggle(toggleButton, sidebar, overlay);
 

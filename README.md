@@ -34,7 +34,7 @@ Built with:
 
 ## Requirements
 
-- Node.js 20.0.0 or later (LTS recommended)
+- Node.js 20.0.0 or later (22.x LTS recommended and tested)
 - npm
 
 ## Installation

@@ -18,14 +18,21 @@ SELECT @@GLOBAL.VERSION
 SELECT @@version_comment
 ```
 
-All three version variables return identical values. The version string always includes "MariaDB":
+`VERSION()`, `@@VERSION`, and `@@GLOBAL.VERSION` return identical values—the server version string:
 
 ```sql
 -- Example output: 10.6.20-MariaDB or 11.4.2-MariaDB-1:11.4.2+maria~ubu2404
 SELECT VERSION()
 ```
 
-**Note:** MariaDB versions start with 10.x or 11.x, so the first character is always `1`.
+`@@version_comment` contains additional metadata or distribution notes, which differs from the canonical version string:
+
+```sql
+-- Example output: "MariaDB Server" or "Debian" or distribution-specific text
+SELECT @@version_comment
+```
+
+**Note:** Current MariaDB versions (10.x and 11.x) start with `1`, so `MID(VERSION(),1,1)` returns `'1'`. Future major versions may change this.
 
 ## Identifying MariaDB vs MySQL
 
@@ -237,4 +244,3 @@ This is useful when you want code to run **only on MariaDB** and not MySQL.
 - MariaDB reports as MySQL 5.5.x compatible for standard version comments
 - The `M` prefix version comments are MariaDB-specific and won't work on MySQL
 - Version detection is useful when you can't add more SQL due to injection point position
-- For more information, see the MariaDB-specific code section

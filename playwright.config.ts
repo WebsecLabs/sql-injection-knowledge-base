@@ -32,7 +32,7 @@ export default defineConfig({
         webServer: {
           // Use a robust script that handles container lifecycle properly
           command: "./docker-run.sh",
-          url: "http://localhost:8080/sql-injection-knowledge-base/",
+          url: baseURL,
           reuseExistingServer: true,
           timeout: webServerTimeout,
         },

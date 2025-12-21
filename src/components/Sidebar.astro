@@ -32,8 +32,10 @@ const mssqlByCategory = sortGroupedEntriesInPlace(groupByCategory(mssqlEntries))
 const oracleByCategory = sortGroupedEntriesInPlace(groupByCategory(oracleEntries));
 const postgresqlByCategory = sortGroupedEntriesInPlace(groupByCategory(postgresqlEntries));
 
-// Sort extras entries by order
-const sortedExtras = [...extrasEntries].sort((a, b) => a.data.order - b.data.order);
+// Sort extras entries by order with stable tiebreaker
+const sortedExtras = [...extrasEntries].sort(
+  (a, b) => a.data.order - b.data.order || a.slug.localeCompare(b.slug)
+);
 
 // Current path to highlight active link
 const currentPath = Astro.url.pathname;

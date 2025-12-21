@@ -74,10 +74,10 @@ const { entriesByCategory, categoriesByType, baseUrl, isActivePath } = Astro.pro
               </svg>
             </button>
             <div id={`database-section-content-${type}`} class="database-section-content">
-              {categoriesByType[type].map((category) => (
+              {(categoriesByType[type] ?? []).map((category) => (
                 <NavDropdown
                   category={category}
-                  entries={entriesByCategory[type][category]}
+                  entries={(entriesByCategory[type] ?? {})[category] ?? []}
                   baseUrl={baseUrl}
                   section={type}
                   isActivePath={isActivePath}

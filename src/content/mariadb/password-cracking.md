@@ -265,13 +265,15 @@ SELECT LOWER(SUBSTRING(PASSWORD('test'), 2)) AS hashcat_format
 -- Returns: '94bdcebe19083ce2a1f959fd02f964c7af4cfc29'
 ```
 
-#### Hashcat Mode 11200 (With Asterisk)
+#### John the Ripper Format (With Asterisk)
 
 ```sql
--- Format for Hashcat -m 11200 (full hash with asterisk)
-SELECT PASSWORD('test') AS hashcat_11200
+-- John the Ripper accepts the full hash with asterisk prefix
+SELECT PASSWORD('test') AS jtr_format
 -- Returns: '*94BDCEBE19083CE2A1F959FD02F964C7AF4CFC29'
 ```
+
+> **Note:** Mode 11200 is for MySQL CRAM (Challenge-Response Authentication) captured from network traffic, not for stored password hashes. CRAM uses a challenge-response pair in the format `$mysqlna$<challenge>*<response>`. For stored PASSWORD() hashes like `*94BDCE...`, use mode 300 after stripping the leading asterisk.
 
 #### John the Ripper Format
 

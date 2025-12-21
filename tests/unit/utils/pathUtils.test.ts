@@ -88,12 +88,12 @@ describe("pathUtils", () => {
       expect(normalizePath("/mysql/intro")).toBe("/mysql/intro");
     });
 
-    it("handles empty string", () => {
-      expect(normalizePath("")).toBe("");
+    it("handles empty string by returning root", () => {
+      expect(normalizePath("")).toBe("/");
     });
 
-    it("handles root path", () => {
-      expect(normalizePath("/")).toBe("");
+    it("preserves root path as single slash", () => {
+      expect(normalizePath("/")).toBe("/");
     });
 
     it("handles base URL with trailing slash", () => {

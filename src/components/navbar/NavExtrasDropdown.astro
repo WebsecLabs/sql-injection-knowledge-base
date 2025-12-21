@@ -16,7 +16,13 @@ const { otherExtras, resourceLinks, baseUrl, isActivePath } = Astro.props;
 ---
 
 <li class="nav-item dropdown">
-  <button class="nav-link dropdown-toggle">
+  <button
+    id="extras-dropdown-toggle"
+    class="nav-link dropdown-toggle"
+    aria-haspopup="true"
+    aria-expanded="false"
+    aria-controls="extras-dropdown-menu"
+  >
     Extras
     <svg
       xmlns="http://www.w3.org/2000/svg"
@@ -28,11 +34,12 @@ const { otherExtras, resourceLinks, baseUrl, isActivePath } = Astro.props;
       stroke-width="2"
       stroke-linecap="round"
       stroke-linejoin="round"
+      aria-hidden="true"
     >
       <polyline points="6 9 12 15 18 9"></polyline>
     </svg>
   </button>
-  <div class="dropdown-menu dropdown-menu-right">
+  <div id="extras-dropdown-menu" class="dropdown-menu dropdown-menu-right">
     {
       otherExtras.map((entry) => (
         <a

@@ -180,12 +180,12 @@ test.describe("Navigation", () => {
     await page.setViewportSize({ width: 1920, height: 1080 });
     await page.goto("/mysql/intro");
 
-    // Find and click a sidebar link
-    const sidebarLink = page.locator(".sidebar-nav a").nth(1);
-    const linkCount = await sidebarLink.count();
+    // Find sidebar links and click the second one if available
+    const sidebarLinks = page.locator(".sidebar-nav a");
+    const linkCount = await sidebarLinks.count();
 
-    if (linkCount > 0) {
-      await sidebarLink.click();
+    if (linkCount > 1) {
+      await sidebarLinks.nth(1).click();
       // Should navigate without errors
       await expect(page.locator("h1")).toBeVisible();
     }

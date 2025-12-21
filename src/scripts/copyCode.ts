@@ -103,12 +103,15 @@ function legacyCopy(text: string, button: HTMLElement): void {
 
 /**
  * Show visual feedback on the copy button.
+ * Uses isConnected check to avoid operating on detached elements after View Transitions.
  */
 function showCopyFeedback(button: HTMLElement, status: "success" | "error"): void {
   button.textContent = status === "success" ? "Copied!" : "Error!";
   button.classList.add(status);
 
   setTimeout(() => {
+    // Check element is still in DOM before modifying (View Transitions may have removed it)
+    if (!button.isConnected) return;
     button.textContent = "Copy";
     button.classList.remove("success", "error");
   }, COPY_FEEDBACK_DURATION_MS);

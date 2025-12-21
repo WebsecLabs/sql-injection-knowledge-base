@@ -252,6 +252,8 @@ SELECT GROUP_CONCAT(username) FROM users WHERE id = 99999
 -- Result: NULL
 ```
 
+> **Note:** GROUP_CONCAT output is limited by `group_concat_max_len` (default 1MB) and `max_allowed_packet`. Results exceeding these limits are silently truncated. For very large aggregations, increase both settings or use iterative queries.
+
 ## String Building Techniques
 
 ### Using CHAR()
@@ -269,6 +271,8 @@ SELECT CONCAT(CHAR(97), CHAR(98), CHAR(99))
 SELECT CONCAT(0x61, 0x62, 0x63)
 -- 0x61='a', 0x62='b', 0x63='c' -> 'abc'
 ```
+
+> **Note:** Hex literals default to binary strings. Mixing with regular strings can cause encoding issues. For explicit character set control, use `CHAR()` with the `USING` clause (e.g., `CHAR(97 USING utf8mb4)`) or a character set introducer (e.g., `_utf8mb4 0x61`).
 
 ### Mix with Subqueries
 

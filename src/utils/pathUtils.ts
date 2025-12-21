@@ -55,12 +55,14 @@ export function normalizeBaseUrl(baseUrl: unknown): string {
 /**
  * Normalize a path by removing trailing slashes.
  * Handles both single and multiple trailing slashes.
+ * Preserves a single slash for the root path "/".
  *
  * @param path - The path to normalize
- * @returns Path without trailing slashes
+ * @returns Path without trailing slashes (except root "/" returns "/")
  */
 export function normalizePath(path: string): string {
-  return path.replace(/\/+$/, "");
+  const normalized = path.replace(/\/+$/, "");
+  return normalized === "" ? "/" : normalized;
 }
 
 /**
@@ -80,7 +82,9 @@ export function buildEntryPath(baseUrl: string, section: string, slug: string): 
   // Trim leading/trailing slashes from section and slug
   const normalizedSection = section.replace(/^\/+|\/+$/g, "");
   const normalizedSlug = slug.replace(/^\/+|\/+$/g, "");
-  return normalizePath(`${normalizedBase}${normalizedSection}/${normalizedSlug}`);
+  // Filter out empty segments to avoid double slashes
+  const segments = [normalizedSection, normalizedSlug].filter(Boolean);
+  return normalizePath(`${normalizedBase}${segments.join("/")}`);
 }
 
 /**

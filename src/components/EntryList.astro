@@ -11,11 +11,11 @@ interface Props {
 
 const { entries, title, collectionType } = Astro.props;
 
-// Sort entries by their order property with a stable fallback
+// Sort entries by their order property with a stable slug-based tiebreaker
 const sortedEntries = [...entries].sort((a, b) => {
   const orderA = Number.isFinite(a.data.order) ? a.data.order : Number.MAX_SAFE_INTEGER;
   const orderB = Number.isFinite(b.data.order) ? b.data.order : Number.MAX_SAFE_INTEGER;
-  return orderA - orderB;
+  return orderA - orderB || a.slug.localeCompare(b.slug);
 });
 
 // Group entries by category using shared utility

@@ -53,15 +53,15 @@ Given the query:
 SELECT * FROM Table WHERE id = 1;
 ```
 
-| Test Payload | Result | Description                            |
-| ------------ | ------ | -------------------------------------- |
-| `AND 1`      | True   | Logical truth maintains query validity |
-| `AND 0`      | False  | Logical false invalidates the query    |
-| `AND true`   | True   | Logical truth maintains query validity |
-| `AND false`  | False  | Logical false invalidates the query    |
-| `1-false`    | -      | Returns 1 if vulnerable                |
-| `1-true`     | -      | Returns 0 if vulnerable                |
-| `1*56`       | -      | Returns 56 if vulnerable, 1 if not     |
+| Test Payload | Result | Description                                           |
+| ------------ | ------ | ----------------------------------------------------- |
+| `AND 1`      | True   | Logical truth maintains query validity                |
+| `AND 0`      | False  | Logical false invalidates the query                   |
+| `AND true`   | True   | Logical truth maintains query validity                |
+| `AND false`  | False  | Logical false invalidates the query                   |
+| `1-false`    | -      | Returns 1 if expression evaluated (false=0, so 1-0=1) |
+| `1-true`     | -      | Returns 0 if expression evaluated (true=1, so 1-1=0)  |
+| `1*56`       | -      | Returns 56 if expression evaluated, 1 if literal      |
 
 ### Example
 

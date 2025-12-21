@@ -334,8 +334,7 @@ UNION SELECT 1, CONCAT_WS('|', @@hostname, @@version, SUBSTRING_INDEX(UUID(), '-
 
 ## Notes
 
-- MAC address extraction may not work on all systems (some return random values)
-- Each UUID() call generates a new value, but the MAC portion may be consistent
+- **Platform-specific behavior**: On Linux and FreeBSD, MariaDB uses the real MAC address for UUID generation, so the MAC portion remains consistent across calls. On Windows and other platforms, MariaDB generates a random 48-bit node value instead, which may vary between server restarts.
 - UUID_SHORT() does not contain MAC address information
-- In containerized environments, the MAC may be virtualized
-- Calling UUID() repeatedly in the same query produces independent values with no guarantee the MAC segment remains consistent. For consistency and better performance, capture UUID() once (e.g., in a user variable or subquery) and reuse that value.
+- In containerized or virtualized environments, the MAC may be shared across instances or virtualized
+- For consistency and better performance, capture UUID() once (e.g., in a user variable or subquery) and reuse that value rather than calling UUID() multiple times

