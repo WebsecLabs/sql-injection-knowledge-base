@@ -147,16 +147,16 @@ test.describe("Collection Pages", () => {
 
 test.describe("Home Page", () => {
   test("should display home page with proper structure", async ({ page }) => {
-    await page.goto("/");
     await page.setViewportSize({ width: 1920, height: 1080 });
+    await page.goto("/");
 
     const navbar = page.locator(".navbar, nav");
     await expect(navbar).toBeVisible();
   });
 
   test("should have working navigation to collections", async ({ page }) => {
-    await page.goto("/");
     await page.setViewportSize({ width: 1920, height: 1080 });
+    await page.goto("/");
 
     // Open Databases dropdown and navigate
     await page.hover('button.dropdown-toggle:has-text("Databases")');
@@ -177,14 +177,14 @@ test.describe("Home Page", () => {
 
 test.describe("Navigation", () => {
   test("should navigate between pages using sidebar", async ({ page }) => {
-    await page.goto("/mysql/intro");
     await page.setViewportSize({ width: 1920, height: 1080 });
+    await page.goto("/mysql/intro");
 
     // Find and click a sidebar link
     const sidebarLink = page.locator(".sidebar-nav a").nth(1);
-    const exists = await sidebarLink.count();
+    const linkCount = await sidebarLink.count();
 
-    if (exists > 0) {
+    if (linkCount > 0) {
       await sidebarLink.click();
       // Should navigate without errors
       await expect(page.locator("h1")).toBeVisible();

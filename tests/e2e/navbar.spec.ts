@@ -2,8 +2,8 @@ import { test, expect } from "@playwright/test";
 
 test.describe("Navbar - Desktop", () => {
   test.beforeEach(async ({ page }) => {
-    await page.goto("/");
     await page.setViewportSize({ width: 1920, height: 1080 });
+    await page.goto("/");
   });
 
   test("should display single 'Databases' dropdown instead of individual database menus", async ({
@@ -118,8 +118,8 @@ test.describe("Navbar - Desktop", () => {
 
 test.describe("Navbar - Mobile", () => {
   test.beforeEach(async ({ page }) => {
-    await page.goto("/");
     await page.setViewportSize({ width: 375, height: 667 });
+    await page.goto("/");
   });
 
   test("should show hamburger menu toggle on mobile", async ({ page }) => {
@@ -227,8 +227,8 @@ test.describe("Navbar - Mobile", () => {
 
 test.describe("Navbar - Tablet/Intermediate", () => {
   test.beforeEach(async ({ page }) => {
-    await page.goto("/");
     await page.setViewportSize({ width: 1024, height: 768 });
+    await page.goto("/");
   });
 
   test("should handle intermediate screen sizes without overflow", async ({ page }) => {
@@ -248,8 +248,8 @@ test.describe("Navbar - Tablet/Intermediate", () => {
 
 test.describe("Navbar - Scalability", () => {
   test("should maintain compact layout regardless of database count", async ({ page }) => {
-    await page.goto("/");
     await page.setViewportSize({ width: 1920, height: 1080 });
+    await page.goto("/");
 
     const navLinks = page.locator(".nav-links > .nav-item");
     const count = await navLinks.count();
@@ -270,8 +270,8 @@ test.describe("Navbar - Scalability", () => {
 
 test.describe("Navbar - Dropdown Switching", () => {
   test.beforeEach(async ({ page }) => {
-    await page.goto("/");
     await page.setViewportSize({ width: 1920, height: 1080 });
+    await page.goto("/");
   });
 
   test("should open Databases dropdown when clicked", async ({ page }) => {
@@ -391,8 +391,8 @@ test.describe("Navbar - Dropdown Switching", () => {
 
 test.describe("Navbar - Dropdown Switching on Mobile", () => {
   test.beforeEach(async ({ page }) => {
-    await page.goto("/");
     await page.setViewportSize({ width: 375, height: 667 });
+    await page.goto("/");
     // Open mobile menu first
     await page.locator("#mobile-toggle").click();
     await expect(page.locator("#navbar-menu")).toHaveClass(/active/);
@@ -509,8 +509,8 @@ test.describe("Navbar - Resize Transitions", () => {
 
 test.describe("Navbar - Mobile Menu Visual Integrity", () => {
   test.beforeEach(async ({ page }) => {
-    await page.goto("/");
     await page.setViewportSize({ width: 375, height: 667 });
+    await page.goto("/");
     // Open mobile menu first
     await page.locator("#mobile-toggle").click();
     await expect(page.locator("#navbar-menu")).toHaveClass(/active/);
@@ -701,8 +701,8 @@ test.describe("Navbar - Mobile Menu Visual Integrity", () => {
 
 test.describe("Navbar - Mobile Extras Dropdown", () => {
   test.beforeEach(async ({ page }) => {
-    await page.goto("/");
     await page.setViewportSize({ width: 375, height: 667 });
+    await page.goto("/");
     // Open mobile menu first
     await page.locator("#mobile-toggle").click();
     await expect(page.locator("#navbar-menu")).toHaveClass(/active/);

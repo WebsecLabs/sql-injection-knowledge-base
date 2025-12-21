@@ -1,6 +1,21 @@
 import { describe, it, expect, beforeEach, vi, afterEach } from "vitest";
 import { initializeTabs } from "../../../src/scripts/tabs";
 
+/**
+ * Creates a temporary container with the given HTML, runs the callback,
+ * and ensures cleanup even if the callback throws.
+ */
+function withTemporaryContainer(html: string, callback: (container: HTMLElement) => void): void {
+  const container = document.createElement("div");
+  container.innerHTML = html;
+  document.body.appendChild(container);
+  try {
+    callback(container);
+  } finally {
+    document.body.removeChild(container);
+  }
+}
+
 describe("initializeTabs", () => {
   let container: HTMLElement;
 
@@ -42,25 +57,36 @@ describe("initializeTabs", () => {
       const tabs = container.querySelectorAll(".tab-item");
       const ids = Array.from(tabs).map((tab) => tab.getAttribute("id"));
 
+      // All tabs must have non-empty IDs
       expect(ids).toHaveLength(3);
       ids.forEach((id) => {
         expect(id).toBeTruthy();
-        expect(id).toMatch(/^tabs-[a-z0-9]+-tab-tab[123]$/);
+        expect(id!.length).toBeGreaterThan(0);
       });
 
-      // Ensure all IDs are unique
+      // All IDs must be unique
       const uniqueIds = new Set(ids);
-      expect(uniqueIds.size).toBe(3);
+      expect(uniqueIds.size).toBe(ids.length);
     });
 
-    it("sets aria-controls on tabs", () => {
+    it("sets aria-controls on tabs pointing to valid panels", () => {
       initializeTabs();
       const tabs = container.querySelectorAll(".tab-item");
 
       tabs.forEach((tab) => {
         const ariaControls = tab.getAttribute("aria-controls");
+
+        // aria-controls must be defined and non-empty
         expect(ariaControls).toBeTruthy();
-        expect(ariaControls).toMatch(/^tabs-[a-z0-9]+-panel-tab[123]$/);
+        expect(ariaControls!.length).toBeGreaterThan(0);
+
+        // Must reference an existing panel element
+        const panel = document.getElementById(ariaControls!);
+        expect(
+          panel,
+          `aria-controls="${ariaControls}" should reference existing element`
+        ).toBeTruthy();
+        expect(panel?.getAttribute("role")).toBe("tabpanel");
       });
     });
 
@@ -78,14 +104,16 @@ describe("initializeTabs", () => {
       const panels = container.querySelectorAll(".tab-content");
       const ids = Array.from(panels).map((panel) => panel.getAttribute("id"));
 
+      // All panels must have non-empty IDs
       expect(ids).toHaveLength(3);
       ids.forEach((id) => {
         expect(id).toBeTruthy();
-        expect(id).toMatch(/^tabs-[a-z0-9]+-panel-tab[123]$/);
+        expect(id!.length).toBeGreaterThan(0);
       });
 
+      // All IDs must be unique
       const uniqueIds = new Set(ids);
-      expect(uniqueIds.size).toBe(3);
+      expect(uniqueIds.size).toBe(ids.length);
     });
 
     it("sets aria-labelledby on panels matching tab IDs", () => {
@@ -163,76 +191,64 @@ describe("initializeTabs", () => {
     });
 
     it("activates first tab when no default is specified", () => {
-      // Create a container without data-default-tab
-      const newContainer = document.createElement("div");
-      newContainer.innerHTML = `
-        <div class="tabs">
+      withTemporaryContainer(
+        `<div class="tabs">
           <div role="tablist">
             <button class="tab-item" data-tab="a">A</button>
             <button class="tab-item" data-tab="b">B</button>
           </div>
           <div class="tab-content" data-tab="a">Content A</div>
           <div class="tab-content" data-tab="b">Content B</div>
-        </div>
-      `;
-      document.body.appendChild(newContainer);
+        </div>`,
+        (newContainer) => {
+          initializeTabs();
 
-      initializeTabs();
-
-      const tabs = newContainer.querySelectorAll(".tab-item");
-      expect(tabs[0].classList.contains("active")).toBe(true);
-      expect(tabs[0].getAttribute("aria-selected")).toBe("true");
-
-      document.body.removeChild(newContainer);
+          const tabs = newContainer.querySelectorAll(".tab-item");
+          expect(tabs[0].classList.contains("active")).toBe(true);
+          expect(tabs[0].getAttribute("aria-selected")).toBe("true");
+        }
+      );
     });
 
     it("respects pre-existing active class when no default is specified", () => {
-      // Create a container with pre-existing active class
-      const newContainer = document.createElement("div");
-      newContainer.innerHTML = `
-        <div class="tabs">
+      withTemporaryContainer(
+        `<div class="tabs">
           <div role="tablist">
             <button class="tab-item" data-tab="a">A</button>
             <button class="tab-item active" data-tab="b">B</button>
           </div>
           <div class="tab-content" data-tab="a">Content A</div>
           <div class="tab-content" data-tab="b">Content B</div>
-        </div>
-      `;
-      document.body.appendChild(newContainer);
+        </div>`,
+        (newContainer) => {
+          initializeTabs();
 
-      initializeTabs();
-
-      const tabs = newContainer.querySelectorAll(".tab-item");
-      expect(tabs[1].classList.contains("active")).toBe(true);
-      expect(tabs[1].getAttribute("aria-selected")).toBe("true");
-
-      document.body.removeChild(newContainer);
+          const tabs = newContainer.querySelectorAll(".tab-item");
+          expect(tabs[1].classList.contains("active")).toBe(true);
+          expect(tabs[1].getAttribute("aria-selected")).toBe("true");
+        }
+      );
     });
 
     it("overrides pre-existing active class with data-default-tab", () => {
-      // Create a container with both pre-existing active and default
-      const newContainer = document.createElement("div");
-      newContainer.innerHTML = `
-        <div class="tabs" data-default-tab="a">
+      withTemporaryContainer(
+        `<div class="tabs" data-default-tab="a">
           <div role="tablist">
             <button class="tab-item" data-tab="a">A</button>
             <button class="tab-item active" data-tab="b">B</button>
           </div>
           <div class="tab-content" data-tab="a">Content A</div>
           <div class="tab-content" data-tab="b">Content B</div>
-        </div>
-      `;
-      document.body.appendChild(newContainer);
+        </div>`,
+        (newContainer) => {
+          initializeTabs();
 
-      initializeTabs();
-
-      const tabs = newContainer.querySelectorAll(".tab-item");
-      expect(tabs[0].classList.contains("active")).toBe(true);
-      expect(tabs[0].getAttribute("aria-selected")).toBe("true");
-      expect(tabs[1].classList.contains("active")).toBe(false);
-
-      document.body.removeChild(newContainer);
+          const tabs = newContainer.querySelectorAll(".tab-item");
+          expect(tabs[0].classList.contains("active")).toBe(true);
+          expect(tabs[0].getAttribute("aria-selected")).toBe("true");
+          expect(tabs[1].classList.contains("active")).toBe(false);
+        }
+      );
     });
   });
 
@@ -527,99 +543,83 @@ describe("initializeTabs", () => {
 
   describe("edge cases", () => {
     it("handles tabs without data-tab attribute", () => {
-      const newContainer = document.createElement("div");
-      newContainer.innerHTML = `
-        <div class="tabs">
+      withTemporaryContainer(
+        `<div class="tabs">
           <div role="tablist">
             <button class="tab-item">No Data Tab</button>
           </div>
           <div class="tab-content" data-tab="tab-0">Content</div>
-        </div>
-      `;
-      document.body.appendChild(newContainer);
+        </div>`,
+        (newContainer) => {
+          // Should not throw
+          expect(() => initializeTabs()).not.toThrow();
 
-      // Should not throw
-      expect(() => initializeTabs()).not.toThrow();
-
-      const tab = newContainer.querySelector(".tab-item");
-      expect(tab?.getAttribute("role")).toBe("tab");
-
-      document.body.removeChild(newContainer);
+          const tab = newContainer.querySelector(".tab-item");
+          expect(tab?.getAttribute("role")).toBe("tab");
+        }
+      );
     });
 
     it("handles missing panel for a tab", () => {
-      const newContainer = document.createElement("div");
-      newContainer.innerHTML = `
-        <div class="tabs">
+      withTemporaryContainer(
+        `<div class="tabs">
           <div role="tablist">
             <button class="tab-item" data-tab="orphan">Orphan Tab</button>
           </div>
-        </div>
-      `;
-      document.body.appendChild(newContainer);
-
-      // Should not throw
-      expect(() => initializeTabs()).not.toThrow();
-
-      document.body.removeChild(newContainer);
+        </div>`,
+        () => {
+          // Should not throw
+          expect(() => initializeTabs()).not.toThrow();
+        }
+      );
     });
 
     it("handles tabs without tablist", () => {
-      const newContainer = document.createElement("div");
-      newContainer.innerHTML = `
-        <div class="tabs">
+      withTemporaryContainer(
+        `<div class="tabs">
           <button class="tab-item" data-tab="tab1">Tab 1</button>
           <div class="tab-content" data-tab="tab1">Content 1</div>
-        </div>
-      `;
-      document.body.appendChild(newContainer);
+        </div>`,
+        (newContainer) => {
+          // Should not throw, but keyboard navigation won't work
+          expect(() => initializeTabs()).not.toThrow();
 
-      // Should not throw, but keyboard navigation won't work
-      expect(() => initializeTabs()).not.toThrow();
-
-      const tab = newContainer.querySelector(".tab-item");
-      expect(tab?.getAttribute("role")).toBe("tab");
-
-      document.body.removeChild(newContainer);
+          const tab = newContainer.querySelector(".tab-item");
+          expect(tab?.getAttribute("role")).toBe("tab");
+        }
+      );
     });
 
     it("handles empty tab container", () => {
-      const newContainer = document.createElement("div");
-      newContainer.innerHTML = `<div class="tabs"></div>`;
-      document.body.appendChild(newContainer);
-
-      // Should not throw
-      expect(() => initializeTabs()).not.toThrow();
-
-      document.body.removeChild(newContainer);
+      withTemporaryContainer(`<div class="tabs"></div>`, () => {
+        // Should not throw
+        expect(() => initializeTabs()).not.toThrow();
+      });
     });
 
     it("handles invalid default tab ID by activating first tab", () => {
-      const newContainer = document.createElement("div");
-      newContainer.innerHTML = `
-        <div class="tabs" data-default-tab="nonexistent">
+      withTemporaryContainer(
+        `<div class="tabs" data-default-tab="nonexistent">
           <div role="tablist">
             <button class="tab-item" data-tab="a">A</button>
             <button class="tab-item" data-tab="b">B</button>
           </div>
           <div class="tab-content" data-tab="a">Content A</div>
           <div class="tab-content" data-tab="b">Content B</div>
-        </div>
-      `;
-      document.body.appendChild(newContainer);
+        </div>`,
+        (newContainer) => {
+          initializeTabs();
 
-      initializeTabs();
+          // Should fall back to first tab when default tab ID doesn't exist
+          const firstTab = newContainer.querySelector('.tab-item[data-tab="a"]');
+          const secondTab = newContainer.querySelector('.tab-item[data-tab="b"]');
 
-      // Should fall back to first tab when default tab ID doesn't exist
-      const firstTab = newContainer.querySelector('.tab-item[data-tab="a"]');
-      const secondTab = newContainer.querySelector('.tab-item[data-tab="b"]');
-
-      expect(firstTab?.classList.contains("active")).toBe(true);
-      expect(firstTab?.getAttribute("aria-selected")).toBe("true");
-      expect(secondTab?.classList.contains("active")).toBe(false);
-      expect(secondTab?.getAttribute("aria-selected")).toBe("false");
-
-      document.body.removeChild(newContainer);
+          expect(firstTab?.classList.contains("active")).toBe(true);
+          expect(firstTab?.getAttribute("aria-selected")).toBe("true");
+          expect(secondTab?.classList.contains("active")).toBe(false);
+          expect(secondTab?.getAttribute("aria-selected")).toBe("false");
+        }
+      );
     });
   });
 

@@ -6,8 +6,8 @@ const MEDIUM_TIMEOUT_MS = 10000;
 
 test.describe("Search Page", () => {
   test.beforeEach(async ({ page }) => {
-    await page.goto("/search");
     await page.setViewportSize({ width: 1440, height: 900 });
+    await page.goto("/search");
   });
 
   test("should show the initial search prompt and not stay in loading state", async ({ page }) => {
@@ -126,8 +126,8 @@ test.describe("Search Page", () => {
 
 test.describe("Search Page - Mobile", () => {
   test.beforeEach(async ({ page }) => {
-    await page.goto("/search");
     await page.setViewportSize({ width: 375, height: 667 });
+    await page.goto("/search");
   });
 
   test("should display search input on mobile", async ({ page }) => {
@@ -155,8 +155,8 @@ test.describe("Search Page - Mobile", () => {
 
 test.describe("Navbar Search", () => {
   test.beforeEach(async ({ page }) => {
-    await page.goto("/");
     await page.setViewportSize({ width: 1920, height: 1080 });
+    await page.goto("/");
   });
 
   test("should display search input in navbar", async ({ page }) => {

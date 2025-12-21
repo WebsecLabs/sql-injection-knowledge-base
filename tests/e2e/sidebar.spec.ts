@@ -1,9 +1,52 @@
-import { test, expect } from "@playwright/test";
+import { test, expect, type Locator } from "@playwright/test";
+
+/** Maximum iterations for collapse loop to prevent infinite hangs */
+const MAX_COLLAPSE_ATTEMPTS = 10;
+
+/**
+ * Checks if a sidebar element is hidden on mobile viewport.
+ * Detects various hiding mechanisms: CSS display/visibility, off-screen positioning,
+ * zero dimensions, or CSS transform.
+ */
+async function isSidebarHiddenOnMobile(
+  sidebar: Locator,
+  viewport: { width: number; height: number } | null
+): Promise<boolean> {
+  // Check if hidden via CSS display/visibility
+  const isHidden = await sidebar.isHidden();
+  if (isHidden) {
+    return true;
+  }
+
+  // Check multiple hiding mechanisms
+  const boundingBox = await sidebar.boundingBox();
+
+  // Check if sidebar uses CSS transform to hide (common mobile pattern)
+  const transform = await sidebar.evaluate((el) => window.getComputedStyle(el).transform);
+  const isTransformedOffScreen =
+    transform.includes("matrix") && !transform.includes("matrix(1, 0, 0, 1, 0, 0)");
+
+  // Element is considered hidden if:
+  // - boundingBox is null (not rendered)
+  // - width or height is 0 (zero dimensions)
+  // - positioned completely off-screen via position
+  // - transformed off-screen via CSS transform
+  return (
+    boundingBox === null ||
+    boundingBox.width === 0 ||
+    boundingBox.height === 0 ||
+    boundingBox.x + boundingBox.width <= 0 ||
+    (viewport !== null && boundingBox.x >= viewport.width) ||
+    boundingBox.y + boundingBox.height <= 0 ||
+    (viewport !== null && boundingBox.y >= viewport.height) ||
+    isTransformedOffScreen
+  );
+}
 
 test.describe("Sidebar - Desktop", () => {
   test.beforeEach(async ({ page }) => {
-    await page.goto("/mysql/intro");
     await page.setViewportSize({ width: 1920, height: 1080 });
+    await page.goto("/mysql/intro");
   });
 
   test("should display sidebar on content pages", async ({ page }) => {
@@ -76,8 +119,8 @@ test.describe("Sidebar - Desktop", () => {
 
 test.describe("Sidebar - Search", () => {
   test.beforeEach(async ({ page }) => {
-    await page.goto("/mysql/intro");
     await page.setViewportSize({ width: 1920, height: 1080 });
+    await page.goto("/mysql/intro");
   });
 
   test("should display sidebar search input", async ({ page }) => {
@@ -124,13 +167,21 @@ test.describe("Sidebar - Search", () => {
     // Collapse all active sections first using a stable approach:
     // Keep clicking the first active heading until none remain
     const activeHeadings = page.locator(".sidebar-section.active .sidebar-heading");
+    let collapseAttempts = 0;
     while ((await activeHeadings.count()) > 0) {
+      if (collapseAttempts >= MAX_COLLAPSE_ATTEMPTS) {
+        throw new Error(
+          `Failed to collapse all sidebar sections after ${MAX_COLLAPSE_ATTEMPTS} attempts. ` +
+            `${await activeHeadings.count()} sections still active.`
+        );
+      }
       const previousCount = await activeHeadings.count();
       await activeHeadings.first().click();
       // Wait for count to decrease using state-based assertion instead of fixed timeout
       await expect
         .poll(async () => activeHeadings.count(), { timeout: 2000 })
         .toBeLessThan(previousCount);
+      collapseAttempts++;
     }
 
     // Now search
@@ -151,8 +202,8 @@ test.describe("Sidebar - Search", () => {
 
 test.describe("Sidebar - Keyboard Navigation", () => {
   test.beforeEach(async ({ page }) => {
-    await page.goto("/mysql/intro");
     await page.setViewportSize({ width: 1920, height: 1080 });
+    await page.goto("/mysql/intro");
   });
 
   test("should toggle section with Enter key", async ({ page }) => {
@@ -190,46 +241,16 @@ test.describe("Sidebar - Keyboard Navigation", () => {
 
 test.describe("Sidebar - Mobile", () => {
   test.beforeEach(async ({ page }) => {
-    await page.goto("/mysql/intro");
     await page.setViewportSize({ width: 375, height: 667 });
+    await page.goto("/mysql/intro");
   });
 
   test("should be hidden on mobile by default", async ({ page }) => {
     const sidebar = page.locator(".sidebar");
     const viewport = page.viewportSize();
 
-    // On mobile viewport, sidebar should be hidden or positioned off-screen
-    const isHidden = await sidebar.isHidden();
-    if (isHidden) {
-      // Sidebar is hidden via CSS display/visibility
-      expect(isHidden).toBe(true);
-    } else {
-      // If not hidden via CSS, check multiple hiding mechanisms:
-      const boundingBox = await sidebar.boundingBox();
-
-      // Check if sidebar uses CSS transform to hide (common mobile pattern)
-      // The sidebar uses transform: translateX(-100%) to slide off-screen
-      const transform = await sidebar.evaluate((el) => window.getComputedStyle(el).transform);
-      const isTransformedOffScreen =
-        transform.includes("matrix") && !transform.includes("matrix(1, 0, 0, 1, 0, 0)");
-
-      // Element is considered hidden if:
-      // - boundingBox is null (not rendered)
-      // - width or height is 0 (zero dimensions)
-      // - positioned completely off-screen via position (left, right, top, or bottom)
-      // - transformed off-screen via CSS transform
-      // Note: Use <= 0 to handle edge case where element ends exactly at viewport edge
-      const isOffScreenOrZeroSize =
-        boundingBox === null ||
-        boundingBox.width === 0 ||
-        boundingBox.height === 0 ||
-        boundingBox.x + boundingBox.width <= 0 || // off-screen left (including edge)
-        (viewport && boundingBox.x >= viewport.width) || // off-screen right
-        boundingBox.y + boundingBox.height <= 0 || // off-screen top (including edge)
-        (viewport && boundingBox.y >= viewport.height) || // off-screen bottom
-        isTransformedOffScreen; // hidden via CSS transform
-
-      expect(isOffScreenOrZeroSize).toBe(true);
-    }
+    // Use helper to check if sidebar is hidden on mobile
+    const isHiddenOnMobile = await isSidebarHiddenOnMobile(sidebar, viewport);
+    expect(isHiddenOnMobile).toBe(true);
   });
 });

@@ -3,31 +3,26 @@ import { test, expect } from "@playwright/test";
 /**
  * Parse RGB color string and calculate average brightness.
  * @param bgColor - CSS color value like "rgb(255, 255, 255)" or "rgba(0, 0, 0, 1)"
- * @returns Average brightness (0-255)
+ * @returns Average brightness (0-255) or null if parsing fails
  */
-function parseRgbAndCalculateBrightness(bgColor: string): number {
+function parseRgbAndCalculateBrightness(bgColor: string): number | null {
   const rgbMatch = bgColor.match(/\d+/g);
 
-  // First verify we got a match at all
-  expect(rgbMatch, `Failed to parse RGB values from: ${bgColor}`).not.toBeNull();
+  if (!rgbMatch || rgbMatch.length < 3) {
+    return null;
+  }
 
-  // Then verify we have at least 3 values (R, G, B)
-  expect(
-    rgbMatch!.length,
-    `Expected at least 3 RGB values, got ${rgbMatch!.length} from: ${bgColor}`
-  ).toBeGreaterThanOrEqual(3);
-
-  const rgb = rgbMatch!.map(Number);
+  const rgb = rgbMatch.map(Number);
   return (rgb[0] + rgb[1] + rgb[2]) / 3;
 }
 
 test.describe("Theme Toggle", () => {
   test.beforeEach(async ({ page }) => {
-    // Clear localStorage before each test
+    // Set viewport first, then navigate to clear localStorage
+    await page.setViewportSize({ width: 1920, height: 1080 });
     await page.goto("/");
     await page.evaluate(() => localStorage.clear());
     await page.reload();
-    await page.setViewportSize({ width: 1920, height: 1080 });
   });
 
   test("should display theme toggle button", async ({ page }) => {
@@ -131,9 +126,10 @@ test.describe("Theme - Respects System Preference", () => {
       () => window.getComputedStyle(document.body).backgroundColor
     );
 
-    const avgBrightness = parseRgbAndCalculateBrightness(bgColor);
+    const brightness = parseRgbAndCalculateBrightness(bgColor);
+    expect(brightness, `Failed to parse RGB from: ${bgColor}`).not.toBeNull();
     // Dark theme should have low brightness (dark background)
-    expect(avgBrightness).toBeLessThan(128);
+    expect(brightness).toBeLessThan(128);
   });
 
   test("should respect prefers-color-scheme: light", async ({ page }) => {
@@ -148,8 +144,9 @@ test.describe("Theme - Respects System Preference", () => {
       () => window.getComputedStyle(document.body).backgroundColor
     );
 
-    const avgBrightness = parseRgbAndCalculateBrightness(bgColor);
+    const brightness = parseRgbAndCalculateBrightness(bgColor);
+    expect(brightness, `Failed to parse RGB from: ${bgColor}`).not.toBeNull();
     // Light theme should have high brightness (light background)
-    expect(avgBrightness).toBeGreaterThan(128);
+    expect(brightness).toBeGreaterThan(128);
   });
 });

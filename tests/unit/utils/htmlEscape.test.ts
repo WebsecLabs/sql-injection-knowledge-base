@@ -55,7 +55,11 @@ describe("escapeHtml", () => {
       expect(escapeHtml("it's fine")).toBe("it&#39;s fine");
     });
 
-    it("escapes forward slash", () => {
+    it("escapes forward slash (defensive - optional per OWASP)", () => {
+      // Note: Forward slash escaping is a defense-in-depth measure, not strictly
+      // required by current OWASP guidance. However, this implementation escapes
+      // slashes to prevent potential edge cases like closing script tags (</script>)
+      // in certain contexts. This is a deliberate security-first design choice.
       expect(escapeHtml("path/to/file")).toBe("path&#x2F;to&#x2F;file");
     });
 
