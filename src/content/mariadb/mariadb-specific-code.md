@@ -321,9 +321,14 @@ MariaDB's automatic type conversion can be exploited:
 SELECT * FROM users WHERE id = '1 OR 1=1'
 -- Converts to: SELECT * FROM users WHERE id = 1
 
--- Boolean to integer conversion
-SELECT 1+'true'  -- Returns 2
-SELECT 1+'false' -- Returns 1
+-- Boolean keyword to integer conversion
+SELECT 1+TRUE   -- Returns 2 (TRUE = 1, so 1+1 = 2)
+SELECT 1+FALSE  -- Returns 1 (FALSE = 0, so 1+0 = 1)
+
+-- Note: String literals 'true'/'false' are different!
+-- They convert to 0 (no numeric prefix), not 1/0
+SELECT 1+'true'  -- Returns 1 (NOT 2!) because 'true' -> 0
+SELECT 1+'false' -- Returns 1 because 'false' -> 0
 ```
 
 ## Detecting MariaDB vs MySQL

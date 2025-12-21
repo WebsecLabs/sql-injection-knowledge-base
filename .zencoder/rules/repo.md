@@ -28,8 +28,8 @@ A modern, comprehensive educational resource for SQL injection techniques, vulne
 
 ## Language & Runtime
 
-**Language**: TypeScript / JavaScript  
-**Node.js Version**: Not specified (latest LTS recommended)  
+**Language**: TypeScript / JavaScript
+**Node.js Version**: 20.0.0+ (LTS recommended, see `.nvmrc`)
 **Build System**: Astro with Vite  
 **Package Manager**: npm  
 **TypeScript Config**: Strict mode with path aliases (`@/*` → `./src/*`)

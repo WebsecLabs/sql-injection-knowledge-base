@@ -32,6 +32,11 @@ Built with:
 - Modern JavaScript for interactive features
 - Responsive design for all device sizes
 
+## Requirements
+
+- Node.js 20.0.0 or later (LTS recommended)
+- npm
+
 ## Installation
 
 1. Clone the repository:

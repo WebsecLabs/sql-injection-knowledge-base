@@ -3,6 +3,9 @@
   "type": "module",
   "version": "1.0.0",
   "description": "SQL Injection Knowledge Base",
+  "engines": {
+    "node": ">=20.0.0"
+  },
   "scripts": {
     "dev": "astro dev",
     "start": "astro dev",

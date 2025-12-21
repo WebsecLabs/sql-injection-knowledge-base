@@ -351,7 +351,15 @@ SELECT IF(MID(version(),1,1)='1', BENCHMARK(100000,SHA1('test')), 0)
 SELECT IF(SUBSTRING(@@version,1,2) LIKE '1%', BENCHMARK(100000,MD5('x')), 0)
 ```
 
-**Performance warning:** High iteration counts (5M+) cause significant CPU load and may trigger slow query logs, monitoring alerts, or rate limiting. Start with lower values (10000-100000).
+**Performance warning:** The "5M+ iterations" threshold is a rough rule-of-thumb for when heavy CPU load and slow-query issues are commonly observed on typical servers. However, thresholds vary significantly by environment (CPU speed, server load, MariaDB configuration).
+
+**Recommended approach:**
+
+1. Start testing at 10,000-100,000 iterations
+2. Monitor CPU usage, query latency, and slow query logs
+3. Gradually increase iterations while watching server metrics
+4. Escalate caution well before reaching 5M if metrics degrade
+5. Be aware that even lower values may trigger alerts on monitored production systems
 
 ## Boolean-based Injection Patterns
 
@@ -405,12 +413,17 @@ SELECT IF(
 
 ## Quick Reference
 
-| Function     | Purpose             | Example                         |
-| ------------ | ------------------- | ------------------------------- |
-| `IF()`       | Ternary condition   | `IF(1=1, 'yes', 'no')`          |
-| `CASE`       | Multiple conditions | `CASE WHEN x THEN y ELSE z END` |
-| `IFNULL()`   | Default for NULL    | `IFNULL(col, 'default')`        |
-| `NULLIF()`   | NULL if equal       | `NULLIF(a, b)`                  |
-| `COALESCE()` | First non-NULL      | `COALESCE(a, b, c)`             |
+| Function     | Purpose             | Example                           |
+| ------------ | ------------------- | --------------------------------- |
+| `IF()`       | Ternary condition   | `IF(1=1, 'yes', 'no')`            |
+| `CASE`       | Multiple conditions | `CASE WHEN x THEN y ELSE z END`   |
+| `IFNULL()`   | Default for NULL    | `IFNULL(col, 'default')`          |
+| `NULLIF()`   | NULL if equal       | `NULLIF(a, b)`                    |
+| `COALESCE()` | First non-NULL      | `COALESCE(a, b, c)`               |
+| `ELT()`      | Select nth element  | `ELT(2, 'a', 'b', 'c')` returns b |
+| `FIELD()`    | Index position      | `FIELD('b', 'a', 'b', 'c')` → 2   |
+| `GREATEST()` | Max of values       | `GREATEST(1, 5, 3)` → 5           |
+| `LEAST()`    | Min of values       | `LEAST(1, 5, 3)` → 1              |
+| `INTERVAL()` | Range index         | `INTERVAL(5, 1, 3, 7)` → 2        |
 
 Conditional logic forms the foundation of sophisticated blind SQL injection techniques, allowing attackers to systematically extract data even when they can only observe whether a condition is true or false.

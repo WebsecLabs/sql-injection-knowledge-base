@@ -78,9 +78,12 @@ The `;%00` technique is primarily an **application-level bypass** where the null
 
 The backtick can be used to end a query when used as an alias. It works by starting an identifier that swallows trailing characters.
 
+In MySQL/MariaDB, a backtick (`) begins identifier quoting, so the parser treats all following characters as part of an identifier name (not as SQL syntax). When an opening backtick is not closed within the injection, any trailing characters - including a closing single-quote from the original query - become part of the identifier rather than terminating a string. This effectively neutralizes the trailing quote.
+
 ```sql
 -- Injection: UNION SELECT 1, 2`';
 SELECT id, username FROM users WHERE id = 1 UNION SELECT 1, 2`'
+-- The trailing ' becomes part of the unclosed identifier started by `
 ```
 
 ## Important Notes
