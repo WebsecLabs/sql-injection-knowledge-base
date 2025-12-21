@@ -1,6 +1,6 @@
 ---
 import { type CollectionEntry } from "astro:content";
-import { getEntryURL } from "../utils/entryUtils";
+import { getEntryURL, groupByCategory, getSortedCategories } from "../utils/entryUtils";
 import type { ValidCollection } from "../utils/constants";
 
 interface Props {
@@ -11,24 +11,18 @@ interface Props {
 
 const { entries, title, collectionType } = Astro.props;
 
-// Sort entries by their order property
-const sortedEntries = [...entries].sort((a, b) => a.data.order - b.data.order);
+// Sort entries by their order property with a stable fallback
+const sortedEntries = [...entries].sort((a, b) => {
+  const orderA = Number.isFinite(a.data.order) ? a.data.order : Number.MAX_SAFE_INTEGER;
+  const orderB = Number.isFinite(b.data.order) ? b.data.order : Number.MAX_SAFE_INTEGER;
+  return orderA - orderB;
+});
 
-// Group entries by category
-const entriesByCategory = sortedEntries.reduce(
-  (acc, entry) => {
-    const category = entry.data.category;
-    if (!acc[category]) {
-      acc[category] = [];
-    }
-    acc[category].push(entry);
-    return acc;
-  },
-  {} as Record<string, typeof entries>
-);
+// Group entries by category using shared utility
+const entriesByCategory = groupByCategory(sortedEntries);
 
-// Sort categories alphabetically
-const sortedCategories = Object.keys(entriesByCategory).sort();
+// Sort categories using shared utility (uses learning progression order)
+const sortedCategories = getSortedCategories(entriesByCategory);
 ---
 
 <section class="entry-list">

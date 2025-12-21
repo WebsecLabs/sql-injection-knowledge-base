@@ -7,7 +7,7 @@ import tseslint from "typescript-eslint";
 export default [
   // Ignore patterns
   {
-    ignores: ["node_modules/", "dist/", ".astro/", "public/", "**/*.min.js"],
+    ignores: ["node_modules/", "dist/", ".astro/", "public/", "coverage/", "**/*.min.js"],
   },
   // Apply to all JS/TS files
   {

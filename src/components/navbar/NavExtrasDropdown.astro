@@ -1,0 +1,64 @@
+---
+/**
+ * NavExtrasDropdown Component
+ * Dropdown menu for extras and resources links
+ */
+import { type CollectionEntry } from "astro:content";
+
+interface Props {
+  otherExtras: CollectionEntry<"extras">[];
+  resourceLinks: CollectionEntry<"extras">[];
+  baseUrl: string;
+  isActivePath: (section: string, slug: string) => boolean;
+}
+
+const { otherExtras, resourceLinks, baseUrl, isActivePath } = Astro.props;
+---
+
+<li class="nav-item dropdown">
+  <button class="nav-link dropdown-toggle">
+    Extras
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      width="12"
+      height="12"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      stroke-width="2"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+    >
+      <polyline points="6 9 12 15 18 9"></polyline>
+    </svg>
+  </button>
+  <div class="dropdown-menu dropdown-menu-right">
+    {
+      otherExtras.map((entry) => (
+        <a
+          href={`${baseUrl}extras/${entry.slug}`}
+          class={isActivePath("extras", entry.slug) ? "dropdown-item active" : "dropdown-item"}
+          aria-label={entry.data.title || `Extras ${entry.slug}`}
+        >
+          {entry.data.title || entry.slug}
+        </a>
+      ))
+    }
+
+    {resourceLinks.length > 0 && <div class="dropdown-divider" />}
+
+    {
+      resourceLinks.length > 0 && (
+        <a
+          href={`${baseUrl}extras/${resourceLinks[0].slug}`}
+          class={
+            isActivePath("extras", resourceLinks[0].slug) ? "dropdown-item active" : "dropdown-item"
+          }
+          aria-label="External Resources"
+        >
+          External Resources
+        </a>
+      )
+    }
+  </div>
+</li>

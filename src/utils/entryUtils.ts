@@ -1,13 +1,8 @@
-import type { CollectionEntry } from "astro:content";
+import type { AnyEntry, AdjacentEntry } from "./types";
 import type { ValidCollection } from "./constants";
 
-type AnyEntry = CollectionEntry<ValidCollection>;
-
-export interface AdjacentEntry {
-  slug: string;
-  title: string;
-  category: string;
-}
+// Re-export types for backward compatibility
+export type { AnyEntry, AdjacentEntry };
 
 export interface AdjacentEntries {
   previous: AdjacentEntry | null;
@@ -109,4 +104,53 @@ export function getFirstEntrySlug(entries: AnyEntry[], sortedEntries?: AnyEntry[
   if (entries.length === 0) return null;
   const sorted = sortedEntries ?? sortEntriesByCategory(entries);
   return sorted[0].slug;
+}
+
+/**
+ * Group entries by their category field.
+ * Returns a record where keys are category names and values are arrays of entries.
+ *
+ * @param entries - Array of collection entries to group
+ * @returns Record mapping category names to entry arrays
+ */
+export function groupByCategory<T extends AnyEntry>(entries: T[]): Record<string, T[]> {
+  return entries.reduce<Record<string, T[]>>((acc, entry) => {
+    const category = entry.data.category;
+    if (!acc[category]) {
+      acc[category] = [];
+    }
+    acc[category].push(entry);
+    return acc;
+  }, {});
+}
+
+/**
+ * Sort entries within each category by their order field.
+ * **Mutates the input record in place** for performance.
+ *
+ * @param grouped - Record of category -> entries from groupByCategory (will be mutated)
+ * @returns The same record reference with entries sorted within each category
+ */
+export function sortGroupedEntriesInPlace<T extends AnyEntry>(
+  grouped: Record<string, T[]>
+): Record<string, T[]> {
+  for (const category of Object.keys(grouped)) {
+    grouped[category].sort((a, b) => a.data.order - b.data.order);
+  }
+  return grouped;
+}
+
+/**
+ * Get category names sorted by learning progression order.
+ * Uses CATEGORY_ORDER for known categories, unknown categories sort last alphabetically.
+ *
+ * @param grouped - Record of category -> entries
+ * @returns Sorted array of category names
+ */
+export function getSortedCategories(grouped: Record<string, unknown[]>): string[] {
+  return Object.keys(grouped).sort((a, b) => {
+    const aOrder = CATEGORY_ORDER[a] ?? DEFAULT_CATEGORY_ORDER;
+    const bOrder = CATEGORY_ORDER[b] ?? DEFAULT_CATEGORY_ORDER;
+    return aOrder !== bOrder ? aOrder - bOrder : a.localeCompare(b);
+  });
 }

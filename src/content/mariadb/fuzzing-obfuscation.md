@@ -216,7 +216,15 @@ SELECT username FROM users WHERE id=1
 - **Windows/macOS:** Table names are case-insensitive by default
 - **Column names:** Always case-insensitive in MariaDB
 
-This means `SELECT * FROM USERS` may fail on Linux if the table was created as `users`. The `lower_case_table_names` system variable controls this behavior.
+This means `SELECT * FROM USERS` may fail on Linux if the table was created as `users`. The `lower_case_table_names` system variable controls this behavior:
+
+| Value | Storage     | Comparison       | Default Platform |
+| ----- | ----------- | ---------------- | ---------------- |
+| 0     | As declared | Case-sensitive   | Linux/Unix       |
+| 1     | Lowercase   | Case-insensitive | Windows          |
+| 2     | As declared | Case-insensitive | macOS            |
+
+**Cross-platform implications:** When migrating databases between platforms with different defaults, identifier mismatches can occur. For maximum portability across platforms, set `lower_case_table_names=1` on all systems before database initialization. Note that this variable cannot be changed after the database is initialized.
 
 ### Operator Alternatives
 

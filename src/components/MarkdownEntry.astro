@@ -3,7 +3,7 @@ import { type CollectionEntry } from "astro:content";
 // Note: transition:animate directives use built-in Astro values, no import needed
 
 interface Props {
-  entry: CollectionEntry<"mysql" | "mssql" | "oracle" | "postgresql" | "extras">;
+  entry: CollectionEntry<"mysql" | "mariadb" | "mssql" | "oracle" | "postgresql" | "extras">;
 }
 
 const { entry } = Astro.props;

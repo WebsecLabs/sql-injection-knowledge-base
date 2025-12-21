@@ -1,0 +1,23 @@
+---
+/**
+ * NavLogo Component
+ * Displays the site logo with responsive text variants
+ */
+import websecLogo from "../../assets/websec-logo.png";
+
+interface Props {
+  baseUrl: string;
+}
+
+const { baseUrl } = Astro.props;
+---
+
+<div class="navbar-logo">
+  <a href={baseUrl} class="logo">
+    <div class="logo-container">
+      <img src={websecLogo.src} alt="WEBSEC Logo" class="websec-logo" />
+    </div>
+    <span class="logo-text logo-text-full">SQL Injection Knowledge Base</span>
+    <span class="logo-text logo-text-short">SQL Injection KB</span>
+  </a>
+</div>

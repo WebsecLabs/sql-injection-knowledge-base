@@ -1,91 +1,15 @@
 ---
-import { getCollection } from "astro:content";
 import Layout from "../layouts/Layout.astro";
+import { loadAllCollections, mapToSearchEntries } from "../utils/collectionLoader";
 
 // Load all entries at build time for client-side search
-const mysqlEntries = await getCollection("mysql");
-const mariadbEntries = await getCollection("mariadb");
-const mssqlEntries = await getCollection("mssql");
-const oracleEntries = await getCollection("oracle");
-const postgresqlEntries = await getCollection("postgresql");
-const extrasEntries = await getCollection("extras");
-
-// Prepare searchable data for client-side (minimal data to reduce payload)
-interface SearchEntry {
-  slug: string;
-  title: string;
-  description?: string;
-  category: string;
-  tags?: string[];
-  collection: string;
-}
-
-const searchData: SearchEntry[] = [
-  ...mysqlEntries.map((e) => ({
-    slug: e.slug,
-    title: e.data.title,
-    description: e.data.description,
-    category: e.data.category,
-    tags: e.data.tags,
-    collection: "mysql",
-  })),
-  ...mariadbEntries.map((e) => ({
-    slug: e.slug,
-    title: e.data.title,
-    description: e.data.description,
-    category: e.data.category,
-    tags: e.data.tags,
-    collection: "mariadb",
-  })),
-  ...mssqlEntries.map((e) => ({
-    slug: e.slug,
-    title: e.data.title,
-    description: e.data.description,
-    category: e.data.category,
-    tags: e.data.tags,
-    collection: "mssql",
-  })),
-  ...oracleEntries.map((e) => ({
-    slug: e.slug,
-    title: e.data.title,
-    description: e.data.description,
-    category: e.data.category,
-    tags: e.data.tags,
-    collection: "oracle",
-  })),
-  ...postgresqlEntries.map((e) => ({
-    slug: e.slug,
-    title: e.data.title,
-    description: e.data.description,
-    category: e.data.category,
-    tags: e.data.tags,
-    collection: "postgresql",
-  })),
-  ...extrasEntries.map((e) => ({
-    slug: e.slug,
-    title: e.data.title,
-    description: e.data.description,
-    category: e.data.category,
-    tags: e.data.tags,
-    collection: "extras",
-  })),
-];
+const collections = await loadAllCollections();
+const searchData = mapToSearchEntries(collections);
 
 const baseUrl = import.meta.env.BASE_URL;
 ---
 
-<Layout
-  title="Search - SQL Injection KB"
-  showSidebar={false}
-  collections={{
-    mysqlEntries,
-    mariadbEntries,
-    mssqlEntries,
-    oracleEntries,
-    postgresqlEntries,
-    extrasEntries,
-  }}
->
+<Layout title="Search - SQL Injection KB" showSidebar={false} collections={collections}>
   <div
     class="search-results"
     data-base-url={baseUrl}
@@ -96,10 +20,10 @@ const baseUrl = import.meta.env.BASE_URL;
     <div class="search-info">
       <p id="search-status">Loading...</p>
       <div class="search-form">
-        <form id="search-form" action={`${baseUrl}search`} method="get">
+        <form id="search-page-form" action={`${baseUrl}search`} method="get">
           <input
             type="text"
-            id="search-input"
+            id="search-page-input"
             name="q"
             placeholder="Search..."
             aria-label="Search"

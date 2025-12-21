@@ -33,16 +33,16 @@ const handleSearch = (e: Event): void => {
 
     // Restore previous active states with aria-expanded sync
     document.querySelectorAll<HTMLElement>(".sidebar-section").forEach((section) => {
+      const heading = section.querySelector<HTMLElement>(".sidebar-heading");
       if (section.dataset.wasActive === "true") {
         section.classList.add("active");
-        const heading = section.querySelector<HTMLElement>(".sidebar-heading");
         if (heading) {
           heading.setAttribute("aria-expanded", "true");
         }
         delete section.dataset.wasActive;
-      } else if (!section.classList.contains("active")) {
-        // Ensure collapsed sections have aria-expanded="false"
-        const heading = section.querySelector<HTMLElement>(".sidebar-heading");
+      } else {
+        // Section was not active before search, collapse it
+        section.classList.remove("active");
         if (heading) {
           heading.setAttribute("aria-expanded", "false");
         }

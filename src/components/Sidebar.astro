@@ -5,6 +5,7 @@
  */
 import { type CollectionEntry } from "astro:content";
 import SidebarSection from "./SidebarSection.astro";
+import { groupByCategory, sortGroupedEntriesInPlace } from "../utils/entryUtils";
 
 interface Props {
   mysqlEntries: CollectionEntry<"mysql">[];
@@ -24,38 +25,12 @@ const {
   extrasEntries,
 } = Astro.props;
 
-// Type-safe helper function to group entries by category
-type AnyEntry = CollectionEntry<"mysql" | "mariadb" | "mssql" | "oracle" | "postgresql" | "extras">;
-
-interface CategoryGroup {
-  [category: string]: AnyEntry[];
-}
-
-function groupByCategory<T extends AnyEntry>(entries: T[]): CategoryGroup {
-  return entries.reduce<CategoryGroup>((acc, entry) => {
-    const category = entry.data.category;
-    if (!acc[category]) {
-      acc[category] = [];
-    }
-    acc[category].push(entry);
-    return acc;
-  }, {});
-}
-
-// Sort entries within each category by order
-function sortCategoryEntries(grouped: CategoryGroup): CategoryGroup {
-  for (const category of Object.keys(grouped)) {
-    grouped[category].sort((a, b) => a.data.order - b.data.order);
-  }
-  return grouped;
-}
-
-// Group and sort entries by category
-const mysqlByCategory = sortCategoryEntries(groupByCategory(mysqlEntries));
-const mariadbByCategory = sortCategoryEntries(groupByCategory(mariadbEntries));
-const mssqlByCategory = sortCategoryEntries(groupByCategory(mssqlEntries));
-const oracleByCategory = sortCategoryEntries(groupByCategory(oracleEntries));
-const postgresqlByCategory = sortCategoryEntries(groupByCategory(postgresqlEntries));
+// Group and sort entries by category using shared utilities
+const mysqlByCategory = sortGroupedEntriesInPlace(groupByCategory(mysqlEntries));
+const mariadbByCategory = sortGroupedEntriesInPlace(groupByCategory(mariadbEntries));
+const mssqlByCategory = sortGroupedEntriesInPlace(groupByCategory(mssqlEntries));
+const oracleByCategory = sortGroupedEntriesInPlace(groupByCategory(oracleEntries));
+const postgresqlByCategory = sortGroupedEntriesInPlace(groupByCategory(postgresqlEntries));
 
 // Sort extras entries by order
 const sortedExtras = [...extrasEntries].sort((a, b) => a.data.order - b.data.order);
@@ -82,7 +57,12 @@ const activeSection = getActiveSection(currentPath);
   </div>
 
   <div class="sidebar-search">
-    <input type="text" id="sidebar-search-input" placeholder="Search documentation..." />
+    <input
+      type="text"
+      id="sidebar-search-input"
+      placeholder="Search documentation..."
+      aria-label="Search documentation"
+    />
   </div>
 
   <div class="sidebar-content">

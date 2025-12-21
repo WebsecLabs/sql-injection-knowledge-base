@@ -1,0 +1,225 @@
+import { test, expect } from "@playwright/test";
+
+test.describe("Sidebar - Desktop", () => {
+  test.beforeEach(async ({ page }) => {
+    await page.goto("/mysql/intro");
+    await page.setViewportSize({ width: 1920, height: 1080 });
+  });
+
+  test("should display sidebar on content pages", async ({ page }) => {
+    const sidebar = page.locator(".sidebar");
+    await expect(sidebar).toBeVisible();
+  });
+
+  test("should show sidebar sections with headings", async ({ page }) => {
+    const sidebarHeadings = page.locator(".sidebar-heading");
+    const count = await sidebarHeadings.count();
+    expect(count).toBeGreaterThan(0);
+  });
+
+  test("should toggle section when heading is clicked", async ({ page }) => {
+    const firstSection = page.locator(".sidebar-section").first();
+    const firstHeading = firstSection.locator(".sidebar-heading");
+
+    // Get initial state
+    const initiallyActive = await firstSection.evaluate((el) => el.classList.contains("active"));
+
+    // Click to toggle
+    await firstHeading.click();
+
+    // Check state changed
+    const afterClickActive = await firstSection.evaluate((el) => el.classList.contains("active"));
+    expect(afterClickActive).toBe(!initiallyActive);
+  });
+
+  test("should update aria-expanded when section is toggled", async ({ page }) => {
+    const firstSection = page.locator(".sidebar-section").first();
+    const firstHeading = firstSection.locator(".sidebar-heading");
+
+    // Get initial aria-expanded
+    const initialExpanded = await firstHeading.getAttribute("aria-expanded");
+
+    // Click to toggle
+    await firstHeading.click();
+
+    // Check aria-expanded changed
+    const afterClickExpanded = await firstHeading.getAttribute("aria-expanded");
+    expect(afterClickExpanded).not.toBe(initialExpanded);
+  });
+
+  test("should navigate to correct page when sidebar link is clicked", async ({ page }) => {
+    // Make sure at least one section is expanded
+    const sidebarLink = page.locator(".sidebar-nav a").first();
+    const href = await sidebarLink.getAttribute("href");
+
+    await sidebarLink.click();
+
+    await expect(page).toHaveURL(new RegExp(href?.replace(/\//g, "\\/") || ""));
+  });
+
+  test("should highlight current page in sidebar", async ({ page }) => {
+    // Look for active/current link indicator
+    const activeLink = page.locator('.sidebar-nav a[aria-current="page"], .sidebar-nav a.active');
+    const count = await activeLink.count();
+
+    // If active indicator exists, it should be visible
+    if (count > 0) {
+      await expect(activeLink.first()).toBeVisible();
+    }
+  });
+});
+
+test.describe("Sidebar - Search", () => {
+  test.beforeEach(async ({ page }) => {
+    await page.goto("/mysql/intro");
+    await page.setViewportSize({ width: 1920, height: 1080 });
+  });
+
+  test("should display sidebar search input", async ({ page }) => {
+    const searchInput = page.locator("#sidebar-search-input");
+    await expect(searchInput).toBeVisible();
+  });
+
+  test("should filter sidebar items when searching", async ({ page }) => {
+    const searchInput = page.locator("#sidebar-search-input");
+    await searchInput.fill("Intro");
+
+    // Wait for filtering - use state-based wait for matching links to become visible
+    const matchingLinks = page.locator('.sidebar-nav a:has-text("Intro")');
+    await expect(matchingLinks.first()).toBeVisible();
+  });
+
+  test("should show all items when search is cleared", async ({ page }) => {
+    const searchInput = page.locator("#sidebar-search-input");
+    const sidebarLinks = page.locator(".sidebar-nav a");
+
+    // Capture the initial link count before filtering
+    await expect(sidebarLinks.first()).toBeVisible();
+    const initialCount = await sidebarLinks.count();
+
+    // First filter - use "Password" which appears in entry titles like "Password Cracking"
+    await searchInput.fill("Password");
+    // Wait for filtering to complete by checking a specific filtered result
+    const passwordLinks = page.locator('.sidebar-nav a:has-text("Password")');
+    await expect(passwordLinks.first()).toBeVisible();
+
+    // Then clear
+    await searchInput.fill("");
+
+    // All items should be visible again - wait for sidebar to have multiple links
+    await expect(sidebarLinks.first()).toBeVisible();
+    const restoredCount = await sidebarLinks.count();
+    // Expect restored count to be at least the initial count (all sections restored)
+    expect(restoredCount).toBeGreaterThanOrEqual(initialCount);
+  });
+
+  test("should expand all sections during search", async ({ page }) => {
+    const searchInput = page.locator("#sidebar-search-input");
+
+    // Collapse all sections first
+    const activeHeadings = page.locator(".sidebar-section.active .sidebar-heading");
+    const count = await activeHeadings.count();
+    for (let i = 0; i < count; i++) {
+      await activeHeadings.nth(i).click();
+    }
+
+    // Now search
+    await searchInput.fill("test");
+
+    // Wait for sections to expand - use state-based wait for first section to be active
+    const allSections = page.locator(".sidebar-section");
+    await expect(allSections.first()).toHaveClass(/active/);
+
+    // Verify all sections are expanded
+    const allCount = await allSections.count();
+    for (let i = 0; i < allCount; i++) {
+      const section = allSections.nth(i);
+      await expect(section).toHaveClass(/active/);
+    }
+  });
+});
+
+test.describe("Sidebar - Keyboard Navigation", () => {
+  test.beforeEach(async ({ page }) => {
+    await page.goto("/mysql/intro");
+    await page.setViewportSize({ width: 1920, height: 1080 });
+  });
+
+  test("should toggle section with Enter key", async ({ page }) => {
+    const firstSection = page.locator(".sidebar-section").first();
+    const firstHeading = firstSection.locator(".sidebar-heading");
+
+    // Get initial state
+    const initiallyActive = await firstSection.evaluate((el) => el.classList.contains("active"));
+
+    // Focus and press Enter
+    await firstHeading.focus();
+    await page.keyboard.press("Enter");
+
+    // Check state changed
+    const afterKeyActive = await firstSection.evaluate((el) => el.classList.contains("active"));
+    expect(afterKeyActive).toBe(!initiallyActive);
+  });
+
+  test("should toggle section with Space key", async ({ page }) => {
+    const firstSection = page.locator(".sidebar-section").first();
+    const firstHeading = firstSection.locator(".sidebar-heading");
+
+    // Get initial state
+    const initiallyActive = await firstSection.evaluate((el) => el.classList.contains("active"));
+
+    // Focus and press Space
+    await firstHeading.focus();
+    await page.keyboard.press("Space");
+
+    // Check state changed
+    const afterKeyActive = await firstSection.evaluate((el) => el.classList.contains("active"));
+    expect(afterKeyActive).toBe(!initiallyActive);
+  });
+});
+
+test.describe("Sidebar - Mobile", () => {
+  test.beforeEach(async ({ page }) => {
+    await page.goto("/mysql/intro");
+    await page.setViewportSize({ width: 375, height: 667 });
+  });
+
+  test("should be hidden on mobile by default", async ({ page }) => {
+    const sidebar = page.locator(".sidebar");
+    const viewport = page.viewportSize();
+
+    // On mobile viewport, sidebar should be hidden or positioned off-screen
+    const isHidden = await sidebar.isHidden();
+    if (isHidden) {
+      // Sidebar is hidden via CSS display/visibility
+      expect(isHidden).toBe(true);
+    } else {
+      // If not hidden via CSS, check multiple hiding mechanisms:
+      const boundingBox = await sidebar.boundingBox();
+
+      // Check if sidebar uses CSS transform to hide (common mobile pattern)
+      // The sidebar uses transform: translateX(-100%) to slide off-screen
+      const transform = await sidebar.evaluate((el) => window.getComputedStyle(el).transform);
+      const isTransformedOffScreen =
+        transform.includes("matrix") && !transform.includes("matrix(1, 0, 0, 1, 0, 0)");
+
+      // Element is considered hidden if:
+      // - boundingBox is null (not rendered)
+      // - width or height is 0 (zero dimensions)
+      // - positioned completely off-screen via position (left, right, top, or bottom)
+      // - transformed off-screen via CSS transform
+      // Note: Use <= 0 to handle edge case where element ends exactly at viewport edge
+      const isOffScreenOrZeroSize =
+        boundingBox === null ||
+        boundingBox.width === 0 ||
+        boundingBox.height === 0 ||
+        boundingBox.x + boundingBox.width <= 0 || // off-screen left (including edge)
+        (viewport && boundingBox.x >= viewport.width) || // off-screen right
+        boundingBox.y + boundingBox.height <= 0 || // off-screen top (including edge)
+        (viewport && boundingBox.y >= viewport.height) || // off-screen bottom
+        isTransformedOffScreen; // hidden via CSS transform
+
+      expect(isOffScreenOrZeroSize).toBe(true);
+    }
+  });
+});

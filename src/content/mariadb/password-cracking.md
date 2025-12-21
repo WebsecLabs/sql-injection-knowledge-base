@@ -29,12 +29,13 @@ Several tools can be used to crack MariaDB password hashes:
 ### Hashcat Commands for MariaDB Hashes
 
 ```bash
-# MySQL/MariaDB sha1(sha1(pass)) (hash mode 300) with the '*' removed
+# MySQL/MariaDB sha1(sha1(pass)) (hash mode 300)
+# Requires removing the leading '*' from the hash
+# Example: *2470C0C06DEE42FD1618BB99005ADCA2EC9D1E19 → 2470C0C06DEE42FD1618BB99005ADCA2EC9D1E19
 hashcat -m 300 -a 0 mariadb_hashes.txt wordlist.txt
-
-# MySQL/MariaDB (hash mode 11200) with full hash including '*'
-hashcat -m 11200 -a 0 mariadb_hashes.txt wordlist.txt
 ```
+
+> **Note:** Mode 300 is the standard mode for cracking stored MariaDB/MySQL password hashes. The leading asterisk (`*`) must be stripped before cracking. Mode 11200 exists for MySQL CRAM (Challenge-Response Authentication) captured from network traffic, which is a different use case requiring a challenge-response pair in the format `$mysqlna$challenge*response`.
 
 ### John the Ripper Commands
 
@@ -127,7 +128,7 @@ WHERE plugin_type = 'AUTHENTICATION'
 Using a wordlist of common passwords:
 
 ```bash
-hashcat -m 11200 -a 0 mariadb_hashes.txt rockyou.txt
+hashcat -m 300 -a 0 mariadb_hashes.txt rockyou.txt
 ```
 
 #### Rule-based Attack
@@ -135,7 +136,7 @@ hashcat -m 11200 -a 0 mariadb_hashes.txt rockyou.txt
 Applying transformations to dictionary words:
 
 ```bash
-hashcat -m 11200 -a 0 mariadb_hashes.txt rockyou.txt -r rules/best64.rule
+hashcat -m 300 -a 0 mariadb_hashes.txt rockyou.txt -r rules/best64.rule
 ```
 
 #### Brute Force Attack
@@ -144,7 +145,7 @@ Trying all possible combinations of characters:
 
 ```bash
 # Brute force up to 8 characters (lowercase only)
-hashcat -m 11200 -a 3 mariadb_hashes.txt ?l?l?l?l?l?l?l?l
+hashcat -m 300 -a 3 mariadb_hashes.txt ?l?l?l?l?l?l?l?l
 ```
 
 #### Mask Attack
@@ -153,7 +154,7 @@ Targeted brute force using patterns:
 
 ```bash
 # Target 8-char passwords with digits at the end (e.g., "password123")
-hashcat -m 11200 -a 3 mariadb_hashes.txt ?l?l?l?l?l?l?d?d?d
+hashcat -m 300 -a 3 mariadb_hashes.txt ?l?l?l?l?l?l?d?d?d
 ```
 
 #### Hybrid Attack
@@ -162,10 +163,10 @@ Combining dictionary words with patterns:
 
 ```bash
 # Words from dictionary with up to 4 digits appended
-hashcat -m 11200 -a 6 mariadb_hashes.txt rockyou.txt ?d?d?d?d
+hashcat -m 300 -a 6 mariadb_hashes.txt rockyou.txt ?d?d?d?d
 
 # Prepend digits to dictionary words
-hashcat -m 11200 -a 7 ?d?d?d?d mariadb_hashes.txt rockyou.txt
+hashcat -m 300 -a 7 ?d?d?d?d mariadb_hashes.txt rockyou.txt
 ```
 
 ### Wordlist Resources
@@ -176,6 +177,8 @@ Some useful wordlist sources:
 2. **SecLists** - Collection of multiple wordlists for security testing
 3. **HashesOrg** - Repository of real-world password leaks
 4. **CrackStation** - Very large wordlist (15GB uncompressed)
+
+> **Legal and Ethical Considerations:** Some wordlist sources (particularly those containing "real-world password leaks") may include data from unauthorized breaches. The use of such lists may have legal implications depending on your jurisdiction. Always verify the legality of using specific wordlists in your region, use them only for authorized security testing with proper documentation, and consider using curated or synthetically generated datasets when possible.
 
 ### Common Default Passwords
 

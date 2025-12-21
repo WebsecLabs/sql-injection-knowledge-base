@@ -21,3 +21,16 @@ export const COLLECTION_LABELS: Record<ValidCollection, string> = {
   postgresql: "PostgreSQL",
   extras: "Extras",
 };
+
+/**
+ * Alternative labels for search results context.
+ * Uses more descriptive names where appropriate.
+ */
+export const COLLECTION_SEARCH_LABELS: Record<ValidCollection, string> = {
+  mysql: "MySQL",
+  mariadb: "MariaDB",
+  mssql: "MSSQL",
+  oracle: "Oracle",
+  postgresql: "PostgreSQL",
+  extras: "Other Resources",
+};

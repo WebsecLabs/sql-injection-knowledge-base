@@ -4,7 +4,8 @@
  * Extracts common pattern used for MySQL, MSSQL, Oracle, and Extras sections.
  */
 import type { CollectionEntry } from "astro:content";
-import { CATEGORY_ORDER } from "../utils/entryUtils";
+import { getSortedCategories } from "../utils/entryUtils";
+import { createSectionActiveChecker } from "../utils/pathUtils";
 
 interface CategoryGroup {
   [category: string]: CollectionEntry<
@@ -39,21 +40,11 @@ const {
   showCategories = true,
 } = Astro.props;
 
-// Sort categories by learning progression order
-const sortedCategories = entriesByCategory
-  ? Object.keys(entriesByCategory).sort((a, b) => {
-      const aOrder = CATEGORY_ORDER[a] ?? 99;
-      const bOrder = CATEGORY_ORDER[b] ?? 99;
-      return aOrder - bOrder;
-    })
-  : [];
+// Sort categories by learning progression order using shared utility
+const sortedCategories = entriesByCategory ? getSortedCategories(entriesByCategory) : [];
 
-// Helper function for exact path matching (handles trailing slashes)
-function isActivePath(entrySlug: string): boolean {
-  const entryPath = `${import.meta.env.BASE_URL}${sectionId}/${entrySlug}`.replace(/\/+$/, "");
-  const normalizedCurrentPath = currentPath.replace(/\/+$/, "");
-  return normalizedCurrentPath === entryPath;
-}
+// Create section-specific active path checker using shared utility
+const isActivePath = createSectionActiveChecker(currentPath, import.meta.env.BASE_URL, sectionId);
 ---
 
 <div class={`sidebar-section ${isActive ? "active" : ""}`} data-section={sectionId}>

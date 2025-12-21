@@ -1,4 +1,7 @@
 import { escapeHtml } from "../utils/htmlEscape";
+import { COLLECTION_SEARCH_LABELS } from "../utils/constants";
+import { debounce } from "../utils/domUtils";
+import { SEARCH_DEBOUNCE_MS, SEARCH_TITLE_MAX_LENGTH } from "../utils/uiConstants";
 
 interface SearchEntry {
   slug: string;
@@ -7,19 +10,6 @@ interface SearchEntry {
   category: string;
   tags?: string[];
   collection: string;
-}
-
-// Simple debounce utility
-function debounce<T extends (...args: Parameters<T>) => void>(func: T, wait: number) {
-  let timeout: number | undefined;
-  return function executedFunction(...args: Parameters<T>) {
-    const later = () => {
-      clearTimeout(timeout);
-      func(...args);
-    };
-    clearTimeout(timeout);
-    timeout = window.setTimeout(later, wait);
-  };
 }
 
 export function initSearch() {
@@ -39,11 +29,11 @@ export function initSearch() {
     console.error("Failed to parse search data");
   }
 
-  const searchInput = document.getElementById("search-input") as HTMLInputElement;
-  const searchStatus = document.getElementById("search-status") as HTMLElement;
-  const noResults = document.getElementById("no-results") as HTMLElement;
-  const initialSearch = document.getElementById("initial-search") as HTMLElement;
-  const resultsContainer = document.getElementById("results-container") as HTMLElement;
+  const searchInput = container.querySelector('input[name="q"]') as HTMLInputElement | null;
+  const searchStatus = container.querySelector("#search-status") as HTMLElement | null;
+  const noResults = container.querySelector("#no-results") as HTMLElement | null;
+  const initialSearch = container.querySelector("#initial-search") as HTMLElement | null;
+  const resultsContainer = container.querySelector("#results-container") as HTMLElement | null;
 
   if (!searchInput || !searchStatus || !noResults || !initialSearch || !resultsContainer) {
     console.error("Missing search DOM elements");
@@ -93,14 +83,14 @@ export function initSearch() {
     const normalizedQuery = query.toLowerCase().trim();
 
     if (!normalizedQuery) {
-      searchStatus.textContent = "";
-      noResults.style.display = "none";
-      initialSearch.style.display = "block";
-      resultsContainer.innerHTML = "";
+      searchStatus!.textContent = "";
+      noResults!.style.display = "none";
+      initialSearch!.style.display = "block";
+      resultsContainer!.innerHTML = "";
       return;
     }
 
-    initialSearch.style.display = "none";
+    initialSearch!.style.display = "none";
 
     // Filter entries
     const matches = searchData.filter((entry) => {
@@ -119,28 +109,23 @@ export function initSearch() {
     }
 
     // Update UI
-    searchStatus.textContent = `Found ${matches.length} ${matches.length === 1 ? "result" : "results"} for "${query}"`;
+    searchStatus!.textContent = `Found ${matches.length} ${matches.length === 1 ? "result" : "results"} for "${query}"`;
 
     if (matches.length === 0) {
-      noResults.style.display = "block";
-      resultsContainer.innerHTML = "";
+      noResults!.style.display = "block";
+      resultsContainer!.innerHTML = "";
       return;
     }
 
-    noResults.style.display = "none";
+    noResults!.style.display = "none";
 
     // Render results
-    const collectionLabels: Record<string, string> = {
-      mysql: "MySQL",
-      mssql: "MSSQL",
-      oracle: "Oracle",
-      extras: "Other Resources",
-    };
-
     let html = "";
     for (const [collection, entries] of Object.entries(grouped)) {
+      const label =
+        COLLECTION_SEARCH_LABELS[collection as keyof typeof COLLECTION_SEARCH_LABELS] || collection;
       html += `<div class="result-section">
-        <h2>${escapeHtml(collectionLabels[collection] || collection)} (${entries.length})</h2>
+        <h2>${escapeHtml(label)} (${entries.length})</h2>
         <ul class="result-list">`;
 
       for (const entry of entries) {
@@ -158,11 +143,11 @@ export function initSearch() {
       html += `</ul></div>`;
     }
 
-    resultsContainer.innerHTML = html;
+    resultsContainer!.innerHTML = html;
   }
 
   // Debounced search handler
-  const performSearchDebounced = debounce((query: string) => performSearch(query), 300);
+  const performSearchDebounced = debounce(performSearch, SEARCH_DEBOUNCE_MS);
 
   // Get query from URL
   const urlParams = new URLSearchParams(window.location.search);
@@ -173,9 +158,11 @@ export function initSearch() {
   if (queryParam) {
     performSearch(queryParam);
     // Update title
-    const maxLen = 50;
+    const maxLen = SEARCH_TITLE_MAX_LENGTH;
     const truncated = queryParam.length > maxLen ? queryParam.slice(0, maxLen) + "…" : queryParam;
     document.title = `Search Results for "${escapeControlChars(truncated)}" - SQL Injection KB`;
+  } else {
+    performSearch("");
   }
 
   // Add input listener with debounce

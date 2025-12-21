@@ -2,6 +2,8 @@
 @import url("./variables.css");
 @import url("./base.css");
 @import url("./layout.css");
+@import url("./navbar.css");
 @import url("./sidebar.css");
 @import url("./components.css");
+@import url("./code.css");
 @import url("./footer.css");

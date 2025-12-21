@@ -1,0 +1,95 @@
+---
+/**
+ * NavDatabasesDropdown Component
+ * Dropdown menu containing all database sections with expandable categories
+ */
+import { type CollectionEntry } from "astro:content";
+import NavDropdown from "../NavDropdown.astro";
+import { COLLECTION_LABELS, DATABASE_COLLECTION_TYPES } from "../../utils/constants";
+import type { DatabaseCollection } from "../../utils/constants";
+
+interface Props {
+  entriesByCategory: Record<
+    DatabaseCollection,
+    Record<string, CollectionEntry<DatabaseCollection>[]>
+  >;
+  categoriesByType: Record<DatabaseCollection, string[]>;
+  baseUrl: string;
+  isActivePath: (section: string, slug: string) => boolean;
+}
+
+const { entriesByCategory, categoriesByType, baseUrl, isActivePath } = Astro.props;
+---
+
+<li class="nav-item dropdown">
+  <button
+    id="databases-dropdown-toggle"
+    class="nav-link dropdown-toggle"
+    aria-haspopup="true"
+    aria-expanded="false"
+    aria-controls="databases-dropdown-menu"
+  >
+    Databases
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      width="12"
+      height="12"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      stroke-width="2"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+      aria-hidden="true"
+    >
+      <polyline points="6 9 12 15 18 9"></polyline>
+    </svg>
+  </button>
+  <div id="databases-dropdown-menu" class="dropdown-menu dropdown-menu-databases">
+    {
+      DATABASE_COLLECTION_TYPES.map((type, typeIndex) => (
+        <>
+          <div class="database-section" data-database={type}>
+            <button
+              class="database-section-header"
+              data-toggle-db={type}
+              aria-expanded="false"
+              aria-controls={`database-section-content-${type}`}
+            >
+              <span>{COLLECTION_LABELS[type]}</span>
+              <svg
+                class="database-chevron"
+                xmlns="http://www.w3.org/2000/svg"
+                width="14"
+                height="14"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                aria-hidden="true"
+              >
+                <polyline points="6 9 12 15 18 9" />
+              </svg>
+            </button>
+            <div id={`database-section-content-${type}`} class="database-section-content">
+              {categoriesByType[type].map((category) => (
+                <NavDropdown
+                  category={category}
+                  entries={entriesByCategory[type][category]}
+                  baseUrl={baseUrl}
+                  section={type}
+                  isActivePath={isActivePath}
+                />
+              ))}
+            </div>
+          </div>
+          {typeIndex < DATABASE_COLLECTION_TYPES.length - 1 && (
+            <div class="database-section-divider" />
+          )}
+        </>
+      ))
+    }
+  </div>
+</li>

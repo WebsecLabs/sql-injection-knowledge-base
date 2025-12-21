@@ -1,0 +1,24 @@
+# Build outputs
+dist/
+.astro/
+
+# Test outputs
+playwright-report/
+test-results/
+coverage/
+
+# Dependencies
+node_modules/
+
+# Logs
+*.log
+
+# Environment files
+.env*
+
+# IDE and editor directories
+.vscode/
+.idea/
+
+# Internal tooling
+.zencoder/
