@@ -52,9 +52,13 @@ test.describe("Sidebar - Desktop", () => {
     const sidebarLink = page.locator(".sidebar-nav a").first();
     const href = await sidebarLink.getAttribute("href");
 
+    // Ensure href exists before proceeding - test should fail if sidebar links are missing href
+    expect(href).not.toBeNull();
+
     await sidebarLink.click();
 
-    await expect(page).toHaveURL(new RegExp(href?.replace(/\//g, "\\/") || ""));
+    // Use the href directly since we've verified it's not null
+    await expect(page).toHaveURL(new RegExp(href!.replace(/\//g, "\\/")));
   });
 
   test("should highlight current page in sidebar", async ({ page }) => {
@@ -62,10 +66,11 @@ test.describe("Sidebar - Desktop", () => {
     const activeLink = page.locator('.sidebar-nav a[aria-current="page"], .sidebar-nav a.active');
     const count = await activeLink.count();
 
-    // If active indicator exists, it should be visible
-    if (count > 0) {
-      await expect(activeLink.first()).toBeVisible();
-    }
+    // Active link indicator must exist on content pages - fail if missing
+    expect(count).toBeGreaterThan(0);
+
+    // Verify the active link is visible
+    await expect(activeLink.first()).toBeVisible();
   });
 });
 
@@ -116,11 +121,16 @@ test.describe("Sidebar - Search", () => {
   test("should expand all sections during search", async ({ page }) => {
     const searchInput = page.locator("#sidebar-search-input");
 
-    // Collapse all sections first
+    // Collapse all active sections first using a stable approach:
+    // Keep clicking the first active heading until none remain
     const activeHeadings = page.locator(".sidebar-section.active .sidebar-heading");
-    const count = await activeHeadings.count();
-    for (let i = 0; i < count; i++) {
-      await activeHeadings.nth(i).click();
+    while ((await activeHeadings.count()) > 0) {
+      const previousCount = await activeHeadings.count();
+      await activeHeadings.first().click();
+      // Wait for count to decrease using state-based assertion instead of fixed timeout
+      await expect
+        .poll(async () => activeHeadings.count(), { timeout: 2000 })
+        .toBeLessThan(previousCount);
     }
 
     // Now search

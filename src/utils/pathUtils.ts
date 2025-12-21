@@ -4,6 +4,55 @@
  */
 
 /**
+ * Validate and sanitize a base URL to ensure it uses a safe protocol.
+ * Rejects javascript:, data:, and other potentially dangerous protocols.
+ *
+ * @param baseUrl - The base URL to validate
+ * @param fallback - Fallback value if validation fails (default: "/")
+ * @returns Sanitized base URL or fallback
+ */
+export function sanitizeBaseUrl(baseUrl: unknown, fallback: string = "/"): string {
+  // Ensure it's a non-empty string
+  if (typeof baseUrl !== "string" || !baseUrl.trim()) {
+    return fallback;
+  }
+
+  const trimmed = baseUrl.trim();
+
+  // Relative paths starting with "/" are safe
+  if (trimmed.startsWith("/")) {
+    return trimmed;
+  }
+
+  // For absolute URLs, validate the protocol
+  try {
+    const url = new URL(trimmed);
+    if (url.protocol === "http:" || url.protocol === "https:") {
+      return trimmed;
+    }
+    // Reject javascript:, data:, vbscript:, etc.
+    return fallback;
+  } catch {
+    // If it's not a valid absolute URL and doesn't start with "/",
+    // treat it as a relative path (prepend "/")
+    return `/${trimmed}`;
+  }
+}
+
+/**
+ * Normalize a base URL for use in form actions and href attributes.
+ * Ensures the URL ends without a trailing slash for consistent path construction.
+ *
+ * @param baseUrl - The base URL to normalize
+ * @returns Normalized base URL without trailing slash
+ */
+export function normalizeBaseUrl(baseUrl: unknown): string {
+  const sanitized = sanitizeBaseUrl(baseUrl);
+  // Remove trailing slashes for consistent path joining
+  return sanitized.replace(/\/+$/, "");
+}
+
+/**
  * Normalize a path by removing trailing slashes.
  * Handles both single and multiple trailing slashes.
  *

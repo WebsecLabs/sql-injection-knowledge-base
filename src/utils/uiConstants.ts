@@ -22,8 +22,13 @@ export const RESIZE_DEBOUNCE_MS = 100;
 /** Maximum title length before truncation in search results */
 export const SEARCH_TITLE_MAX_LENGTH = 50;
 
-/** Max-height for mobile dropdown menus */
-export const DROPDOWN_MOBILE_MAX_HEIGHT = "5000px";
+/**
+ * Max-height for mobile dropdown menus.
+ * Set to a large value to allow CSS max-height transitions to animate smoothly
+ * (using 'auto' doesn't work with CSS transitions). Capped at 2000px to avoid
+ * performance issues with excessively long transition calculations.
+ */
+export const DROPDOWN_MOBILE_MAX_HEIGHT = "2000px";
 
 /** Copy button feedback duration (milliseconds) */
 export const COPY_FEEDBACK_DURATION_MS = 2000;

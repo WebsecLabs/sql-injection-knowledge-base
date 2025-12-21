@@ -87,6 +87,13 @@
   cursor: pointer;
 }
 
+/* Keyboard focus indicator for mobile toggle */
+#mobile-toggle:focus-visible {
+  outline: 2px solid rgb(255 255 255 / 80%);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
 #mobile-toggle .bar {
   display: block;
   width: 25px;
@@ -156,6 +163,12 @@
   width: 240px;
 }
 
+/* Keyboard focus indicator for accessibility */
+.navbar #navbar-search-input:focus-visible {
+  outline: 2px solid rgb(255 255 255 / 80%);
+  outline-offset: 2px;
+}
+
 .navbar .search-icon {
   position: absolute;
   left: 0.75rem;
@@ -198,6 +211,13 @@
 }
 
 .navbar .nav-link:hover {
+  background-color: rgb(255 255 255 / 10%);
+}
+
+/* Keyboard focus indicator for nav links */
+.navbar .nav-link:focus-visible {
+  outline: 2px solid rgb(255 255 255 / 80%);
+  outline-offset: -2px;
   background-color: rgb(255 255 255 / 10%);
 }
 
@@ -275,6 +295,12 @@
   background-color: rgb(66 153 225 / 10%);
 }
 
+/* Keyboard focus indicator for database section headers */
+.navbar .database-section-header:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: -2px;
+}
+
 .navbar .database-chevron {
   transform: rotate(-90deg);
   transition: transform 0.2s ease;
@@ -323,6 +349,14 @@
   padding-left: 1.25rem;
 }
 
+/* Keyboard focus indicator for dropdown items */
+.navbar .dropdown-item:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: -2px;
+  background-color: var(--color-code-bg);
+  color: var(--color-primary);
+}
+
 .navbar .dropdown-item.active {
   background-color: rgb(66 153 225 / 10%);
   color: var(--color-primary);
@@ -343,6 +377,12 @@
 .navbar .theme-toggle {
   padding: 0.5rem;
   border-radius: 4px;
+}
+
+/* Keyboard focus indicator for theme toggle */
+.navbar .theme-toggle:focus-visible {
+  outline: 2px solid rgb(255 255 255 / 80%);
+  outline-offset: 2px;
 }
 
 .navbar .theme-toggle svg {
@@ -471,11 +511,6 @@
   .navbar .search-container {
     display: none;
   }
-
-  .navbar .github-link,
-  .navbar .theme-toggle {
-    display: none;
-  }
 }
 
 /* ============================================
@@ -533,10 +568,24 @@
     overflow-y: auto;
     gap: 0.5rem;
     box-shadow: 0 4px 6px rgb(0 0 0 / 10%);
+    z-index: var(--z-navbar-menu);
   }
 
   .navbar-menu.active {
     transform: translateX(0);
+  }
+
+  /* Reset position on nav-items to prevent stacking context issues */
+  .navbar .nav-item {
+    position: static;
+    width: 100%;
+    border-bottom: 1px solid var(--color-border);
+  }
+
+  /* Ensure expanded dropdown is above sibling nav-items */
+  .navbar .dropdown.show {
+    position: relative;
+    z-index: 10;
   }
 
   .navbar .search-container {
@@ -571,11 +620,6 @@
     flex-direction: column;
     width: 100%;
     gap: 0;
-  }
-
-  .navbar .nav-item {
-    width: 100%;
-    border-bottom: 1px solid var(--color-border);
   }
 
   .navbar .nav-link {
@@ -617,32 +661,32 @@
     max-height: 0;
     overflow: hidden;
     transition:
-      max-height 0.4s ease-out,
-      overflow 0s linear 0.4s;
+      max-height 0.2s ease-out,
+      padding 0.2s ease-out;
     background-color: var(--color-code-bg);
     padding: 0;
   }
 
+  /* Focus-within keeps max-height expanded but keeps overflow hidden
+     This prevents dropdown content from being visible after collapse when button still has focus */
+  .navbar .dropdown-menu:focus-within {
+    max-height: 1200px;
+    padding: 0.5rem 0;
+    overflow: hidden;
+    transition:
+      max-height 0.2s ease-out,
+      padding 0.2s ease-out;
+  }
+
+  /* .show rule comes AFTER :focus-within to take precedence when both apply
+     This ensures overflow is visible when dropdown is explicitly expanded */
   .navbar .dropdown.show .dropdown-menu {
-    max-height: 5000px;
+    max-height: 1200px;
     padding: 0.5rem 0;
     overflow: visible;
     transition:
-      max-height 0.4s ease-out,
-      overflow 0s linear 0s;
-  }
-
-  .navbar .dropdown:focus-within .dropdown-menu {
-    max-height: 5000px;
-    padding: 0.5rem 0;
-    overflow: visible;
-    transition:
-      max-height 0.4s ease-out,
-      overflow 0s linear 0s;
-  }
-
-  .navbar .dropdown-menu-databases {
-    overflow: visible;
+      max-height 0.2s ease-out,
+      padding 0.2s ease-out;
   }
 
   .navbar .dropdown-submenu {
@@ -679,7 +723,7 @@
   }
 
   .navbar .database-section.expanded .database-section-content {
-    max-height: 5000px;
+    max-height: 1200px;
   }
 
   .navbar .theme-toggle svg {

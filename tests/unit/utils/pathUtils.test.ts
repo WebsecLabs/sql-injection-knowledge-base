@@ -1,5 +1,7 @@
 import { describe, it, expect } from "vitest";
 import {
+  sanitizeBaseUrl,
+  normalizeBaseUrl,
   normalizePath,
   buildEntryPath,
   isActivePath,
@@ -8,6 +10,71 @@ import {
 } from "../../../src/utils/pathUtils";
 
 describe("pathUtils", () => {
+  describe("sanitizeBaseUrl", () => {
+    it("returns relative paths starting with / unchanged", () => {
+      expect(sanitizeBaseUrl("/")).toBe("/");
+      expect(sanitizeBaseUrl("/base/")).toBe("/base/");
+      expect(sanitizeBaseUrl("/sql-injection-knowledge-base/")).toBe(
+        "/sql-injection-knowledge-base/"
+      );
+    });
+
+    it("allows http:// and https:// protocols", () => {
+      expect(sanitizeBaseUrl("https://example.com/")).toBe("https://example.com/");
+      expect(sanitizeBaseUrl("http://localhost:3000/")).toBe("http://localhost:3000/");
+    });
+
+    it("rejects javascript: protocol", () => {
+      expect(sanitizeBaseUrl("javascript:alert(1)")).toBe("/");
+    });
+
+    it("rejects data: protocol", () => {
+      expect(sanitizeBaseUrl("data:text/html,<script>alert(1)</script>")).toBe("/");
+    });
+
+    it("rejects vbscript: protocol", () => {
+      expect(sanitizeBaseUrl("vbscript:msgbox(1)")).toBe("/");
+    });
+
+    it("returns fallback for empty string", () => {
+      expect(sanitizeBaseUrl("")).toBe("/");
+      expect(sanitizeBaseUrl("", "/fallback")).toBe("/fallback");
+    });
+
+    it("returns fallback for non-string values", () => {
+      expect(sanitizeBaseUrl(null)).toBe("/");
+      expect(sanitizeBaseUrl(undefined)).toBe("/");
+      expect(sanitizeBaseUrl(123)).toBe("/");
+      expect(sanitizeBaseUrl({})).toBe("/");
+    });
+
+    it("trims whitespace", () => {
+      expect(sanitizeBaseUrl("  /base/  ")).toBe("/base/");
+    });
+
+    it("prepends / for relative paths without leading slash", () => {
+      expect(sanitizeBaseUrl("base")).toBe("/base");
+      expect(sanitizeBaseUrl("path/to/something")).toBe("/path/to/something");
+    });
+  });
+
+  describe("normalizeBaseUrl", () => {
+    it("removes trailing slashes from relative paths", () => {
+      expect(normalizeBaseUrl("/")).toBe("");
+      expect(normalizeBaseUrl("/base/")).toBe("/base");
+      expect(normalizeBaseUrl("/path///")).toBe("/path");
+    });
+
+    it("sanitizes and normalizes", () => {
+      expect(normalizeBaseUrl("javascript:alert(1)")).toBe("");
+      expect(normalizeBaseUrl("")).toBe("");
+    });
+
+    it("handles absolute URLs", () => {
+      expect(normalizeBaseUrl("https://example.com/")).toBe("https://example.com");
+    });
+  });
+
   describe("normalizePath", () => {
     it("removes single trailing slash", () => {
       expect(normalizePath("/mysql/intro/")).toBe("/mysql/intro");

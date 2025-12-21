@@ -44,13 +44,18 @@ test.describe("Content Pages", () => {
     await page.goto("/mysql/intro");
 
     // Find first internal link
-    const internalLink = page.locator('a[href^="/mysql/"]').first();
-    const exists = await internalLink.count();
+    const internalLinks = page.locator('#main-content a[href^="/mysql/"]');
+    const exists = await internalLinks.count();
 
     if (exists > 0) {
+      const internalLink = internalLinks.first();
+      await internalLink.scrollIntoViewIfNeeded();
+      await expect(internalLink).toBeVisible();
       const href = await internalLink.getAttribute("href");
+      expect(href).not.toBeNull();
       await internalLink.click();
-      await expect(page).toHaveURL(new RegExp(href?.replace(/\//g, "\\/") || ""));
+      const escapedHref = href!.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+      await expect(page).toHaveURL(new RegExp(escapedHref));
     }
   });
 });

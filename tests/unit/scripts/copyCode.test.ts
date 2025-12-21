@@ -102,8 +102,10 @@ describe("copyCode", () => {
 
       const button = document.querySelector(".copy-button") as HTMLButtonElement;
 
-      // Verify click listener is attached by checking the button doesn't throw on click
-      // (clipboard API mock not needed - we're just verifying the handler exists)
+      // This test only verifies that a click handler is attached and doesn't throw.
+      // We don't mock navigator.clipboard here because we're not testing clipboard
+      // behavior - that's covered by the "copies code to clipboard" test below which
+      // properly mocks the clipboard API.
       expect(() => button.click()).not.toThrow();
     });
 

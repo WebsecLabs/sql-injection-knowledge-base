@@ -60,7 +60,10 @@ describe("sidebar", () => {
   });
 
   afterEach(() => {
-    document.body.removeChild(container);
+    // Defensive cleanup: only remove container if it was successfully appended
+    if (container && container.parentNode === document.body) {
+      document.body.removeChild(container);
+    }
   });
 
   describe("initSidebar", () => {
@@ -121,21 +124,28 @@ describe("sidebar", () => {
 
     it("removes previous event listeners before adding new ones", () => {
       const headings = document.querySelectorAll(".sidebar-heading");
-      const clickSpy = vi.fn();
+      const firstSection = headings[0].closest(".sidebar-section");
 
-      // Manually add a click listener
-      headings[0].addEventListener("click", clickSpy);
+      // Get initial state before any initialization
+      const initiallyActive = firstSection?.classList.contains("active");
+      expect(initiallyActive).toBe(true); // First section starts active
 
-      // Initialize sidebar (should remove old listeners)
+      // Initialize sidebar twice to verify no duplicate handlers
       initSidebar();
-      initSidebar(); // Call twice to ensure cleanup
+      initSidebar();
 
-      // Click should only trigger once per listener
+      // Click the heading once
       (headings[0] as HTMLElement).click();
 
-      // The spy should still be called (our manual listener)
-      // but the sidebar's listener should only be attached once
-      expect(clickSpy).toHaveBeenCalledTimes(1);
+      // If duplicate handlers were attached, the section would toggle twice
+      // (active -> inactive -> active), ending up in the original state.
+      // With proper cleanup, it toggles exactly once (active -> inactive).
+      const afterClickActive = firstSection?.classList.contains("active");
+      expect(afterClickActive).toBe(false);
+
+      // Click again to verify toggle still works correctly
+      (headings[0] as HTMLElement).click();
+      expect(firstSection?.classList.contains("active")).toBe(true);
     });
 
     it("handles missing search input gracefully", () => {
@@ -479,8 +489,8 @@ describe("sidebar", () => {
       searchInput.value = "";
       searchInput.dispatchEvent(new Event("input"));
 
-      // wasActive should be removed
-      expect(activeSection.dataset.wasActive).toBeUndefined();
+      // wasActive should be removed - explicitly check the attribute is not present
+      expect("wasActive" in activeSection.dataset).toBe(false);
     });
 
     it("handles search with no matches", () => {

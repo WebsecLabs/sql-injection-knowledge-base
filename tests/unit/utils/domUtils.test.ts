@@ -1,16 +1,13 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
 import { initOnce, cloneAndReplace, debounce } from "../../../src/utils/domUtils";
+import { _resetInitTracker } from "../../../src/utils/domUtils.test-utils";
 
 describe("domUtils", () => {
   describe("initOnce", () => {
     beforeEach(() => {
-      // INTERNAL IMPLEMENTATION DEPENDENCY: This cleanup relies on initOnce's
-      // internal Symbol key for tracking initialization state. If the key in
-      // domUtils.ts (INIT_TRACKER_KEY) is changed, this must be updated to match.
-      // Ideally, domUtils would export a test-only reset helper, but for now
-      // we directly clear the tracker to ensure test isolation.
-      const symbolKey = Symbol.for("__domUtils_initTracker__");
-      delete (window as unknown as Record<symbol, unknown>)[symbolKey];
+      // Reset initialization tracker between tests using the exported helper
+      // to ensure test isolation without coupling to internal Symbol implementation
+      _resetInitTracker();
     });
 
     it("calls init function on first call", () => {

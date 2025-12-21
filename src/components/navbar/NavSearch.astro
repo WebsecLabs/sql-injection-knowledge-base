@@ -3,11 +3,14 @@
  * NavSearch Component
  * Search input with icon for the navbar
  */
+import { normalizeBaseUrl } from "../../utils/pathUtils";
+
 interface Props {
   baseUrl: string;
 }
 
 const { baseUrl } = Astro.props;
+const safeBaseUrl = normalizeBaseUrl(baseUrl);
 ---
 
 <div class="search-container">
@@ -26,7 +29,7 @@ const { baseUrl } = Astro.props;
     <circle cx="11" cy="11" r="8"></circle>
     <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
   </svg>
-  <form id="navbar-search-form" action={`${baseUrl}search`} method="get">
+  <form id="navbar-search-form" action={`${safeBaseUrl}/search`} method="get">
     <input
       type="text"
       id="navbar-search-input"

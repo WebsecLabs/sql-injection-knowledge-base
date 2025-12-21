@@ -4,16 +4,18 @@
  * Displays the site logo with responsive text variants
  */
 import websecLogo from "../../assets/websec-logo.png";
+import { sanitizeBaseUrl } from "../../utils/pathUtils";
 
 interface Props {
   baseUrl: string;
 }
 
 const { baseUrl } = Astro.props;
+const safeBaseUrl = sanitizeBaseUrl(baseUrl);
 ---
 
 <div class="navbar-logo">
-  <a href={baseUrl} class="logo">
+  <a href={safeBaseUrl} class="logo">
     <div class="logo-container">
       <img src={websecLogo.src} alt="WEBSEC Logo" class="websec-logo" />
     </div>

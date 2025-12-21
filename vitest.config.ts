@@ -12,8 +12,10 @@ export default defineConfig({
       provider: "v8",
       reporter: ["text", "html", "lcov"],
       include: ["src/utils/**/*.ts"],
-      // Note: src/scripts/*.ts excluded from coverage thresholds
-      // as they require complex DOM/browser mocking
+      // Note: src/scripts/*.ts are NOT included in coverage collection above.
+      // They are tested but excluded from thresholds because they require
+      // complex DOM/browser mocking that doesn't translate to meaningful
+      // line-by-line coverage metrics.
       thresholds: {
         global: {
           statements: 80,

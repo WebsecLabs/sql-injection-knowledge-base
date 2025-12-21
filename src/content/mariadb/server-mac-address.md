@@ -18,7 +18,7 @@ SELECT UUID()
 
 The last part `eeeeeeeeeeee` (12 hex digits) represents the MAC address.
 
-**Note:** On some operating systems, MariaDB may return a 48-bit random string instead of the actual MAC address for security reasons.
+**Note:** On some operating systems, MariaDB may return a randomly generated 48-bit value (represented as 12 hexadecimal characters) instead of the actual MAC address for security or privacy reasons.
 
 ## UUID() Function Basics
 
@@ -50,7 +50,9 @@ SELECT SUBSTRING(UUID(), 25) AS mac_portion
 SELECT
   SUBSTRING(UUID(), -12) AS method1,
   SUBSTRING(UUID(), 25) AS method2
--- Note: Results will differ because each UUID() call generates a new value
+-- Note: method1 and method2 will differ because each UUID() call generates
+-- an entirely new UUID (all parts change, not just the MAC portion).
+-- The two extracted substrings come from different UUID values.
 ```
 
 ### Using RIGHT
@@ -210,12 +212,14 @@ SELECT HEX(UNHEX(REPLACE(UUID(), '-', ''))) AS hex_uuid
 ### SYS_GUID() Alternative (MariaDB-specific)
 
 ```sql
--- SYS_GUID() returns uppercase hex without hyphens (Oracle-compatible)
+-- SYS_GUID() returns lowercase hex without hyphens
 SELECT SYS_GUID() AS guid
--- Returns: 6CCD780CBABA102695645B8C65604390 (32 uppercase hex chars)
+-- Returns: 6ccd780cbaba102695645b8c65604390 (32 lowercase hex chars)
 
--- Note: Not available in all MariaDB versions
--- Returns same format as REPLACE(UUID(), '-', '') but uppercase
+-- Note: SYS_GUID() is available in MariaDB 10.6.1+
+-- Returns same format as REPLACE(UUID(), '-', '') in lowercase
+-- Oracle's SYS_GUID() returns uppercase; MariaDB's returns lowercase
+-- See: https://mariadb.com/docs/server/reference/sql-functions/secondary-functions/miscellaneous-functions/sys_guid
 ```
 
 ## UUID Without Hyphens

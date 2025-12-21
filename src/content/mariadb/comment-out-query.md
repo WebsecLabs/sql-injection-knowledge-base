@@ -9,13 +9,15 @@ lastUpdated: 2025-12-18
 
 The following methods can be used to comment out the rest of a query after your injection. MariaDB supports the same comment syntax as MySQL.
 
-| Comment Syntax | Description     |
-| -------------- | --------------- |
-| `#`            | Hash comment    |
-| `/*`           | C-style comment |
-| `-- -`         | SQL comment     |
-| `;%00`         | Nullbyte        |
-| `` ` ``        | Backtick        |
+| Technique | Description     |
+| --------- | --------------- |
+| `#`       | Hash comment    |
+| `/*`      | C-style comment |
+| `-- -`    | SQL comment     |
+| `;%00`    | Nullbyte        |
+| `` ` ``   | Backtick        |
+
+> **Note:** The first three entries (`#`, `/*`, `-- -`) are true SQL comment syntaxes. The `;%00` nullbyte is an application-level bypass that exploits string termination in languages like C/PHP. The backtick is an identifier-based technique that swallows trailing characters.
 
 ## Hash Comment (#)
 

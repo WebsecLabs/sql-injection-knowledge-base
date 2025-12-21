@@ -197,9 +197,9 @@ SELECT * FROM Users limit 1,{INJECTION POINT};
 
 | Test Payload        | Result                                           |
 | ------------------- | ------------------------------------------------ |
-| `1 /*!50094eaea*/;` | False - version is equal or greater than 5.00.94 |
-| `1 /*!50096eaea*/;` | True - version is lesser than 5.00.96            |
-| `1 /*!50095eaea*/;` | False - version is equal to 5.00.95              |
+| `1 /*!50094eaea*/;` | False - version is >= 5.00.94 (comment executes) |
+| `1 /*!50096eaea*/;` | True - version is < 5.00.96 (comment is ignored) |
+| `1 /*!50095eaea*/;` | False - version is >= 5.00.95 (comment executes) |
 
 ## MariaDB-Specific Version Comments
 

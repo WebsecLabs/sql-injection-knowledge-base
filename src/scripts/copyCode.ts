@@ -21,11 +21,16 @@ export function addCopyButtons(): void {
   const codeBlocks = document.querySelectorAll("pre code, div.astro-code");
 
   codeBlocks.forEach((block) => {
-    // Get the parent element
-    const pre = block.parentNode as HTMLElement;
+    // Get the parent element safely with proper type guard
+    const parentNode = block.parentNode;
+    if (!parentNode || parentNode.nodeType !== Node.ELEMENT_NODE) {
+      return;
+    }
+    // After nodeType check, we know parentNode is an Element (not Document/DocumentFragment)
+    const pre = parentNode as Element;
 
     // Ensure pre has relative positioning
-    if (pre && (pre.tagName === "PRE" || pre.classList.contains("astro-code"))) {
+    if (pre.tagName === "PRE" || pre.classList.contains("astro-code")) {
       // Create button
       const button = document.createElement("button");
       button.className = "copy-button";
@@ -84,6 +89,7 @@ function legacyCopy(text: string, button: HTMLElement): void {
 
     document.body.appendChild(textarea);
     textarea.select();
+    // Legacy fallback for browsers without Clipboard API (Safari < 13.1, older browsers)
     document.execCommand("copy");
     document.body.removeChild(textarea);
 

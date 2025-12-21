@@ -60,8 +60,11 @@ $pdo = new PDO($dsn, $user, $pass, [
     PDO::MYSQL_ATTR_MULTI_STATEMENTS => false
 ]);
 
-// mysqli_query - does NOT support stacked queries
-mysqli_query($conn, "SELECT 1; SELECT 2;"); // Only first query executes
+// mysqli_query - REJECTS stacked queries (security feature)
+mysqli_query($conn, "SELECT 1; SELECT 2;");
+// Returns FALSE with error: "You have an error in your SQL syntax"
+// This is intentional - mysqli_query() blocks multi-statement execution
+// to prevent SQL injection attacks that append malicious statements
 ```
 
 ### Node.js Drivers

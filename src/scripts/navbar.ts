@@ -55,6 +55,29 @@ export function toggleDropdownState(dropdown: Element, toggle: Element): void {
   }
 }
 
+function collapseDropdown(dropdown: Element, isMobileView: boolean): void {
+  dropdown.classList.remove("show");
+  const toggle = dropdown.querySelector(".dropdown-toggle");
+  if (toggle instanceof HTMLElement) {
+    toggle.setAttribute("aria-expanded", "false");
+  }
+
+  const menu = dropdown.querySelector(".dropdown-menu") as HTMLElement | null;
+  if (menu) {
+    menu.style.maxHeight = isMobileView ? "0px" : "";
+  }
+}
+
+function resetDatabaseSections(): void {
+  document.querySelectorAll(".database-section").forEach((section) => {
+    section.classList.remove("expanded");
+    const header = section.querySelector(".database-section-header");
+    if (header instanceof HTMLElement) {
+      header.setAttribute("aria-expanded", "false");
+    }
+  });
+}
+
 // Main initialization function
 window.initializeNavbar = function () {
   // Initialize navbar functionality
@@ -83,7 +106,9 @@ window.initializeNavbar = function () {
     const isMobile = window.innerWidth < MOBILE_BREAKPOINT;
     const dropdowns = Array.from(document.querySelectorAll(".dropdown"));
 
-    // Clone dropdown containers to clear any existing hover/click handlers
+    // Clone dropdown containers to clear any existing hover/click handlers.
+    // Return value is intentionally not captured because we re-query the DOM
+    // below to get fresh references after all dropdowns have been cloned.
     dropdowns.forEach((dropdown) => {
       if (dropdown.parentNode) {
         cloneAndReplace(dropdown);
@@ -143,15 +168,7 @@ window.initializeNavbar = function () {
       // Close all other dropdowns
       document.querySelectorAll(".dropdown").forEach((other) => {
         if (other !== dropdown) {
-          other.classList.remove("show");
-          const otherToggle = other.querySelector(".dropdown-toggle");
-          if (otherToggle instanceof HTMLElement) {
-            otherToggle.setAttribute("aria-expanded", "false");
-          }
-          const otherMenu = other.querySelector(".dropdown-menu") as HTMLElement | null;
-          if (otherMenu) {
-            otherMenu.style.maxHeight = "0px";
-          }
+          collapseDropdown(other, isMobileView);
         }
       });
 
@@ -168,9 +185,21 @@ window.initializeNavbar = function () {
         // 1. mouseenter adds "show" when mouse moves to click
         // 2. click would toggle it OFF if we used toggle behavior
         // Instead, clicking always ensures dropdown is visible
-        dropdown.classList.add("show");
-        if (toggle instanceof HTMLElement) {
+        // UPDATE: We now check aria-expanded to allow closing if already explicitly opened
+        const isExpanded = toggle.getAttribute("aria-expanded") === "true";
+
+        if (isExpanded) {
+          // If already explicitly expanded, close it
+          collapseDropdown(dropdown, false);
+        } else {
+          // If not explicitly expanded (even if open via hover), expand it explicitly
+          dropdown.classList.add("show");
+          // toggle is already narrowed to HTMLElement from the cast at line 153
           toggle.setAttribute("aria-expanded", "true");
+          const menu = dropdown.querySelector(".dropdown-menu") as HTMLElement | null;
+          if (menu) {
+            menu.style.maxHeight = "";
+          }
         }
       }
     };
@@ -187,8 +216,9 @@ window.initializeNavbar = function () {
     navbarDocumentClickHandler = function (e) {
       const target = e.target as HTMLElement;
       if (target && !target.closest(".dropdown")) {
+        const isMobileView = window.innerWidth < MOBILE_BREAKPOINT;
         document.querySelectorAll(".dropdown").forEach((dropdown) => {
-          dropdown.classList.remove("show");
+          collapseDropdown(dropdown, isMobileView);
         });
       }
     };
@@ -292,8 +322,9 @@ window.initializeNavbar = function () {
     if (isMobile) {
       // On mobile, reset all dropdowns
       document.querySelectorAll(".dropdown").forEach((dropdown) => {
-        dropdown.classList.remove("show");
+        collapseDropdown(dropdown, true);
       });
+      resetDatabaseSections();
 
       // Re-initialize navbar to apply mobile behavior
       initNavbar();
@@ -309,6 +340,11 @@ window.initializeNavbar = function () {
           mobileToggle.setAttribute("aria-expanded", "false");
         }
       }
+
+      document.querySelectorAll(".dropdown").forEach((dropdown) => {
+        collapseDropdown(dropdown, false);
+      });
+      resetDatabaseSections();
 
       // Re-initialize navbar to apply desktop behavior
       initNavbar();

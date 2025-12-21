@@ -7,8 +7,16 @@ import { test, expect } from "@playwright/test";
  */
 function parseRgbAndCalculateBrightness(bgColor: string): number {
   const rgbMatch = bgColor.match(/\d+/g);
-  expect(rgbMatch).not.toBeNull();
-  expect(rgbMatch!.length >= 3, `Expected at least 3 RGB values, got: ${bgColor}`).toBe(true);
+
+  // First verify we got a match at all
+  expect(rgbMatch, `Failed to parse RGB values from: ${bgColor}`).not.toBeNull();
+
+  // Then verify we have at least 3 values (R, G, B)
+  expect(
+    rgbMatch!.length,
+    `Expected at least 3 RGB values, got ${rgbMatch!.length} from: ${bgColor}`
+  ).toBeGreaterThanOrEqual(3);
+
   const rgb = rgbMatch!.map(Number);
   return (rgb[0] + rgb[1] + rgb[2]) / 3;
 }

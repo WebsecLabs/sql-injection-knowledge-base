@@ -111,10 +111,11 @@ function setupResizeHandler(
 
 /**
  * Set up scroll handler to hide/show mobile toggle button.
+ * The handler is always attached but only takes action on mobile viewports.
+ * This ensures the behavior works correctly when resizing from desktop to mobile.
  */
 function setupScrollHandler(buttonContainer: HTMLElement | null): void {
   if (!buttonContainer) return;
-  if (window.innerWidth > SIDEBAR_MOBILE_BREAKPOINT) return;
   if (sidebarScrollListenerAdded) return;
 
   sidebarScrollListenerAdded = true;
@@ -122,6 +123,8 @@ function setupScrollHandler(buttonContainer: HTMLElement | null): void {
   let ticking = false;
 
   window.addEventListener("scroll", function () {
+    // Check viewport width inside the handler so it works after resize
+    if (window.innerWidth > SIDEBAR_MOBILE_BREAKPOINT) return;
     if (ticking) return;
 
     window.requestAnimationFrame(function () {

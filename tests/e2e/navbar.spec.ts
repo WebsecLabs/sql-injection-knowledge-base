@@ -106,11 +106,13 @@ test.describe("Navbar - Desktop", () => {
     const mysqlSection = page.locator('.database-section[data-database="mysql"]');
     await expect(mysqlSection).toHaveClass(/expanded/);
 
-    const expandedTransform = await chevron.evaluate((el) =>
-      window.getComputedStyle(el).getPropertyValue("transform")
-    );
-
-    expect(initialTransform).not.toBe(expandedTransform);
+    await expect
+      .poll(
+        async () =>
+          chevron.evaluate((el) => window.getComputedStyle(el).getPropertyValue("transform")),
+        { timeout: 2000 }
+      )
+      .not.toBe(initialTransform);
   });
 });
 
@@ -334,32 +336,18 @@ test.describe("Navbar - Dropdown Switching", () => {
     const extrasDropdown = page.locator('.nav-item.dropdown:has(button:text("Extras"))');
     const extrasButton = extrasDropdown.locator("button.dropdown-toggle");
 
-    // Cycle 1: Databases -> Extras
-    await databasesButton.click();
-    await expect(databasesDropdown).toHaveClass(/show/, { timeout: 1000 });
-    await expect(extrasDropdown).not.toHaveClass(/show/);
+    // Test 3 complete cycles of switching between Databases and Extras dropdowns
+    for (let i = 0; i < 3; i++) {
+      // Click Databases - should open Databases and close Extras
+      await databasesButton.click();
+      await expect(databasesDropdown).toHaveClass(/show/, { timeout: 1000 });
+      await expect(extrasDropdown).not.toHaveClass(/show/);
 
-    await extrasButton.click();
-    await expect(extrasDropdown).toHaveClass(/show/, { timeout: 1000 });
-    await expect(databasesDropdown).not.toHaveClass(/show/);
-
-    // Cycle 2: Databases -> Extras
-    await databasesButton.click();
-    await expect(databasesDropdown).toHaveClass(/show/, { timeout: 1000 });
-    await expect(extrasDropdown).not.toHaveClass(/show/);
-
-    await extrasButton.click();
-    await expect(extrasDropdown).toHaveClass(/show/, { timeout: 1000 });
-    await expect(databasesDropdown).not.toHaveClass(/show/);
-
-    // Cycle 3: Databases -> Extras
-    await databasesButton.click();
-    await expect(databasesDropdown).toHaveClass(/show/, { timeout: 1000 });
-    await expect(extrasDropdown).not.toHaveClass(/show/);
-
-    await extrasButton.click();
-    await expect(extrasDropdown).toHaveClass(/show/, { timeout: 1000 });
-    await expect(databasesDropdown).not.toHaveClass(/show/);
+      // Click Extras - should open Extras and close Databases
+      await extrasButton.click();
+      await expect(extrasDropdown).toHaveClass(/show/, { timeout: 1000 });
+      await expect(databasesDropdown).not.toHaveClass(/show/);
+    }
   });
 
   test("should close dropdown when clicking outside", async ({ page }) => {
@@ -377,7 +365,7 @@ test.describe("Navbar - Dropdown Switching", () => {
     await expect(databasesDropdown).not.toHaveClass(/show/);
   });
 
-  test("should keep dropdown open on repeated clicks (close via click outside)", async ({
+  test("should toggle dropdown on repeated clicks and close via click outside", async ({
     page,
   }) => {
     const databasesDropdown = page.locator('.nav-item.dropdown:has(button:text("Databases"))');
@@ -387,7 +375,11 @@ test.describe("Navbar - Dropdown Switching", () => {
     await databasesButton.click();
     await expect(databasesDropdown).toHaveClass(/show/);
 
-    // Click again - should stay open (on desktop, clicking always ensures open)
+    // Click again - should toggle closed (aria-expanded allows toggle behavior)
+    await databasesButton.click();
+    await expect(databasesDropdown).not.toHaveClass(/show/);
+
+    // Click to re-open
     await databasesButton.click();
     await expect(databasesDropdown).toHaveClass(/show/);
 
@@ -434,5 +426,448 @@ test.describe("Navbar - Dropdown Switching on Mobile", () => {
     await databasesButton.click();
     await expect(databasesDropdown).toHaveClass(/show/);
     await expect(extrasDropdown).not.toHaveClass(/show/);
+  });
+});
+
+test.describe("Navbar - Resize Transitions", () => {
+  test("should keep Databases dropdown working after mobile toggle and resize to desktop", async ({
+    page,
+  }, testInfo) => {
+    await page.goto("/");
+    await page.setViewportSize({ width: 375, height: 667 });
+
+    const mobileToggle = page.locator("#mobile-toggle");
+    await mobileToggle.click();
+
+    const databasesDropdown = page.locator('.nav-item.dropdown:has(button:text("Databases"))');
+    const databasesButton = databasesDropdown.locator("button.dropdown-toggle");
+
+    await databasesButton.click();
+    await expect(databasesDropdown).toHaveClass(/show/);
+
+    await databasesButton.click();
+    await expect(databasesDropdown).not.toHaveClass(/show/);
+
+    await page.setViewportSize({ width: 1280, height: 800 });
+
+    // Wait for layout to stabilize after viewport resize using state-based assertions
+    const navbarMenu = page.locator("#navbar-menu");
+    await expect(navbarMenu).not.toHaveClass(/active/, { timeout: 2000 });
+    await expect(databasesButton).toBeVisible({ timeout: 2000 });
+
+    await databasesButton.click();
+    await expect(databasesDropdown).toHaveClass(/show/);
+    await expect(page.locator('.database-section-header:has-text("MySQL")')).toBeVisible();
+
+    // Only capture screenshots when PLAYWRIGHT_DEBUG is enabled to avoid CI slowdown
+    if (process.env.PLAYWRIGHT_DEBUG) {
+      await page.screenshot({
+        path: testInfo.outputPath("resize-databases-desktop.png"),
+        fullPage: true,
+      });
+    }
+  });
+
+  test("should keep Extras dropdown working after mobile toggle and resize to desktop", async ({
+    page,
+  }, testInfo) => {
+    await page.goto("/");
+    await page.setViewportSize({ width: 375, height: 667 });
+
+    const mobileToggle = page.locator("#mobile-toggle");
+    await mobileToggle.click();
+
+    const extrasDropdown = page.locator('.nav-item.dropdown:has(button:text("Extras"))');
+    const extrasButton = extrasDropdown.locator("button.dropdown-toggle");
+
+    await extrasButton.click();
+    await expect(extrasDropdown).toHaveClass(/show/);
+
+    await extrasButton.click();
+    await expect(extrasDropdown).not.toHaveClass(/show/);
+
+    await page.setViewportSize({ width: 1280, height: 800 });
+
+    // Wait for layout to stabilize after viewport resize using state-based assertions
+    const navbarMenu = page.locator("#navbar-menu");
+    await expect(navbarMenu).not.toHaveClass(/active/, { timeout: 2000 });
+    await expect(extrasButton).toBeVisible({ timeout: 2000 });
+
+    await extrasButton.click();
+    await expect(extrasDropdown).toHaveClass(/show/);
+    await expect(page.locator('.dropdown-item:has-text("About")')).toBeVisible();
+
+    // Only capture screenshots when PLAYWRIGHT_DEBUG is enabled to avoid CI slowdown
+    if (process.env.PLAYWRIGHT_DEBUG) {
+      await page.screenshot({
+        path: testInfo.outputPath("resize-extras-desktop.png"),
+        fullPage: true,
+      });
+    }
+  });
+});
+
+test.describe("Navbar - Mobile Menu Visual Integrity", () => {
+  test.beforeEach(async ({ page }) => {
+    await page.goto("/");
+    await page.setViewportSize({ width: 375, height: 667 });
+    // Open mobile menu first
+    await page.locator("#mobile-toggle").click();
+    await expect(page.locator("#navbar-menu")).toHaveClass(/active/);
+  });
+
+  test("should hide database items when Databases dropdown is initially collapsed", async ({
+    page,
+  }) => {
+    // The Databases dropdown should NOT be expanded initially
+    const databasesDropdown = page.locator('.nav-item.dropdown:has(button:text("Databases"))');
+    await expect(databasesDropdown).not.toHaveClass(/show/);
+
+    // The dropdown menu should have overflow:hidden and max-height:0 when collapsed
+    const databasesMenu = databasesDropdown.locator(".dropdown-menu-databases");
+    const menuStyles = await databasesMenu.evaluate((el) => {
+      const computed = window.getComputedStyle(el);
+      return {
+        maxHeight: computed.maxHeight,
+        overflow: computed.overflow,
+      };
+    });
+    expect(menuStyles.maxHeight).toBe("0px");
+    expect(menuStyles.overflow).toBe("hidden");
+
+    // The Extras button should be visible and properly positioned (not overlapped)
+    const extrasButton = page.locator('button.dropdown-toggle:has-text("Extras")');
+    await expect(extrasButton).toBeVisible();
+
+    // Get positions to verify no overlap - Extras should be directly below Databases
+    const databasesButton = page.locator('button.dropdown-toggle:has-text("Databases")');
+    const databasesBox = await databasesButton.boundingBox();
+    const extrasBox = await extrasButton.boundingBox();
+
+    expect(databasesBox).not.toBeNull();
+    expect(extrasBox).not.toBeNull();
+    if (databasesBox && extrasBox) {
+      // Extras should be right below Databases button (with some small gap)
+      // Not hundreds of pixels below (which would indicate database items showing through)
+      const gap = extrasBox.y - (databasesBox.y + databasesBox.height);
+      expect(gap).toBeLessThan(100); // Should be a small gap, not a huge one
+      expect(gap).toBeGreaterThanOrEqual(0); // Should not overlap
+    }
+  });
+
+  test("should not have Extras/GitHub elements overlapping database sections when dropdown is expanded", async ({
+    page,
+  }) => {
+    // Open Databases dropdown
+    const databasesDropdown = page.locator('.nav-item.dropdown:has(button:text("Databases"))');
+    const databasesButton = databasesDropdown.locator("button.dropdown-toggle");
+    await databasesButton.click();
+    await expect(databasesDropdown).toHaveClass(/show/);
+
+    // Wait for dropdown animation to complete (max-height transition is 400ms)
+    const databasesMenu = databasesDropdown.locator(".dropdown-menu-databases");
+    await expect(databasesMenu).toBeVisible();
+    // Wait for the dropdown to have expanded (height > 100px indicates it's expanded)
+    await expect(async () => {
+      const box = await databasesMenu.boundingBox();
+      expect(box).not.toBeNull();
+      expect(box!.height).toBeGreaterThan(100);
+    }).toPass({ timeout: 2000 });
+
+    // Get the MySQL section header
+    const mysqlHeader = page.locator('.database-section-header:has-text("MySQL")').first();
+    await expect(mysqlHeader).toBeVisible();
+
+    // Get the Extras button (should be below the database sections)
+    const extrasButton = page.locator('button.dropdown-toggle:has-text("Extras")');
+    await expect(extrasButton).toBeVisible();
+
+    // Get bounding boxes
+    const mysqlBox = await mysqlHeader.boundingBox();
+    const extrasBox = await extrasButton.boundingBox();
+
+    // Verify Extras button is positioned BELOW the MySQL header (no overlap)
+    expect(mysqlBox).not.toBeNull();
+    expect(extrasBox).not.toBeNull();
+    if (mysqlBox && extrasBox) {
+      // Extras should be below MySQL (extrasBox.y should be greater than mysqlBox.y + mysqlBox.height)
+      expect(extrasBox.y).toBeGreaterThan(mysqlBox.y);
+    }
+  });
+
+  test("should have database sections stacked correctly without overlap", async ({ page }) => {
+    // Open Databases dropdown
+    const databasesDropdown = page.locator('.nav-item.dropdown:has(button:text("Databases"))');
+    const databasesButton = databasesDropdown.locator("button.dropdown-toggle");
+    await databasesButton.click();
+    await expect(databasesDropdown).toHaveClass(/show/);
+
+    // Get all database section headers
+    const mysqlHeader = page.locator('.database-section-header:has-text("MySQL")').first();
+    const mariadbHeader = page.locator('.database-section-header:has-text("MariaDB")').first();
+    const mssqlHeader = page.locator('.database-section-header:has-text("MSSQL")').first();
+
+    await expect(mysqlHeader).toBeVisible();
+    await expect(mariadbHeader).toBeVisible();
+    await expect(mssqlHeader).toBeVisible();
+
+    // Get bounding boxes
+    const mysqlBox = await mysqlHeader.boundingBox();
+    const mariadbBox = await mariadbHeader.boundingBox();
+    const mssqlBox = await mssqlHeader.boundingBox();
+
+    // Verify proper vertical ordering (MySQL -> MariaDB -> MSSQL)
+    expect(mysqlBox).not.toBeNull();
+    expect(mariadbBox).not.toBeNull();
+    expect(mssqlBox).not.toBeNull();
+    if (mysqlBox && mariadbBox && mssqlBox) {
+      expect(mariadbBox.y).toBeGreaterThan(mysqlBox.y);
+      expect(mssqlBox.y).toBeGreaterThan(mariadbBox.y);
+    }
+  });
+
+  test("should have mobile menu with proper z-index stacking", async ({ page }) => {
+    // Open Databases dropdown
+    const databasesDropdown = page.locator('.nav-item.dropdown:has(button:text("Databases"))');
+    const databasesButton = databasesDropdown.locator("button.dropdown-toggle");
+    await databasesButton.click();
+    await expect(databasesDropdown).toHaveClass(/show/);
+
+    // Verify the navbar-menu has z-index set
+    const navbarMenu = page.locator("#navbar-menu");
+    const zIndex = await navbarMenu.evaluate((el) => window.getComputedStyle(el).zIndex);
+    expect(parseInt(zIndex)).toBeGreaterThan(0);
+
+    // Verify the dropdown.show has position relative for stacking context
+    const position = await databasesDropdown.evaluate((el) => window.getComputedStyle(el).position);
+    expect(position).toBe("relative");
+  });
+
+  test("should have visible and clickable database section headers when dropdown is expanded", async ({
+    page,
+  }) => {
+    // Open Databases dropdown
+    const databasesDropdown = page.locator('.nav-item.dropdown:has(button:text("Databases"))');
+    const databasesButton = databasesDropdown.locator("button.dropdown-toggle");
+    await databasesButton.click();
+    await expect(databasesDropdown).toHaveClass(/show/);
+
+    // Try to click on MySQL header - should be clickable (not blocked by other elements)
+    const mysqlHeader = page.locator('.database-section-header:has-text("MySQL")').first();
+    await expect(mysqlHeader).toBeVisible();
+    await mysqlHeader.click();
+
+    // Verify section expanded (clicking worked, element wasn't blocked)
+    const mysqlSection = page.locator('.database-section[data-database="mysql"]');
+    await expect(mysqlSection).toHaveClass(/expanded/);
+  });
+
+  test("should hide Databases dropdown content when collapsed after being expanded", async ({
+    page,
+  }) => {
+    const databasesDropdown = page.locator('.nav-item.dropdown:has(button:text("Databases"))');
+    const databasesButton = databasesDropdown.locator("button.dropdown-toggle");
+    const databasesMenu = databasesDropdown.locator(".dropdown-menu-databases");
+
+    // Expand Databases dropdown
+    await databasesButton.click();
+    await expect(databasesDropdown).toHaveClass(/show/);
+
+    // Wait for expansion animation
+    await expect(async () => {
+      const box = await databasesMenu.boundingBox();
+      expect(box).not.toBeNull();
+      expect(box!.height).toBeGreaterThan(100);
+    }).toPass({ timeout: 2000 });
+
+    // Collapse Databases dropdown
+    await databasesButton.click();
+    await expect(databasesDropdown).not.toHaveClass(/show/);
+
+    // Wait for collapse animation and verify content is hidden
+    await expect(async () => {
+      const styles = await databasesMenu.evaluate((el) => {
+        const computed = window.getComputedStyle(el);
+        return {
+          maxHeight: computed.maxHeight,
+          overflow: computed.overflow,
+        };
+      });
+      expect(styles.maxHeight).toBe("0px");
+      expect(styles.overflow).toBe("hidden");
+    }).toPass({ timeout: 2000 });
+  });
+});
+
+test.describe("Navbar - Mobile Extras Dropdown", () => {
+  test.beforeEach(async ({ page }) => {
+    await page.goto("/");
+    await page.setViewportSize({ width: 375, height: 667 });
+    // Open mobile menu first
+    await page.locator("#mobile-toggle").click();
+    await expect(page.locator("#navbar-menu")).toHaveClass(/active/);
+  });
+
+  test("should hide Extras dropdown content when initially collapsed", async ({ page }) => {
+    const extrasDropdown = page.locator('.nav-item.dropdown:has(button:text("Extras"))');
+    await expect(extrasDropdown).not.toHaveClass(/show/);
+
+    // The dropdown menu should have overflow:hidden and max-height:0 when collapsed
+    const extrasMenu = extrasDropdown.locator(".dropdown-menu");
+    const menuStyles = await extrasMenu.evaluate((el) => {
+      const computed = window.getComputedStyle(el);
+      return {
+        maxHeight: computed.maxHeight,
+        overflow: computed.overflow,
+      };
+    });
+    expect(menuStyles.maxHeight).toBe("0px");
+    expect(menuStyles.overflow).toBe("hidden");
+  });
+
+  test("should show Extras dropdown content when expanded", async ({ page }) => {
+    const extrasDropdown = page.locator('.nav-item.dropdown:has(button:text("Extras"))');
+    const extrasButton = extrasDropdown.locator("button.dropdown-toggle");
+    const extrasMenu = extrasDropdown.locator(".dropdown-menu");
+
+    // Expand Extras dropdown
+    await extrasButton.click();
+    await expect(extrasDropdown).toHaveClass(/show/);
+
+    // Wait for expansion and verify content is visible
+    await expect(async () => {
+      const styles = await extrasMenu.evaluate((el) => {
+        const computed = window.getComputedStyle(el);
+        return {
+          maxHeight: computed.maxHeight,
+          overflow: computed.overflow,
+        };
+      });
+      // maxHeight should be a large value (5000px) when expanded
+      expect(parseInt(styles.maxHeight)).toBeGreaterThan(100);
+      expect(styles.overflow).toBe("visible");
+    }).toPass({ timeout: 2000 });
+
+    // Verify About link is visible
+    const aboutLink = extrasMenu.locator('.dropdown-item:has-text("About")');
+    await expect(aboutLink).toBeVisible();
+  });
+
+  test("should hide Extras dropdown content when collapsed after being expanded", async ({
+    page,
+  }) => {
+    const extrasDropdown = page.locator('.nav-item.dropdown:has(button:text("Extras"))');
+    const extrasButton = extrasDropdown.locator("button.dropdown-toggle");
+    const extrasMenu = extrasDropdown.locator(".dropdown-menu");
+
+    // Expand Extras dropdown
+    await extrasButton.click();
+    await expect(extrasDropdown).toHaveClass(/show/);
+
+    // Wait for expansion
+    await expect(async () => {
+      const styles = await extrasMenu.evaluate((el) => {
+        const computed = window.getComputedStyle(el);
+        return { overflow: computed.overflow };
+      });
+      expect(styles.overflow).toBe("visible");
+    }).toPass({ timeout: 2000 });
+
+    // Collapse Extras dropdown
+    await extrasButton.click();
+    await expect(extrasDropdown).not.toHaveClass(/show/);
+
+    // Wait for collapse and verify content is hidden
+    // This is the key test for the focus-within bug fix
+    await expect(async () => {
+      const styles = await extrasMenu.evaluate((el) => {
+        const computed = window.getComputedStyle(el);
+        return {
+          maxHeight: computed.maxHeight,
+          overflow: computed.overflow,
+        };
+      });
+      expect(styles.maxHeight).toBe("0px");
+      expect(styles.overflow).toBe("hidden");
+    }).toPass({ timeout: 2000 });
+
+    // Verify GitHub link is NOT visible (it should be below Extras and not affected by Extras content)
+    // Get positions to verify no content leaking through
+    const githubLink = page.locator('a.github-link:has-text("GitHub")');
+    const extrasButtonBox = await extrasButton.boundingBox();
+    const githubBox = await githubLink.boundingBox();
+
+    expect(extrasButtonBox).not.toBeNull();
+    expect(githubBox).not.toBeNull();
+    if (extrasButtonBox && githubBox) {
+      // GitHub should be close to Extras (not pushed down by visible dropdown content)
+      const gap = githubBox.y - (extrasButtonBox.y + extrasButtonBox.height);
+      expect(gap).toBeLessThan(100);
+    }
+  });
+
+  test("should toggle Extras dropdown multiple times correctly", async ({ page }) => {
+    const extrasDropdown = page.locator('.nav-item.dropdown:has(button:text("Extras"))');
+    const extrasButton = extrasDropdown.locator("button.dropdown-toggle");
+    const extrasMenu = extrasDropdown.locator(".dropdown-menu");
+
+    // Toggle 3 times to ensure consistent behavior
+    for (let i = 0; i < 3; i++) {
+      // Expand
+      await extrasButton.click();
+      await expect(extrasDropdown).toHaveClass(/show/);
+      await expect(async () => {
+        const styles = await extrasMenu.evaluate((el) => ({
+          overflow: window.getComputedStyle(el).overflow,
+        }));
+        expect(styles.overflow).toBe("visible");
+      }).toPass({ timeout: 2000 });
+
+      // Collapse
+      await extrasButton.click();
+      await expect(extrasDropdown).not.toHaveClass(/show/);
+      await expect(async () => {
+        const styles = await extrasMenu.evaluate((el) => ({
+          overflow: window.getComputedStyle(el).overflow,
+        }));
+        expect(styles.overflow).toBe("hidden");
+      }).toPass({ timeout: 2000 });
+    }
+  });
+
+  test("should not have Extras dropdown content overlapping GitHub link when collapsed", async ({
+    page,
+  }) => {
+    const extrasDropdown = page.locator('.nav-item.dropdown:has(button:text("Extras"))');
+    const extrasButton = extrasDropdown.locator("button.dropdown-toggle");
+    const githubLink = page.locator('a.github-link:has-text("GitHub")');
+
+    // Initially collapsed - GitHub should be positioned right after Extras button
+    const extrasButtonBox = await extrasButton.boundingBox();
+    const githubBoxInitial = await githubLink.boundingBox();
+
+    expect(extrasButtonBox).not.toBeNull();
+    expect(githubBoxInitial).not.toBeNull();
+
+    // Expand Extras
+    await extrasButton.click();
+    await expect(extrasDropdown).toHaveClass(/show/, { timeout: 2000 });
+
+    // Collapse Extras
+    await extrasButton.click();
+    await expect(extrasDropdown).not.toHaveClass(/show/, { timeout: 2000 });
+
+    // Wait for GitHub button position to stabilize after collapse animation
+    // Using expect.poll to wait until position is stable (within tolerance of initial position)
+    await expect
+      .poll(
+        async () => {
+          const currentBox = await githubLink.boundingBox();
+          if (!currentBox || !githubBoxInitial) return false;
+          return Math.abs(currentBox.y - githubBoxInitial.y) < 25;
+        },
+        { timeout: 2000, message: "GitHub button should return to approximately initial position" }
+      )
+      .toBe(true);
   });
 });
