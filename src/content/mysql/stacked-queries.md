@@ -121,7 +121,10 @@ If MySQL has the FILE privilege:
 Single-statement triggers can be created without DELIMITER changes:
 
 ```sql
-1'; CREATE TRIGGER after_user_insert AFTER INSERT ON users FOR EACH ROW UPDATE users SET role='admin' WHERE id=NEW.id; -- -
+1'; CREATE TRIGGER after_user_insert
+    AFTER INSERT ON users
+    FOR EACH ROW
+    UPDATE users SET role='admin' WHERE id=NEW.id; -- -
 ```
 
 **Note:** Multi-statement triggers using BEGIN...END blocks require DELIMITER changes, which are only available in the mysql CLI (not through most database drivers).

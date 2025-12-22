@@ -140,7 +140,7 @@ jobs:
         continue-on-error: true
 
       - name: Check for vulnerable dependencies (Snyk)
-        if: ${{ env.SNYK_TOKEN != '' }}
+        if: ${{ secrets.SNYK_TOKEN != '' }}
         run: npx snyk test --severity-threshold=high
         # Record failure but continue - security findings are informational
         continue-on-error: true
@@ -148,10 +148,8 @@ jobs:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
 
       - name: Snyk scan skipped (no token)
-        if: ${{ env.SNYK_TOKEN == '' }}
+        if: ${{ secrets.SNYK_TOKEN == '' }}
         run: echo "::warning::SNYK_TOKEN not configured. Snyk vulnerability scan skipped. Add SNYK_TOKEN secret in repository settings to enable."
-        env:
-          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
 
   summary:
     name: Test Summary

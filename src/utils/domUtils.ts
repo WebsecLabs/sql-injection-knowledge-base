@@ -206,8 +206,17 @@ export function debounce<T extends (...args: Parameters<T>) => void>(
  * @remarks
  * - Only listens for 'transform' property transitions to avoid multiple triggers
  * - Automatically removes the event listener after handling
- * - If no transition occurs (e.g., transitions disabled), the class remains
+ * - Includes a fallback timeout (350ms) that removes the class if no transform transition occurs
+ *   (e.g., transitions disabled, element hidden, or no transform property)
+ * - Both the transitionend handler and timeout fallback clean up each other to prevent leaks
  */
+/**
+ * Default timeout fallback in milliseconds for withTransition.
+ * Based on the longest CSS transition duration in the codebase (300ms)
+ * plus a buffer for browser rendering.
+ */
+const TRANSITION_TIMEOUT_MS = 350;
+
 export function withTransition(
   element: HTMLElement,
   transitioningClass: string,
@@ -219,14 +228,92 @@ export function withTransition(
   // Perform the state change
   action();
 
-  // Remove transitioning class after transform animation completes
-  element.addEventListener("transitionend", function handler(event: TransitionEvent) {
+  let timeoutId: ReturnType<typeof setTimeout> | undefined;
+
+  // Handler for transitionend event
+  const handler = (event: TransitionEvent): void => {
     // Only handle transform transitions (not visibility or other properties)
     if (event.propertyName === "transform") {
-      element.classList.remove(transitioningClass);
-      element.removeEventListener("transitionend", handler);
+      cleanup();
     }
-  });
+  };
+
+  // Cleanup function to remove class and listeners, avoiding double execution
+  const cleanup = (): void => {
+    if (timeoutId !== undefined) {
+      clearTimeout(timeoutId);
+      timeoutId = undefined;
+    }
+    element.classList.remove(transitioningClass);
+    element.removeEventListener("transitionend", handler);
+  };
+
+  // Listen for transitionend
+  element.addEventListener("transitionend", handler);
+
+  // Fallback timeout in case no transform transition occurs
+  // (e.g., transitions disabled, element hidden, or no transform property)
+  timeoutId = setTimeout(cleanup, TRANSITION_TIMEOUT_MS);
+}
+
+/**
+ * Handles opacity transition cleanup for dropdown menus.
+ * Listens for transitionend on the menu element and removes the transitioning
+ * class from the target element. Includes a fallback timeout for reliability.
+ *
+ * @param menu - The menu element to listen for transitionend on
+ * @param element - The element to remove the transitioning class from
+ * @param transitioningClass - CSS class to remove after transition (default: "dropdown-transitioning")
+ * @param timeoutMs - Fallback timeout in milliseconds (default: 250)
+ *
+ * @example
+ * ```typescript
+ * // After initiating a dropdown close
+ * dropdown.classList.add("dropdown-transitioning");
+ * collapseDropdown(dropdown);
+ * const menu = dropdown.querySelector(".dropdown-menu");
+ * if (menu) {
+ *   handleOpacityTransition(menu, dropdown);
+ * }
+ * ```
+ *
+ * @remarks
+ * - Only responds to 'opacity' property transitions to avoid multiple triggers
+ * - Automatically removes the event listener after handling
+ * - Fallback timeout ensures cleanup even if transition doesn't fire
+ * - Both handler and timeout clean up each other to prevent leaks
+ */
+export function handleOpacityTransition(
+  menu: Element,
+  element: Element,
+  transitioningClass: string = "dropdown-transitioning",
+  timeoutMs: number = 250
+): void {
+  let timeoutId: ReturnType<typeof setTimeout> | undefined;
+
+  // Handler for transitionend event
+  const handler = (e: Event): void => {
+    if ((e as TransitionEvent).propertyName === "opacity") {
+      cleanup();
+    }
+  };
+
+  // Cleanup function to remove class and listeners, avoiding double execution
+  const cleanup = (): void => {
+    if (timeoutId !== undefined) {
+      clearTimeout(timeoutId);
+      timeoutId = undefined;
+    }
+    element.classList.remove(transitioningClass);
+    menu.removeEventListener("transitionend", handler);
+  };
+
+  // Listen for transitionend
+  menu.addEventListener("transitionend", handler);
+
+  // Fallback timeout in case no opacity transition occurs
+  // (e.g., transitions disabled, element hidden, or no opacity property)
+  timeoutId = setTimeout(cleanup, timeoutMs);
 }
 
 /**

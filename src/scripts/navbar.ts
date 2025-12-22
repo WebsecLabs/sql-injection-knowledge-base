@@ -16,7 +16,12 @@ import {
   RESIZE_DEBOUNCE_MS,
   INIT_FALLBACK_DELAY_MS,
 } from "../utils/uiConstants";
-import { cloneAndReplace, debounce, withTransition } from "../utils/domUtils";
+import {
+  cloneAndReplace,
+  debounce,
+  withTransition,
+  handleOpacityTransition,
+} from "../utils/domUtils";
 
 // Global type declarations (only initializeNavbar needs to be global for View Transitions)
 declare global {
@@ -156,17 +161,7 @@ window.initializeNavbar = function () {
           // Remove transitioning class after animation completes
           const menu = this.querySelector(".dropdown-menu");
           if (menu) {
-            const handleTransitionEnd = (e: Event) => {
-              if ((e as TransitionEvent).propertyName === "opacity") {
-                this.classList.remove("dropdown-transitioning");
-                menu.removeEventListener("transitionend", handleTransitionEnd);
-              }
-            };
-            menu.addEventListener("transitionend", handleTransitionEnd);
-            // Fallback timeout in case transitionend doesn't fire
-            setTimeout(() => {
-              this.classList.remove("dropdown-transitioning");
-            }, 250);
+            handleOpacityTransition(menu, this);
           } else {
             this.classList.remove("dropdown-transitioning");
           }
@@ -228,17 +223,7 @@ window.initializeNavbar = function () {
           // Remove transitioning class after animation completes
           const menu = dropdown.querySelector(".dropdown-menu");
           if (menu) {
-            const handleTransitionEnd = (evt: Event) => {
-              if ((evt as TransitionEvent).propertyName === "opacity") {
-                dropdown.classList.remove("dropdown-transitioning");
-                menu.removeEventListener("transitionend", handleTransitionEnd);
-              }
-            };
-            menu.addEventListener("transitionend", handleTransitionEnd);
-            // Fallback timeout
-            setTimeout(() => {
-              dropdown.classList.remove("dropdown-transitioning");
-            }, 250);
+            handleOpacityTransition(menu, dropdown);
           }
         } else {
           // If not explicitly expanded (even if open via hover), expand it explicitly
@@ -273,17 +258,7 @@ window.initializeNavbar = function () {
               dropdown.classList.add("dropdown-transitioning");
               const menu = dropdown.querySelector(".dropdown-menu");
               if (menu) {
-                const handleTransitionEnd = (evt: Event) => {
-                  if ((evt as TransitionEvent).propertyName === "opacity") {
-                    dropdown.classList.remove("dropdown-transitioning");
-                    menu.removeEventListener("transitionend", handleTransitionEnd);
-                  }
-                };
-                menu.addEventListener("transitionend", handleTransitionEnd);
-                // Fallback timeout
-                setTimeout(() => {
-                  dropdown.classList.remove("dropdown-transitioning");
-                }, 250);
+                handleOpacityTransition(menu, dropdown);
               }
             }
           }

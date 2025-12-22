@@ -548,10 +548,8 @@ test.describe("Navbar - Resize Transitions", () => {
     // (transitioning class is only added on user click, not on resize)
     await page.setViewportSize({ width: 375, height: 667 });
 
-    // Wait a moment for any potential transitions to start
-    await page.waitForTimeout(50);
-
-    // Verify menu still doesn't have transitioning class after resize
+    // Verify menu doesn't have transitioning class after resize
+    // Use state-based assertion instead of fixed timeout
     await expect(navbarMenu).not.toHaveClass(/menu-transitioning/);
 
     // Verify menu is not active (closed state)
@@ -597,22 +595,35 @@ test.describe("Navbar - Resize Transitions", () => {
     // which confirms the toggle worked)
     await expect(navbarMenu).toHaveClass(/active/);
 
-    // Wait for transition to complete (300ms + buffer)
-    await page.waitForTimeout(400);
+    // Wait for transitioning class to be removed after CSS transition completes
+    // Using poll instead of fixed timeout for more robust testing
+    await expect
+      .poll(
+        async () => {
+          const classes = await navbarMenu.getAttribute("class");
+          return !classes?.includes("menu-transitioning");
+        },
+        { timeout: 1000 }
+      )
+      .toBe(true);
 
-    // After transition completes, the transitioning class should be removed
-    await expect(navbarMenu).not.toHaveClass(/menu-transitioning/);
+    // Verify menu is still active after transition
     await expect(navbarMenu).toHaveClass(/active/);
 
     // Close the menu
     await mobileToggle.click();
     await expect(navbarMenu).not.toHaveClass(/active/);
 
-    // Wait for close transition to complete
-    await page.waitForTimeout(400);
-
-    // Transitioning class should be removed after close transition
-    await expect(navbarMenu).not.toHaveClass(/menu-transitioning/);
+    // Wait for transitioning class to be removed after close transition
+    await expect
+      .poll(
+        async () => {
+          const classes = await navbarMenu.getAttribute("class");
+          return !classes?.includes("menu-transitioning");
+        },
+        { timeout: 1000 }
+      )
+      .toBe(true);
   });
 
   test("should not have dropdown-transitioning class when resizing from mobile to desktop", async ({
@@ -636,10 +647,8 @@ test.describe("Navbar - Resize Transitions", () => {
     // Resize to desktop - this should NOT cause any visible flash
     await page.setViewportSize({ width: 1280, height: 800 });
 
-    // Wait a moment for any potential transitions to start
-    await page.waitForTimeout(50);
-
-    // Verify dropdown still doesn't have transitioning class after resize
+    // Verify dropdown doesn't have transitioning class after resize
+    // Use state-based assertion instead of fixed timeout
     await expect(databasesDropdown).not.toHaveClass(/dropdown-transitioning/);
 
     // Verify dropdown is not shown (closed state on desktop)
@@ -672,10 +681,18 @@ test.describe("Navbar - Resize Transitions", () => {
     // Move mouse away
     await page.locator(".navbar-logo").hover();
 
-    // Wait for transition to complete (200ms transition + 250ms fallback timeout + buffer)
-    await page.waitForTimeout(500);
+    // Wait for transition to complete using poll instead of fixed timeout
+    await expect
+      .poll(
+        async () => {
+          const classes = await databasesDropdown.getAttribute("class");
+          return !classes?.includes("dropdown-transitioning") && !classes?.includes("show");
+        },
+        { timeout: 1000 }
+      )
+      .toBe(true);
 
-    // After transition completes, both classes should be removed
+    // Verify both classes are removed after transition
     await expect(databasesDropdown).not.toHaveClass(/dropdown-transitioning/);
     await expect(databasesDropdown).not.toHaveClass(/show/);
 

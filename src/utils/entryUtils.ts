@@ -125,6 +125,14 @@ export function groupByCategory<T extends AnyEntry>(entries: T[]): Record<string
 }
 
 /**
+ * Comparator for sorting entries by order field, with slug as tiebreaker.
+ * Ensures deterministic ordering when entries have the same order value.
+ */
+function compareEntriesByOrder<T extends AnyEntry>(a: T, b: T): number {
+  return a.data.order - b.data.order || a.slug.localeCompare(b.slug);
+}
+
+/**
  * Sort entries within each category by their order field.
  * **Mutates the input record in place** for performance.
  *
@@ -135,7 +143,7 @@ export function sortGroupedEntriesInPlace<T extends AnyEntry>(
   grouped: Record<string, T[]>
 ): Record<string, T[]> {
   for (const category of Object.keys(grouped)) {
-    grouped[category].sort((a, b) => a.data.order - b.data.order || a.slug.localeCompare(b.slug));
+    grouped[category].sort(compareEntriesByOrder);
   }
   return grouped;
 }
@@ -152,9 +160,7 @@ export function sortGroupedEntries<T extends AnyEntry>(
 ): Record<string, T[]> {
   const result: Record<string, T[]> = {};
   for (const category of Object.keys(grouped)) {
-    result[category] = [...grouped[category]].sort(
-      (a, b) => a.data.order - b.data.order || a.slug.localeCompare(b.slug)
-    );
+    result[category] = [...grouped[category]].sort(compareEntriesByOrder);
   }
   return result;
 }

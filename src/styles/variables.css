@@ -49,9 +49,9 @@
    * 50:      Sidebar (desktop)
    * 89-90:   Sidebar backdrop and mobile sidebar
    * 100:     Mobile navbar menu
-   * 999:     Mobile sidebar toggle
    * 1000:    Sticky navbar
-   * 1001:    Elements above navbar (modals, tooltips)
+   * 1001:    Mobile sidebar toggle (must be above navbar for clickability)
+   * 1002:    Elements above navbar (modals, tooltips)
    */
   --z-dropdown-item: 1;
   --z-dropdown-expanded: 10;
@@ -59,9 +59,15 @@
   --z-sidebar-backdrop: 89;
   --z-sidebar-mobile: 90;
   --z-navbar-menu: 100;
-  --z-sidebar-toggle: 999;
   --z-navbar: 1000;
-  --z-above-navbar: 1001;
+  --z-sidebar-toggle: 1001;
+  --z-above-navbar: 1002;
+
+  /* Database section max-heights for smooth expand/collapse animations
+   * Desktop uses larger value to accommodate all database entries
+   * Mobile uses smaller value since dropdowns have constrained height */
+  --max-height-database-section-desktop: 2000px;
+  --max-height-database-section-mobile: 1200px;
 }
 
 /* Dark mode - system preference */

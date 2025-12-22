@@ -1,7 +1,63 @@
-import { test, expect } from "@playwright/test";
+import { test, expect, type Page } from "@playwright/test";
 
 // Use a page known to have multiple headings for TOC tests
 const TOC_TEST_PAGE = "/mysql/testing-injection";
+
+/**
+ * Waits for scroll position to stabilize (stop changing).
+ * Uses requestAnimationFrame to detect when scrollY remains constant for 3 frames.
+ */
+async function waitForScrollToStabilize(page: Page, timeout = 5000): Promise<void> {
+  await page.waitForFunction(
+    () => {
+      return new Promise<boolean>((resolve) => {
+        let lastY = window.scrollY;
+        let stableFrames = 0;
+
+        const checkScroll = () => {
+          if (window.scrollY === lastY) {
+            stableFrames++;
+            if (stableFrames >= 3) {
+              resolve(true);
+              return;
+            }
+          } else {
+            stableFrames = 0;
+            lastY = window.scrollY;
+          }
+          requestAnimationFrame(checkScroll);
+        };
+        requestAnimationFrame(checkScroll);
+      });
+    },
+    { timeout }
+  );
+}
+
+/**
+ * Waits for a specified number of animation frames to pass.
+ * Useful for waiting for layout/rendering to settle after DOM changes.
+ */
+async function waitForAnimationFrames(page: Page, frameCount = 3, timeout = 1000): Promise<void> {
+  await page.waitForFunction(
+    (frames: number) => {
+      return new Promise<boolean>((resolve) => {
+        let count = 0;
+        const waitFrames = () => {
+          count++;
+          if (count >= frames) {
+            resolve(true);
+          } else {
+            requestAnimationFrame(waitFrames);
+          }
+        };
+        requestAnimationFrame(waitFrames);
+      });
+    },
+    frameCount,
+    { timeout }
+  );
+}
 
 test.describe("Table of Contents", () => {
   test.beforeEach(async ({ page }) => {
@@ -130,8 +186,8 @@ test.describe("Table of Contents", () => {
     // Click the link
     await firstLink.click();
 
-    // URL should include the anchor (escape # for regex)
-    await expect(page).toHaveURL(new RegExp(href!.replace("#", "\\#")));
+    // URL should include the anchor - use string containment for simpler assertion
+    expect(page.url()).toContain(href!);
 
     // Target heading should be visible
     const targetId = href!.replace("#", "");
@@ -162,8 +218,8 @@ test.describe("Table of Contents", () => {
 
     await targetLink.click();
 
-    // Wait for smooth scroll to complete
-    await page.waitForTimeout(500);
+    // Wait for smooth scroll to complete by detecting when scroll position stabilizes
+    await waitForScrollToStabilize(page);
 
     // Get the target heading position
     const targetId = href!.replace("#", "");
@@ -190,19 +246,20 @@ test.describe("Table of Contents", () => {
     const tocLinks = page.locator(".toc-link");
     const linkCount = await tocLinks.count();
 
-    if (linkCount > 3) {
-      // Click on the "Numeric-Based Injection" link (H2)
-      // The TOC has: String-Based Injection, Examples, Notes, Numeric-Based Injection
-      const targetLink = page.locator('.toc-link[href="#numeric-based-injection"]');
+    // Require sufficient TOC links for meaningful scroll-spy test
+    expect(linkCount).toBeGreaterThan(3);
 
-      if ((await targetLink.count()) > 0) {
-        await targetLink.click();
+    // Click on the "Numeric-Based Injection" link (H2)
+    // The TOC has: String-Based Injection, Examples, Notes, Numeric-Based Injection
+    const targetLink = page.locator('.toc-link[href="#numeric-based-injection"]');
+    const targetExists = await targetLink.count();
+    expect(targetExists).toBeGreaterThan(0);
 
-        // Wait for scroll spy to update after click navigation (state-based wait)
-        // The clicked link should be active (or close to it after scrolling)
-        await expect(page.locator(".toc-link-active")).toBeVisible({ timeout: 3000 });
-      }
-    }
+    await targetLink.click();
+
+    // Wait for scroll spy to update after click navigation (state-based wait)
+    // The clicked link should be active (or close to it after scrolling)
+    await expect(page.locator(".toc-link-active")).toBeVisible({ timeout: 3000 });
   });
 
   test("should be hidden on tablet/mobile viewports", async ({ page }) => {
@@ -272,7 +329,9 @@ test.describe("Table of Contents", () => {
 
     // Scroll down significantly
     await page.evaluate(() => window.scrollBy(0, 500));
-    await page.waitForTimeout(100);
+
+    // Wait for layout to settle after scroll (3 animation frames)
+    await waitForAnimationFrames(page);
 
     // Get TOC position after scrolling
     const afterScrollBoundingBox = await toc.boundingBox();
@@ -284,7 +343,9 @@ test.describe("Table of Contents", () => {
 
     // Scroll down even more
     await page.evaluate(() => window.scrollBy(0, 500));
-    await page.waitForTimeout(100);
+
+    // Wait for layout to settle after scroll (3 animation frames)
+    await waitForAnimationFrames(page);
 
     const finalBoundingBox = await toc.boundingBox();
     expect(finalBoundingBox).not.toBeNull();

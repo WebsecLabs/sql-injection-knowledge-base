@@ -8,6 +8,8 @@ const webServerTimeout = Number(process.env.PLAYWRIGHT_WEBSERVER_TIMEOUT) || 120
 // CI worker count - override via PLAYWRIGHT_WORKERS env var if needed
 // Default: 2 workers in CI for reasonable parallelism, undefined locally (uses CPU cores)
 const ciWorkers = Number(process.env.PLAYWRIGHT_WORKERS) || 2;
+// Allow CI to override the webServer command (e.g., to use pre-built artifacts)
+const webServerCommand = process.env.PLAYWRIGHT_WEBSERVER_COMMAND || "./docker-run.sh";
 
 export default defineConfig({
   testDir: "./tests/e2e",
@@ -26,18 +28,24 @@ export default defineConfig({
       name: "chromium",
       use: { ...devices["Desktop Chrome"] },
     },
+    {
+      name: "firefox",
+      use: { ...devices["Desktop Firefox"] },
+    },
+    {
+      name: "webkit",
+      use: { ...devices["Desktop Safari"] },
+    },
   ],
 
-  // Only use Docker webServer locally, not in CI (CI uses pre-built artifacts)
-  ...(isCI
-    ? {}
-    : {
-        webServer: {
-          // Use a robust script that handles container lifecycle properly
-          command: "./docker-run.sh",
-          url: baseURL,
-          reuseExistingServer: true,
-          timeout: webServerTimeout,
-        },
-      }),
+  // Use webServer to automatically start/stop the server before tests
+  // - Locally: uses ./docker-run.sh (default)
+  // - In CI: uses PLAYWRIGHT_WEBSERVER_COMMAND env var (e.g., "npx serve dist -l 8080")
+  webServer: {
+    command: webServerCommand,
+    url: baseURL,
+    // In CI, always start fresh; locally, reuse existing server if running
+    reuseExistingServer: !isCI,
+    timeout: webServerTimeout,
+  },
 });

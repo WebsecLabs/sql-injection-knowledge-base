@@ -265,31 +265,27 @@ SELECT LOWER(SUBSTRING(PASSWORD('test'), 2)) AS hashcat_format
 -- Returns: '94bdcebe19083ce2a1f959fd02f964c7af4cfc29'
 ```
 
-#### John the Ripper Format (With Asterisk)
-
-```sql
--- John the Ripper accepts the full hash with asterisk prefix
-SELECT PASSWORD('test') AS jtr_format
--- Returns: '*94BDCEBE19083CE2A1F959FD02F964C7AF4CFC29'
-```
-
-> **Note:** Mode 11200 is for MySQL CRAM (Challenge-Response Authentication) captured from network traffic, not for stored password hashes. CRAM uses a challenge-response pair in the format `$mysqlna$<challenge>*<response>`. For stored PASSWORD() hashes like `*94BDCE...`, use mode 300 after stripping the leading asterisk.
-
 #### John the Ripper Format
 
+John the Ripper accepts the full hash with the asterisk prefix using `--format=mysql-sha1`:
+
 ```sql
--- Format for John the Ripper (user:*hash)
+-- John the Ripper accepts the hash with asterisk prefix
+SELECT PASSWORD('test') AS jtr_format
+-- Returns: '*94BDCEBE19083CE2A1F959FD02F964C7AF4CFC29'
+
+-- Format for John the Ripper with username (user:*hash)
 SELECT CONCAT('testuser:', PASSWORD('password')) AS jtr_format
 -- Returns: 'testuser:*2470C0C06DEE42FD1618BB99005ADCA2EC9D1E19'
 
 -- Format multiple hashes for cracking file
 SELECT GROUP_CONCAT(hash_line SEPARATOR '\n') AS hash_file
 FROM (
-  SELECT CONCAT('user1:', SUBSTRING(PASSWORD('pass1'), 2)) AS hash_line
+  SELECT CONCAT('user1:', PASSWORD('pass1')) AS hash_line
   UNION ALL
-  SELECT CONCAT('user2:', SUBSTRING(PASSWORD('pass2'), 2))
+  SELECT CONCAT('user2:', PASSWORD('pass2'))
   UNION ALL
-  SELECT CONCAT('user3:', SUBSTRING(PASSWORD('pass3'), 2))
+  SELECT CONCAT('user3:', PASSWORD('pass3'))
 ) AS hashes
 ```
 

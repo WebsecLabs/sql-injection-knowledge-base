@@ -140,10 +140,10 @@ test.describe("Sidebar - Desktop", () => {
       }
     }
 
-    // Fall back to first link if no different link found
+    // Skip test if no different link found - cannot verify navigation to same page
     if (!targetLink) {
-      targetLink = sidebarLinks.first();
-      targetHref = String(await targetLink.getAttribute("href"));
+      test.skip(true, "No sidebar link to a different page found - cannot test navigation");
+      return;
     }
 
     // Click and wait for navigation

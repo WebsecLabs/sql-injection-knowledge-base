@@ -818,12 +818,29 @@ describe("search.ts", () => {
           collection: "mysql",
         },
       ]);
+      // Search for "test" which should match on category "Test"
       (window as { location: Location }).location.search = "?q=test";
 
       initSearch();
 
-      // Should not crash
+      // Should not crash and should initialize successfully
       expect(container.dataset.initialized).toBe("true");
+
+      // The entry should be found (matches on category "Test")
+      expect(searchStatus.textContent).toContain("Found 1 result");
+
+      // Verify the result card is rendered even with empty title
+      const resultCard = resultsContainer.querySelector(".result-card");
+      expect(resultCard).not.toBeNull();
+
+      // The title element should exist but be empty
+      const resultTitle = resultsContainer.querySelector(".result-title");
+      expect(resultTitle).not.toBeNull();
+
+      // The category should be displayed correctly
+      const resultCategory = resultsContainer.querySelector(".result-category");
+      expect(resultCategory).not.toBeNull();
+      expect(resultCategory?.textContent).toContain("Test");
     });
 
     it("handles collection names not in COLLECTION_SEARCH_LABELS", () => {

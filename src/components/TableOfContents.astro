@@ -11,12 +11,18 @@ interface Props {
 }
 
 const { headings } = Astro.props;
+
+// Early return if no headings (defensive guard)
+if (!headings || headings.length === 0) {
+  return null;
+}
 ---
 
 <aside class="toc" id="toc" aria-label="Table of contents">
   <div class="toc-header">
     <span class="toc-title">On this page</span>
     <button
+      type="button"
       class="toc-toggle"
       id="toc-toggle"
       aria-expanded="true"

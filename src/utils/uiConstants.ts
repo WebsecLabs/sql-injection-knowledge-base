@@ -47,3 +47,10 @@ export const TOC_STORAGE_KEY = "toc-collapsed";
 
 /** Minimum number of headings required to show TOC */
 export const TOC_MIN_HEADINGS = 2;
+
+/**
+ * Fallback timeout for dropdown opacity transitions (milliseconds).
+ * Used when listening for transitionend events to ensure cleanup
+ * happens even if the event doesn't fire (e.g., transitions disabled).
+ */
+export const DROPDOWN_TRANSITION_TIMEOUT_MS = 250;

@@ -48,7 +48,7 @@ const isActivePath = createSectionActiveChecker(currentPath, import.meta.env.BAS
 ---
 
 <div class={`sidebar-section ${isActive ? "active" : ""}`} data-section={sectionId}>
-  <button class="sidebar-heading" aria-expanded={isActive ? "true" : "false"}>
+  <button type="button" class="sidebar-heading" aria-expanded={isActive ? "true" : "false"}>
     <span>{title}</span>
     <svg
       xmlns="http://www.w3.org/2000/svg"
@@ -61,6 +61,7 @@ const isActivePath = createSectionActiveChecker(currentPath, import.meta.env.BAS
       stroke-linecap="round"
       stroke-linejoin="round"
       class="toggle-icon"
+      aria-hidden="true"
     >
       <polyline points="6 9 12 15 18 9"></polyline>
     </svg>

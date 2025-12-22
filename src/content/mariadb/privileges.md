@@ -283,6 +283,8 @@ SELECT @@secure_file_priv AS secure_file_priv
 
 An empty value means file operations are allowed anywhere the MariaDB user has filesystem permissions.
 
+> **Verification Note:** Some MariaDB versions display different values between `SHOW VARIABLES LIKE 'secure_file_priv'` and `SELECT @@secure_file_priv`. Use both methods to verify the actual setting. Behavior varies by MariaDB version and distribution.
+
 ### Privilege Levels in MariaDB
 
 Privileges are granted at different levels:

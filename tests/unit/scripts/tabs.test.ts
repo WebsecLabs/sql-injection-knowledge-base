@@ -1,20 +1,6 @@
 import { describe, it, expect, beforeEach, vi, afterEach } from "vitest";
 import { initializeTabs } from "../../../src/scripts/tabs";
-
-/**
- * Creates a temporary container with the given HTML, runs the callback,
- * and ensures cleanup even if the callback throws.
- */
-function withTemporaryContainer(html: string, callback: (container: HTMLElement) => void): void {
-  const container = document.createElement("div");
-  container.innerHTML = html;
-  document.body.appendChild(container);
-  try {
-    callback(container);
-  } finally {
-    document.body.removeChild(container);
-  }
-}
+import { withTemporaryContainer } from "../../utils/dom.test-utils";
 
 describe("initializeTabs", () => {
   let container: HTMLElement;
@@ -362,6 +348,7 @@ describe("initializeTabs", () => {
       const event = new KeyboardEvent("keydown", {
         key: "ArrowRight",
         bubbles: true,
+        cancelable: true,
       });
       tab3.dispatchEvent(event);
 
@@ -400,6 +387,7 @@ describe("initializeTabs", () => {
       const event = new KeyboardEvent("keydown", {
         key: "ArrowLeft",
         bubbles: true,
+        cancelable: true,
       });
       tab1.dispatchEvent(event);
 

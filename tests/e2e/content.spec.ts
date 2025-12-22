@@ -51,11 +51,12 @@ test.describe("Content Pages", () => {
       const internalLink = internalLinks.first();
       await internalLink.scrollIntoViewIfNeeded();
       await expect(internalLink).toBeVisible();
+      await expect(internalLink).toHaveAttribute("href", /.+/);
       const href = await internalLink.getAttribute("href");
-      expect(href).not.toBeNull();
+      expect(href).toBeTruthy();
       await internalLink.click();
-      const escapedHref = href!.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-      await expect(page).toHaveURL(new RegExp(escapedHref));
+      // Use string containment for simpler URL assertion
+      expect(page.url()).toContain(href);
     }
   });
 });

@@ -297,10 +297,10 @@
 .navbar .database-section-header {
   width: 100%;
   padding: 0.875rem 1rem;
-  font-weight: 700;
-  color: var(--color-primary);
+  font-weight: 600;
+  color: var(--color-text);
   font-size: 0.95rem;
-  background-color: rgb(66 153 225 / 5%);
+  background-color: transparent;
   letter-spacing: 0.025em;
   border: none;
   text-align: left;
@@ -308,10 +308,23 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  transition: background-color 0.2s ease;
+  transition:
+    background-color 0.2s ease,
+    color 0.2s ease;
 }
 
 .navbar .database-section-header:hover {
+  background-color: var(--color-code-bg);
+}
+
+/* Expanded state - apply selected styling */
+.navbar .database-section.expanded .database-section-header {
+  color: var(--color-primary);
+  font-weight: 700;
+  background-color: rgb(66 153 225 / 5%);
+}
+
+.navbar .database-section.expanded .database-section-header:hover {
   background-color: rgb(66 153 225 / 10%);
 }
 
@@ -338,16 +351,41 @@
   transition: max-height 0.3s ease;
 }
 
-/* Desktop uses 2000px to accommodate all database entries when sidebar has more space.
-   Mobile uses 1200px (see @media 1023px) as mobile dropdowns have constrained height. */
 .navbar .database-section.expanded .database-section-content {
-  max-height: 2000px;
+  max-height: var(--max-height-database-section-desktop);
 }
 
 .navbar .database-section-divider {
   height: 2px;
   background-color: var(--color-border);
   margin: 0.5rem 0;
+}
+
+/* ============================================
+   Dropdown Submenu Styles (NavDropdown component)
+   ============================================ */
+
+.navbar .dropdown-submenu {
+  border-bottom: 1px solid var(--color-border);
+}
+
+.navbar .dropdown-submenu:last-child {
+  border-bottom: none;
+}
+
+.navbar .dropdown-header {
+  padding: 0.5rem 1rem 0.25rem;
+  font-weight: 600;
+  color: var(--color-text-muted);
+  font-size: 0.85rem;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.navbar .dropdown-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
 }
 
 /* ============================================
@@ -466,15 +504,33 @@
 }
 
 .dark .navbar .database-section-header {
-  background-color: rgb(66 153 225 / 10%);
+  background-color: transparent;
+  color: var(--color-text);
 }
 
 .dark .navbar .database-section-header:hover {
+  background-color: var(--color-code-bg);
+}
+
+.dark .navbar .database-section.expanded .database-section-header {
+  background-color: rgb(66 153 225 / 10%);
+  color: var(--color-primary);
+}
+
+.dark .navbar .database-section.expanded .database-section-header:hover {
   background-color: rgb(66 153 225 / 15%);
 }
 
 .dark .navbar .database-chevron {
+  stroke: var(--color-text-muted);
+}
+
+.dark .navbar .database-section.expanded .database-chevron {
   stroke: var(--color-primary);
+}
+
+.dark .navbar .dropdown-header {
+  color: var(--color-text-muted);
 }
 
 /* System dark mode (when no .light or .dark class is set) */
@@ -498,15 +554,33 @@
   }
 
   html:not(.light, .dark) .navbar .database-section-header {
-    background-color: rgb(66 153 225 / 10%);
+    background-color: transparent;
+    color: var(--color-text);
   }
 
   html:not(.light, .dark) .navbar .database-section-header:hover {
+    background-color: var(--color-code-bg);
+  }
+
+  html:not(.light, .dark) .navbar .database-section.expanded .database-section-header {
+    background-color: rgb(66 153 225 / 10%);
+    color: var(--color-primary);
+  }
+
+  html:not(.light, .dark) .navbar .database-section.expanded .database-section-header:hover {
     background-color: rgb(66 153 225 / 15%);
   }
 
   html:not(.light, .dark) .navbar .database-chevron {
+    stroke: var(--color-text-muted);
+  }
+
+  html:not(.light, .dark) .navbar .database-section.expanded .database-chevron {
     stroke: var(--color-primary);
+  }
+
+  html:not(.light, .dark) .navbar .dropdown-header {
+    color: var(--color-text-muted);
   }
 }
 
@@ -706,7 +780,7 @@
   /* Focus-within keeps max-height expanded but keeps overflow hidden
      This prevents dropdown content from being visible after collapse when button still has focus */
   .navbar .dropdown-menu:focus-within {
-    max-height: 1200px;
+    max-height: var(--max-height-database-section-mobile);
     padding: 0.5rem 0;
     overflow: hidden;
     transition:
@@ -717,7 +791,7 @@
   /* .show rule comes AFTER :focus-within to take precedence when both apply
      This ensures overflow is visible when dropdown is explicitly expanded */
   .navbar .dropdown.show .dropdown-menu {
-    max-height: 1200px;
+    max-height: var(--max-height-database-section-mobile);
     padding: 0.5rem 0;
     overflow: visible;
     transition:
@@ -741,7 +815,6 @@
   .navbar .database-section-header {
     color: var(--color-text);
     background-color: var(--color-code-bg);
-    border-left-color: var(--color-primary);
     display: flex;
     width: 100%;
   }
@@ -750,8 +823,21 @@
     background-color: var(--color-sidebar-bg);
   }
 
+  .navbar .database-section.expanded .database-section-header {
+    color: var(--color-primary);
+    background-color: rgb(66 153 225 / 10%);
+  }
+
+  .navbar .database-section.expanded .database-section-header:hover {
+    background-color: rgb(66 153 225 / 15%);
+  }
+
   .navbar .database-chevron {
     stroke: var(--color-text);
+  }
+
+  .navbar .database-section.expanded .database-chevron {
+    stroke: var(--color-primary);
   }
 
   .navbar .database-section-content {
@@ -759,7 +845,7 @@
   }
 
   .navbar .database-section.expanded .database-section-content {
-    max-height: 1200px;
+    max-height: var(--max-height-database-section-mobile);
   }
 
   .navbar .theme-toggle svg {

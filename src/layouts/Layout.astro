@@ -170,7 +170,12 @@ const extrasEntries = collections?.extrasEntries ?? (await getCollection("extras
       {
         showSidebar && (
           <div class="button-container">
-            <button id="sidebar-toggle" class="sidebar-toggle" aria-label="Toggle navigation">
+            <button
+              type="button"
+              id="sidebar-toggle"
+              class="sidebar-toggle"
+              aria-label="Toggle navigation"
+            >
               <div class="hamburger-icon">
                 <svg
                   xmlns="http://www.w3.org/2000/svg"

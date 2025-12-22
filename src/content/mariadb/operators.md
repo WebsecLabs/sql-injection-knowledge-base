@@ -217,8 +217,8 @@ From highest to lowest:
 9. `BETWEEN`, `CASE`, `WHEN`, `THEN`, `ELSE`
 10. `NOT`
 11. `AND`, `&&`
-12. `OR`, `||`
-13. `XOR`
+12. `XOR`
+13. `OR`, `||`
 
 #### Precedence Examples
 
@@ -226,8 +226,8 @@ From highest to lowest:
 -- AND before OR: 1=0 OR 1=1 AND 2=2 evaluates as 1=0 OR (1=1 AND 2=2)
 SELECT (1=0 OR 1=1 AND 2=2) AS result  -- Returns: 1
 
--- OR before XOR: 1 OR 0 XOR 1 = (1 OR 0) XOR 1 = 1 XOR 1 = 0
-SELECT (1 OR 0 XOR 1) AS result  -- Returns: 0
+-- XOR before OR: 1 OR 0 XOR 1 = 1 OR (0 XOR 1) = 1 OR 1 = 1
+SELECT (1 OR 0 XOR 1) AS result  -- Returns: 1
 ```
 
 Understanding operator precedence is crucial for crafting complex injection payloads where conditions are combined.

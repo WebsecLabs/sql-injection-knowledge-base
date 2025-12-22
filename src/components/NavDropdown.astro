@@ -1,4 +1,9 @@
 ---
+/**
+ * NavDropdown Component
+ * Reusable dropdown submenu for database categories
+ * Styling consolidated in navbar.css for consistent theming
+ */
 import { type CollectionEntry } from "astro:content";
 
 interface Props {
@@ -20,7 +25,7 @@ const { category, entries, baseUrl, section, isActivePath } = Astro.props;
         <li>
           <a
             href={`${baseUrl}${section}/${entry.slug}`}
-            class={isActivePath(section, entry.slug) ? "active" : ""}
+            class:list={["dropdown-item", { active: isActivePath(section, entry.slug) }]}
             aria-label={entry.data.title || `${section.toUpperCase()} ${entry.slug}`}
           >
             {entry.data.title || entry.slug}
@@ -30,53 +35,3 @@ const { category, entries, baseUrl, section, isActivePath } = Astro.props;
     }
   </ul>
 </div>
-
-<style>
-  .dropdown-submenu {
-    border-bottom: 1px solid var(--color-border);
-  }
-
-  .dropdown-submenu:last-child {
-    border-bottom: none;
-  }
-
-  .dropdown-header {
-    padding: 0.75rem 1rem;
-    font-weight: 600;
-    color: var(--color-text);
-    font-size: 0.85rem;
-    background-color: var(--color-code-bg);
-    letter-spacing: 0.05em;
-    text-transform: uppercase;
-  }
-
-  .dropdown-list {
-    list-style: none;
-    padding: 0;
-    margin: 0;
-  }
-
-  .dropdown-list li a {
-    display: block;
-    padding: 0.75rem 1rem;
-    color: var(--color-text-muted);
-    text-decoration: none;
-    transition: all 0.2s ease;
-    font-size: 0.95rem;
-    border-left: 3px solid transparent;
-  }
-
-  .dropdown-list li a:hover {
-    background-color: var(--color-code-bg);
-    color: var(--color-primary);
-    border-left-color: var(--color-primary);
-    padding-left: 1.25rem;
-  }
-
-  .dropdown-list li a.active {
-    background-color: rgb(66 153 225 / 10%);
-    color: var(--color-primary);
-    border-left-color: var(--color-primary);
-    font-weight: 500;
-  }
-</style>

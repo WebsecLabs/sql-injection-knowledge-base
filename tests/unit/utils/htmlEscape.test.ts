@@ -63,6 +63,16 @@ describe("escapeHtml", () => {
       expect(escapeHtml("path/to/file")).toBe("path&#x2F;to&#x2F;file");
     });
 
+    it("treats entity-like strings as literal text and escapes their ampersands", () => {
+      // The function treats all input as literal text, including strings that
+      // look like HTML entities. This means "&amp;" is treated as the literal
+      // characters '&', 'a', 'm', 'p', ';' - and the '&' gets escaped to "&amp;".
+      // This prevents double-decoding attacks where pre-escaped input could be
+      // decoded multiple times.
+      expect(escapeHtml("&amp;")).toBe("&amp;amp;");
+      expect(escapeHtml("&lt;script&gt;")).toBe("&amp;lt;script&amp;gt;");
+    });
+
     it("escapes multiple special characters", () => {
       expect(escapeHtml('<a href="test">Link</a>')).toBe(
         "&lt;a href=&quot;test&quot;&gt;Link&lt;&#x2F;a&gt;"

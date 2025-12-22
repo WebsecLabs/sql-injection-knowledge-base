@@ -23,6 +23,7 @@ const { entriesByCategory, categoriesByType, baseUrl, isActivePath } = Astro.pro
 
 <li class="nav-item dropdown">
   <button
+    type="button"
     id="databases-dropdown-toggle"
     class="nav-link dropdown-toggle"
     aria-haspopup="true"
@@ -51,6 +52,7 @@ const { entriesByCategory, categoriesByType, baseUrl, isActivePath } = Astro.pro
         <>
           <div class="database-section" data-database={type}>
             <button
+              type="button"
               class="database-section-header"
               data-toggle-db={type}
               aria-expanded="false"
