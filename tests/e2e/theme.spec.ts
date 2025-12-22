@@ -18,11 +18,13 @@ function parseRgbAndCalculateBrightness(bgColor: string): number | null {
 
 test.describe("Theme Toggle", () => {
   test.beforeEach(async ({ page }) => {
-    // Set viewport first, then clear localStorage BEFORE navigation
-    // Using addInitScript ensures localStorage is cleared before any page scripts run
+    // Set viewport and navigate, then clear localStorage and reload
+    // Note: addInitScript runs on EVERY navigation/reload, so we use evaluate+reload
+    // to ensure localStorage is only cleared at test start, not on subsequent navigations
     await page.setViewportSize({ width: 1920, height: 1080 });
-    await page.addInitScript(() => localStorage.clear());
     await page.goto("/");
+    await page.evaluate(() => localStorage.clear());
+    await page.reload();
   });
 
   test("should display theme toggle button", async ({ page }) => {

@@ -240,12 +240,13 @@ describe("sidebar", () => {
     it("prevents default behavior for Enter and Space keys", () => {
       const headings = document.querySelectorAll(".sidebar-heading");
 
-      const enterEvent = new KeyboardEvent("keydown", { key: "Enter" });
+      // cancelable: true is required for preventDefault() to have effect in jsdom
+      const enterEvent = new KeyboardEvent("keydown", { key: "Enter", cancelable: true });
       const preventDefaultSpy = vi.spyOn(enterEvent, "preventDefault");
       headings[0].dispatchEvent(enterEvent);
       expect(preventDefaultSpy).toHaveBeenCalled();
 
-      const spaceEvent = new KeyboardEvent("keydown", { key: " " });
+      const spaceEvent = new KeyboardEvent("keydown", { key: " ", cancelable: true });
       const spacePreventDefaultSpy = vi.spyOn(spaceEvent, "preventDefault");
       headings[0].dispatchEvent(spaceEvent);
       expect(spacePreventDefaultSpy).toHaveBeenCalled();

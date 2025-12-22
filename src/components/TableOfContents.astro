@@ -2,7 +2,7 @@
 /**
  * Table of Contents component
  * Displays a navigable outline of H2 and H3 headings on the current page
- * with scroll-spy highlighting and collapsible functionality
+ * with scroll-spy highlighting and horizontally collapsible functionality
  */
 import type { MarkdownHeading } from "astro";
 
@@ -21,7 +21,8 @@ const { headings } = Astro.props;
       id="toc-toggle"
       aria-expanded="true"
       aria-controls="toc-content"
-      aria-label="Toggle table of contents"
+      aria-label="Collapse table of contents"
+      title="Collapse to gain screen space"
     >
       <svg
         xmlns="http://www.w3.org/2000/svg"
@@ -35,7 +36,8 @@ const { headings } = Astro.props;
         stroke-linejoin="round"
         aria-hidden="true"
       >
-        <polyline points="6 9 12 15 18 9"></polyline>
+        <!-- Horizontal chevron: points left when expanded, rotates to point right when collapsed -->
+        <polyline points="15 6 9 12 15 18"></polyline>
       </svg>
     </button>
   </div>

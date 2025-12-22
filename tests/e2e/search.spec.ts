@@ -164,6 +164,13 @@ test.describe("Navbar Search", () => {
     await expect(searchInput).toBeVisible();
   });
 
+  test("should display search input at intermediate viewport width (1280px)", async ({ page }) => {
+    // Regression test: search bar should be visible at intermediate widths, not just full-screen
+    await page.setViewportSize({ width: 1280, height: 800 });
+    const searchInput = page.locator("#navbar-search-input");
+    await expect(searchInput).toBeVisible();
+  });
+
   test("should navigate to search page when Enter is pressed", async ({ page }) => {
     const searchInput = page.locator("#navbar-search-input");
     await searchInput.fill("UNION");

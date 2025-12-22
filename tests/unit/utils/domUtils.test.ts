@@ -1,5 +1,11 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
-import { initOnce, cloneAndReplace, debounce } from "../../../src/utils/domUtils";
+import {
+  initOnce,
+  cloneAndReplace,
+  debounce,
+  withTransition,
+  updateToggleAccessibility,
+} from "../../../src/utils/domUtils";
 import { _resetInitTracker } from "../../../src/utils/domUtils.test-utils";
 
 describe("domUtils", () => {
@@ -272,6 +278,173 @@ describe("domUtils", () => {
       vi.advanceTimersByTime(100);
 
       expect(func).toHaveBeenCalledTimes(1);
+    });
+  });
+
+  describe("withTransition", () => {
+    let container: HTMLDivElement;
+
+    beforeEach(() => {
+      container = document.createElement("div");
+      document.body.appendChild(container);
+    });
+
+    afterEach(() => {
+      container.remove();
+    });
+
+    it("adds transitioning class before executing action", () => {
+      const element = document.createElement("div");
+      container.appendChild(element);
+
+      let classAddedBeforeAction = false;
+      withTransition(element, "transitioning", () => {
+        classAddedBeforeAction = element.classList.contains("transitioning");
+      });
+
+      expect(classAddedBeforeAction).toBe(true);
+    });
+
+    it("executes the action", () => {
+      const element = document.createElement("div");
+      container.appendChild(element);
+      const action = vi.fn();
+
+      withTransition(element, "transitioning", action);
+
+      expect(action).toHaveBeenCalledTimes(1);
+    });
+
+    it("removes transitioning class after transform transitionend", () => {
+      const element = document.createElement("div");
+      container.appendChild(element);
+
+      withTransition(element, "transitioning", () => {});
+
+      expect(element.classList.contains("transitioning")).toBe(true);
+
+      // Simulate transitionend event for transform
+      const event = new TransitionEvent("transitionend", { propertyName: "transform" });
+      element.dispatchEvent(event);
+
+      expect(element.classList.contains("transitioning")).toBe(false);
+    });
+
+    it("ignores non-transform transitionend events", () => {
+      const element = document.createElement("div");
+      container.appendChild(element);
+
+      withTransition(element, "transitioning", () => {});
+
+      // Simulate transitionend for opacity (should be ignored)
+      const event = new TransitionEvent("transitionend", { propertyName: "opacity" });
+      element.dispatchEvent(event);
+
+      expect(element.classList.contains("transitioning")).toBe(true);
+    });
+
+    it("only removes listener after handling transform event", () => {
+      const element = document.createElement("div");
+      container.appendChild(element);
+
+      withTransition(element, "test-class", () => {});
+
+      // First, dispatch a non-transform event (should be ignored)
+      element.dispatchEvent(new TransitionEvent("transitionend", { propertyName: "visibility" }));
+      expect(element.classList.contains("test-class")).toBe(true);
+
+      // Then dispatch transform event (should remove class)
+      element.dispatchEvent(new TransitionEvent("transitionend", { propertyName: "transform" }));
+      expect(element.classList.contains("test-class")).toBe(false);
+
+      // Re-add the class manually to verify listener was removed
+      element.classList.add("test-class");
+      element.dispatchEvent(new TransitionEvent("transitionend", { propertyName: "transform" }));
+      // Class should still be there because listener was removed
+      expect(element.classList.contains("test-class")).toBe(true);
+    });
+  });
+
+  describe("updateToggleAccessibility", () => {
+    const config = {
+      expandLabel: "Expand content",
+      collapseLabel: "Collapse content",
+      expandTitle: "Click to expand",
+      collapseTitle: "Click to collapse",
+    };
+
+    it("sets aria-expanded to true when not collapsed", () => {
+      const toggle = document.createElement("button");
+
+      updateToggleAccessibility(toggle, false, config);
+
+      expect(toggle.getAttribute("aria-expanded")).toBe("true");
+    });
+
+    it("sets aria-expanded to false when collapsed", () => {
+      const toggle = document.createElement("button");
+
+      updateToggleAccessibility(toggle, true, config);
+
+      expect(toggle.getAttribute("aria-expanded")).toBe("false");
+    });
+
+    it("sets aria-label to expandLabel when collapsed", () => {
+      const toggle = document.createElement("button");
+
+      updateToggleAccessibility(toggle, true, config);
+
+      expect(toggle.getAttribute("aria-label")).toBe("Expand content");
+    });
+
+    it("sets aria-label to collapseLabel when not collapsed", () => {
+      const toggle = document.createElement("button");
+
+      updateToggleAccessibility(toggle, false, config);
+
+      expect(toggle.getAttribute("aria-label")).toBe("Collapse content");
+    });
+
+    it("sets title to expandTitle when collapsed", () => {
+      const toggle = document.createElement("button");
+
+      updateToggleAccessibility(toggle, true, config);
+
+      expect(toggle.getAttribute("title")).toBe("Click to expand");
+    });
+
+    it("sets title to collapseTitle when not collapsed", () => {
+      const toggle = document.createElement("button");
+
+      updateToggleAccessibility(toggle, false, config);
+
+      expect(toggle.getAttribute("title")).toBe("Click to collapse");
+    });
+
+    it("works with any Element type", () => {
+      const div = document.createElement("div");
+
+      updateToggleAccessibility(div, true, config);
+
+      expect(div.getAttribute("aria-expanded")).toBe("false");
+      expect(div.getAttribute("aria-label")).toBe("Expand content");
+      expect(div.getAttribute("title")).toBe("Click to expand");
+    });
+
+    it("updates all attributes correctly when toggling state", () => {
+      const toggle = document.createElement("button");
+
+      // Initial collapsed state
+      updateToggleAccessibility(toggle, true, config);
+      expect(toggle.getAttribute("aria-expanded")).toBe("false");
+      expect(toggle.getAttribute("aria-label")).toBe("Expand content");
+      expect(toggle.getAttribute("title")).toBe("Click to expand");
+
+      // Toggle to expanded state
+      updateToggleAccessibility(toggle, false, config);
+      expect(toggle.getAttribute("aria-expanded")).toBe("true");
+      expect(toggle.getAttribute("aria-label")).toBe("Collapse content");
+      expect(toggle.getAttribute("title")).toBe("Click to collapse");
     });
   });
 });

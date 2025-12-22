@@ -175,3 +175,104 @@ export function debounce<T extends (...args: Parameters<T>) => void>(
 
   return debounced;
 }
+
+/**
+ * Performs a CSS class transition with automatic cleanup of the transitioning class.
+ * Adds a transitioning class before performing the action, then removes it after
+ * the CSS transform transition completes.
+ *
+ * This is useful for:
+ * - Preventing CSS transitions during resize (by conditionally adding transitioning class)
+ * - Ensuring smooth animations for user-initiated actions
+ * - Cleaning up transitioning state after animation completes
+ *
+ * @param element - The element to perform the transition on
+ * @param transitioningClass - CSS class to add during transition (e.g., "sidebar-transitioning")
+ * @param action - Function that performs the actual state change (e.g., toggle classes)
+ *
+ * @example
+ * ```typescript
+ * // Close sidebar with transition
+ * withTransition(sidebar, "sidebar-transitioning", () => {
+ *   sidebar.classList.remove("mobile-open");
+ * });
+ *
+ * // Toggle menu with transition
+ * withTransition(navbarMenu, "menu-transitioning", () => {
+ *   navbarMenu.classList.toggle("active");
+ * });
+ * ```
+ *
+ * @remarks
+ * - Only listens for 'transform' property transitions to avoid multiple triggers
+ * - Automatically removes the event listener after handling
+ * - If no transition occurs (e.g., transitions disabled), the class remains
+ */
+export function withTransition(
+  element: HTMLElement,
+  transitioningClass: string,
+  action: () => void
+): void {
+  // Add transitioning class to enable CSS transitions
+  element.classList.add(transitioningClass);
+
+  // Perform the state change
+  action();
+
+  // Remove transitioning class after transform animation completes
+  element.addEventListener("transitionend", function handler(event: TransitionEvent) {
+    // Only handle transform transitions (not visibility or other properties)
+    if (event.propertyName === "transform") {
+      element.classList.remove(transitioningClass);
+      element.removeEventListener("transitionend", handler);
+    }
+  });
+}
+
+/**
+ * Configuration for collapsible toggle button accessibility attributes
+ */
+export interface ToggleAccessibilityConfig {
+  /** Label shown when collapsed */
+  expandLabel: string;
+  /** Label shown when expanded */
+  collapseLabel: string;
+  /** Title/tooltip shown when collapsed */
+  expandTitle: string;
+  /** Title/tooltip shown when expanded */
+  collapseTitle: string;
+}
+
+/**
+ * Updates accessibility attributes for a collapsible toggle button.
+ * Sets aria-expanded, aria-label, and title based on collapsed state.
+ *
+ * @param toggle - The toggle button element
+ * @param isCollapsed - Whether the target element is currently collapsed
+ * @param config - Configuration for labels and titles
+ *
+ * @example
+ * ```typescript
+ * // TOC toggle with custom messages
+ * updateToggleAccessibility(toggle, isCollapsed, {
+ *   expandLabel: "Expand table of contents",
+ *   collapseLabel: "Collapse table of contents",
+ *   expandTitle: "Expand table of contents",
+ *   collapseTitle: "Collapse to gain screen space"
+ * });
+ * ```
+ *
+ * @remarks
+ * - aria-expanded is set to the opposite of isCollapsed (true when content is visible)
+ * - aria-label provides screen reader context
+ * - title provides tooltip on hover
+ */
+export function updateToggleAccessibility(
+  toggle: Element,
+  isCollapsed: boolean,
+  config: ToggleAccessibilityConfig
+): void {
+  toggle.setAttribute("aria-expanded", String(!isCollapsed));
+  toggle.setAttribute("aria-label", isCollapsed ? config.expandLabel : config.collapseLabel);
+  toggle.setAttribute("title", isCollapsed ? config.expandTitle : config.collapseTitle);
+}

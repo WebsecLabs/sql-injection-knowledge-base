@@ -16,7 +16,7 @@ import {
   RESIZE_DEBOUNCE_MS,
   INIT_FALLBACK_DELAY_MS,
 } from "../utils/uiConstants";
-import { cloneAndReplace } from "../utils/domUtils";
+import { cloneAndReplace, debounce, withTransition } from "../utils/domUtils";
 
 // Global type declarations (only initializeNavbar needs to be global for View Transitions)
 declare global {
@@ -99,14 +99,18 @@ window.initializeNavbar = function () {
       const newMobileToggle = cloneAndReplace(mobileToggle) as HTMLButtonElement;
 
       // Add fresh event listener
-      newMobileToggle.addEventListener("click", function (this: HTMLButtonElement, e) {
+      newMobileToggle.addEventListener("click", (e) => {
         e.preventDefault();
         e.stopPropagation();
-        const isExpanded = this.getAttribute("aria-expanded") === "true";
+
+        const isExpanded = newMobileToggle.getAttribute("aria-expanded") === "true";
         const nextExpanded = !isExpanded;
-        this.setAttribute("aria-expanded", String(nextExpanded));
-        navbarMenu.classList.toggle("active");
-        this.classList.toggle("active");
+
+        withTransition(navbarMenu, "menu-transitioning", () => {
+          newMobileToggle.setAttribute("aria-expanded", String(nextExpanded));
+          navbarMenu.classList.toggle("active");
+          newMobileToggle.classList.toggle("active");
+        });
       });
     }
 
@@ -134,11 +138,13 @@ window.initializeNavbar = function () {
       }
 
       if (!isMobile) {
-        // On desktop, show on hover
+        // On desktop, show on hover with transitions enabled
         dropdown.addEventListener("mouseenter", function (this: Element) {
           if (window.innerWidth < MOBILE_BREAKPOINT) {
             return;
           }
+          // Enable transitions during hover interaction
+          this.classList.add("dropdown-transitioning");
           this.classList.add("show");
         });
 
@@ -147,6 +153,23 @@ window.initializeNavbar = function () {
             return;
           }
           this.classList.remove("show");
+          // Remove transitioning class after animation completes
+          const menu = this.querySelector(".dropdown-menu");
+          if (menu) {
+            const handleTransitionEnd = (e: Event) => {
+              if ((e as TransitionEvent).propertyName === "opacity") {
+                this.classList.remove("dropdown-transitioning");
+                menu.removeEventListener("transitionend", handleTransitionEnd);
+              }
+            };
+            menu.addEventListener("transitionend", handleTransitionEnd);
+            // Fallback timeout in case transitionend doesn't fire
+            setTimeout(() => {
+              this.classList.remove("dropdown-transitioning");
+            }, 250);
+          } else {
+            this.classList.remove("dropdown-transitioning");
+          }
         });
       }
     });
@@ -196,13 +219,31 @@ window.initializeNavbar = function () {
         // UPDATE: We now check aria-expanded to allow closing if already explicitly opened
         const isExpanded = toggle.getAttribute("aria-expanded") === "true";
 
+        // Enable transitions during click interaction
+        dropdown.classList.add("dropdown-transitioning");
+
         if (isExpanded) {
           // If already explicitly expanded, close it
           collapseDropdown(dropdown, false);
+          // Remove transitioning class after animation completes
+          const menu = dropdown.querySelector(".dropdown-menu");
+          if (menu) {
+            const handleTransitionEnd = (evt: Event) => {
+              if ((evt as TransitionEvent).propertyName === "opacity") {
+                dropdown.classList.remove("dropdown-transitioning");
+                menu.removeEventListener("transitionend", handleTransitionEnd);
+              }
+            };
+            menu.addEventListener("transitionend", handleTransitionEnd);
+            // Fallback timeout
+            setTimeout(() => {
+              dropdown.classList.remove("dropdown-transitioning");
+            }, 250);
+          }
         } else {
           // If not explicitly expanded (even if open via hover), expand it explicitly
           dropdown.classList.add("show");
-          // toggle is already narrowed to HTMLElement from the cast at line 153
+          // toggle is already narrowed to HTMLElement from the earlier cast
           toggle.setAttribute("aria-expanded", "true");
           const menu = dropdown.querySelector(".dropdown-menu") as HTMLElement | null;
           if (menu) {
@@ -226,6 +267,26 @@ window.initializeNavbar = function () {
       if (target && !target.closest(".dropdown")) {
         const isMobileView = window.innerWidth < MOBILE_BREAKPOINT;
         document.querySelectorAll(".dropdown").forEach((dropdown) => {
+          if (dropdown.classList.contains("show")) {
+            // Enable transitions for smooth close animation on desktop
+            if (!isMobileView) {
+              dropdown.classList.add("dropdown-transitioning");
+              const menu = dropdown.querySelector(".dropdown-menu");
+              if (menu) {
+                const handleTransitionEnd = (evt: Event) => {
+                  if ((evt as TransitionEvent).propertyName === "opacity") {
+                    dropdown.classList.remove("dropdown-transitioning");
+                    menu.removeEventListener("transitionend", handleTransitionEnd);
+                  }
+                };
+                menu.addEventListener("transitionend", handleTransitionEnd);
+                // Fallback timeout
+                setTimeout(() => {
+                  dropdown.classList.remove("dropdown-transitioning");
+                }, 250);
+              }
+            }
+          }
           collapseDropdown(dropdown, isMobileView);
         });
       }
@@ -328,8 +389,9 @@ window.initializeNavbar = function () {
     prevIsMobile = isMobile;
 
     if (isMobile) {
-      // On mobile, reset all dropdowns
+      // On mobile, reset all dropdowns and remove any stuck transitioning classes
       document.querySelectorAll(".dropdown").forEach((dropdown) => {
+        dropdown.classList.remove("dropdown-transitioning");
         collapseDropdown(dropdown, true);
       });
       resetDatabaseSections();
@@ -341,6 +403,12 @@ window.initializeNavbar = function () {
       const navbarMenu = document.getElementById("navbar-menu");
       const mobileToggle = document.getElementById("mobile-toggle") as HTMLButtonElement | null;
 
+      // Always remove the transitioning class when switching to desktop
+      // This safeguards against the class getting stuck if a resize happens during transition
+      if (navbarMenu) {
+        navbarMenu.classList.remove("menu-transitioning");
+      }
+
       if (navbarMenu && navbarMenu.classList.contains("active")) {
         navbarMenu.classList.remove("active");
         if (mobileToggle) {
@@ -349,7 +417,9 @@ window.initializeNavbar = function () {
         }
       }
 
+      // Reset all dropdowns and remove any stuck transitioning classes
       document.querySelectorAll(".dropdown").forEach((dropdown) => {
+        dropdown.classList.remove("dropdown-transitioning");
         collapseDropdown(dropdown, false);
       });
       resetDatabaseSections();
@@ -371,11 +441,8 @@ window.initializeNavbar = function () {
   // Set up resize listener only once
   if (!navbarInitialized) {
     navbarInitialized = true;
-    let resizeTimer: ReturnType<typeof setTimeout>;
-    window.addEventListener("resize", function () {
-      clearTimeout(resizeTimer);
-      resizeTimer = setTimeout(handleResize, RESIZE_DEBOUNCE_MS);
-    });
+    const debouncedHandleResize = debounce(handleResize, RESIZE_DEBOUNCE_MS);
+    window.addEventListener("resize", debouncedHandleResize);
   }
 };
 

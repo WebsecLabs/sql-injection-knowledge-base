@@ -93,7 +93,10 @@ describe("search.ts", () => {
     // Append container to body
     document.body.appendChild(container);
 
-    // Mock window.location.search
+    // Mock window.location with only the 'search' property.
+    // This partial mock is intentional - the search functionality only uses
+    // window.location.search. Other Location properties (href, pathname, etc.)
+    // are not accessed by the code under test.
     delete (window as { location?: Location }).location;
     (window as { location: Location }).location = {
       search: "",
@@ -157,16 +160,14 @@ describe("search.ts", () => {
 
     it("uses default base URL when not specified", () => {
       delete container.dataset.baseUrl;
+      // Use URL parameter to trigger search immediately (bypasses debounce)
+      (window as { location: Location }).location.search = "?q=intro";
 
       initSearch();
 
-      // Perform a search that generates results
-      searchInput.value = "intro";
-      searchInput.dispatchEvent(new Event("input"));
-
-      // Need to wait for debounce, but in this test we'll trigger performSearch directly
-      // by simulating the URL parameter approach
-      expect(container.dataset.initialized).toBe("true");
+      // Verify the generated result links use "/" as the default base URL
+      const html = resultsContainer.innerHTML;
+      expect(html).toContain('href="/mysql/intro"');
     });
 
     it("sets aria-live attribute on search status element", () => {
@@ -313,8 +314,6 @@ describe("search.ts", () => {
 
     it("hides initial search when performing search with query", () => {
       (window as { location: Location }).location.search = "?q=injection";
-      document.body.innerHTML = "";
-      document.body.appendChild(container);
 
       initSearch();
 
@@ -446,7 +445,7 @@ describe("search.ts", () => {
         },
       ]);
       (window as { location: Location }).location.search = "?q=test";
-      reinitSearch();
+      initSearch();
 
       // Clear search
       searchInput.value = "";
@@ -820,8 +819,6 @@ describe("search.ts", () => {
         },
       ]);
       (window as { location: Location }).location.search = "?q=test";
-      document.body.innerHTML = "";
-      document.body.appendChild(container);
 
       initSearch();
 

@@ -19,7 +19,7 @@ import {
   SIDEBAR_ATTENTION_DELAY_MS,
   RESIZE_DEBOUNCE_MS,
 } from "../utils/uiConstants";
-import { cloneAndReplace } from "../utils/domUtils";
+import { cloneAndReplace, withTransition } from "../utils/domUtils";
 
 // Make this a module
 export {};
@@ -115,6 +115,9 @@ function setupResizeHandler(): void {
       if (window.innerWidth > SIDEBAR_MOBILE_BREAKPOINT) {
         currentButtonContainer.style.display = "none";
         if (currentSidebar) {
+          // Always remove the transitioning class when switching to desktop
+          // This safeguards against the class getting stuck if a resize happens during transition
+          currentSidebar.classList.remove("sidebar-transitioning");
           currentSidebar.classList.remove("mobile-open");
           document.body.style.overflow = "";
         }
@@ -132,9 +135,9 @@ function setupResizeHandler(): void {
  * Set up scroll handler to hide/show mobile toggle button.
  * The handler is always attached but only takes action on mobile viewports.
  * This ensures the behavior works correctly when resizing from desktop to mobile.
+ * Re-queries DOM inside handler to avoid stale references after View Transitions.
  */
-function setupScrollHandler(buttonContainer: HTMLElement | null): void {
-  if (!buttonContainer) return;
+function setupScrollHandler(): void {
   if (sidebarScrollListenerAdded) return;
 
   sidebarScrollListenerAdded = true;
@@ -147,12 +150,23 @@ function setupScrollHandler(buttonContainer: HTMLElement | null): void {
     if (ticking) return;
 
     window.requestAnimationFrame(function () {
+      // Re-query DOM to avoid stale references after View Transitions
+      const currentButtonContainer = document.querySelector(
+        ".button-container"
+      ) as HTMLElement | null;
+
+      // Bail out if element is not found or disconnected
+      if (!currentButtonContainer?.isConnected) {
+        ticking = false;
+        return;
+      }
+
       const currentScroll = window.scrollY ?? document.documentElement.scrollTop;
 
       if (currentScroll > lastScrollTop && currentScroll > SCROLL_HIDE_THRESHOLD) {
-        buttonContainer.classList.add("hidden");
+        currentButtonContainer.classList.add("hidden");
       } else {
-        buttonContainer.classList.remove("hidden");
+        currentButtonContainer.classList.remove("hidden");
       }
 
       lastScrollTop = currentScroll <= 0 ? 0 : currentScroll;
@@ -178,7 +192,11 @@ function setupOverlayHandler(): void {
     e.stopPropagation();
 
     const currentSidebar = document.querySelector(".sidebar") as HTMLElement | null;
-    if (currentSidebar) currentSidebar.classList.remove("mobile-open");
+    if (currentSidebar) {
+      withTransition(currentSidebar, "sidebar-transitioning", () => {
+        currentSidebar.classList.remove("mobile-open");
+      });
+    }
     target.classList.remove("active");
     document.body.style.overflow = "";
   };
@@ -202,8 +220,10 @@ function setupSidebarToggle(
     e.preventDefault();
     e.stopPropagation();
 
-    sidebar.classList.toggle("mobile-open");
-    if (overlay) overlay.classList.toggle("active");
+    withTransition(sidebar, "sidebar-transitioning", () => {
+      sidebar.classList.toggle("mobile-open");
+      if (overlay) overlay.classList.toggle("active");
+    });
 
     document.body.style.overflow = sidebar.classList.contains("mobile-open") ? "hidden" : "";
   });
@@ -219,7 +239,10 @@ function setupSidebarToggle(
       const currentSidebar = document.querySelector(".sidebar") as HTMLElement | null;
       const currentOverlay = document.getElementById("sidebar-overlay");
       if (e.key === "Escape" && currentSidebar?.classList.contains("mobile-open")) {
-        currentSidebar.classList.remove("mobile-open");
+        withTransition(currentSidebar, "sidebar-transitioning", () => {
+          currentSidebar.classList.remove("mobile-open");
+        });
+
         if (currentOverlay) currentOverlay.classList.remove("active");
         document.body.style.overflow = "";
       }
@@ -255,7 +278,7 @@ window.initializeSidebar = function (): void {
   initializeSidebarVisibility(sidebar, buttonContainer);
   addMobileButtonAttention(toggleButton);
   setupResizeHandler();
-  setupScrollHandler(buttonContainer);
+  setupScrollHandler();
   setupSidebarToggle(toggleButton, sidebar, overlay);
   setupOverlayHandler();
 

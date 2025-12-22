@@ -338,9 +338,11 @@ describe("initializeTabs", () => {
       tab2.focus();
 
       // Press ArrowRight
+      // cancelable: true is required for preventDefault() to have effect in jsdom
       const event = new KeyboardEvent("keydown", {
         key: "ArrowRight",
         bubbles: true,
+        cancelable: true,
       });
       const preventDefault = vi.spyOn(event, "preventDefault");
       tab2.dispatchEvent(event);
@@ -378,6 +380,7 @@ describe("initializeTabs", () => {
       const event = new KeyboardEvent("keydown", {
         key: "ArrowLeft",
         bubbles: true,
+        cancelable: true,
       });
       const preventDefault = vi.spyOn(event, "preventDefault");
       tab2.dispatchEvent(event);
@@ -411,7 +414,7 @@ describe("initializeTabs", () => {
 
       tab2.focus();
 
-      const event = new KeyboardEvent("keydown", { key: "Home", bubbles: true });
+      const event = new KeyboardEvent("keydown", { key: "Home", bubbles: true, cancelable: true });
       const preventDefault = vi.spyOn(event, "preventDefault");
       tab2.dispatchEvent(event);
 
@@ -427,7 +430,7 @@ describe("initializeTabs", () => {
 
       tab2.focus();
 
-      const event = new KeyboardEvent("keydown", { key: "End", bubbles: true });
+      const event = new KeyboardEvent("keydown", { key: "End", bubbles: true, cancelable: true });
       const preventDefault = vi.spyOn(event, "preventDefault");
       tab2.dispatchEvent(event);
 
@@ -445,7 +448,7 @@ describe("initializeTabs", () => {
 
       tab1.focus();
 
-      const event = new KeyboardEvent("keydown", { key: "Enter", bubbles: true });
+      const event = new KeyboardEvent("keydown", { key: "Enter", bubbles: true, cancelable: true });
       const preventDefault = vi.spyOn(event, "preventDefault");
       tab1.dispatchEvent(event);
 
@@ -462,7 +465,7 @@ describe("initializeTabs", () => {
 
       tab1.focus();
 
-      const event = new KeyboardEvent("keydown", { key: " ", bubbles: true });
+      const event = new KeyboardEvent("keydown", { key: " ", bubbles: true, cancelable: true });
       const preventDefault = vi.spyOn(event, "preventDefault");
       tab1.dispatchEvent(event);
 
@@ -477,7 +480,7 @@ describe("initializeTabs", () => {
       tab2.focus();
       const initialActive = tab2.classList.contains("active");
 
-      const event = new KeyboardEvent("keydown", { key: "a", bubbles: true });
+      const event = new KeyboardEvent("keydown", { key: "a", bubbles: true, cancelable: true });
       const preventDefault = vi.spyOn(event, "preventDefault");
       tab2.dispatchEvent(event);
 
@@ -495,6 +498,7 @@ describe("initializeTabs", () => {
       const event = new KeyboardEvent("keydown", {
         key: "ArrowRight",
         bubbles: true,
+        cancelable: true,
       });
       const preventDefault = vi.spyOn(event, "preventDefault");
       tabList?.dispatchEvent(event);

@@ -23,8 +23,14 @@ import type { CollectionEntriesMap, SearchEntry } from "./types";
 export async function loadAllCollections(): Promise<CollectionEntriesMap> {
   const results = await Promise.all(
     COLLECTION_TYPES.map(async (collection) => {
-      const entries = await getCollection(collection);
-      return [collection, entries] as const;
+      try {
+        const entries = await getCollection(collection);
+        return [collection, entries] as const;
+      } catch (error) {
+        throw new Error(
+          `Failed to load collection "${collection}": ${error instanceof Error ? error.message : String(error)}`
+        );
+      }
     })
   );
 

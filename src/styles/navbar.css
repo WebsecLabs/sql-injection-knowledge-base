@@ -248,9 +248,27 @@
   opacity: 0;
   transform: translateY(-10px);
   z-index: var(--z-dropdown-item);
-  transition: all 0.2s ease;
+  transition: none; /* Disable by default to prevent flash on resize */
   max-height: calc(100vh - 100px);
   overflow-y: auto;
+}
+
+/* Enable transitions only during user interaction (hover/click).
+   This prevents the flash/animation when resizing the viewport across the breakpoint,
+   similar to how .menu-transitioning is used for the mobile menu. */
+.navbar .dropdown.dropdown-transitioning .dropdown-menu {
+  transition:
+    opacity 0.2s ease,
+    transform 0.2s ease,
+    visibility 0s 0.2s; /* Delay visibility until after opacity transition */
+}
+
+/* When showing (opening), visibility should change immediately (no delay) */
+.navbar .dropdown.dropdown-transitioning.show .dropdown-menu {
+  transition:
+    opacity 0.2s ease,
+    transform 0.2s ease,
+    visibility 0s 0s;
 }
 
 .navbar .dropdown.show .dropdown-menu {
@@ -511,10 +529,6 @@
     padding: 0 0.5rem;
     font-size: 0.9rem;
   }
-
-  .navbar .search-container {
-    display: none;
-  }
 }
 
 /* ============================================
@@ -568,15 +582,33 @@
     align-items: flex-start;
     padding: 1rem;
     transform: translateX(100%);
-    transition: transform 0.3s ease-in-out;
     overflow-y: auto;
     gap: 0.5rem;
     box-shadow: 0 4px 6px rgb(0 0 0 / 10%);
     z-index: var(--z-navbar-menu);
+    visibility: hidden;
+    transition: none; /* Disable transitions to prevent flash on resize */
+  }
+
+  /* Enable transitions only when user is interacting with the menu (hamburger click).
+     This prevents the flash/slide animation when resizing the viewport across the breakpoint.
+     Uses transition-delay on visibility to keep element visible during close animation. */
+  .navbar-menu.menu-transitioning {
+    transition:
+      transform 0.3s ease-in-out,
+      visibility 0s 0.3s; /* Delay visibility change until after transform completes */
+  }
+
+  /* When opening (active), visibility should change immediately (no delay) */
+  .navbar-menu.menu-transitioning.active {
+    transition:
+      transform 0.3s ease-in-out,
+      visibility 0s 0s;
   }
 
   .navbar-menu.active {
     transform: translateX(0);
+    visibility: visible;
   }
 
   /* Reset position on nav-items to prevent stacking context issues */

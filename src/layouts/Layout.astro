@@ -75,12 +75,22 @@ const extrasEntries = collections?.extrasEntries ?? (await getCollection("extras
     <!-- Theme initialization - runs before page renders to prevent flash -->
     <script is:inline>
       (function () {
-        const theme = localStorage.getItem("theme");
-        if (theme === "dark") {
-          document.documentElement.classList.add("dark");
-        } else if (theme === "light") {
-          document.documentElement.classList.add("light");
+        function applyTheme() {
+          const theme = localStorage.getItem("theme");
+          if (theme === "dark") {
+            document.documentElement.classList.add("dark");
+            document.documentElement.classList.remove("light");
+          } else if (theme === "light") {
+            document.documentElement.classList.add("light");
+            document.documentElement.classList.remove("dark");
+          }
         }
+
+        // Apply on initial load
+        applyTheme();
+
+        // Re-apply after View Transitions swap to persist theme across navigation
+        document.addEventListener("astro:after-swap", applyTheme);
       })();
     </script>
 

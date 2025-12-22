@@ -1,6 +1,7 @@
 /**
  * Table of Contents Styles
  * Right-side sticky navigation for content pages
+ * Horizontally collapsible to reclaim screen real estate
  */
 
 /* TOC Container */
@@ -15,8 +16,17 @@
   border-left: 1px solid var(--color-border);
   z-index: 40;
   overflow-y: auto;
+  overflow-x: hidden;
   scrollbar-width: thin;
   scrollbar-color: var(--color-scrollbar-thumb) var(--color-scrollbar-track);
+  transition: width 0.3s ease;
+  align-self: flex-start; /* Prevents flex stretching, enables sticky positioning */
+}
+
+/* Collapsed state - shrink to just show toggle button */
+.toc-collapsed {
+  width: 48px;
+  overflow: hidden;
 }
 
 /* Scrollbar styling for webkit browsers */
@@ -41,6 +51,7 @@
   padding: 0 1rem 0.75rem;
   border-bottom: 1px solid var(--color-border);
   margin-bottom: 0.75rem;
+  white-space: nowrap;
 }
 
 .toc-title {
@@ -49,6 +60,23 @@
   color: var(--color-text-muted);
   text-transform: uppercase;
   letter-spacing: 0.05em;
+  opacity: 1;
+  transition: opacity 0.2s ease;
+}
+
+/* Hide title when collapsed - visibility: hidden removes from accessibility tree */
+.toc-collapsed .toc-title {
+  opacity: 0;
+  width: 0;
+  overflow: hidden;
+  visibility: hidden;
+}
+
+/* Adjust header when collapsed */
+.toc-collapsed .toc-header {
+  justify-content: center;
+  padding: 0 0.75rem 0.75rem;
+  border-bottom: none;
 }
 
 /* TOC Toggle Button */
@@ -81,20 +109,26 @@
   transition: transform 0.3s ease;
 }
 
-/* Rotate chevron when collapsed */
+/* Rotate chevron when collapsed - points left when expanded, right when collapsed */
 .toc-collapsed .toc-toggle svg {
   transform: rotate(180deg);
 }
 
-/* TOC Content - Collapsible */
+/* Ensure toggle button remains visible and accessible when collapsed */
+.toc-collapsed .toc-toggle {
+  flex-shrink: 0;
+}
+
+/* TOC Content - Collapsible horizontally */
 .toc-content {
-  max-height: 2000px;
-  overflow: hidden;
-  transition: max-height 0.3s ease;
+  opacity: 1;
+  transition: opacity 0.2s ease;
 }
 
 .toc-collapsed .toc-content {
-  max-height: 0;
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
 }
 
 /* TOC List */

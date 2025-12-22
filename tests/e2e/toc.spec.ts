@@ -22,8 +22,8 @@ test.describe("Table of Contents", () => {
   });
 
   test("should not display TOC on pages with few headings", async ({ page }) => {
-    // Navigate to intro page which may have fewer headings
-    await page.goto("/mysql/intro");
+    // Navigate to a page known to have fewer than 2 headings
+    await page.goto("/mssql/default-databases");
     await page.waitForLoadState("networkidle");
 
     const toc = page.locator("#toc");
@@ -31,12 +31,12 @@ test.describe("Table of Contents", () => {
       .locator(".entry-content h2, .entry-content h3, .markdown-body h2, .markdown-body h3")
       .count();
 
-    // TOC should only be visible if there are 2+ headings
-    if (headingCount >= 2) {
-      await expect(toc).toBeVisible();
-    } else {
-      await expect(toc).not.toBeVisible();
-    }
+    // Assert the precondition: this page should have fewer than 2 headings
+    // If this fails, the page content has changed and a different test page is needed
+    expect(headingCount).toBeLessThan(2);
+
+    // TOC should not be visible when there are fewer than 2 headings
+    await expect(toc).not.toBeVisible();
   });
 
   test("should have links for each heading on the page", async ({ page }) => {
@@ -56,7 +56,9 @@ test.describe("Table of Contents", () => {
     }
   });
 
-  test("should collapse and expand when toggle button is clicked", async ({ page }) => {
+  test("should collapse and expand horizontally when toggle button is clicked", async ({
+    page,
+  }) => {
     await page.goto(TOC_TEST_PAGE);
     await page.waitForLoadState("networkidle");
 
@@ -67,19 +69,26 @@ test.describe("Table of Contents", () => {
     await expect(toc).toBeVisible();
     await expect(toggle).toBeVisible();
 
-    // Initially expanded
+    // Initially expanded with full width
     await expect(toggle).toHaveAttribute("aria-expanded", "true");
+    await expect(toggle).toHaveAttribute("aria-label", "Collapse table of contents");
     await expect(tocContent).toBeVisible();
+    await expect(toc).toHaveCSS("width", "250px");
 
-    // Click to collapse
+    // Click to collapse horizontally
     await toggle.click();
     await expect(toggle).toHaveAttribute("aria-expanded", "false");
+    await expect(toggle).toHaveAttribute("aria-label", "Expand table of contents");
     await expect(toc).toHaveClass(/toc-collapsed/);
+    // Width should shrink to 48px when collapsed (horizontal collapse)
+    await expect(toc).toHaveCSS("width", "48px");
 
     // Click to expand
     await toggle.click();
     await expect(toggle).toHaveAttribute("aria-expanded", "true");
+    await expect(toggle).toHaveAttribute("aria-label", "Collapse table of contents");
     await expect(toc).not.toHaveClass(/toc-collapsed/);
+    await expect(toc).toHaveCSS("width", "250px");
   });
 
   test("should persist collapsed state across navigation", async ({ page }) => {
@@ -121,13 +130,52 @@ test.describe("Table of Contents", () => {
     // Click the link
     await firstLink.click();
 
-    // URL should include the anchor
-    await expect(page).toHaveURL(new RegExp(href!.replace("#", "#")));
+    // URL should include the anchor (escape # for regex)
+    await expect(page).toHaveURL(new RegExp(href!.replace("#", "\\#")));
 
     // Target heading should be visible
     const targetId = href!.replace("#", "");
     const targetHeading = page.locator(`[id="${targetId}"]`);
     await expect(targetHeading).toBeVisible();
+  });
+
+  test("should not have heading covered by navbar after TOC navigation", async ({ page }) => {
+    await page.goto(TOC_TEST_PAGE);
+    await page.waitForLoadState("networkidle");
+
+    const tocLinks = page.locator(".toc-link");
+    await expect(tocLinks.first()).toBeVisible();
+
+    // Get navbar height for reference
+    const navbar = page.locator(".navbar");
+    const navbarBox = await navbar.boundingBox();
+    expect(navbarBox).not.toBeNull();
+    const navbarHeight = navbarBox!.height;
+
+    // Click on a TOC link that requires scrolling (not the first one)
+    const linkCount = await tocLinks.count();
+    const linkIndex = Math.min(2, linkCount - 1); // Use 3rd link if available
+    const targetLink = tocLinks.nth(linkIndex);
+
+    const href = await targetLink.getAttribute("href");
+    expect(href).not.toBeNull();
+
+    await targetLink.click();
+
+    // Wait for smooth scroll to complete
+    await page.waitForTimeout(500);
+
+    // Get the target heading position
+    const targetId = href!.replace("#", "");
+    const targetHeading = page.locator(`[id="${targetId}"]`);
+    await expect(targetHeading).toBeVisible();
+
+    const headingBox = await targetHeading.boundingBox();
+    expect(headingBox).not.toBeNull();
+
+    // The heading's top position should be at or below the navbar bottom
+    // (with some tolerance for the breathing room we added)
+    expect(headingBox!.y).toBeGreaterThanOrEqual(navbarHeight - 5);
   });
 
   test("should highlight active section during scroll", async ({ page }) => {
@@ -150,13 +198,9 @@ test.describe("Table of Contents", () => {
       if ((await targetLink.count()) > 0) {
         await targetLink.click();
 
-        // Wait for scroll spy to update after click navigation
-        await page.waitForTimeout(1000);
-
+        // Wait for scroll spy to update after click navigation (state-based wait)
         // The clicked link should be active (or close to it after scrolling)
-        // Use a more lenient check - verify at least one link has the active class
-        const activeLink = page.locator(".toc-link-active");
-        await expect(activeLink).toBeVisible({ timeout: 3000 });
+        await expect(page.locator(".toc-link-active")).toBeVisible({ timeout: 3000 });
       }
     }
   });
@@ -191,20 +235,65 @@ test.describe("Table of Contents", () => {
 
     const toggle = page.locator("#toc-toggle");
     await expect(toggle).toHaveAttribute("aria-controls", "toc-content");
-    await expect(toggle).toHaveAttribute("aria-label", "Toggle table of contents");
+    // aria-label changes based on state: "Collapse..." when expanded, "Expand..." when collapsed
+    await expect(toggle).toHaveAttribute("aria-label", "Collapse table of contents");
   });
 
   test("should show indentation for H3 headings", async ({ page }) => {
     await page.goto(TOC_TEST_PAGE);
     await page.waitForLoadState("networkidle");
 
-    // Check if there are H3 items with proper class
+    // Check if there are H3 items with proper indentation
     const h3Items = page.locator(".toc-item-h3");
     const h3Count = await h3Items.count();
 
     if (h3Count > 0) {
-      // H3 items should have the correct class for indentation
-      await expect(h3Items.first()).toHaveClass(/toc-item-h3/);
+      // H3 items should have visual indentation via padding-left on the link
+      // CSS: .toc-item-h3 .toc-link { padding-left: 1.75rem; } = 28px
+      const firstH3Link = h3Items.first().locator(".toc-link");
+      await expect(firstH3Link).toHaveCSS("padding-left", "28px");
     }
+  });
+
+  test("should remain sticky/fixed when scrolling down the page", async ({ page }) => {
+    await page.goto(TOC_TEST_PAGE);
+    await page.waitForLoadState("networkidle");
+
+    const toc = page.locator("#toc");
+    await expect(toc).toBeVisible();
+
+    // Get initial TOC position relative to viewport
+    const initialBoundingBox = await toc.boundingBox();
+    expect(initialBoundingBox).not.toBeNull();
+
+    // TOC should start at sticky position (top: 70px)
+    expect(initialBoundingBox!.y).toBeGreaterThanOrEqual(60);
+    expect(initialBoundingBox!.y).toBeLessThanOrEqual(80);
+
+    // Scroll down significantly
+    await page.evaluate(() => window.scrollBy(0, 500));
+    await page.waitForTimeout(100);
+
+    // Get TOC position after scrolling
+    const afterScrollBoundingBox = await toc.boundingBox();
+    expect(afterScrollBoundingBox).not.toBeNull();
+
+    // TOC should still be at sticky position (~70px from viewport top)
+    expect(afterScrollBoundingBox!.y).toBeGreaterThanOrEqual(60);
+    expect(afterScrollBoundingBox!.y).toBeLessThanOrEqual(80);
+
+    // Scroll down even more
+    await page.evaluate(() => window.scrollBy(0, 500));
+    await page.waitForTimeout(100);
+
+    const finalBoundingBox = await toc.boundingBox();
+    expect(finalBoundingBox).not.toBeNull();
+
+    // TOC should still be at sticky position
+    expect(finalBoundingBox!.y).toBeGreaterThanOrEqual(60);
+    expect(finalBoundingBox!.y).toBeLessThanOrEqual(80);
+
+    // Verify TOC is still visible
+    await expect(toc).toBeVisible();
   });
 });

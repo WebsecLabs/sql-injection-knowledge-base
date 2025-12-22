@@ -22,12 +22,14 @@
   overflow-y: auto;
   position: sticky;
   top: 70px;
+  height: calc(100vh - 70px);
   padding: 0;
   margin: 0;
   padding-bottom: 1rem;
   scrollbar-width: thin;
   scrollbar-color: var(--color-scrollbar-thumb) var(--color-scrollbar-track);
   z-index: 50;
+  align-self: flex-start; /* Prevents flex stretching, enables sticky positioning */
 }
 
 .sidebar::-webkit-scrollbar {
@@ -297,7 +299,7 @@
     background-color: var(--color-card-bg);
     z-index: 90;
     transform: translateX(-100%);
-    transition: transform 0.3s ease;
+    transition: none; /* Disable transitions to prevent flash on resize */
     box-shadow: 2px 0 10px rgb(0 0 0 / 10%);
     overflow-y: auto;
     overflow-x: hidden;
@@ -316,6 +318,12 @@
 
   .sidebar.mobile-open {
     transform: translateX(0);
+  }
+
+  /* Enable transitions only when user is interacting with the menu (toggle click).
+     This prevents the flash/slide animation when resizing the viewport across the breakpoint. */
+  .sidebar.sidebar-transitioning {
+    transition: transform 0.3s ease;
   }
 
   /* Mobile sidebar toggle button */

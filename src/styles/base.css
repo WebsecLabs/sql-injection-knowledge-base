@@ -19,7 +19,8 @@ body {
   color: var(--color-text);
   background-color: var(--color-background);
   line-height: 1.6;
-  overflow-x: hidden;
+  overflow-x: hidden; /* Fallback for older browsers */
+  overflow-x: clip; /* Use clip instead of hidden to avoid triggering overflow-y: auto */
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   margin: 0;
@@ -50,6 +51,11 @@ h6 {
   font-weight: 600;
   line-height: 1.3;
   letter-spacing: -0.015em;
+
+  /* Offset for sticky navbar when navigating via anchor links (TOC).
+   * Base navbar height is 70px; add 10px breathing room.
+   * Responsive adjustments below match navbar height changes. */
+  scroll-margin-top: 80px;
 }
 
 h1 {
@@ -102,6 +108,41 @@ code {
   padding: 0.1rem 0.3rem;
   border-radius: 3px;
   font-size: 0.9em;
+}
+
+/* Responsive scroll-margin-top for headings to match navbar height changes */
+@media (width <= 1280px) {
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    scroll-margin-top: 70px; /* navbar: 60px + 10px breathing room */
+  }
+}
+
+@media (width <= 1200px) {
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    scroll-margin-top: 65px; /* navbar: 55px + 10px breathing room */
+  }
+}
+
+/* Mobile: navbar returns to 70px height */
+@media (width <= 1023px) {
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    scroll-margin-top: 80px; /* navbar: 70px + 10px breathing room */
+  }
 }
 
 /* Respect user preference for reduced motion */

@@ -1,5 +1,8 @@
 import { test, expect } from "@playwright/test";
 
+/** Maximum expected gap in pixels between adjacent navbar elements */
+const MAX_EXPECTED_GAP_PX = 100;
+
 test.describe("Navbar - Desktop", () => {
   test.beforeEach(async ({ page }) => {
     await page.setViewportSize({ width: 1920, height: 1080 });
@@ -528,6 +531,159 @@ test.describe("Navbar - Resize Transitions", () => {
       });
     }
   });
+
+  test("should not have menu-transitioning class when resizing from desktop to mobile", async ({
+    page,
+  }) => {
+    // Start at desktop width
+    await page.goto("/");
+    await page.setViewportSize({ width: 1280, height: 800 });
+
+    const navbarMenu = page.locator("#navbar-menu");
+
+    // Verify menu doesn't have transitioning class on desktop
+    await expect(navbarMenu).not.toHaveClass(/menu-transitioning/);
+
+    // Resize to mobile - this should NOT add the transitioning class
+    // (transitioning class is only added on user click, not on resize)
+    await page.setViewportSize({ width: 375, height: 667 });
+
+    // Wait a moment for any potential transitions to start
+    await page.waitForTimeout(50);
+
+    // Verify menu still doesn't have transitioning class after resize
+    await expect(navbarMenu).not.toHaveClass(/menu-transitioning/);
+
+    // Verify menu is not active (closed state)
+    await expect(navbarMenu).not.toHaveClass(/active/);
+
+    // Verify the menu has translateX(100%) applied (hidden off-screen)
+    // This confirms no transition occurred - the transform is immediately applied
+    const transform = await navbarMenu.evaluate((el) => window.getComputedStyle(el).transform);
+
+    // Ensure transform is not "none" (which would mean no positioning)
+    expect(transform).not.toBe("none");
+
+    // transform: translateX(100%) on a 375px wide element = matrix(1, 0, 0, 1, 375, 0)
+    // Parse matrix(a, b, c, d, tx, ty) - tx is the horizontal translation (5th value, m41)
+    const matrixMatch = transform.match(
+      /matrix\(([^,]+),\s*([^,]+),\s*([^,]+),\s*([^,]+),\s*([^,]+),\s*([^)]+)\)/
+    );
+    expect(matrixMatch).not.toBeNull();
+    if (matrixMatch) {
+      const tx = parseFloat(matrixMatch[5]);
+      // Positive X translation indicates menu is positioned off-screen to the right
+      expect(tx).toBeGreaterThan(0);
+    }
+  });
+
+  test("should have menu-transitioning class only during user-initiated menu toggle", async ({
+    page,
+  }) => {
+    await page.goto("/");
+    await page.setViewportSize({ width: 375, height: 667 });
+
+    const navbarMenu = page.locator("#navbar-menu");
+    const mobileToggle = page.locator("#mobile-toggle");
+
+    // Initially, no transitioning class
+    await expect(navbarMenu).not.toHaveClass(/menu-transitioning/);
+
+    // Click hamburger to open menu
+    await mobileToggle.click();
+
+    // During or immediately after click, the transitioning class should be present
+    // (it gets removed after transition completes, so we check for the active class instead
+    // which confirms the toggle worked)
+    await expect(navbarMenu).toHaveClass(/active/);
+
+    // Wait for transition to complete (300ms + buffer)
+    await page.waitForTimeout(400);
+
+    // After transition completes, the transitioning class should be removed
+    await expect(navbarMenu).not.toHaveClass(/menu-transitioning/);
+    await expect(navbarMenu).toHaveClass(/active/);
+
+    // Close the menu
+    await mobileToggle.click();
+    await expect(navbarMenu).not.toHaveClass(/active/);
+
+    // Wait for close transition to complete
+    await page.waitForTimeout(400);
+
+    // Transitioning class should be removed after close transition
+    await expect(navbarMenu).not.toHaveClass(/menu-transitioning/);
+  });
+
+  test("should not have dropdown-transitioning class when resizing from mobile to desktop", async ({
+    page,
+  }) => {
+    // Start at mobile width
+    await page.goto("/");
+    await page.setViewportSize({ width: 375, height: 667 });
+
+    // Open mobile menu and expand Databases dropdown
+    await page.locator("#mobile-toggle").click();
+    await expect(page.locator("#navbar-menu")).toHaveClass(/active/);
+
+    const databasesDropdown = page.locator('.nav-item.dropdown:has(button:text("Databases"))');
+    await databasesDropdown.locator(".dropdown-toggle").click();
+    await expect(databasesDropdown).toHaveClass(/show/);
+
+    // Verify dropdown doesn't have transitioning class on mobile
+    await expect(databasesDropdown).not.toHaveClass(/dropdown-transitioning/);
+
+    // Resize to desktop - this should NOT cause any visible flash
+    await page.setViewportSize({ width: 1280, height: 800 });
+
+    // Wait a moment for any potential transitions to start
+    await page.waitForTimeout(50);
+
+    // Verify dropdown still doesn't have transitioning class after resize
+    await expect(databasesDropdown).not.toHaveClass(/dropdown-transitioning/);
+
+    // Verify dropdown is not shown (closed state on desktop)
+    await expect(databasesDropdown).not.toHaveClass(/show/);
+
+    // Verify the dropdown menu is hidden (no flash)
+    const dropdownMenu = databasesDropdown.locator(".dropdown-menu");
+    const visibility = await dropdownMenu.evaluate((el) => window.getComputedStyle(el).visibility);
+    expect(visibility).toBe("hidden");
+  });
+
+  test("should show dropdown smoothly on hover without transitioning class getting stuck", async ({
+    page,
+  }) => {
+    await page.goto("/");
+    await page.setViewportSize({ width: 1280, height: 800 });
+
+    const databasesDropdown = page.locator('.nav-item.dropdown:has(button:text("Databases"))');
+
+    // Initially, no transitioning class and no show class
+    await expect(databasesDropdown).not.toHaveClass(/dropdown-transitioning/);
+    await expect(databasesDropdown).not.toHaveClass(/show/);
+
+    // Hover over dropdown to trigger transition
+    await databasesDropdown.hover();
+
+    // Dropdown should show after hover
+    await expect(databasesDropdown).toHaveClass(/show/);
+
+    // Move mouse away
+    await page.locator(".navbar-logo").hover();
+
+    // Wait for transition to complete (200ms transition + 250ms fallback timeout + buffer)
+    await page.waitForTimeout(500);
+
+    // After transition completes, both classes should be removed
+    await expect(databasesDropdown).not.toHaveClass(/dropdown-transitioning/);
+    await expect(databasesDropdown).not.toHaveClass(/show/);
+
+    // Verify dropdown is actually hidden (the main goal of the fix)
+    const dropdownMenu = databasesDropdown.locator(".dropdown-menu");
+    const visibility = await dropdownMenu.evaluate((el) => window.getComputedStyle(el).visibility);
+    expect(visibility).toBe("hidden");
+  });
 });
 
 test.describe("Navbar - Mobile Menu Visual Integrity", () => {
@@ -573,7 +729,7 @@ test.describe("Navbar - Mobile Menu Visual Integrity", () => {
       // Extras should be right below Databases button (with some small gap)
       // Not hundreds of pixels below (which would indicate database items showing through)
       const gap = extrasBox.y - (databasesBox.y + databasesBox.height);
-      expect(gap).toBeLessThan(100); // Should be a small gap, not a huge one
+      expect(gap).toBeLessThan(MAX_EXPECTED_GAP_PX); // Should be a small gap, not a huge one
       expect(gap).toBeGreaterThanOrEqual(0); // Should not overlap
     }
   });
@@ -825,7 +981,7 @@ test.describe("Navbar - Mobile Extras Dropdown", () => {
     if (extrasButtonBox && githubBox) {
       // GitHub should be close to Extras (not pushed down by visible dropdown content)
       const gap = githubBox.y - (extrasButtonBox.y + extrasButtonBox.height);
-      expect(gap).toBeLessThan(100);
+      expect(gap).toBeLessThan(MAX_EXPECTED_GAP_PX);
     }
   });
 

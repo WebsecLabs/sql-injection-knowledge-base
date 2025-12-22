@@ -32,7 +32,8 @@
   position: relative;
   padding-top: 0;
   margin-top: 0;
-  overflow-x: hidden;
+  overflow-x: hidden; /* Fallback for older browsers */
+  overflow-x: clip; /* Use clip instead of hidden to avoid triggering overflow-y: auto */
   background-color: var(--color-card-bg);
   flex: 1;
 }
@@ -40,6 +41,12 @@
 /* Three-column layout when TOC is present */
 .page-layout.with-toc .content-container {
   max-width: 850px; /* Slightly narrower to accommodate TOC */
+  transition: max-width 0.3s ease;
+}
+
+/* When TOC is collapsed, allow content to expand */
+.page-layout.with-toc:has(.toc-collapsed) .content-container {
+  max-width: 1000px; /* Wider when TOC is collapsed */
 }
 
 /* On tablet/mobile, revert to full width when TOC is hidden */
@@ -65,7 +72,8 @@
   .page-layout {
     flex-direction: column;
     width: 100%;
-    overflow-x: hidden;
+    overflow-x: hidden; /* Fallback for older browsers */
+    overflow-x: clip;
     margin-top: 0;
   }
 

@@ -3,8 +3,20 @@
  * Handles scroll-spy highlighting and toggle functionality
  */
 
-import { cloneAndReplace } from "../utils/domUtils";
+import {
+  cloneAndReplace,
+  updateToggleAccessibility,
+  type ToggleAccessibilityConfig,
+} from "../utils/domUtils";
 import { TOC_STORAGE_KEY } from "../utils/uiConstants";
+
+/** TOC toggle accessibility configuration */
+const TOC_TOGGLE_CONFIG: ToggleAccessibilityConfig = {
+  expandLabel: "Expand table of contents",
+  collapseLabel: "Collapse table of contents",
+  expandTitle: "Expand table of contents",
+  collapseTitle: "Collapse to gain screen space",
+};
 
 /** CSS classes */
 const TOC_ACTIVE_CLASS = "toc-link-active";
@@ -28,13 +40,15 @@ export function initToc(): void {
   const toc = document.getElementById("toc");
   if (!toc) return;
 
+  // Restore collapsed state first, then initialize toggle button
+  restoreCollapsedState(toc);
   initToggle(toc);
   initScrollSpy();
-  restoreCollapsedState(toc);
 }
 
 /**
  * Set up toggle button with localStorage persistence
+ * Horizontal collapse to reclaim screen real estate
  */
 function initToggle(toc: HTMLElement): void {
   const toggle = document.getElementById("toc-toggle");
@@ -45,7 +59,7 @@ function initToggle(toc: HTMLElement): void {
 
   newToggle.addEventListener("click", () => {
     const isCollapsed = toc.classList.toggle(TOC_COLLAPSED_CLASS);
-    newToggle.setAttribute("aria-expanded", String(!isCollapsed));
+    updateToggleAccessibility(newToggle, isCollapsed, TOC_TOGGLE_CONFIG);
 
     try {
       localStorage.setItem(TOC_STORAGE_KEY, String(isCollapsed));
@@ -67,7 +81,7 @@ function restoreCollapsedState(toc: HTMLElement): void {
       toc.classList.add(TOC_COLLAPSED_CLASS);
     }
     if (toggle) {
-      toggle.setAttribute("aria-expanded", String(!isCollapsed));
+      updateToggleAccessibility(toggle, isCollapsed, TOC_TOGGLE_CONFIG);
     }
   } catch {
     // localStorage may be unavailable
