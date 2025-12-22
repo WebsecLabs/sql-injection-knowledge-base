@@ -22,12 +22,12 @@ To write files from MariaDB, the following conditions must be met:
 
 ### Important Constraints
 
-| Constraint         | Description                                                                    |
-| ------------------ | ------------------------------------------------------------------------------ |
-| No Overwriting     | INTO OUTFILE/DUMPFILE cannot overwrite existing files                          |
-| Statement Position | The INTO clause must be the last statement in the query                        |
-| Pathname Quoting   | Quotation marks are mandatory for pathnames (hex encoding like 0x cannot work) |
-| Max Packet Size    | Limited by `@@max_allowed_packet`                                              |
+| Constraint         | Description                                                                                                                              |
+| ------------------ | ---------------------------------------------------------------------------------------------------------------------------------------- |
+| No Overwriting     | INTO OUTFILE/DUMPFILE cannot overwrite existing files                                                                                    |
+| Statement Position | The INTO clause must be the last statement in the query                                                                                  |
+| Pathname Quoting   | File paths must be quoted string literals (e.g., `'/path/to/file'`); hex notation (`0x...`) that works elsewhere in SQL is not supported |
+| Max Packet Size    | Limited by `@@max_allowed_packet`                                                                                                        |
 
 ### Methods for Writing Files
 

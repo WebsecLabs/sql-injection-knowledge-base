@@ -15,11 +15,9 @@ MariaDB uses different password hashing algorithms depending on the version. Und
 
 | MariaDB Version | Default Auth Plugin   | Hash Format                    |
 | --------------- | --------------------- | ------------------------------ |
-| Pre-10.0        | mysql_native_password | '\*' + SHA1(SHA1()) (41 chars) |
-| 10.0 - 10.3     | mysql_native_password | '\*' + SHA1(SHA1()) (41 chars) |
-| 10.4+           | mysql_native_password | '\*' + SHA1(SHA1()) (41 chars) |
+| All versions    | mysql_native_password | '\*' + SHA1(SHA1()) (41 chars) |
 
-**Key Difference from MySQL 8.0:** MariaDB continues to use `mysql_native_password` as the default authentication plugin, while MySQL 8.0+ defaults to `caching_sha2_password`.
+> **Note:** Unlike MySQL 8.0+ which defaults to `caching_sha2_password`, MariaDB uses `mysql_native_password` across all supported versions (Pre-10.0 through 10.4+). The hash format remains consistent: a 41-character string with `*` prefix followed by the uppercase hex representation of SHA1(SHA1(password)).
 
 #### Checking MariaDB Version
 

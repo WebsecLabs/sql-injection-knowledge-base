@@ -1,5 +1,6 @@
 ---
 import { getCollection, type CollectionEntry } from "astro:content";
+import type { MarkdownHeading } from "astro";
 import { ClientRouter } from "astro:transitions";
 import NavBar from "../components/NavBar.astro";
 import Sidebar from "../components/Sidebar.astro";
@@ -20,19 +21,12 @@ import "@fontsource/inter/700.css";
 import "@fontsource/jetbrains-mono/400.css";
 import "@fontsource/jetbrains-mono/500.css";
 
-/** Heading type from Astro's render() */
-interface Heading {
-  depth: number;
-  slug: string;
-  text: string;
-}
-
 interface Props {
   title: string;
   description?: string;
   showSidebar?: boolean;
   /** Headings for Table of Contents (H2 and H3) */
-  tocHeadings?: Heading[];
+  tocHeadings?: MarkdownHeading[];
   // Allow pages to pass their own collections to avoid duplicate loading
   collections?: {
     mysqlEntries?: CollectionEntry<"mysql">[];

@@ -196,22 +196,30 @@ SELECT GROUP_CONCAT(username SEPARATOR CHAR(124)) AS users FROM users
 -- admin|user1|user2
 ```
 
-## Additional Encoding Techniques
+## Encoding Utilities (Require Quoted Input)
+
+> **Important:** The functions in this section require quoted string arguments and therefore **do not bypass quote filters**. They are documented here for completeness and understanding encoding workflows, but cannot be used when quotes are blocked.
 
 ### UNHEX Function
 
 ```sql
 -- UNHEX converts hex string to binary/string
 SELECT UNHEX('61646D696E')
--- Returns: admin (note: no 0x prefix, uses quoted hex string)
+-- Returns: admin (note: requires quoted hex string - not useful for bypassing quote filters)
+
+-- Quote-free alternative: use 0x notation directly instead
+SELECT 0x61646D696E
+-- Returns: admin (no quotes needed)
 ```
 
 ### HEX Function
 
 ```sql
--- HEX encodes string to hexadecimal
+-- HEX encodes string to hexadecimal (requires quoted input)
 SELECT HEX('admin')
 -- Returns: 61646D696E
+
+-- Useful for encoding output, not for bypassing input filters
 ```
 
 ### Binary Literals
@@ -220,19 +228,22 @@ SELECT HEX('admin')
 -- Binary literal for 'A' (01000001)
 SELECT b'01000001'
 -- Returns: 65 (numeric value) or binary representation
+-- Note: Binary literals do not require quotes but produce numeric values
 ```
 
 ### Base64 Encoding
 
 ```sql
--- Decode Base64 string
+-- Decode Base64 string (requires quoted input - cannot bypass quote filters)
 SELECT FROM_BASE64('YWRtaW4=')
 -- 'YWRtaW4=' = 'admin' in Base64
 
--- Encode to Base64
+-- Encode to Base64 (requires quoted input)
 SELECT TO_BASE64('admin')
 -- Returns: YWRtaW4=
 ```
+
+> **Summary:** For bypassing quote filters, use `0x` hex notation or `CHAR()` with numeric ASCII values. The encoding functions above are useful for other purposes but require quoted strings as input.
 
 ## Numeric Conversions
 

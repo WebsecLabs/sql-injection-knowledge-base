@@ -4,15 +4,10 @@
  * Displays a navigable outline of H2 and H3 headings on the current page
  * with scroll-spy highlighting and collapsible functionality
  */
-
-interface Heading {
-  depth: number;
-  slug: string;
-  text: string;
-}
+import type { MarkdownHeading } from "astro";
 
 interface Props {
-  headings: Heading[];
+  headings: MarkdownHeading[];
 }
 
 const { headings } = Astro.props;

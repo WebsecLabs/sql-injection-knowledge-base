@@ -221,7 +221,7 @@ SELECT IF(
 ### GET_LOCK as Timing Primitive
 
 ```sql
--- GET_LOCK can be used for timing (has side effects)
+-- GET_LOCK can be used for timing (has side effects - see below)
 SELECT GET_LOCK('lock_name', 5)
 -- Returns 1 if lock acquired, 0 if timeout, NULL on error
 
@@ -232,6 +232,13 @@ SELECT GET_LOCK('lock_name', 5)
 -- Release the lock
 SELECT RELEASE_LOCK('lock_name')
 ```
+
+**Important Side Effects:**
+
+- **Persistence:** Named locks persist until explicitly released via `RELEASE_LOCK()` or until the connection closes
+- **Connection-specific:** Only the connection that acquired the lock can release it; other connections attempting `GET_LOCK()` with the same name will block (or timeout)
+- **Blocking behavior:** If another session holds the lock, `GET_LOCK()` will wait up to the specified timeout, potentially interfering with other clients
+- **Best practice for testing:** Use random or unique lock names (e.g., `CONCAT('test_', UUID())`) and short timeouts to avoid cross-request interference
 
 ### Heavy Computation
 

