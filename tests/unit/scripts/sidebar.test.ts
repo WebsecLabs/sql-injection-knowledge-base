@@ -60,9 +60,10 @@ describe("sidebar", () => {
   });
 
   afterEach(() => {
-    // Defensive cleanup: only remove container if it was successfully appended
-    if (container && container.parentNode === document.body) {
-      document.body.removeChild(container);
+    // Deterministic cleanup: remove() is a no-op per DOM spec if element is already detached
+    // No try/catch needed - any real errors should surface in tests
+    if (container) {
+      container.remove();
     }
   });
 

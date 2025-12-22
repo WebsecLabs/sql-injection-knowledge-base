@@ -1,0 +1,170 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+# Cancel in-progress runs for the same branch/PR to avoid redundant work
+concurrency:
+  group: ${{ github.workflow }}-${{ github.head_ref || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  lint:
+    name: Lint & Type Check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+
+      - run: npm ci
+
+      - run: npm run lint
+
+      - run: npm run typecheck
+
+  unit-tests:
+    name: Unit Tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+
+      - run: npm ci
+
+      - run: npm run test:unit:coverage
+
+      - name: Upload coverage reports
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-report
+          path: coverage/
+          retention-days: 7
+
+  build:
+    name: Build
+    needs: [lint, unit-tests]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+
+      - run: npm ci
+
+      - run: npm run build:standalone
+        env:
+          STANDALONE: "true"
+          SITE_URL: ${{ vars.SITE_URL || 'https://ci.example.com' }}
+
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: dist
+          path: dist/
+          retention-days: 1
+
+  e2e:
+    name: E2E Tests
+    needs: build
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        browser: [chromium, firefox, webkit]
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+
+      - run: npm ci
+
+      - name: Install Playwright Browsers (${{ matrix.browser }})
+        run: npx playwright install --with-deps ${{ matrix.browser }}
+
+      - name: Download build artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: dist
+          path: dist/
+
+      - name: Run E2E tests
+        run: npx playwright test --project=${{ matrix.browser }}
+        env:
+          # Use Playwright's built-in webServer to start/stop the server automatically
+          BASE_URL: "http://localhost:8080/"
+          # Override the webServer command for CI (uses pre-built artifacts)
+          PLAYWRIGHT_WEBSERVER_COMMAND: "npx serve dist -l 8080"
+          CI: true
+
+      - name: Upload Playwright Report
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: playwright-report-${{ matrix.browser }}
+          path: playwright-report/
+          retention-days: 7
+
+  security:
+    name: Security Scanning
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+
+      - run: npm ci
+
+      - name: Run npm audit
+        run: npm audit --audit-level=moderate
+        # Record failure but continue - security findings are informational
+        continue-on-error: true
+
+      - name: Check for vulnerable dependencies (Snyk)
+        if: ${{ env.SNYK_TOKEN != '' }}
+        run: npx snyk test --severity-threshold=high
+        # Record failure but continue - security findings are informational
+        continue-on-error: true
+        env:
+          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+
+      - name: Snyk scan skipped (no token)
+        if: ${{ env.SNYK_TOKEN == '' }}
+        run: echo "::warning::SNYK_TOKEN not configured. Snyk vulnerability scan skipped. Add SNYK_TOKEN secret in repository settings to enable."
+        env:
+          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+
+  summary:
+    name: Test Summary
+    needs: [lint, unit-tests, build, e2e, security]
+    runs-on: ubuntu-latest
+    if: always()
+    steps:
+      - name: All checks passed
+        if: success()
+        run: echo "All CI checks passed successfully!"
+
+      - name: Some checks failed
+        if: failure()
+        run: |
+          echo "Some CI checks failed. Please review the logs above."
+          exit 1

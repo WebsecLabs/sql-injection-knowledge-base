@@ -103,17 +103,62 @@ test.describe("Sidebar - Desktop", () => {
   });
 
   test("should navigate to correct page when sidebar link is clicked", async ({ page }) => {
-    // Make sure at least one section is expanded
-    const sidebarLink = page.locator(".sidebar-nav a").first();
-    const href = await sidebarLink.getAttribute("href");
+    // Find a sidebar link that is NOT the current page (to ensure actual navigation)
+    const currentUrl = page.url();
+    const currentPathname = new URL(currentUrl).pathname.replace(/\/$/, "");
+    const sidebarLinks = page.locator(".sidebar-nav a");
+    const count = await sidebarLinks.count();
 
-    // Ensure href exists before proceeding - test should fail if sidebar links are missing href
-    expect(href).not.toBeNull();
+    // Helper to normalize pathname (remove trailing slash for comparison)
+    const normalizePath = (path: string): string => path.replace(/\/$/, "");
 
-    await sidebarLink.click();
+    // Find a link that points to a different page by comparing normalized pathnames
+    let targetLink = null;
+    let targetHref = "";
+    for (let i = 0; i < count; i++) {
+      const link = sidebarLinks.nth(i);
+      const href = await link.getAttribute("href");
 
-    // Use the href directly since we've verified it's not null
-    await expect(page).toHaveURL(new RegExp(href!.replace(/\//g, "\\/")));
+      // Skip null hrefs and external/non-relative links
+      if (
+        !href ||
+        href.startsWith("http://") ||
+        href.startsWith("https://") ||
+        href.startsWith("//")
+      ) {
+        continue;
+      }
+
+      // Resolve the href to a full pathname using the current URL as base
+      const resolvedPathname = normalizePath(new URL(href, currentUrl).pathname);
+
+      // Select this link only if the normalized pathnames differ
+      if (resolvedPathname !== currentPathname) {
+        targetLink = link;
+        targetHref = href;
+        break;
+      }
+    }
+
+    // Fall back to first link if no different link found
+    if (!targetLink) {
+      targetLink = sidebarLinks.first();
+      targetHref = String(await targetLink.getAttribute("href"));
+    }
+
+    // Click and wait for navigation
+    await targetLink.click();
+    await page.waitForURL((url) => url.href !== currentUrl, { timeout: 5000 });
+
+    // Get the expected pathname from the clicked link's href
+    // Ensure it begins with a leading slash for proper comparison
+    const expectedPathname = normalizePath(new URL(targetHref, currentUrl).pathname);
+
+    // Get the actual pathname from the navigated URL
+    const actualPathname = normalizePath(new URL(page.url()).pathname);
+
+    // Assert exact pathname match (allowing for optional trailing slash)
+    expect(actualPathname).toBe(expectedPathname);
   });
 
   test("should highlight current page in sidebar", async ({ page }) => {
