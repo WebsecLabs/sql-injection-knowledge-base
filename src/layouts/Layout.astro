@@ -7,6 +7,7 @@ import Sidebar from "../components/Sidebar.astro";
 import TableOfContents from "../components/TableOfContents.astro";
 import websecLogo from "../assets/websec-logo.png";
 import { TOC_MIN_HEADINGS } from "../utils/uiConstants";
+import { requireSiteUrl } from "../utils/siteUtils";
 
 // Import CSS files
 import "../styles/main.css";
@@ -27,6 +28,10 @@ interface Props {
   showSidebar?: boolean;
   /** Headings for Table of Contents (H2 and H3) */
   tocHeadings?: MarkdownHeading[];
+  /** Page type for Open Graph: "website" for homepage, "article" for content pages */
+  pageType?: "website" | "article";
+  /** Last modified date for article pages (used in OG meta) */
+  lastModified?: Date;
   // Allow pages to pass their own collections to avoid duplicate loading
   collections?: {
     mysqlEntries?: CollectionEntry<"mysql">[];
@@ -43,8 +48,18 @@ const {
   description = "The SQL Injection Knowledge Base is a comprehensive reference and educational resource on identifying, testing, and preventing SQL injection vulnerabilities across various database systems.",
   showSidebar = true,
   tocHeadings = [],
+  pageType = "website",
+  lastModified,
   collections,
 } = Astro.props;
+
+// Ensure site is configured (required for canonical URLs and SEO)
+const site = requireSiteUrl(Astro.site);
+
+// Build canonical URL using site config and current path
+const canonicalURL = new URL(Astro.url.pathname, site);
+// Build OG image URL
+const ogImageURL = new URL("og-image.svg", site);
 
 // Show TOC only if there are enough headings
 const showToc = tocHeadings.length >= TOC_MIN_HEADINGS;
@@ -64,13 +79,16 @@ const extrasEntries = collections?.extrasEntries ?? (await getCollection("extras
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
     <link rel="icon" type="image/png" href={`${import.meta.env.BASE_URL}favicon.png`} />
+    <link rel="canonical" href={canonicalURL.href} />
     <title>{title}</title>
     <meta name="description" content={description} />
+    <meta name="robots" content="index, follow" />
     <meta
       name="keywords"
-      content="SQL Injection, SQLi, Knowledge Base, KB, CS, PR, MySQL, MSSQL, Oracle, PostgreSQL, SQLite, MS Access, Cheatsheet, Pocket Reference"
+      content="SQL injection, SQL injection techniques, SQLi, Boolean-based blind injection, Time-based blind injection, UNION-based injection, Error-based injection, WAF bypass, penetration testing, MySQL injection, PostgreSQL injection, MSSQL injection, Oracle injection, MariaDB injection, SQL injection cheatsheet, web application security"
     />
     <meta name="HandheldFriendly" content="true" />
+    <meta name="author" content="Websec" />
 
     <!-- Theme initialization - runs before page renders to prevent flash -->
     <script is:inline>
@@ -100,18 +118,32 @@ const extrasEntries = collections?.extrasEntries ?? (await getCollection("extras
     <ClientRouter />
 
     <!-- Open Graph / Facebook -->
-    <meta property="og:type" content="website" />
-    <meta property="og:url" content={Astro.url} />
+    <meta property="og:type" content={pageType === "article" ? "article" : "website"} />
+    <meta property="og:url" content={canonicalURL.href} />
     <meta property="og:title" content={title} />
     <meta property="og:description" content={description} />
-    <meta property="og:image" content={new URL("og-image.jpg", Astro.site)} />
+    <meta property="og:site_name" content="SQL Injection Knowledge Base" />
+    <meta property="og:image" content={ogImageURL.href} />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta
+      property="og:image:alt"
+      content="SQL Injection Knowledge Base - Comprehensive security documentation"
+    />
+    <meta property="og:locale" content="en_US" />
+    {
+      pageType === "article" && lastModified && (
+        <meta property="article:modified_time" content={lastModified.toISOString()} />
+      )
+    }
 
     <!-- Twitter -->
-    <meta property="twitter:card" content="summary_large_image" />
-    <meta property="twitter:url" content={Astro.url} />
-    <meta property="twitter:title" content={title} />
-    <meta property="twitter:description" content={description} />
-    <meta property="twitter:image" content={new URL("og-image.jpg", Astro.site)} />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:url" content={canonicalURL.href} />
+    <meta name="twitter:title" content={title} />
+    <meta name="twitter:description" content={description} />
+    <meta name="twitter:image" content={ogImageURL.href} />
+    <meta name="twitter:image:alt" content="SQL Injection Knowledge Base" />
 
     <style is:global>
       @view-transition {

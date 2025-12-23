@@ -46,19 +46,21 @@ SELECT '' 'test' ''
 -- Result: 'test'
 ```
 
-### Filter Bypass Use Case
+### String Value Construction
 
-This technique is useful for bypassing keyword filters since the string is never written as a single token:
+Adjacent literals are useful for constructing string values without writing them as a single token in the input:
 
 ```sql
--- Bypass filters that block 'UNION' as single token
+-- Build the string 'UNION' from fragments
 SELECT 'UN' 'ION'
--- Result: 'UNION'
+-- Result: 'UNION' (as a STRING value, not an SQL keyword)
 
--- Use in WHERE clause
+-- Use in WHERE clause to match 'admin'
 SELECT * FROM users WHERE username = 'ad' 'min'
 -- Finds user with username 'admin'
 ```
+
+> **Important Clarification:** Adjacent literal concatenation produces **string values**, not SQL keywords. Writing `SELECT 'UN' 'ION'` creates the string `"UNION"`, it does **not** execute a UNION operation. This technique bypasses input-level filters that block specific strings (e.g., a WAF blocking the literal text `'admin'` in input), but it cannot evade SQL parsers or filters that detect SQL keywords in query syntax. True SQL keyword obfuscation requires different techniques like comments (`UN/**/ION`) or encoding.
 
 ## CONCAT() Function
 
@@ -348,10 +350,10 @@ FROM information_schema.COLUMNS
 WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'users'
 ```
 
-### Adjacent Literals for Filter Bypass
+### Adjacent Literals for String Construction
 
 ```sql
--- Bypass filters blocking 'admin'
+-- Build 'admin' from fragments (bypasses input-level string filters, not SQL keyword detection)
 SELECT * FROM users WHERE username = 'ad' 'min'
 ```
 

@@ -268,7 +268,7 @@ SELECT @@tmpdir        -- Temporary directory
 
 ## System Tables
 
-MariaDB uses `information_schema.GLOBAL_VARIABLES` and `information_schema.SESSION_VARIABLES` (MySQL 8.0 moved these to `performance_schema`):
+MariaDB uses `information_schema.GLOBAL_VARIABLES` and `information_schema.SESSION_VARIABLES`. In MySQL 8.0, these INFORMATION_SCHEMA tables were removed and replaced with equivalent tables in `performance_schema` (`performance_schema.global_variables` and `performance_schema.session_variables`). MariaDB continues to support the original `information_schema` location:
 
 ```sql
 -- Query global variables

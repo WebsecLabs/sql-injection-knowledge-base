@@ -18,7 +18,7 @@ export function initializeThemeToggle(): void {
   // Clone to remove existing listeners
   const newThemeToggle = cloneAndReplace(themeToggle);
 
-  newThemeToggle.addEventListener("click", function () {
+  newThemeToggle.addEventListener("click", () => {
     const html = document.documentElement;
     const currentTheme = localStorage.getItem("theme");
 

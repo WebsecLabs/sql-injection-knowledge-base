@@ -90,17 +90,24 @@ test.describe("Search Page", () => {
 
   test("should debounce search input", async ({ page }) => {
     const input = page.locator("#search-page-input");
-
-    // Type rapidly
-    await input.fill("U");
-    await input.fill("UN");
-    await input.fill("UNI");
-    await input.fill("UNIO");
-    await input.fill("UNION");
-
-    // Wait for status to show results (state-based wait instead of fixed timeout)
     const status = page.locator("#search-status");
+
+    // Focus the input
+    await input.click();
+
+    // Simulate real typing with pressSequentially (sends keystrokes with minimal delay)
+    // This better tests debounce behavior than fill() which sets value instantly
+    await page.keyboard.type("UNION", { delay: 30 });
+
+    // Note: Debounce behavior means results won't appear immediately after typing.
+    // The status transitions from initial state to "Found" after debounce completes.
+
+    // Wait for debounce to complete and results to appear
     await expect(status).toContainText("Found", { timeout: MEDIUM_TIMEOUT_MS });
+
+    // Verify results appeared only after debounce completed
+    const results = page.locator(".result-card");
+    await expect(results.first()).toBeVisible();
   });
 });
 

@@ -118,6 +118,26 @@ describe("pathUtils", () => {
     it("handles complex slugs", () => {
       expect(buildEntryPath("/", "mssql", "openrowset-attacks")).toBe("/mssql/openrowset-attacks");
     });
+
+    it("throws error when both section and slug are empty", () => {
+      expect(() => buildEntryPath("/", "", "")).toThrow(
+        "buildEntryPath requires at least one of section or slug to be non-empty"
+      );
+    });
+
+    it("throws error when both section and slug are whitespace-only", () => {
+      expect(() => buildEntryPath("/base/", "  ", "  ")).toThrow(
+        "buildEntryPath requires at least one of section or slug to be non-empty"
+      );
+    });
+
+    it("works when only section is provided", () => {
+      expect(buildEntryPath("/", "mysql", "")).toBe("/mysql");
+    });
+
+    it("works when only slug is provided", () => {
+      expect(buildEntryPath("/", "", "intro")).toBe("/intro");
+    });
   });
 
   describe("isActivePath", () => {

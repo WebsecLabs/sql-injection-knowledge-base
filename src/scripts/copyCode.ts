@@ -89,7 +89,10 @@ function legacyCopy(text: string, button: HTMLElement): void {
 
     document.body.appendChild(textarea);
     textarea.select();
-    // Legacy fallback for browsers without Clipboard API (Safari < 13.1, older browsers)
+    // DEPRECATED: execCommand('copy') is deprecated but kept as a fallback for older browsers
+    // (Safari < 13.1, legacy browsers) when Clipboard API is unavailable.
+    // See: https://developer.mozilla.org/en-US/docs/Web/API/Document/execCommand
+    // TODO: Remove this fallback once Safari < 13.1 support is dropped.
     document.execCommand("copy");
     document.body.removeChild(textarea);
 

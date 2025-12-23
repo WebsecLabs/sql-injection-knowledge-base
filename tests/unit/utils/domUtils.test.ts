@@ -363,6 +363,28 @@ describe("domUtils", () => {
       // Class should still be there because listener was removed
       expect(element.classList.contains("test-class")).toBe(true);
     });
+
+    it("removes class via 350ms fallback when transitionend never fires", () => {
+      vi.useFakeTimers();
+
+      const element = document.createElement("div");
+      container.appendChild(element);
+
+      withTransition(element, "fallback-test-class", () => {});
+
+      // Class should be present immediately after call
+      expect(element.classList.contains("fallback-test-class")).toBe(true);
+
+      // Advance time by 349ms - class should still be present
+      vi.advanceTimersByTime(349);
+      expect(element.classList.contains("fallback-test-class")).toBe(true);
+
+      // Advance to 350ms - fallback should trigger and remove class
+      vi.advanceTimersByTime(1);
+      expect(element.classList.contains("fallback-test-class")).toBe(false);
+
+      vi.useRealTimers();
+    });
   });
 
   describe("updateToggleAccessibility", () => {

@@ -107,8 +107,8 @@ SELECT 999, 'mixed_ws'
 Alternative whitespace characters between UNION and SELECT:
 
 ```sql
--- Tab between UNION and SELECT
-SELECT id FROM users UNION  SELECT 999
+-- Tab (%09) between UNION and SELECT
+SELECT id FROM users UNION%09SELECT 999
 
 -- Newline between UNION and SELECT
 SELECT id FROM users UNION

@@ -3,12 +3,14 @@ import { getCollection, type CollectionEntry } from "astro:content";
 import Layout from "../../layouts/Layout.astro";
 import MarkdownEntry from "../../components/MarkdownEntry.astro";
 import EntryNavigation from "../../components/EntryNavigation.astro";
+import StructuredData from "../../components/StructuredData.astro";
 import { COLLECTION_TYPES, COLLECTION_LABELS, type ValidCollection } from "../../utils/constants";
 import {
   getAdjacentEntries,
   getFirstEntrySlug,
   sortEntriesByCategory,
 } from "../../utils/entryUtils";
+import { requireSiteUrl } from "../../utils/siteUtils";
 
 // Union type for entries from any valid collection
 type AnyEntry = CollectionEntry<ValidCollection>;
@@ -77,9 +79,47 @@ const { headings } = await entry.render();
 
 // Filter to H2 and H3 headings for TOC (depth 2 and 3)
 const tocHeadings = headings.filter((h) => h.depth === 2 || h.depth === 3);
+
+// Ensure site is configured for structured data URLs
+const site = requireSiteUrl(Astro.site);
+
+// Build breadcrumb data for structured data
+const siteUrl = site.href;
+const breadcrumbItems = [
+  { name: "Home", url: siteUrl },
+  {
+    name: collectionTitle,
+    url: new URL(`${import.meta.env.BASE_URL}${collectionName}/${firstEntrySlug}`, site).href,
+  },
+  { name: entry.data.title },
+];
+
+// Build article data for structured data
+const articleUrl = new URL(Astro.url.pathname, site).href;
+const articleData = {
+  title: entry.data.title,
+  description:
+    entry.data.description ||
+    `${entry.data.title} - SQL injection techniques and examples for ${collectionTitle}`,
+  dateModified: entry.data.lastUpdated,
+  category: entry.data.category,
+  tags: entry.data.tags,
+  url: articleUrl,
+};
 ---
 
-<Layout title={pageTitle} collections={collections} tocHeadings={tocHeadings}>
+<Layout
+  title={pageTitle}
+  description={entry.data.description}
+  collections={collections}
+  tocHeadings={tocHeadings}
+  pageType="article"
+  lastModified={entry.data.lastUpdated}
+>
+  <!-- Structured Data for SEO (JSON-LD can be in body per Google guidelines) -->
+  <StructuredData type="breadcrumb" breadcrumbs={breadcrumbItems} />
+  <StructuredData type="article" article={articleData} />
+
   <div class="entry-container" transition:animate="slide">
     <div class="entry-header" transition:animate="fade">
       <nav class="breadcrumbs" aria-label="Breadcrumb">

@@ -253,11 +253,11 @@ test.describe("Table of Contents", () => {
     // Require sufficient TOC links for meaningful scroll-spy test
     expect(linkCount).toBeGreaterThan(3);
 
-    // Click on the "Numeric-Based Injection" link (H2)
-    // The TOC has: String-Based Injection, Examples, Notes, Numeric-Based Injection
-    const targetLink = page.locator('.toc-link[href="#numeric-based-injection"]');
-    const targetExists = await targetLink.count();
-    expect(targetExists).toBeGreaterThan(0);
+    // Dynamically select a TOC link from the discovered links (not the first few)
+    // This avoids hardcoding specific anchor values that may change
+    const targetIndex = Math.min(3, linkCount - 1); // Use 4th link if available
+    const targetLink = tocLinks.nth(targetIndex);
+    await expect(targetLink).toBeVisible();
 
     await targetLink.click();
 

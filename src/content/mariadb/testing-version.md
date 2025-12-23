@@ -190,9 +190,12 @@ SELECT /*!50700 JSON_EXTRACT('{"a":1}', '$.a') AS json_val,*/ 1 AS fallback
 SELECT 1 /*!99999 invalid_sql_here */
 -- Higher version = content is comment = query succeeds
 
--- Nested version comments (database-specific behavior)
+-- Nested version comments - NOT supported (causes syntax error)
 SELECT /*!50000 /*!50000 1 */ */ AS val
+-- Result: Syntax error - the inner */ closes the outer comment prematurely
 ```
+
+**Why nested version comments fail:** The inner `*/` at position 27 terminates the outer `/*!50000` comment, leaving a dangling `*/` which causes a syntax error. MariaDB and MySQL do not support nested version comments. While this pattern sometimes appears in obfuscation attempts or compatibility shims, it does not work as intended. The official MySQL documentation explicitly states that nested comments are not supported.
 
 ### Injection Point Detection
 

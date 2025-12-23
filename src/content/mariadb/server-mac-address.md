@@ -300,7 +300,7 @@ SELECT
 ```sql
 -- Verify UUID format in WHERE clause
 SELECT 1 FROM DUAL
-WHERE UUID() REGEXP '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$'
+WHERE UUID() REGEXP '^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$'
 ```
 
 ## Practical Use Cases

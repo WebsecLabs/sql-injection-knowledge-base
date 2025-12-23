@@ -3,7 +3,9 @@ import { getCollection } from "astro:content";
 import Layout from "../layouts/Layout.astro";
 import EntryList from "../components/EntryList.astro";
 import Tabs from "../components/Tabs.astro";
+import StructuredData from "../components/StructuredData.astro";
 import { COLLECTION_TYPES, COLLECTION_LABELS } from "../utils/constants";
+import { requireSiteUrl } from "../utils/siteUtils";
 
 // Get entries from all collections
 const mysqlEntries = await getCollection("mysql");
@@ -41,11 +43,19 @@ const activeDatabaseCount = [
   oracleEntries.length > 0,
   postgresqlEntries.length > 0,
 ].filter(Boolean).length;
+
+// Ensure site is configured for structured data URLs
+const site = requireSiteUrl(Astro.site);
+
+// Build site URL for structured data
+const siteUrl = site.href;
+const searchUrl = new URL(`${import.meta.env.BASE_URL}search`, site).href;
 ---
 
 <Layout
-  title="SQL Injection Knowledge Base | Home"
+  title="SQL Injection Knowledge Base"
   showSidebar={false}
+  pageType="website"
   collections={{
     mysqlEntries,
     mariadbEntries,
@@ -55,6 +65,14 @@ const activeDatabaseCount = [
     extrasEntries,
   }}
 >
+  <!-- Structured Data for SEO -->
+  <StructuredData
+    type="website"
+    siteName="SQL Injection Knowledge Base"
+    siteUrl={siteUrl}
+    searchUrl={searchUrl}
+  />
+
   <div class="home-intro" transition:animate="slide">
     <h1 transition:name="page-title">SQL Injection Knowledge Base</h1>
     <p class="lead" transition:animate="fade">

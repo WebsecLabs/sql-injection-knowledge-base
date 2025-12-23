@@ -1,0 +1,49 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630">
+  <defs>
+    <linearGradient id="bg-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#1a1a2e;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#16213e;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="accent-gradient" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#4361ee;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#7209b7;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+
+  <!-- Background -->
+  <rect width="1200" height="630" fill="url(#bg-gradient)"/>
+
+  <!-- Decorative code pattern background -->
+  <g opacity="0.1" fill="#4361ee">
+    <text x="50" y="80" font-family="monospace" font-size="14">SELECT * FROM users WHERE id = '1' OR '1'='1'</text>
+    <text x="200" y="120" font-family="monospace" font-size="14">UNION SELECT username, password FROM admin--</text>
+    <text x="100" y="160" font-family="monospace" font-size="14">'; DROP TABLE users;--</text>
+    <text x="300" y="200" font-family="monospace" font-size="14">1' AND SLEEP(5)--</text>
+    <text x="50" y="480" font-family="monospace" font-size="14">SELECT @@version</text>
+    <text x="250" y="520" font-family="monospace" font-size="14">LOAD_FILE('/etc/passwd')</text>
+    <text x="150" y="560" font-family="monospace" font-size="14">; EXEC xp_cmdshell('whoami')--</text>
+    <text x="400" y="600" font-family="monospace" font-size="14">pg_read_file('/etc/passwd')</text>
+  </g>
+
+  <!-- Database icons row -->
+  <g transform="translate(600, 100)" text-anchor="middle">
+    <text x="-300" y="0" font-family="Arial, sans-serif" font-size="24" fill="#4361ee">MySQL</text>
+    <text x="-150" y="0" font-family="Arial, sans-serif" font-size="24" fill="#4361ee">PostgreSQL</text>
+    <text x="0" y="0" font-family="Arial, sans-serif" font-size="24" fill="#4361ee">MSSQL</text>
+    <text x="150" y="0" font-family="Arial, sans-serif" font-size="24" fill="#4361ee">Oracle</text>
+    <text x="300" y="0" font-family="Arial, sans-serif" font-size="24" fill="#4361ee">MariaDB</text>
+  </g>
+
+  <!-- Main title -->
+  <text x="600" y="280" text-anchor="middle" font-family="Arial, sans-serif" font-size="72" font-weight="bold" fill="#ffffff">SQL Injection</text>
+  <text x="600" y="370" text-anchor="middle" font-family="Arial, sans-serif" font-size="56" font-weight="bold" fill="url(#accent-gradient)">Knowledge Base</text>
+
+  <!-- Subtitle -->
+  <text x="600" y="440" text-anchor="middle" font-family="Arial, sans-serif" font-size="24" fill="#a0a0a0">Comprehensive Reference for Security Professionals</text>
+
+  <!-- Bottom accent line -->
+  <rect x="400" y="500" width="400" height="4" rx="2" fill="url(#accent-gradient)"/>
+
+  <!-- Domain -->
+  <text x="600" y="580" text-anchor="middle" font-family="Arial, sans-serif" font-size="20" fill="#666666">websec.ca</text>
+</svg>

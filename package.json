@@ -4,7 +4,7 @@
   "version": "1.0.0",
   "description": "SQL Injection Knowledge Base",
   "engines": {
-    "node": ">=20.0.0"
+    "node": ">=24.0.0"
   },
   "scripts": {
     "dev": "astro dev",

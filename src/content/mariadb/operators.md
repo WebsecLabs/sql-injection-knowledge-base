@@ -206,19 +206,20 @@ SELECT id, CONCAT(username, ':', password) AS creds FROM users
 
 From highest to lowest:
 
-1. `!`, `~` (unary operators)
-2. `^` (bitwise XOR)
-3. `*`, `/`, `DIV`, `%`, `MOD`
-4. `-`, `+` (binary operators)
-5. `<<`, `>>`
-6. `&`
-7. `|`
-8. `=`, `<=>`, `>=`, `>`, `<=`, `<`, `<>`, `!=`, `IS`, `LIKE`, `REGEXP`
-9. `BETWEEN`, `CASE`, `WHEN`, `THEN`, `ELSE`
-10. `NOT`
-11. `AND`, `&&`
-12. `XOR`
-13. `OR`, `||`
+1. `!` (logical NOT - highest precedence unary)
+2. `-` (unary minus), `~` (bitwise NOT)
+3. `^` (bitwise XOR)
+4. `*`, `/`, `DIV`, `%`, `MOD`
+5. `-`, `+` (binary operators)
+6. `<<`, `>>`
+7. `&`
+8. `|`
+9. `=`, `<=>`, `>=`, `>`, `<=`, `<`, `<>`, `!=`, `IS`, `LIKE`, `REGEXP`
+10. `BETWEEN`, `CASE`, `WHEN`, `THEN`, `ELSE`
+11. `NOT`
+12. `AND`, `&&`
+13. `XOR`
+14. `OR`, `||`
 
 #### Precedence Examples
 

@@ -5,6 +5,12 @@
   padding: 0;
 }
 
+/* CSS Custom Properties for navbar and scroll offset */
+:root {
+  --navbar-height: 70px;
+  --scroll-offset: 10px; /* Breathing room below navbar */
+}
+
 html {
   font-size: 16px;
   scroll-behavior: smooth;
@@ -53,9 +59,9 @@ h6 {
   letter-spacing: -0.015em;
 
   /* Offset for sticky navbar when navigating via anchor links (TOC).
-   * Base navbar height is 70px; add 10px breathing room.
-   * Responsive adjustments below match navbar height changes. */
-  scroll-margin-top: 80px;
+   * Uses CSS custom properties for maintainability.
+   * Responsive adjustments below update --navbar-height per breakpoint. */
+  scroll-margin-top: calc(var(--navbar-height) + var(--scroll-offset));
 }
 
 h1 {
@@ -110,38 +116,23 @@ code {
   font-size: 0.9em;
 }
 
-/* Responsive scroll-margin-top for headings to match navbar height changes */
+/* Responsive navbar height adjustments - scroll-margin-top computed via custom properties */
 @media (width <= 1280px) {
-  h1,
-  h2,
-  h3,
-  h4,
-  h5,
-  h6 {
-    scroll-margin-top: 70px; /* navbar: 60px + 10px breathing room */
+  :root {
+    --navbar-height: 60px;
   }
 }
 
 @media (width <= 1200px) {
-  h1,
-  h2,
-  h3,
-  h4,
-  h5,
-  h6 {
-    scroll-margin-top: 65px; /* navbar: 55px + 10px breathing room */
+  :root {
+    --navbar-height: 55px;
   }
 }
 
 /* Mobile: navbar returns to 70px height */
 @media (width <= 1023px) {
-  h1,
-  h2,
-  h3,
-  h4,
-  h5,
-  h6 {
-    scroll-margin-top: 80px; /* navbar: 70px + 10px breathing room */
+  :root {
+    --navbar-height: 70px;
   }
 }
 

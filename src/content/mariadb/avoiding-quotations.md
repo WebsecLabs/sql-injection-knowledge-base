@@ -333,12 +333,13 @@ SELECT IF(
 
 ## Quick Reference
 
-| Technique     | Syntax               | Example for 'admin'        |
-| ------------- | -------------------- | -------------------------- |
-| Hex (0x)      | `0x` + hex value     | `0x61646D696E`             |
-| Hex (X'')     | `X'` + hex + `'`     | `X'61646D696E'`            |
-| CHAR()        | `CHAR(ascii, ...)`   | `CHAR(97,100,109,105,110)` |
-| UNHEX()       | `UNHEX('hex')`       | `UNHEX('61646D696E')`      |
-| FROM_BASE64() | `FROM_BASE64('b64')` | `FROM_BASE64('YWRtaW4=')`  |
+| Technique     | Syntax               | Example for 'admin'        | Requires Quotes? |
+| ------------- | -------------------- | -------------------------- | ---------------- |
+| Hex (0x)      | `0x` + hex value     | `0x61646D696E`             | No ✓             |
+| CHAR()        | `CHAR(ascii, ...)`   | `CHAR(97,100,109,105,110)` | No ✓             |
+| UNHEX()       | `UNHEX('hex')`       | `UNHEX('61646D696E')`      | Yes              |
+| FROM_BASE64() | `FROM_BASE64('b64')` | `FROM_BASE64('YWRtaW4=')`  | Yes              |
+
+> **Note:** Only `0x` hex notation and `CHAR()` are true quote-free techniques. `UNHEX()` and `FROM_BASE64()` require quoted string arguments and cannot bypass quote filters. The `X'...'` hex syntax also requires quotes and is not suitable for avoiding quotations.
 
 These techniques are particularly useful for bypassing WAFs (Web Application Firewalls) and other security filters that specifically block quoted strings in SQL queries.

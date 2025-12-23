@@ -1,7 +1,24 @@
-import { test, expect } from "@playwright/test";
+import { test, expect, type Page } from "@playwright/test";
 
 /** Maximum expected gap in pixels between adjacent navbar elements */
 const MAX_EXPECTED_GAP_PX = 100;
+
+/**
+ * Clicks outside the navbar to close any open dropdowns.
+ * Tries main content area first, falls back to body click below navbar.
+ */
+async function clickOutsideNavbar(page: Page): Promise<void> {
+  const mainContent = page.locator("main").first();
+  if ((await mainContent.count()) > 0) {
+    await mainContent.click({ force: true });
+  } else {
+    // Fallback: click on body at a position below the navbar
+    const navbar = page.locator(".navbar");
+    const navbarBounds = await navbar.boundingBox();
+    const clickY = navbarBounds ? navbarBounds.y + navbarBounds.height + 100 : 300;
+    await page.locator("body").click({ position: { x: 100, y: clickY } });
+  }
+}
 
 test.describe("Navbar - Desktop", () => {
   test.beforeEach(async ({ page }) => {
@@ -366,19 +383,8 @@ test.describe("Navbar - Dropdown Switching", () => {
     await databasesButton.click();
     await expect(databasesDropdown).toHaveClass(/show/);
 
-    // Click outside on the main content area (reliable element outside navbar)
-    const mainContent = page.locator("main").first();
-    if ((await mainContent.count()) > 0) {
-      await mainContent.click({ force: true });
-    } else {
-      // Fallback: click on body at a position below the navbar
-      const navbar = page.locator(".navbar");
-      const navbarBounds = await navbar.boundingBox();
-      const clickY = navbarBounds ? navbarBounds.y + navbarBounds.height + 100 : 300;
-      await page.locator("body").click({ position: { x: 100, y: clickY } });
-    }
-
-    // Dropdown should close
+    // Click outside to close dropdown
+    await clickOutsideNavbar(page);
     await expect(databasesDropdown).not.toHaveClass(/show/);
   });
 
@@ -400,17 +406,8 @@ test.describe("Navbar - Dropdown Switching", () => {
     await databasesButton.click();
     await expect(databasesDropdown).toHaveClass(/show/);
 
-    // Click outside to close (using main content area)
-    const mainContent = page.locator("main").first();
-    if ((await mainContent.count()) > 0) {
-      await mainContent.click({ force: true });
-    } else {
-      // Fallback: click on body at a position below the navbar
-      const navbar = page.locator(".navbar");
-      const navbarBounds = await navbar.boundingBox();
-      const clickY = navbarBounds ? navbarBounds.y + navbarBounds.height + 100 : 300;
-      await page.locator("body").click({ position: { x: 100, y: clickY } });
-    }
+    // Click outside to close
+    await clickOutsideNavbar(page);
     await expect(databasesDropdown).not.toHaveClass(/show/);
   });
 });

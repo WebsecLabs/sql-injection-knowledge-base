@@ -38,7 +38,7 @@ function normalizeHostname(hostname: string): string {
 function isValidGitHubHost(hostname: string): boolean {
   const normalized = normalizeHostname(hostname);
   // Exact match for github.com or www.github.com
-  if (ALLOWED_GITHUB_HOSTS.includes(normalized as (typeof ALLOWED_GITHUB_HOSTS)[number])) {
+  if ((ALLOWED_GITHUB_HOSTS as readonly string[]).includes(normalized)) {
     return true;
   }
   // GitHub Enterprise: must be a subdomain of github.com (e.g., enterprise.github.com)

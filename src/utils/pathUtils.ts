@@ -79,9 +79,15 @@ export function normalizePath(path: string): string {
 export function buildEntryPath(baseUrl: string, section: string, slug: string): string {
   // Ensure baseUrl ends with exactly one slash
   const normalizedBase = baseUrl.endsWith("/") ? baseUrl : `${baseUrl}/`;
-  // Trim leading/trailing slashes from section and slug
-  const normalizedSection = section.replace(/^\/+|\/+$/g, "");
-  const normalizedSlug = slug.replace(/^\/+|\/+$/g, "");
+  // Trim whitespace and leading/trailing slashes from section and slug
+  const normalizedSection = section.trim().replace(/^\/+|\/+$/g, "");
+  const normalizedSlug = slug.trim().replace(/^\/+|\/+$/g, "");
+
+  // Validate that at least one of section or slug is non-empty
+  if (!normalizedSection && !normalizedSlug) {
+    throw new Error("buildEntryPath requires at least one of section or slug to be non-empty");
+  }
+
   // Filter out empty segments to avoid double slashes
   const segments = [normalizedSection, normalizedSlug].filter(Boolean);
   return normalizePath(`${normalizedBase}${segments.join("/")}`);
