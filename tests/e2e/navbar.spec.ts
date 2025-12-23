@@ -152,7 +152,7 @@ test.describe("Navbar - Mobile", () => {
     await expect(navbarMenu).not.toHaveClass(/active/);
 
     // Verify menu is positioned off-screen by checking its bounding box
-    const viewportWidth = 375; // Mobile viewport width set in beforeEach
+    const viewportWidth = page.viewportSize()?.width ?? 375;
     const menuBounds = await navbarMenu.evaluate((el) => {
       const rect = el.getBoundingClientRect();
       return { right: rect.right, left: rect.left, width: rect.width };

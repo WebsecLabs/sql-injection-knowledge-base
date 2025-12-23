@@ -166,10 +166,11 @@ test.describe("Search Page - Mobile", () => {
     // Result cards should fit within viewport
     const firstResult = results.first();
     const boundingBox = await firstResult.boundingBox();
+    const viewportWidth = page.viewportSize()?.width ?? 375;
 
-    if (boundingBox) {
-      expect(boundingBox.width).toBeLessThanOrEqual(375);
-    }
+    // Explicitly fail if boundingBox is null (element not visible/rendered)
+    expect(boundingBox, "Result card should have a valid bounding box").not.toBeNull();
+    expect(boundingBox!.width).toBeLessThanOrEqual(viewportWidth);
   });
 });
 

@@ -487,108 +487,141 @@
 
 /* ============================================
    Dark Mode Dropdown Styles
-   Consolidated rules for both manual .dark class and system preference.
-   Note: Media query rules cannot be combined with non-media-query selectors
-   in pure CSS, so we use @media block for system preference detection.
+   Uses CSS custom properties to avoid value duplication between
+   manual .dark class and system preference media query.
+   Note: Media query rules cannot be combined with class selectors
+   in pure CSS, so property definitions must appear in both contexts.
    ============================================ */
 
-/* Manual dark mode (.dark class) */
+/* Dark mode custom properties - manual .dark class */
+.dark .navbar {
+  --navbar-dropdown-bg: var(--color-card-bg);
+  --navbar-dropdown-text: var(--color-text);
+  --navbar-dropdown-hover-bg: var(--color-code-bg);
+  --navbar-divider-bg: var(--color-border);
+  --navbar-header-text: var(--color-text);
+  --navbar-header-muted: var(--color-text-muted);
+  --navbar-chevron-stroke: var(--color-text-muted);
+  --navbar-expanded-bg: rgb(66 153 225 / 10%);
+  --navbar-expanded-hover-bg: rgb(66 153 225 / 15%);
+  --navbar-expanded-text: var(--color-primary);
+  --navbar-expanded-chevron: var(--color-primary);
+}
+
+/* Dark mode custom properties - system preference */
+@media (prefers-color-scheme: dark) {
+  html:not(.light, .dark) .navbar {
+    --navbar-dropdown-bg: var(--color-card-bg);
+    --navbar-dropdown-text: var(--color-text);
+    --navbar-dropdown-hover-bg: var(--color-code-bg);
+    --navbar-divider-bg: var(--color-border);
+    --navbar-header-text: var(--color-text);
+    --navbar-header-muted: var(--color-text-muted);
+    --navbar-chevron-stroke: var(--color-text-muted);
+    --navbar-expanded-bg: rgb(66 153 225 / 10%);
+    --navbar-expanded-hover-bg: rgb(66 153 225 / 15%);
+    --navbar-expanded-text: var(--color-primary);
+    --navbar-expanded-chevron: var(--color-primary);
+  }
+}
+
+/* Dark mode dropdown rules - manual .dark class */
 .dark .navbar .dropdown-menu {
-  background-color: var(--color-card-bg);
+  background-color: var(--navbar-dropdown-bg);
 }
 
 .dark .navbar .dropdown-item {
-  color: var(--color-text);
+  color: var(--navbar-dropdown-text);
 }
 
 .dark .navbar .dropdown-item:hover,
 .dark .navbar .dropdown-item.active {
-  background-color: var(--color-code-bg);
+  background-color: var(--navbar-dropdown-hover-bg);
 }
 
 .dark .navbar .dropdown-divider,
 .dark .navbar .database-section-divider {
-  background-color: var(--color-border);
+  background-color: var(--navbar-divider-bg);
 }
 
 .dark .navbar .database-section-header {
   background-color: transparent;
-  color: var(--color-text);
+  color: var(--navbar-header-text);
 }
 
 .dark .navbar .database-section-header:hover {
-  background-color: var(--color-code-bg);
+  background-color: var(--navbar-dropdown-hover-bg);
 }
 
 .dark .navbar .database-section.expanded .database-section-header {
-  background-color: rgb(66 153 225 / 10%);
-  color: var(--color-primary);
+  background-color: var(--navbar-expanded-bg);
+  color: var(--navbar-expanded-text);
 }
 
 .dark .navbar .database-section.expanded .database-section-header:hover {
-  background-color: rgb(66 153 225 / 15%);
+  background-color: var(--navbar-expanded-hover-bg);
 }
 
 .dark .navbar .database-chevron {
-  stroke: var(--color-text-muted);
+  stroke: var(--navbar-chevron-stroke);
 }
 
 .dark .navbar .database-section.expanded .database-chevron {
-  stroke: var(--color-primary);
+  stroke: var(--navbar-expanded-chevron);
 }
 
 .dark .navbar .dropdown-header {
-  color: var(--color-text-muted);
+  color: var(--navbar-header-muted);
 }
 
-/* System dark mode (when no .light or .dark class is set) */
+/* Dark mode dropdown rules - system preference */
 @media (prefers-color-scheme: dark) {
   html:not(.light, .dark) .navbar .dropdown-menu {
-    background-color: var(--color-card-bg);
+    background-color: var(--navbar-dropdown-bg);
   }
 
   html:not(.light, .dark) .navbar .dropdown-item {
-    color: var(--color-text);
+    color: var(--navbar-dropdown-text);
   }
 
   html:not(.light, .dark) .navbar .dropdown-item:hover,
   html:not(.light, .dark) .navbar .dropdown-item.active {
-    background-color: var(--color-code-bg);
+    background-color: var(--navbar-dropdown-hover-bg);
   }
 
   html:not(.light, .dark) .navbar .dropdown-divider,
   html:not(.light, .dark) .navbar .database-section-divider {
-    background-color: var(--color-border);
+    background-color: var(--navbar-divider-bg);
   }
 
   html:not(.light, .dark) .navbar .database-section-header {
     background-color: transparent;
-    color: var(--color-text);
+    color: var(--navbar-header-text);
   }
 
   html:not(.light, .dark) .navbar .database-section-header:hover {
-    background-color: var(--color-code-bg);
+    background-color: var(--navbar-dropdown-hover-bg);
   }
 
   html:not(.light, .dark) .navbar .database-section.expanded .database-section-header {
-    background-color: rgb(66 153 225 / 10%);
-    color: var(--color-primary);
+    background-color: var(--navbar-expanded-bg);
+    color: var(--navbar-expanded-text);
   }
 
   html:not(.light, .dark) .navbar .database-section.expanded .database-section-header:hover {
-    background-color: rgb(66 153 225 / 15%);
+    background-color: var(--navbar-expanded-hover-bg);
   }
 
   html:not(.light, .dark) .navbar .database-chevron {
-    stroke: var(--color-text-muted);
+    stroke: var(--navbar-chevron-stroke);
   }
 
   html:not(.light, .dark) .navbar .database-section.expanded .database-chevron {
-    stroke: var(--color-primary);
+    stroke: var(--navbar-expanded-chevron);
   }
 
   html:not(.light, .dark) .navbar .dropdown-header {
-    color: var(--color-text-muted);
+    color: var(--navbar-header-muted);
   }
 }
 
@@ -893,58 +926,72 @@
    Mobile Dark Mode Styles
    NOTE: 1023px = MOBILE_BREAKPOINT (1024) - 1 to match main mobile layout
 
-   The nested @media (prefers-color-scheme: dark) query is intentional:
-   - Outer query: Only applies to mobile viewport (width <= 1023px)
-   - Inner query: Only applies when system prefers dark AND no manual theme is set
-   - This creates an intersection condition that cannot be flattened without duplication
-   - CSS nested media queries are valid per CSS Nesting spec (fully supported in modern browsers)
+   Uses CSS custom properties (defined in desktop dark mode section above)
+   to avoid value duplication between manual .dark and system preference.
    ============================================ */
 
 @media (width <= 1023px) {
+  /* Mobile-specific dark mode custom properties */
+  .dark .navbar {
+    --navbar-mobile-menu-bg: var(--color-card-bg);
+    --navbar-mobile-dropdown-bg: var(--color-sidebar-bg);
+    --navbar-mobile-text: var(--color-text);
+    --navbar-mobile-border: var(--color-border);
+    --navbar-mobile-input-bg: var(--color-code-bg);
+  }
+
   .dark .navbar-menu {
-    background-color: var(--color-card-bg);
+    background-color: var(--navbar-mobile-menu-bg);
   }
 
   .dark .navbar .nav-link {
-    color: var(--color-text);
+    color: var(--navbar-mobile-text);
   }
 
   .dark .navbar .nav-item {
-    border-bottom-color: var(--color-border);
+    border-bottom-color: var(--navbar-mobile-border);
   }
 
   .dark .navbar .dropdown-menu {
-    background-color: var(--color-sidebar-bg);
+    background-color: var(--navbar-mobile-dropdown-bg);
   }
 
   .dark .navbar #navbar-search-input {
-    background-color: var(--color-code-bg);
-    color: var(--color-text);
-    border-color: var(--color-border);
+    background-color: var(--navbar-mobile-input-bg);
+    color: var(--navbar-mobile-text);
+    border-color: var(--navbar-mobile-border);
   }
 
-  /* System dark mode on mobile - applies when user has not manually set theme */
+  /* System dark mode on mobile */
   @media (prefers-color-scheme: dark) {
+    html:not(.light, .dark) .navbar {
+      --navbar-mobile-menu-bg: var(--color-card-bg);
+      --navbar-mobile-dropdown-bg: var(--color-sidebar-bg);
+      --navbar-mobile-text: var(--color-text);
+      --navbar-mobile-border: var(--color-border);
+      --navbar-mobile-input-bg: var(--color-code-bg);
+    }
+
     html:not(.light, .dark) .navbar-menu {
-      background-color: var(--color-card-bg);
+      background-color: var(--navbar-mobile-menu-bg);
     }
 
     html:not(.light, .dark) .navbar .nav-link {
-      color: var(--color-text);
+      color: var(--navbar-mobile-text);
     }
 
     html:not(.light, .dark) .navbar .nav-item {
-      border-bottom-color: var(--color-border);
+      border-bottom-color: var(--navbar-mobile-border);
     }
 
     html:not(.light, .dark) .navbar .dropdown-menu {
-      background-color: var(--color-sidebar-bg);
+      background-color: var(--navbar-mobile-dropdown-bg);
     }
 
     html:not(.light, .dark) .navbar #navbar-search-input {
-      background-color: var(--color-code-bg);
-      color: var(--color-text);
-      border-color: var(--color-border);
+      background-color: var(--navbar-mobile-input-bg);
+      color: var(--navbar-mobile-text);
+      border-color: var(--navbar-mobile-border);
     }
   }
 }

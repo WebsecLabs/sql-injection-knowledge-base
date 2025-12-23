@@ -185,10 +185,12 @@ describe("copyCode", () => {
         configurable: true,
       });
 
-      // JSDOM doesn't have execCommand - define it to throw
-      (document as unknown as { execCommand: (cmd: string) => boolean }).execCommand = () => {
-        throw new Error("execCommand failed");
-      };
+      // JSDOM doesn't have execCommand - define it to throw (using vi.fn for consistency)
+      (document as unknown as { execCommand: (cmd: string) => boolean }).execCommand = vi
+        .fn()
+        .mockImplementation(() => {
+          throw new Error("execCommand failed");
+        });
 
       // Suppress expected console.error from legacyCopy
       vi.spyOn(console, "error").mockImplementation(() => {});
@@ -207,7 +209,7 @@ describe("copyCode", () => {
       document.body.innerHTML = `<pre><code>test code</code></pre>`;
 
       // Create a deferred promise to control timing
-      let resolveClipboard: () => void;
+      let resolveClipboard!: () => void;
       const clipboardPromise = new Promise<void>((resolve) => {
         resolveClipboard = resolve;
       });
@@ -226,7 +228,7 @@ describe("copyCode", () => {
       expect(button.textContent).toBe("Copy");
 
       // Resolve the clipboard promise and flush microtasks
-      resolveClipboard!();
+      resolveClipboard();
       await vi.advanceTimersByTimeAsync(0);
 
       // Now it should say "Copied!"

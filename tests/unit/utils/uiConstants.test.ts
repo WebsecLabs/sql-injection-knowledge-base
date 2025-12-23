@@ -55,6 +55,28 @@ describe("uiConstants", () => {
       expect(typeof constants.DROPDOWN_MOBILE_MAX_HEIGHT).toBe("string");
       expect(constants.DROPDOWN_MOBILE_MAX_HEIGHT).toMatch(/^\d+px$/);
     });
+
+    it("should export DROPDOWN_TRANSITION_TIMEOUT_MS as a positive number", () => {
+      expect(typeof constants.DROPDOWN_TRANSITION_TIMEOUT_MS).toBe("number");
+      expect(constants.DROPDOWN_TRANSITION_TIMEOUT_MS).toBeGreaterThan(0);
+    });
+  });
+
+  describe("TOC constants", () => {
+    it("should export TOC_HIDE_BREAKPOINT as a positive number", () => {
+      expect(typeof constants.TOC_HIDE_BREAKPOINT).toBe("number");
+      expect(constants.TOC_HIDE_BREAKPOINT).toBeGreaterThan(0);
+    });
+
+    it("should export TOC_STORAGE_KEY as a non-empty string", () => {
+      expect(typeof constants.TOC_STORAGE_KEY).toBe("string");
+      expect(constants.TOC_STORAGE_KEY.length).toBeGreaterThan(0);
+    });
+
+    it("should export TOC_MIN_HEADINGS as a number >= 1", () => {
+      expect(typeof constants.TOC_MIN_HEADINGS).toBe("number");
+      expect(constants.TOC_MIN_HEADINGS).toBeGreaterThanOrEqual(1);
+    });
   });
 
   describe("all constants are defined", () => {

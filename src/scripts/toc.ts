@@ -180,10 +180,8 @@ function initScrollSpy(): void {
     }
   );
 
-  // Observe all headings (with defensive check)
-  if (tocObserver) {
-    headings.forEach((heading) => tocObserver?.observe(heading));
-  }
+  // Observe all headings
+  headings.forEach((heading) => tocObserver.observe(heading));
 }
 
 /**

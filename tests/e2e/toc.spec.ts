@@ -3,7 +3,7 @@ import { test, expect, type Page } from "@playwright/test";
 // Use a page known to have multiple headings for TOC tests
 const TOC_TEST_PAGE = "/mysql/testing-injection";
 
-// TOC width constants (must match values in toc.css)
+// TOC width constants - sync with src/styles/toc.css (.toc width and .toc.toc-collapsed width)
 const TOC_EXPANDED_WIDTH = "250px";
 const TOC_COLLAPSED_WIDTH = "48px";
 
