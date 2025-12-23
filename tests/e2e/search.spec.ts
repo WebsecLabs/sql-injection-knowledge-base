@@ -18,33 +18,26 @@ test.describe("Search Page", () => {
     await expect(initialPrompt).toBeVisible();
   });
 
-  test("should return results for a common query", async ({ page }) => {
+  test("should return results with highlights for a common query", async ({ page }) => {
+    // Consolidated test: validates search status, result visibility, and highlighting
     const input = page.locator("#search-page-input");
     await input.fill("Intro");
 
+    // Check status shows results found
     const status = page.locator("#search-status");
     await expect(status).toContainText("Found");
 
+    // Check result cards are visible
     const results = page.locator(".result-card");
-    await expect(results.first()).toBeVisible();
-  });
+    await expect(results.first()).toBeVisible({ timeout: LONG_TIMEOUT_MS });
 
-  test("should display result cards with content", async ({ page }) => {
-    const input = page.locator("#search-page-input");
-    await input.fill("Intro");
-
-    // Wait for debounce and results
-    const firstResult = page.locator(".result-card").first();
-    await expect(firstResult).toBeVisible({ timeout: LONG_TIMEOUT_MS });
-  });
-
-  test("should highlight matching terms in results", async ({ page }) => {
-    const input = page.locator("#search-page-input");
-    await input.fill("Intro");
-
-    // Wait for results and check for mark tags
+    // Check matching terms are highlighted
     const highlights = page.locator(".result-card mark");
     await expect(highlights.first()).toBeVisible({ timeout: LONG_TIMEOUT_MS });
+
+    // Verify multiple results are returned
+    const resultCount = await results.count();
+    expect(resultCount).toBeGreaterThan(0);
   });
 
   test("should navigate to result when clicked", async ({ page }) => {
@@ -71,19 +64,6 @@ test.describe("Search Page", () => {
     // Status should update (either "No results" or "Found 0")
     await expect(status).not.toHaveText("Loading...");
     await expect(status).toBeVisible();
-  });
-
-  test("should display search results after typing", async ({ page }) => {
-    const input = page.locator("#search-page-input");
-    await input.fill("Intro");
-
-    // Wait for results to appear
-    const results = page.locator(".result-card");
-    await expect(results.first()).toBeVisible({ timeout: LONG_TIMEOUT_MS });
-
-    // Results should contain meaningful content
-    const resultCount = await results.count();
-    expect(resultCount).toBeGreaterThan(0);
   });
 
   test("should load search from URL query parameter", async ({ page }) => {
@@ -183,17 +163,16 @@ test.describe("Navbar Search", () => {
   });
 
   test("should navigate to search page on search icon click", async ({ page }) => {
+    // Check for search icon at the start before any other interactions
+    const searchIcon = page.locator(".navbar-search .search-icon, .navbar-search button");
+    const iconCount = await searchIcon.count();
+
+    // Skip test if search icon is not present in current implementation
+    // Using test.skip() at the top of the test is the idiomatic Playwright pattern
+    test.skip(iconCount === 0, "Search icon not present in current navbar implementation");
+
     const searchInput = page.locator("#navbar-search-input");
     await searchInput.fill("test query");
-
-    const searchIcon = page.locator(".navbar-search .search-icon, .navbar-search button");
-    const iconExists = await searchIcon.count();
-
-    // Explicitly skip test when search icon is not present, rather than silently passing
-    if (iconExists === 0) {
-      test.skip(true, "Search icon not present in current navbar implementation");
-      return;
-    }
 
     await searchIcon.click();
     await expect(page).toHaveURL(/\/search/);

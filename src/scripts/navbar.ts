@@ -14,7 +14,6 @@ import {
   NAVBAR_MOBILE_BREAKPOINT,
   DROPDOWN_MOBILE_MAX_HEIGHT,
   RESIZE_DEBOUNCE_MS,
-  INIT_FALLBACK_DELAY_MS,
 } from "../utils/uiConstants";
 import {
   cloneAndReplace,
@@ -252,6 +251,8 @@ window.initializeNavbar = function () {
       if (target && !target.closest(".dropdown")) {
         const isMobileView = window.innerWidth < MOBILE_BREAKPOINT;
         document.querySelectorAll(".dropdown").forEach((dropdown) => {
+          // Only process dropdowns that are currently shown
+          // This prevents redundant calls and ensures transitions only run when needed
           if (dropdown.classList.contains("show")) {
             // Enable transitions for smooth close animation on desktop
             if (!isMobileView) {
@@ -261,8 +262,8 @@ window.initializeNavbar = function () {
                 handleOpacityTransition(menu, dropdown);
               }
             }
+            collapseDropdown(dropdown, isMobileView);
           }
-          collapseDropdown(dropdown, isMobileView);
         });
       }
     };
@@ -423,7 +424,7 @@ window.initializeNavbar = function () {
 
 // Run initialization on various events
 
-// 1. When DOM is ready
+// 1. When DOM is ready (for initial page load without View Transitions)
 if (document.readyState === "loading") {
   document.addEventListener("DOMContentLoaded", window.initializeNavbar);
 } else {
@@ -431,16 +432,8 @@ if (document.readyState === "loading") {
   window.initializeNavbar();
 }
 
-// 2. On Astro page load (for View Transitions)
+// 2. On Astro page load (for View Transitions - fires after the new page is visible)
+// Note: astro:after-swap is intentionally not used as it fires before the page is visible,
+// and astro:page-load already covers View Transitions. The idempotency guards in
+// initializeNavbar ensure multiple calls are safe.
 document.addEventListener("astro:page-load", window.initializeNavbar);
-
-// 3. After page swap (for View Transitions)
-document.addEventListener("astro:after-swap", window.initializeNavbar);
-
-// 4. As a fallback, also run after a short delay - but only if not already initialized
-// This prevents unnecessary re-initialization when DOMContentLoaded or immediate call already ran
-setTimeout(() => {
-  if (!navbarInitialized && window.initializeNavbar) {
-    window.initializeNavbar();
-  }
-}, INIT_FALLBACK_DELAY_MS);

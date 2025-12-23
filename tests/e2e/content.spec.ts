@@ -151,8 +151,11 @@ test.describe("Collection Pages", () => {
 });
 
 test.describe("Home Page", () => {
-  test("should display home page with proper structure", async ({ page }) => {
+  test.beforeEach(async ({ page }) => {
     await page.setViewportSize({ width: 1920, height: 1080 });
+  });
+
+  test("should display home page with proper structure", async ({ page }) => {
     await page.goto("/");
 
     const navbar = page.locator(".navbar, nav");
@@ -160,7 +163,6 @@ test.describe("Home Page", () => {
   });
 
   test("should have working navigation to collections", async ({ page }) => {
-    await page.setViewportSize({ width: 1920, height: 1080 });
     await page.goto("/");
 
     // Open Databases dropdown and navigate
@@ -187,8 +189,11 @@ test.describe("Home Page", () => {
 });
 
 test.describe("Navigation", () => {
-  test("should navigate between pages using sidebar", async ({ page }) => {
+  test.beforeEach(async ({ page }) => {
     await page.setViewportSize({ width: 1920, height: 1080 });
+  });
+
+  test("should navigate between pages using sidebar", async ({ page }) => {
     await page.goto("/mysql/intro");
 
     // Find sidebar links and click the second one if available

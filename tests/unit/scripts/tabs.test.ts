@@ -317,6 +317,7 @@ describe("initializeTabs", () => {
 
     it("moves to next tab on ArrowRight", () => {
       const tabs = container.querySelectorAll(".tab-item");
+      const panels = container.querySelectorAll(".tab-content");
       const tab2 = tabs[1] as HTMLElement;
       const tab3 = tabs[2] as HTMLElement;
 
@@ -336,13 +337,22 @@ describe("initializeTabs", () => {
       expect(preventDefault).toHaveBeenCalled();
       expect(tab3.classList.contains("active")).toBe(true);
       expect(document.activeElement).toBe(tab3);
+
+      // Verify panel visibility changed
+      expect(panels[2].classList.contains("active")).toBe(true);
+      expect(panels[2].getAttribute("aria-hidden")).toBe("false");
+      expect(panels[1].classList.contains("active")).toBe(false);
+      expect(panels[1].getAttribute("aria-hidden")).toBe("true");
     });
 
     it("wraps to first tab when ArrowRight is pressed on last tab", () => {
       const tabs = container.querySelectorAll(".tab-item");
+      const panels = container.querySelectorAll(".tab-content");
       const tab1 = tabs[0] as HTMLElement;
       const tab3 = tabs[2] as HTMLElement;
 
+      // First activate tab3 so we can test wrapping
+      tab3.click();
       tab3.focus();
 
       const event = new KeyboardEvent("keydown", {
@@ -354,14 +364,21 @@ describe("initializeTabs", () => {
 
       expect(tab1.classList.contains("active")).toBe(true);
       expect(document.activeElement).toBe(tab1);
+
+      // Verify panel visibility changed
+      expect(panels[0].classList.contains("active")).toBe(true);
+      expect(panels[0].getAttribute("aria-hidden")).toBe("false");
+      expect(panels[2].classList.contains("active")).toBe(false);
+      expect(panels[2].getAttribute("aria-hidden")).toBe("true");
     });
 
     it("moves to previous tab on ArrowLeft", () => {
       const tabs = container.querySelectorAll(".tab-item");
+      const panels = container.querySelectorAll(".tab-content");
       const tab1 = tabs[0] as HTMLElement;
       const tab2 = tabs[1] as HTMLElement;
 
-      // Focus tab2
+      // Focus tab2 (the default active tab)
       tab2.focus();
 
       const event = new KeyboardEvent("keydown", {
@@ -375,13 +392,22 @@ describe("initializeTabs", () => {
       expect(preventDefault).toHaveBeenCalled();
       expect(tab1.classList.contains("active")).toBe(true);
       expect(document.activeElement).toBe(tab1);
+
+      // Verify panel visibility changed
+      expect(panels[0].classList.contains("active")).toBe(true);
+      expect(panels[0].getAttribute("aria-hidden")).toBe("false");
+      expect(panels[1].classList.contains("active")).toBe(false);
+      expect(panels[1].getAttribute("aria-hidden")).toBe("true");
     });
 
     it("wraps to last tab when ArrowLeft is pressed on first tab", () => {
       const tabs = container.querySelectorAll(".tab-item");
+      const panels = container.querySelectorAll(".tab-content");
       const tab1 = tabs[0] as HTMLElement;
       const tab3 = tabs[2] as HTMLElement;
 
+      // First activate tab1 so we can test wrapping
+      tab1.click();
       tab1.focus();
 
       const event = new KeyboardEvent("keydown", {
@@ -393,13 +419,21 @@ describe("initializeTabs", () => {
 
       expect(tab3.classList.contains("active")).toBe(true);
       expect(document.activeElement).toBe(tab3);
+
+      // Verify panel visibility changed
+      expect(panels[2].classList.contains("active")).toBe(true);
+      expect(panels[2].getAttribute("aria-hidden")).toBe("false");
+      expect(panels[0].classList.contains("active")).toBe(false);
+      expect(panels[0].getAttribute("aria-hidden")).toBe("true");
     });
 
     it("moves to first tab on Home key", () => {
       const tabs = container.querySelectorAll(".tab-item");
+      const panels = container.querySelectorAll(".tab-content");
       const tab1 = tabs[0] as HTMLElement;
       const tab2 = tabs[1] as HTMLElement;
 
+      // tab2 is the default active tab
       tab2.focus();
 
       const event = new KeyboardEvent("keydown", { key: "Home", bubbles: true, cancelable: true });
@@ -409,13 +443,21 @@ describe("initializeTabs", () => {
       expect(preventDefault).toHaveBeenCalled();
       expect(tab1.classList.contains("active")).toBe(true);
       expect(document.activeElement).toBe(tab1);
+
+      // Verify panel visibility changed
+      expect(panels[0].classList.contains("active")).toBe(true);
+      expect(panels[0].getAttribute("aria-hidden")).toBe("false");
+      expect(panels[1].classList.contains("active")).toBe(false);
+      expect(panels[1].getAttribute("aria-hidden")).toBe("true");
     });
 
     it("moves to last tab on End key", () => {
       const tabs = container.querySelectorAll(".tab-item");
+      const panels = container.querySelectorAll(".tab-content");
       const tab2 = tabs[1] as HTMLElement;
       const tab3 = tabs[2] as HTMLElement;
 
+      // tab2 is the default active tab
       tab2.focus();
 
       const event = new KeyboardEvent("keydown", { key: "End", bubbles: true, cancelable: true });
@@ -425,13 +467,20 @@ describe("initializeTabs", () => {
       expect(preventDefault).toHaveBeenCalled();
       expect(tab3.classList.contains("active")).toBe(true);
       expect(document.activeElement).toBe(tab3);
+
+      // Verify panel visibility changed
+      expect(panels[2].classList.contains("active")).toBe(true);
+      expect(panels[2].getAttribute("aria-hidden")).toBe("false");
+      expect(panels[1].classList.contains("active")).toBe(false);
+      expect(panels[1].getAttribute("aria-hidden")).toBe("true");
     });
 
     it("activates current tab on Enter key", () => {
       const tabs = container.querySelectorAll(".tab-item");
+      const panels = container.querySelectorAll(".tab-content");
       const tab1 = tabs[0] as HTMLElement;
 
-      // Make tab1 inactive first
+      // Make tab1 inactive first (tab2 is default active)
       expect(tab1.classList.contains("active")).toBe(false);
 
       tab1.focus();
@@ -442,13 +491,20 @@ describe("initializeTabs", () => {
 
       expect(preventDefault).toHaveBeenCalled();
       expect(tab1.classList.contains("active")).toBe(true);
+
+      // Verify panel visibility changed
+      expect(panels[0].classList.contains("active")).toBe(true);
+      expect(panels[0].getAttribute("aria-hidden")).toBe("false");
+      expect(panels[1].classList.contains("active")).toBe(false);
+      expect(panels[1].getAttribute("aria-hidden")).toBe("true");
     });
 
     it("activates current tab on Space key", () => {
       const tabs = container.querySelectorAll(".tab-item");
+      const panels = container.querySelectorAll(".tab-content");
       const tab1 = tabs[0] as HTMLElement;
 
-      // Make tab1 inactive first
+      // Make tab1 inactive first (tab2 is default active)
       expect(tab1.classList.contains("active")).toBe(false);
 
       tab1.focus();
@@ -459,14 +515,26 @@ describe("initializeTabs", () => {
 
       expect(preventDefault).toHaveBeenCalled();
       expect(tab1.classList.contains("active")).toBe(true);
+
+      // Verify panel visibility changed
+      expect(panels[0].classList.contains("active")).toBe(true);
+      expect(panels[0].getAttribute("aria-hidden")).toBe("false");
+      expect(panels[1].classList.contains("active")).toBe(false);
+      expect(panels[1].getAttribute("aria-hidden")).toBe("true");
     });
 
     it("does nothing for other keys", () => {
       const tabs = container.querySelectorAll(".tab-item");
+      const panels = container.querySelectorAll(".tab-content");
       const tab2 = tabs[1] as HTMLElement;
 
       tab2.focus();
       const initialActive = tab2.classList.contains("active");
+
+      // Capture initial panel states
+      const initialPanel0Active = panels[0].classList.contains("active");
+      const initialPanel1Active = panels[1].classList.contains("active");
+      const initialPanel2Active = panels[2].classList.contains("active");
 
       const event = new KeyboardEvent("keydown", { key: "a", bubbles: true, cancelable: true });
       const preventDefault = vi.spyOn(event, "preventDefault");
@@ -474,14 +542,25 @@ describe("initializeTabs", () => {
 
       expect(preventDefault).not.toHaveBeenCalled();
       expect(tab2.classList.contains("active")).toBe(initialActive);
+
+      // Verify panel states remain unchanged
+      expect(panels[0].classList.contains("active")).toBe(initialPanel0Active);
+      expect(panels[1].classList.contains("active")).toBe(initialPanel1Active);
+      expect(panels[2].classList.contains("active")).toBe(initialPanel2Active);
     });
 
     it("ignores keyboard events when no tab is focused", () => {
       const tabList = container.querySelector('[role="tablist"]');
+      const panels = container.querySelectorAll(".tab-content");
 
       // Blur all tabs
       const tabs = container.querySelectorAll(".tab-item");
       tabs.forEach((tab) => (tab as HTMLElement).blur());
+
+      // Capture initial panel states (tab2/panel1 should be active from default)
+      const initialPanel0Active = panels[0].classList.contains("active");
+      const initialPanel1Active = panels[1].classList.contains("active");
+      const initialPanel2Active = panels[2].classList.contains("active");
 
       const event = new KeyboardEvent("keydown", {
         key: "ArrowRight",
@@ -493,6 +572,11 @@ describe("initializeTabs", () => {
 
       // Should not prevent default or change anything
       expect(preventDefault).not.toHaveBeenCalled();
+
+      // Verify panel states remain unchanged
+      expect(panels[0].classList.contains("active")).toBe(initialPanel0Active);
+      expect(panels[1].classList.contains("active")).toBe(initialPanel1Active);
+      expect(panels[2].classList.contains("active")).toBe(initialPanel2Active);
     });
   });
 

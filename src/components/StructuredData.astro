@@ -1,0 +1,146 @@
+---
+/**
+ * StructuredData.astro - JSON-LD Schema Markup Component
+ *
+ * Provides structured data for SEO optimization.
+ * Supports: WebSite, TechArticle, BreadcrumbList schemas
+ */
+
+export interface BreadcrumbItem {
+  name: string;
+  url?: string;
+}
+
+export interface ArticleData {
+  title: string;
+  description: string;
+  datePublished?: Date;
+  dateModified?: Date;
+  category?: string;
+  tags?: string[];
+  url: string;
+  /** Proficiency level for the article (e.g., "Beginner", "Intermediate", "Expert") */
+  proficiencyLevel?: string;
+}
+
+interface Props {
+  type: "website" | "article" | "breadcrumb";
+  // For WebSite schema
+  siteName?: string;
+  siteUrl?: string;
+  searchUrl?: string;
+  // For Article schema
+  article?: ArticleData;
+  // For BreadcrumbList schema
+  breadcrumbs?: BreadcrumbItem[];
+}
+
+const { type, siteName, siteUrl, searchUrl, article, breadcrumbs } = Astro.props;
+
+// Format date for schema.org (ISO 8601)
+function formatDate(date?: Date): string | undefined {
+  if (!date) return undefined;
+  return date.toISOString();
+}
+
+// Generate WebSite schema
+function generateWebSiteSchema() {
+  const schema: Record<string, unknown> = {
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    name: siteName || "SQL Injection Knowledge Base",
+    url: siteUrl,
+    description:
+      "Comprehensive reference for SQL injection techniques, examples, and bypasses across multiple database platforms.",
+    publisher: {
+      "@type": "Organization",
+      name: "Websec",
+      url: "https://www.websec.com",
+    },
+  };
+
+  // Add search action if search URL is provided
+  if (searchUrl) {
+    schema.potentialAction = {
+      "@type": "SearchAction",
+      target: {
+        "@type": "EntryPoint",
+        urlTemplate: `${searchUrl}?q={search_term_string}`,
+      },
+      "query-input": "required name=search_term_string",
+    };
+  }
+
+  return schema;
+}
+
+// Generate TechArticle schema
+function generateArticleSchema() {
+  if (!article) return null;
+
+  return {
+    "@context": "https://schema.org",
+    "@type": "TechArticle",
+    headline: article.title,
+    description: article.description,
+    datePublished: formatDate(article.datePublished),
+    dateModified: formatDate(article.dateModified),
+    author: {
+      "@type": "Organization",
+      name: "Websec",
+      url: "https://www.websec.com",
+    },
+    publisher: {
+      "@type": "Organization",
+      name: "Websec",
+      url: "https://www.websec.com",
+    },
+    mainEntityOfPage: {
+      "@type": "WebPage",
+      "@id": article.url,
+    },
+    articleSection: article.category,
+    keywords: article.tags?.join(", "),
+    // Use article-specific proficiency level with sensible default for technical security content
+    proficiencyLevel: article.proficiencyLevel || "Intermediate",
+    inLanguage: "en",
+  };
+}
+
+// Generate BreadcrumbList schema
+function generateBreadcrumbSchema() {
+  if (!breadcrumbs || breadcrumbs.length === 0) return null;
+
+  return {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: breadcrumbs.map((item, index) => ({
+      "@type": "ListItem",
+      position: index + 1,
+      name: item.name,
+      ...(item.url ? { item: item.url } : {}),
+    })),
+  };
+}
+
+// Generate the appropriate schema based on type
+let schema: Record<string, unknown> | null = null;
+
+switch (type) {
+  case "website":
+    schema = generateWebSiteSchema();
+    break;
+  case "article":
+    schema = generateArticleSchema();
+    break;
+  case "breadcrumb":
+    schema = generateBreadcrumbSchema();
+    break;
+}
+---
+
+{
+  schema && (
+    <script is:inline type="application/ld+json" set:html={JSON.stringify(schema, null, 0)} />
+  )
+}

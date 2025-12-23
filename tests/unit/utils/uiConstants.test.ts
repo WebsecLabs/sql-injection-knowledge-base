@@ -69,13 +69,16 @@ describe("uiConstants", () => {
       "COPY_FEEDBACK_DURATION_MS",
       "SIDEBAR_ATTENTION_DELAY_MS",
       "INIT_FALLBACK_DELAY_MS",
+      "TOC_HIDE_BREAKPOINT",
+      "TOC_STORAGE_KEY",
+      "TOC_MIN_HEADINGS",
+      "DROPDOWN_TRANSITION_TIMEOUT_MS",
     ];
 
-    expectedConstants.forEach((name) => {
-      it(`should export ${name}`, () => {
-        expect(constants).toHaveProperty(name);
-        expect(constants[name as keyof typeof constants]).toBeDefined();
-      });
+    // Using it.each improves test reporting by showing each constant as its own test case
+    it.each(expectedConstants)("should export %s", (name) => {
+      expect(constants).toHaveProperty(name);
+      expect(constants[name as keyof typeof constants]).toBeDefined();
     });
   });
 });

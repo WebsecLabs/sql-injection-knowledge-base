@@ -3,6 +3,10 @@ import { test, expect, type Page } from "@playwright/test";
 // Use a page known to have multiple headings for TOC tests
 const TOC_TEST_PAGE = "/mysql/testing-injection";
 
+// TOC width constants (must match values in toc.css)
+const TOC_EXPANDED_WIDTH = "250px";
+const TOC_COLLAPSED_WIDTH = "48px";
+
 /**
  * Waits for scroll position to stabilize (stop changing).
  * Uses requestAnimationFrame to detect when scrollY remains constant for 3 frames.
@@ -129,22 +133,22 @@ test.describe("Table of Contents", () => {
     await expect(toggle).toHaveAttribute("aria-expanded", "true");
     await expect(toggle).toHaveAttribute("aria-label", "Collapse table of contents");
     await expect(tocContent).toBeVisible();
-    await expect(toc).toHaveCSS("width", "250px");
+    await expect(toc).toHaveCSS("width", TOC_EXPANDED_WIDTH);
 
     // Click to collapse horizontally
     await toggle.click();
     await expect(toggle).toHaveAttribute("aria-expanded", "false");
     await expect(toggle).toHaveAttribute("aria-label", "Expand table of contents");
     await expect(toc).toHaveClass(/toc-collapsed/);
-    // Width should shrink to 48px when collapsed (horizontal collapse)
-    await expect(toc).toHaveCSS("width", "48px");
+    // Width should shrink when collapsed (horizontal collapse)
+    await expect(toc).toHaveCSS("width", TOC_COLLAPSED_WIDTH);
 
     // Click to expand
     await toggle.click();
     await expect(toggle).toHaveAttribute("aria-expanded", "true");
     await expect(toggle).toHaveAttribute("aria-label", "Collapse table of contents");
     await expect(toc).not.toHaveClass(/toc-collapsed/);
-    await expect(toc).toHaveCSS("width", "250px");
+    await expect(toc).toHaveCSS("width", TOC_EXPANDED_WIDTH);
   });
 
   test("should persist collapsed state across navigation", async ({ page }) => {

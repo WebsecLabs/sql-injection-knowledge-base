@@ -159,13 +159,21 @@
 }
 
 .navbar #navbar-search-input:focus {
-  outline: none;
+  /* Fallback outline for legacy browsers that don't support :focus-visible
+     Uses a subtle style matching the box-shadow to maintain visual consistency */
+  outline: 2px solid rgb(255 255 255 / 40%);
+  outline-offset: 1px;
   background-color: rgb(255 255 255 / 20%);
   box-shadow: 0 0 0 2px rgb(255 255 255 / 25%);
   width: 240px;
 }
 
-/* Keyboard focus indicator for accessibility */
+/* Modern browsers: hide outline on mouse/touch focus, show only for keyboard */
+.navbar #navbar-search-input:focus:not(:focus-visible) {
+  outline: none;
+}
+
+/* Keyboard focus indicator for accessibility - more prominent for keyboard users */
 .navbar #navbar-search-input:focus-visible {
   outline: 2px solid rgb(255 255 255 / 80%);
   outline-offset: 2px;

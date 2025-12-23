@@ -161,9 +161,9 @@ export function initSearch() {
     const maxLen = SEARCH_TITLE_MAX_LENGTH;
     const truncated = queryParam.length > maxLen ? queryParam.slice(0, maxLen) + "…" : queryParam;
     document.title = `Search Results for "${escapeControlChars(truncated)}" - SQL Injection KB`;
-  } else {
-    performSearch("");
   }
+  // Note: No else branch needed - UI starts in initial state and performSearch("")
+  // would just reset to the same initial state, which is redundant
 
   // Add input listener with debounce
   searchInput.addEventListener("input", (e) => {
