@@ -1,13 +1,33 @@
-import { test, expect } from "@playwright/test";
+import { test, expect, type Page } from "@playwright/test";
 
-// Timeout constants for consistent and maintainable test configuration
+// E2E test timeout constants for consistent and maintainable test configuration.
+// Note: These are intentionally separate from uiConstants.ts values which are for
+// UI behavior timing (debounce, animations). E2E timeouts account for network
+// latency, rendering delays, and CI environment variability.
 const LONG_TIMEOUT_MS = 15000;
 const MEDIUM_TIMEOUT_MS = 10000;
+
+/**
+ * Waits for the search page JavaScript to fully initialize.
+ * The search module sets data-initialized="true" on the container after setup.
+ * This is necessary because the HTML starts with "Loading..." status which
+ * only clears after JavaScript runs - slower in CI/Docker environments.
+ */
+async function waitForSearchInit(page: Page, timeout = MEDIUM_TIMEOUT_MS): Promise<void> {
+  // Use 'attached' state since the element is already visible, we're just waiting
+  // for the data-initialized attribute to be set by JavaScript
+  await page.waitForSelector('.search-results[data-initialized="true"]', {
+    timeout,
+    state: "attached",
+  });
+}
 
 test.describe("Search Page", () => {
   test.beforeEach(async ({ page }) => {
     await page.setViewportSize({ width: 1440, height: 900 });
     await page.goto("/search");
+    // Wait for search JavaScript to initialize before running tests
+    await waitForSearchInit(page);
   });
 
   test("should show the initial search prompt and not stay in loading state", async ({ page }) => {
@@ -83,9 +103,19 @@ test.describe("Search Page", () => {
     const results = page.locator(".result-card");
     await expect(results.first()).toBeVisible({ timeout: LONG_TIMEOUT_MS });
 
-    // Results should contain MySQL entries
-    const resultText = await results.first().textContent();
-    expect(resultText).toBeTruthy();
+    // Verify the MySQL collection section is visible
+    // Search results are grouped by collection with headers like "MySQL (3)"
+    const mysqlSection = page.locator('.result-section h2:has-text("MySQL")');
+    await expect(mysqlSection).toBeVisible({ timeout: LONG_TIMEOUT_MS });
+
+    // Verify MySQL section header includes a count (indicates results were found)
+    const mysqlHeaderText = await mysqlSection.textContent();
+    expect(mysqlHeaderText).toMatch(/MySQL\s*\(\d+\)/);
+
+    // Verify the result card links point to MySQL content
+    // The result-card is itself an <a> element
+    const href = await results.first().getAttribute("href");
+    expect(href).toContain("/mysql/");
   });
 
   test("should debounce search input", async ({ page }) => {
@@ -97,7 +127,8 @@ test.describe("Search Page", () => {
 
     // Simulate real typing with pressSequentially (sends keystrokes with minimal delay)
     // This better tests debounce behavior than fill() which sets value instantly
-    await page.keyboard.type("UNION", { delay: 30 });
+    // Using "Intro" which matches multiple content titles (MySQL Intro, etc.)
+    await page.keyboard.type("Intro", { delay: 30 });
 
     // Note: Debounce behavior means results won't appear immediately after typing.
     // The status transitions from initial state to "Found" after debounce completes.
@@ -107,7 +138,7 @@ test.describe("Search Page", () => {
 
     // Verify results appeared only after debounce completed
     const results = page.locator(".result-card");
-    await expect(results.first()).toBeVisible();
+    await expect(results.first()).toBeVisible({ timeout: MEDIUM_TIMEOUT_MS });
   });
 });
 
@@ -115,6 +146,8 @@ test.describe("Search Page - Mobile", () => {
   test.beforeEach(async ({ page }) => {
     await page.setViewportSize({ width: 375, height: 667 });
     await page.goto("/search");
+    // Wait for search JavaScript to initialize before running tests
+    await waitForSearchInit(page);
   });
 
   test("should display search input on mobile", async ({ page }) => {

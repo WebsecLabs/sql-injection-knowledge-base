@@ -78,6 +78,21 @@ describe("copyCode", () => {
       expect(button).toBeNull();
     });
 
+    it("adds copy button to div.astro-code containers", () => {
+      document.body.innerHTML = `
+        <div class="astro-code"><code>const x = 1;</code></div>
+      `;
+
+      addCopyButtons();
+
+      const button = document.querySelector(".copy-button");
+      expect(button).not.toBeNull();
+      expect(button?.textContent).toBe("Copy");
+      // Verify button is appended to astro-code div
+      const astroCodeDiv = document.querySelector(".astro-code");
+      expect(button?.parentNode).toBe(astroCodeDiv);
+    });
+
     it("button is appended to the pre element", () => {
       document.body.innerHTML = `
         <pre><code>test code</code></pre>
@@ -132,6 +147,96 @@ describe("copyCode", () => {
       await vi.waitFor(() => {
         expect(mockWriteText).toHaveBeenCalledWith(expectedCode);
       });
+    });
+  });
+
+  describe("clipboard fallback behavior", () => {
+    it("falls back to execCommand when clipboard API rejects", async () => {
+      document.body.innerHTML = `<pre><code>test code</code></pre>`;
+
+      // Mock clipboard to reject
+      Object.defineProperty(navigator, "clipboard", {
+        value: { writeText: vi.fn().mockRejectedValue(new Error("Denied")) },
+        writable: true,
+        configurable: true,
+      });
+
+      // JSDOM doesn't have execCommand - define it first, then spy
+      (document as unknown as { execCommand: (cmd: string) => boolean }).execCommand = vi
+        .fn()
+        .mockReturnValue(true);
+      const execCommandSpy = vi.spyOn(document, "execCommand");
+
+      addCopyButtons();
+      const button = document.querySelector(".copy-button") as HTMLButtonElement;
+      button.click();
+
+      await vi.waitFor(() => {
+        expect(execCommandSpy).toHaveBeenCalledWith("copy");
+      });
+    });
+
+    it("shows error feedback when both clipboard and execCommand fail", async () => {
+      document.body.innerHTML = `<pre><code>test code</code></pre>`;
+
+      Object.defineProperty(navigator, "clipboard", {
+        value: { writeText: vi.fn().mockRejectedValue(new Error("Denied")) },
+        writable: true,
+        configurable: true,
+      });
+
+      // JSDOM doesn't have execCommand - define it to throw
+      (document as unknown as { execCommand: (cmd: string) => boolean }).execCommand = () => {
+        throw new Error("execCommand failed");
+      };
+
+      // Suppress expected console.error from legacyCopy
+      vi.spyOn(console, "error").mockImplementation(() => {});
+
+      addCopyButtons();
+      const button = document.querySelector(".copy-button") as HTMLButtonElement;
+      button.click();
+
+      await vi.waitFor(() => {
+        expect(button.textContent).toBe("Error!");
+      });
+    });
+
+    it("reverts button text after feedback duration", async () => {
+      vi.useFakeTimers();
+      document.body.innerHTML = `<pre><code>test code</code></pre>`;
+
+      // Create a deferred promise to control timing
+      let resolveClipboard: () => void;
+      const clipboardPromise = new Promise<void>((resolve) => {
+        resolveClipboard = resolve;
+      });
+
+      Object.defineProperty(navigator, "clipboard", {
+        value: { writeText: vi.fn().mockImplementation(() => clipboardPromise) },
+        writable: true,
+        configurable: true,
+      });
+
+      addCopyButtons();
+      const button = document.querySelector(".copy-button") as HTMLButtonElement;
+      button.click();
+
+      // Button should still say "Copy" before promise resolves
+      expect(button.textContent).toBe("Copy");
+
+      // Resolve the clipboard promise and flush microtasks
+      resolveClipboard!();
+      await vi.advanceTimersByTimeAsync(0);
+
+      // Now it should say "Copied!"
+      expect(button.textContent).toBe("Copied!");
+
+      // Advance past COPY_FEEDBACK_DURATION_MS (2000ms)
+      await vi.advanceTimersByTimeAsync(2000);
+
+      expect(button.textContent).toBe("Copy");
+      vi.useRealTimers();
     });
   });
 

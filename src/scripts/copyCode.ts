@@ -21,31 +21,47 @@ export function addCopyButtons(): void {
   const codeBlocks = document.querySelectorAll("pre code, div.astro-code");
 
   codeBlocks.forEach((block) => {
-    // Get the parent element safely with proper type guard
-    const parentNode = block.parentNode;
-    if (!parentNode || parentNode.nodeType !== Node.ELEMENT_NODE) {
+    // Determine the container element where the button should be added
+    // For "pre > code", the container is the parent PRE element
+    // For "div.astro-code", the container is the div itself (the matched element)
+    let buttonContainer: Element | null = null;
+
+    if (block instanceof Element && block.classList.contains("astro-code")) {
+      // Matched div.astro-code - button goes on the div itself
+      buttonContainer = block;
+    } else {
+      // Matched pre > code - button goes on the parent PRE element
+      const parentNode = block.parentNode;
+      if (parentNode && parentNode.nodeType === Node.ELEMENT_NODE) {
+        const parent = parentNode as Element;
+        if (parent.tagName === "PRE") {
+          buttonContainer = parent;
+        }
+      }
+    }
+
+    if (!buttonContainer) {
       return;
     }
-    // After nodeType check, we know parentNode is an Element (not Document/DocumentFragment)
-    const pre = parentNode as Element;
 
-    // Ensure pre has relative positioning
-    if (pre.tagName === "PRE" || pre.classList.contains("astro-code")) {
-      // Create button
-      const button = document.createElement("button");
-      button.className = "copy-button";
-      button.textContent = "Copy";
-      button.setAttribute("aria-label", "Copy code");
-      button.setAttribute("title", "Copy code to clipboard");
+    // Create button
+    const button = document.createElement("button");
+    button.className = "copy-button";
+    button.textContent = "Copy";
+    button.setAttribute("aria-label", "Copy code");
+    button.setAttribute("title", "Copy code to clipboard");
 
-      // Add button to pre element
-      pre.appendChild(button);
+    // Add button to container element
+    buttonContainer.appendChild(button);
 
-      // Add click handler
-      button.addEventListener("click", function () {
-        copyCode(block, button);
-      });
-    }
+    // Add click handler - get text from the code element (for astro-code, find nested code)
+    const codeElement = block.classList.contains("astro-code")
+      ? block.querySelector("code") || block
+      : block;
+
+    button.addEventListener("click", function () {
+      copyCode(codeElement, button);
+    });
   });
 }
 

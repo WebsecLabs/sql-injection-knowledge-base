@@ -153,7 +153,7 @@ export function initSearch() {
   const urlParams = new URLSearchParams(window.location.search);
   const queryParam = urlParams.get("q") || "";
 
-  // Set input value and perform search immediately if URL param exists
+  // Set input value and perform initial search based on URL query param
   searchInput.value = queryParam;
   if (queryParam) {
     performSearch(queryParam);
@@ -161,9 +161,11 @@ export function initSearch() {
     const maxLen = SEARCH_TITLE_MAX_LENGTH;
     const truncated = queryParam.length > maxLen ? queryParam.slice(0, maxLen) + "…" : queryParam;
     document.title = `Search Results for "${escapeControlChars(truncated)}" - SQL Injection KB`;
+  } else {
+    // Initialize to empty state: clear "Loading..." status and show initial prompt
+    // HTML starts with "Loading..." to indicate JS is loading, so we must update it
+    performSearch("");
   }
-  // Note: No else branch needed - UI starts in initial state and performSearch("")
-  // would just reset to the same initial state, which is redundant
 
   // Add input listener with debounce
   searchInput.addEventListener("input", (e) => {

@@ -8,7 +8,12 @@ import {
   updateToggleAccessibility,
   type ToggleAccessibilityConfig,
 } from "../utils/domUtils";
-import { TOC_STORAGE_KEY } from "../utils/uiConstants";
+import {
+  TOC_STORAGE_KEY,
+  TOC_OBSERVER_TOP_MARGIN_PX,
+  TOC_OBSERVER_BOTTOM_PERCENT,
+  TOC_HEADING_SELECTOR,
+} from "../utils/uiConstants";
 
 /** TOC toggle accessibility configuration */
 const TOC_TOGGLE_CONFIG: ToggleAccessibilityConfig = {
@@ -35,7 +40,6 @@ export function initToc(): void {
 
   // Avoid re-initialization on the same path (View Transitions)
   if (lastInitializedPath === currentPath) return;
-  lastInitializedPath = currentPath;
 
   const toc = document.getElementById("toc");
   if (!toc) return;
@@ -44,6 +48,9 @@ export function initToc(): void {
   restoreCollapsedState(toc);
   initToggle(toc);
   initScrollSpy();
+
+  // Only mark as initialized after successful setup
+  lastInitializedPath = currentPath;
 }
 
 /**
@@ -100,17 +107,14 @@ function initScrollSpy(): void {
   }
 
   // Find all headings with IDs in the main content
-  const headings = document.querySelectorAll(
-    ".entry-content h2[id], .entry-content h3[id], .markdown-body h2[id], .markdown-body h3[id]"
-  );
+  const headings = document.querySelectorAll(TOC_HEADING_SELECTOR);
 
   if (headings.length === 0) return;
 
   // Build a map of heading IDs to TOC links
-  const tocLinks = document.querySelectorAll<HTMLAnchorElement>(".toc-link");
   const tocLinkMap = new Map<string, HTMLAnchorElement>();
 
-  tocLinks.forEach((link) => {
+  document.querySelectorAll<HTMLAnchorElement>(".toc-link").forEach((link) => {
     const headingId = link.getAttribute("data-heading-id");
     if (headingId) {
       tocLinkMap.set(headingId, link);
@@ -119,7 +123,12 @@ function initScrollSpy(): void {
 
   if (tocLinkMap.size === 0) return;
 
+  // Track current active state for efficient updates
   let currentActiveId: string | null = null;
+  let currentActiveLink: HTMLAnchorElement | null = null;
+
+  // Compute rootMargin from constants (navbar height + bottom trigger percentage)
+  const rootMargin = `-${TOC_OBSERVER_TOP_MARGIN_PX}px 0px -${TOC_OBSERVER_BOTTOM_PERCENT}% 0px`;
 
   tocObserver = new IntersectionObserver(
     (entries) => {
@@ -134,27 +143,31 @@ function initScrollSpy(): void {
         const id = topHeading.getAttribute("id");
 
         if (id && id !== currentActiveId) {
-          // Remove previous active state
-          tocLinks.forEach((link) => link.classList.remove(TOC_ACTIVE_CLASS));
+          const newActiveLink = tocLinkMap.get(id);
 
-          // Add new active state
-          const activeLink = tocLinkMap.get(id);
-          if (activeLink) {
-            activeLink.classList.add(TOC_ACTIVE_CLASS);
+          // Only update if we found a valid link and it's different
+          if (newActiveLink && newActiveLink !== currentActiveLink) {
+            // Remove previous active state from single tracked element
+            currentActiveLink?.classList.remove(TOC_ACTIVE_CLASS);
+
+            // Add new active state
+            newActiveLink.classList.add(TOC_ACTIVE_CLASS);
 
             // Scroll TOC link into view if needed (within the TOC container)
             const tocContent = document.getElementById("toc-content");
             if (tocContent) {
-              const linkRect = activeLink.getBoundingClientRect();
+              const linkRect = newActiveLink.getBoundingClientRect();
               const contentRect = tocContent.getBoundingClientRect();
 
               if (linkRect.top < contentRect.top || linkRect.bottom > contentRect.bottom) {
-                activeLink.scrollIntoView({
+                newActiveLink.scrollIntoView({
                   block: "nearest",
                   behavior: "smooth",
                 });
               }
             }
+
+            currentActiveLink = newActiveLink;
           }
 
           currentActiveId = id;
@@ -162,14 +175,15 @@ function initScrollSpy(): void {
       }
     },
     {
-      // rootMargin: top accounts for navbar (70px), bottom triggers in top 20% of viewport
-      rootMargin: "-70px 0px -80% 0px",
+      rootMargin,
       threshold: 0,
     }
   );
 
-  // Observe all headings
-  headings.forEach((heading) => tocObserver!.observe(heading));
+  // Observe all headings (with defensive check)
+  if (tocObserver) {
+    headings.forEach((heading) => tocObserver?.observe(heading));
+  }
 }
 
 /**

@@ -4,7 +4,7 @@ description: Information about MariaDB's default database systems
 category: Basics
 order: 1
 tags: ["basics", "database structure"]
-lastUpdated: 2025-12-18
+lastUpdated: 2025-12-23
 ---
 
 MariaDB comes with several default databases that can be useful during SQL injection attacks.

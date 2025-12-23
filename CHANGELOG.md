@@ -29,10 +29,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Improved accessibility with proper ARIA attributes
 - Enhanced code quality and View Transitions stability
-- Fixed navbar not covering headings on TOC navigation
 
 ### Fixed
 
+- Navbar not covering headings on TOC navigation
 - Dropdown menu race condition on desktop hover/click interaction
 - MariaDB documentation accuracy corrections
 - Node.js version pinning for consistent builds
@@ -51,7 +51,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Features
 
-- 5 database collections: MySQL, MariaDB, MSSQL, Oracle, PostgreSQL
+- 4 database collections: MySQL, MSSQL, Oracle, PostgreSQL
 - Extras collection for additional resources
 - Category-based navigation
 - Previous/next article navigation

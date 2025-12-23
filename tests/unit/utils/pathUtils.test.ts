@@ -46,6 +46,11 @@ describe("pathUtils", () => {
       expect(sanitizeBaseUrl(undefined)).toBe("/");
       expect(sanitizeBaseUrl(123)).toBe("/");
       expect(sanitizeBaseUrl({})).toBe("/");
+      // Additional non-string coercion edge cases
+      expect(sanitizeBaseUrl(NaN)).toBe("/");
+      expect(sanitizeBaseUrl([])).toBe("/");
+      expect(sanitizeBaseUrl(["/some"])).toBe("/");
+      expect(sanitizeBaseUrl(() => {})).toBe("/");
     });
 
     it("trims whitespace", () => {

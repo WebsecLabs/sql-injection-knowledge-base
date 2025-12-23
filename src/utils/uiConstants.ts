@@ -49,6 +49,21 @@ export const TOC_STORAGE_KEY = "toc-collapsed";
 export const TOC_MIN_HEADINGS = 2;
 
 /**
+ * TOC scroll-spy IntersectionObserver configuration.
+ * Top margin accounts for fixed navbar height.
+ * Bottom margin triggers activation when heading is in top portion of viewport.
+ */
+export const TOC_OBSERVER_TOP_MARGIN_PX = 70;
+export const TOC_OBSERVER_BOTTOM_PERCENT = 80;
+
+/**
+ * Heading selector for TOC scroll-spy.
+ * Matches h2 and h3 elements with IDs within main content areas.
+ */
+export const TOC_HEADING_SELECTOR =
+  ".entry-content h2[id], .entry-content h3[id], .markdown-body h2[id], .markdown-body h3[id]";
+
+/**
  * Fallback timeout for dropdown opacity transitions (milliseconds).
  * Used when listening for transitionend events to ensure cleanup
  * happens even if the event doesn't fire (e.g., transitions disabled).

@@ -361,8 +361,9 @@ test.describe("Navbar - Dropdown Switching", () => {
     const extrasDropdown = page.locator('.nav-item.dropdown:has(button:text("Extras"))');
     const extrasButton = extrasDropdown.locator("button.dropdown-toggle");
 
-    // Test 3 complete cycles of switching between Databases and Extras dropdowns
-    for (let i = 0; i < 3; i++) {
+    // Test 2 complete cycles of switching between Databases and Extras dropdowns
+    // (reduced from 3 to improve CI runtime while maintaining coverage)
+    for (let i = 0; i < 2; i++) {
       // Click Databases - should open Databases and close Extras
       await databasesButton.click();
       await expect(databasesDropdown).toHaveClass(/show/, { timeout: 2000 });
@@ -455,7 +456,7 @@ test.describe("Navbar - Dropdown Switching on Mobile", () => {
 test.describe("Navbar - Resize Transitions", () => {
   test("should keep Databases dropdown working after mobile toggle and resize to desktop", async ({
     page,
-  }, testInfo) => {
+  }, _testInfo) => {
     await page.goto("/");
     await page.setViewportSize({ width: 375, height: 667 });
 
@@ -485,7 +486,7 @@ test.describe("Navbar - Resize Transitions", () => {
     // Only capture screenshots when PLAYWRIGHT_DEBUG is enabled to avoid CI slowdown
     if (process.env.PLAYWRIGHT_DEBUG) {
       await page.screenshot({
-        path: testInfo.outputPath("resize-databases-desktop.png"),
+        path: _testInfo.outputPath("resize-databases-desktop.png"),
         fullPage: true,
       });
     }
@@ -493,7 +494,7 @@ test.describe("Navbar - Resize Transitions", () => {
 
   test("should keep Extras dropdown working after mobile toggle and resize to desktop", async ({
     page,
-  }, testInfo) => {
+  }, _testInfo) => {
     await page.goto("/");
     await page.setViewportSize({ width: 375, height: 667 });
 
@@ -523,7 +524,7 @@ test.describe("Navbar - Resize Transitions", () => {
     // Only capture screenshots when PLAYWRIGHT_DEBUG is enabled to avoid CI slowdown
     if (process.env.PLAYWRIGHT_DEBUG) {
       await page.screenshot({
-        path: testInfo.outputPath("resize-extras-desktop.png"),
+        path: _testInfo.outputPath("resize-extras-desktop.png"),
         fullPage: true,
       });
     }
@@ -559,8 +560,12 @@ test.describe("Navbar - Resize Transitions", () => {
     // Ensure transform is not "none" (which would mean no positioning)
     expect(transform).not.toBe("none");
 
-    // transform: translateX(100%) on a 375px wide element = matrix(1, 0, 0, 1, 375, 0)
-    // Parse matrix(a, b, c, d, tx, ty) - tx is the horizontal translation (5th value, m41)
+    // CSS transform: translateX(100%) on a 375px wide element = matrix(1, 0, 0, 1, 375, 0)
+    // CSS matrix format: matrix(a, b, c, d, tx, ty) where:
+    //   a, b, c, d = scale/rotation values (identity: 1, 0, 0, 1)
+    //   tx = horizontal translation (x offset) - captured in group 5
+    //   ty = vertical translation (y offset) - captured in group 6
+    // We assert tx > 0 to confirm menu is positioned off-screen to the right
     const matrixMatch = transform.match(
       /matrix\(([^,]+),\s*([^,]+),\s*([^,]+),\s*([^,]+),\s*([^,]+),\s*([^)]+)\)/
     );

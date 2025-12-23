@@ -74,11 +74,21 @@ function generateWebSiteSchema() {
   return schema;
 }
 
+/**
+ * Remove undefined, null, and empty string values from an object.
+ * This ensures the JSON-LD output only includes explicitly defined properties.
+ */
+function cleanSchema<T extends Record<string, unknown>>(obj: T): Partial<T> {
+  return Object.fromEntries(
+    Object.entries(obj).filter(([, value]) => value !== undefined && value !== null && value !== "")
+  ) as Partial<T>;
+}
+
 // Generate TechArticle schema
 function generateArticleSchema() {
   if (!article) return null;
 
-  return {
+  const schema = {
     "@context": "https://schema.org",
     "@type": "TechArticle",
     headline: article.title,
@@ -100,11 +110,13 @@ function generateArticleSchema() {
       "@id": article.url,
     },
     articleSection: article.category,
-    keywords: article.tags?.join(", "),
+    keywords: article.tags && article.tags.length > 0 ? article.tags.join(", ") : undefined,
     // Use article-specific proficiency level with sensible default for technical security content
     proficiencyLevel: article.proficiencyLevel || "Intermediate",
     inLanguage: "en",
   };
+
+  return cleanSchema(schema);
 }
 
 // Generate BreadcrumbList schema

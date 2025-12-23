@@ -137,15 +137,11 @@ jobs:
       - run: npm ci
 
       - name: Run npm audit
-        run: npm audit --audit-level=moderate
-        # Record failure but continue - security findings are informational
-        continue-on-error: true
+        run: npm audit --audit-level=high
 
       - name: Check for vulnerable dependencies (Snyk)
         if: ${{ secrets.SNYK_TOKEN != '' }}
         run: npx snyk test --severity-threshold=high
-        # Record failure but continue - security findings are informational
-        continue-on-error: true
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
 

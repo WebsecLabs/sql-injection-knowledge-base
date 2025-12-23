@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
+import { describe, it, expect, beforeEach, afterEach, afterAll, vi } from "vitest";
 import { initSearch } from "../../../src/scripts/search";
 
 describe("search.ts", () => {
@@ -8,6 +8,9 @@ describe("search.ts", () => {
   let noResults: HTMLElement;
   let initialSearch: HTMLElement;
   let resultsContainer: HTMLElement;
+
+  // Save original window.location to restore after tests
+  const originalLocation = window.location;
 
   /**
    * Helper to reset and re-initialize search with new data or URL params.
@@ -106,6 +109,13 @@ describe("search.ts", () => {
   afterEach(() => {
     vi.clearAllTimers();
     vi.useRealTimers();
+    // Restore original window.location to prevent test pollution
+    (window as { location: Location }).location = originalLocation;
+  });
+
+  afterAll(() => {
+    // Ensure location is restored even if afterEach fails
+    (window as { location: Location }).location = originalLocation;
   });
 
   describe("initSearch", () => {

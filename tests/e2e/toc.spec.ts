@@ -82,7 +82,9 @@ test.describe("Table of Contents", () => {
   });
 
   test("should not display TOC on pages with few headings", async ({ page }) => {
-    // Navigate to a page known to have fewer than 2 headings
+    // DEPENDENCY: This test relies on /mssql/default-databases having < 2 h2/h3 headings.
+    // As of 2025-03-16, this page contains only a table and one paragraph (no h2/h3 headings).
+    // If this test fails, either update the expected page or find another page with < 2 headings.
     await page.goto("/mssql/default-databases");
     await page.waitForLoadState("networkidle");
 
@@ -169,9 +171,10 @@ test.describe("Table of Contents", () => {
     // Wait for TOC to be visible on new page
     await page.waitForSelector("#toc", { state: "visible" });
 
-    // State should be persisted (still collapsed)
+    // Wait for persisted collapsed state to be applied from localStorage.
+    // State is restored during client-side hydration which may occur after element visibility.
     const newToc = page.locator("#toc");
-    await expect(newToc).toHaveClass(/toc-collapsed/);
+    await expect(newToc).toHaveClass(/toc-collapsed/, { timeout: 5000 });
   });
 
   test("should navigate to heading when TOC link is clicked", async ({ page }) => {
@@ -308,12 +311,14 @@ test.describe("Table of Contents", () => {
     const h3Items = page.locator(".toc-item-h3");
     const h3Count = await h3Items.count();
 
-    if (h3Count > 0) {
-      // H3 items should have visual indentation via padding-left on the link
-      // CSS: .toc-item-h3 .toc-link { padding-left: 1.75rem; } = 28px
-      const firstH3Link = h3Items.first().locator(".toc-link");
-      await expect(firstH3Link).toHaveCSS("padding-left", "28px");
-    }
+    // Assert precondition: test page must have H3 headings to validate indentation.
+    // If this fails, either add H3 content to TOC_TEST_PAGE or use a different test page.
+    expect(h3Count).toBeGreaterThan(0);
+
+    // H3 items should have visual indentation via padding-left on the link
+    // CSS: .toc-item-h3 .toc-link { padding-left: 1.75rem; } = 28px
+    const firstH3Link = h3Items.first().locator(".toc-link");
+    await expect(firstH3Link).toHaveCSS("padding-left", "28px");
   });
 
   test("should remain sticky/fixed when scrolling down the page", async ({ page }) => {
