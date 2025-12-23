@@ -53,7 +53,7 @@ Given the query:
 SELECT * FROM Table WHERE id = 1;
 ```
 
-> **Note:** Rows marked with `-` in the Result column test whether arithmetic expressions are evaluated rather than returning True/False. Compare the returned value against expected results to detect injection.
+> **Note:** Rows marked with `-` test whether arithmetic is evaluated. Compare the returned cell value against the expected numeric result (e.g., `1*56` should return `56` if evaluated). If the application returns the literal string `1*56`, `1`, or an error instead of `56`, arithmetic is not being evaluated and injection may not be possible at this point.
 
 | Test Payload | Result | Description                                           |
 | ------------ | ------ | ----------------------------------------------------- |

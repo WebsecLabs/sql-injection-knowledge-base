@@ -35,7 +35,7 @@ Built with:
 ## Requirements
 
 - Node.js 24.0.0 or later (24.x LTS recommended and tested)
-- npm
+- npm (bundled with Node.js; no separate installation required)
 
 ## Installation
 

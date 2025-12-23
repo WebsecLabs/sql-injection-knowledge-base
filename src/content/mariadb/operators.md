@@ -206,20 +206,24 @@ SELECT id, CONCAT(username, ':', password) AS creds FROM users
 
 From highest to lowest:
 
-1. `!` (logical NOT - highest precedence unary)
-2. `-` (unary minus), `~` (bitwise NOT)
-3. `^` (bitwise XOR)
-4. `*`, `/`, `DIV`, `%`, `MOD`
-5. `-`, `+` (binary operators)
-6. `<<`, `>>`
-7. `&`
-8. `|`
-9. `=`, `<=>`, `>=`, `>`, `<=`, `<`, `<>`, `!=`, `IS`, `LIKE`, `REGEXP`
-10. `BETWEEN`, `CASE`, `WHEN`, `THEN`, `ELSE`
-11. `NOT`
-12. `AND`, `&&`
-13. `XOR`
-14. `OR`, `||`
+1. `INTERVAL`
+2. `BINARY`, `COLLATE`
+3. `!` (logical NOT - unary)
+4. `-` (unary minus), `~` (bitwise NOT)
+5. `||` (string concatenation, when `PIPES_AS_CONCAT` SQL mode is enabled)
+6. `^` (bitwise XOR)
+7. `*`, `/`, `DIV`, `%`, `MOD`
+8. `-`, `+` (binary arithmetic)
+9. `<<`, `>>`
+10. `&`
+11. `|`
+12. `=`, `<=>`, `>=`, `>`, `<=`, `<`, `<>`, `!=`, `IS`, `LIKE`, `REGEXP`, `IN`
+13. `BETWEEN`, `CASE`, `WHEN`, `THEN`, `ELSE`
+14. `NOT`
+15. `AND`, `&&`
+16. `XOR`
+17. `OR`, `||` (logical OR, default behavior)
+18. `:=`, `=` (assignment, lowest)
 
 #### Precedence Examples
 

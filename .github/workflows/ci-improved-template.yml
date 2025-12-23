@@ -125,7 +125,10 @@ jobs:
 
   security:
     name: Security Scanning
+    needs: [lint, build]
     runs-on: ubuntu-latest
+    env:
+      HAVE_SNYK_TOKEN: ${{ secrets.SNYK_TOKEN != '' }}
     steps:
       - uses: actions/checkout@v4
 
@@ -140,13 +143,13 @@ jobs:
         run: npm audit --audit-level=high
 
       - name: Check for vulnerable dependencies (Snyk)
-        if: ${{ secrets.SNYK_TOKEN != '' }}
+        if: env.HAVE_SNYK_TOKEN == 'true'
         run: npx snyk test --severity-threshold=high
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
 
       - name: Snyk scan skipped (no token)
-        if: ${{ secrets.SNYK_TOKEN == '' }}
+        if: env.HAVE_SNYK_TOKEN != 'true'
         run: echo "::warning::SNYK_TOKEN not configured. Snyk vulnerability scan skipped. Add SNYK_TOKEN secret in repository settings to enable."
 
   summary:

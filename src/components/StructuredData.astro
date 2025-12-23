@@ -123,7 +123,7 @@ function generateArticleSchema() {
 function generateBreadcrumbSchema() {
   if (!breadcrumbs || breadcrumbs.length === 0) return null;
 
-  return {
+  const schema = {
     "@context": "https://schema.org",
     "@type": "BreadcrumbList",
     itemListElement: breadcrumbs.map((item, index) => ({
@@ -133,6 +133,8 @@ function generateBreadcrumbSchema() {
       ...(item.url ? { item: item.url } : {}),
     })),
   };
+
+  return cleanSchema(schema);
 }
 
 // Generate the appropriate schema based on type

