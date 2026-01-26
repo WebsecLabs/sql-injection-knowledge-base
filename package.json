@@ -35,10 +35,10 @@
   "author": "WebsecLabs",
   "license": "MIT",
   "dependencies": {
-    "@astrojs/sitemap": "^3.6.0",
+    "@astrojs/sitemap": "^3.7.0",
     "@fontsource/inter": "^5.2.8",
     "@fontsource/jetbrains-mono": "^5.2.8",
-    "astro": "^5.16.4",
+    "astro": "^5.16.15",
     "rehype-slug": "^6.0.0"
   },
   "devDependencies": {
