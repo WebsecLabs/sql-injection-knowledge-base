@@ -172,28 +172,32 @@ const extrasEntries = collections?.extrasEntries ?? (await getCollection("extras
   </head>
   <body>
     <a href="#main-content" class="skip-link">Skip to main content</a>
-    <NavBar
-      mysqlEntries={mysqlEntries}
-      mariadbEntries={mariadbEntries}
-      mssqlEntries={mssqlEntries}
-      oracleEntries={oracleEntries}
-      postgresqlEntries={postgresqlEntries}
-      extrasEntries={extrasEntries}
-    />
+    <div data-pagefind-ignore="all">
+      <NavBar
+        mysqlEntries={mysqlEntries}
+        mariadbEntries={mariadbEntries}
+        mssqlEntries={mssqlEntries}
+        oracleEntries={oracleEntries}
+        postgresqlEntries={postgresqlEntries}
+        extrasEntries={extrasEntries}
+      />
+    </div>
 
     <div class={`page-layout ${showToc ? "with-toc" : ""}`}>
       {
         showSidebar && (
           <>
             <div id="sidebar-overlay" class="sidebar-overlay" />
-            <Sidebar
-              mysqlEntries={mysqlEntries}
-              mariadbEntries={mariadbEntries}
-              mssqlEntries={mssqlEntries}
-              oracleEntries={oracleEntries}
-              postgresqlEntries={postgresqlEntries}
-              extrasEntries={extrasEntries}
-            />
+            <div data-pagefind-ignore="all">
+              <Sidebar
+                mysqlEntries={mysqlEntries}
+                mariadbEntries={mariadbEntries}
+                mssqlEntries={mssqlEntries}
+                oracleEntries={oracleEntries}
+                postgresqlEntries={postgresqlEntries}
+                extrasEntries={extrasEntries}
+              />
+            </div>
           </>
         )
       }
@@ -239,7 +243,7 @@ const extrasEntries = collections?.extrasEntries ?? (await getCollection("extras
       {showToc && <TableOfContents headings={tocHeadings} />}
     </div>
 
-    <footer>
+    <footer data-pagefind-ignore="all">
       <div class="container">
         <div class="footer-content">
           <div class="footer-branding">

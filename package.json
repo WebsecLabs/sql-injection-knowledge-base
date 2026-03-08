@@ -9,8 +9,8 @@
   "scripts": {
     "dev": "astro dev",
     "start": "astro dev",
-    "build": "astro build",
-    "build:standalone": "cross-env STANDALONE=true astro build",
+    "build": "astro build && pagefind --site dist",
+    "build:standalone": "cross-env STANDALONE=true astro build && pagefind --site dist",
     "preview": "astro preview",
     "lint": "eslint . && stylelint 'src/**/*.css' && markdownlint 'src/content/**/*.md' && prettier --check .",
     "lint:fix": "eslint --fix . && stylelint --fix 'src/**/*.css' && markdownlint --fix 'src/content/**/*.md' && prettier --write .",
@@ -52,6 +52,7 @@
     "globals": "^16.5.0",
     "jsdom": "^27.3.0",
     "markdownlint-cli": "^0.46.0",
+    "pagefind": "^1",
     "prettier": "^3.6.2",
     "prettier-plugin-astro": "^0.14.1",
     "stylelint": "^16.26.1",
