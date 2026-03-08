@@ -5,7 +5,7 @@
  *
  * Sub-components:
  * - NavLogo: Site branding with responsive text
- * - NavSearch: Search input field
+ * - NavSearch: Search trigger button for search modal
  * - NavDatabasesDropdown: Database navigation mega-menu
  * - NavExtrasDropdown: Extras/resources dropdown
  * - NavGitHubLink: GitHub repository link
@@ -89,7 +89,7 @@ const baseUrl = import.meta.env.BASE_URL;
     <NavLogo baseUrl={baseUrl} />
 
     <div class="navbar-menu" id="navbar-menu">
-      <NavSearch baseUrl={baseUrl} />
+      <NavSearch />
 
       <ul class="nav-links">
         <NavDatabasesDropdown

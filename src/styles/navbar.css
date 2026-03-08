@@ -131,62 +131,53 @@
    ============================================ */
 
 .navbar .search-container {
-  position: relative;
   margin-right: 0.5rem;
-  min-width: 240px; /* Reserve space for expanded input to prevent layout shift on focus */
 }
 
-.navbar #navbar-search-form {
-  position: relative;
+.navbar .search-trigger {
   display: flex;
   align-items: center;
-  width: 100%;
-}
-
-.navbar #navbar-search-input {
-  padding: 0.5rem 0.75rem 0.5rem 2.25rem;
+  gap: 0.5rem;
+  width: 240px;
+  padding: 0.5rem 0.75rem;
   border: none;
   border-radius: 4px;
   font-size: 0.9rem;
-  width: 180px;
-  transition: all 0.2s ease;
   background-color: rgb(255 255 255 / 10%);
   color: white;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
 }
 
-.navbar #navbar-search-input::placeholder {
-  color: rgb(255 255 255 / 70%);
-}
-
-.navbar #navbar-search-input:focus {
-  /* Fallback outline for legacy browsers that don't support :focus-visible
-     Uses a subtle style matching the box-shadow to maintain visual consistency */
-  outline: 2px solid rgb(255 255 255 / 40%);
-  outline-offset: 1px;
+.navbar .search-trigger:hover {
   background-color: rgb(255 255 255 / 20%);
-  box-shadow: 0 0 0 2px rgb(255 255 255 / 25%);
-  width: 240px;
 }
 
-/* Modern browsers: hide outline on mouse/touch focus, show only for keyboard */
-.navbar #navbar-search-input:focus:not(:focus-visible) {
-  outline: none;
-}
-
-/* Keyboard focus indicator for accessibility - more prominent for keyboard users */
-.navbar #navbar-search-input:focus-visible {
+/* Keyboard focus indicator for search trigger */
+.navbar .search-trigger:focus-visible {
   outline: 2px solid rgb(255 255 255 / 80%);
   outline-offset: 2px;
 }
 
-.navbar .search-icon {
-  position: absolute;
-  left: 0.75rem;
-  top: 50%;
-  transform: translateY(-50%);
+.navbar .search-trigger .search-icon {
+  flex-shrink: 0;
   color: rgb(255 255 255 / 70%);
-  z-index: 1;
-  cursor: pointer;
+}
+
+.navbar .search-trigger-text {
+  flex: 1;
+  text-align: left;
+  color: rgb(255 255 255 / 70%);
+}
+
+.navbar .search-trigger-kbd {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  background: rgb(255 255 255 / 10%);
+  border: 1px solid rgb(255 255 255 / 20%);
+  border-radius: 4px;
+  padding: 1px 6px;
+  color: rgb(255 255 255 / 70%);
 }
 
 /* ============================================
@@ -741,30 +732,28 @@
 
   .navbar .search-container {
     display: block;
-    width: 100%;
-    margin-right: 0;
-    margin-bottom: 1rem;
+    width: auto;
+    margin-right: 0.5rem;
+    margin-bottom: 0;
   }
 
-  .navbar #navbar-search-input {
-    width: 100%;
-    background-color: var(--color-code-bg);
-    color: var(--color-text);
-    border: 1px solid var(--color-border);
+  .navbar .search-trigger {
+    width: auto;
+    padding: 0.5rem;
+    background-color: transparent;
   }
 
-  .navbar #navbar-search-input::placeholder {
-    color: var(--color-text-muted);
+  .navbar .search-trigger:hover {
+    background-color: rgb(255 255 255 / 10%);
   }
 
-  .navbar #navbar-search-input:focus {
-    background-color: var(--color-card-bg);
-    box-shadow: 0 0 0 2px rgb(66 153 225 / 50%);
-    width: 100%;
+  .navbar .search-trigger-text,
+  .navbar .search-trigger-kbd {
+    display: none;
   }
 
-  .navbar .search-icon {
-    color: var(--color-text-muted);
+  .navbar .search-trigger .search-icon {
+    color: white;
   }
 
   .navbar .nav-links {
@@ -937,7 +926,6 @@
     --navbar-mobile-dropdown-bg: var(--color-sidebar-bg);
     --navbar-mobile-text: var(--color-text);
     --navbar-mobile-border: var(--color-border);
-    --navbar-mobile-input-bg: var(--color-code-bg);
   }
 
   .dark .navbar-menu {
@@ -956,12 +944,6 @@
     background-color: var(--navbar-mobile-dropdown-bg);
   }
 
-  .dark .navbar #navbar-search-input {
-    background-color: var(--navbar-mobile-input-bg);
-    color: var(--navbar-mobile-text);
-    border-color: var(--navbar-mobile-border);
-  }
-
   /* System dark mode on mobile */
   @media (prefers-color-scheme: dark) {
     html:not(.light, .dark) .navbar {
@@ -969,7 +951,6 @@
       --navbar-mobile-dropdown-bg: var(--color-sidebar-bg);
       --navbar-mobile-text: var(--color-text);
       --navbar-mobile-border: var(--color-border);
-      --navbar-mobile-input-bg: var(--color-code-bg);
     }
 
     html:not(.light, .dark) .navbar-menu {
@@ -986,12 +967,6 @@
 
     html:not(.light, .dark) .navbar .dropdown-menu {
       background-color: var(--navbar-mobile-dropdown-bg);
-    }
-
-    html:not(.light, .dark) .navbar #navbar-search-input {
-      background-color: var(--navbar-mobile-input-bg);
-      color: var(--navbar-mobile-text);
-      border-color: var(--navbar-mobile-border);
     }
   }
 }
