@@ -35,6 +35,12 @@
   --color-notes-heading: #744210;
   --color-scrollbar-track: #f1f5f9;
   --color-scrollbar-thumb: #cbd5e0;
+  --color-modal-bg: #fff;
+  --color-modal-border: #e2e8f0;
+  --color-modal-input-bg: transparent;
+  --color-modal-result-hover: #f8f9fa;
+  --color-modal-kbd-bg: #f3f4f6;
+  --color-modal-kbd-border: #e2e8f0;
   --font-sans:
     "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial,
     sans-serif;
@@ -106,6 +112,12 @@
     --color-notes-heading: #fef3c7;
     --color-scrollbar-track: #1e293b;
     --color-scrollbar-thumb: #475569;
+    --color-modal-bg: #1a2332;
+    --color-modal-border: #2d3f54;
+    --color-modal-input-bg: transparent;
+    --color-modal-result-hover: #243044;
+    --color-modal-kbd-bg: rgb(30 41 59 / 60%);
+    --color-modal-kbd-border: #475569;
     --shadow: 0 2px 4px rgb(0 0 0 / 20%);
     --shadow-md: 0 4px 6px rgb(0 0 0 / 25%);
     --shadow-lg: 0 10px 15px rgb(0 0 0 / 30%);
@@ -147,6 +159,13 @@
   --color-notes-heading: #fef3c7;
   --color-scrollbar-track: #1e293b;
   --color-scrollbar-thumb: #475569;
+  --color-modal-bg: #1a2332;
+  --color-modal-border: #2d3f54;
+  --color-modal-input-bg: transparent;
+  --color-modal-result-hover: #243044;
+  --color-modal-result-active: #243044;
+  --color-modal-kbd-bg: rgb(30 41 59 / 60%);
+  --color-modal-kbd-border: #475569;
   --shadow: 0 2px 4px rgb(0 0 0 / 20%);
   --shadow-md: 0 4px 6px rgb(0 0 0 / 25%);
   --shadow-lg: 0 10px 15px rgb(0 0 0 / 30%);

@@ -1,0 +1,51 @@
+<dialog id="search-modal" aria-label="Search the knowledge base">
+  <div class="search-modal-container">
+    <div class="search-modal-header">
+      <svg
+        class="search-modal-icon"
+        xmlns="http://www.w3.org/2000/svg"
+        width="20"
+        height="20"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        aria-hidden="true"
+      >
+        <circle cx="11" cy="11" r="8"></circle>
+        <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+      </svg>
+      <input
+        id="search-modal-input"
+        type="search"
+        placeholder="Search techniques, payloads, functions..."
+        role="combobox"
+        aria-expanded="false"
+        aria-controls="search-modal-results"
+        aria-autocomplete="list"
+        aria-activedescendant=""
+        autocomplete="off"
+        autocorrect="off"
+        spellcheck="false"
+      />
+      <kbd class="search-modal-esc">Esc</kbd>
+    </div>
+
+    <div class="search-modal-body">
+      <div id="search-modal-sr-status" class="sr-only" aria-live="polite"></div>
+      <ul id="search-modal-results" role="listbox" aria-label="Search results"></ul>
+      <div id="search-modal-empty" class="search-modal-empty" hidden>No results found.</div>
+      <div id="search-modal-initial" class="search-modal-initial">
+        Start typing to search across all databases
+      </div>
+    </div>
+
+    <div class="search-modal-footer">
+      <span class="search-hint"><kbd>&uarr;</kbd><kbd>&darr;</kbd> Navigate</span>
+      <span class="search-hint"><kbd>&crarr;</kbd> Open</span>
+      <span class="search-hint"><kbd>Esc</kbd> Close</span>
+    </div>
+  </div>
+</dialog>

@@ -7,6 +7,7 @@ import Sidebar from "../components/Sidebar.astro";
 import TableOfContents from "../components/TableOfContents.astro";
 import websecLogo from "../assets/websec-logo.png";
 import { TOC_MIN_HEADINGS } from "../utils/uiConstants";
+import SearchModal from "../components/search/SearchModal.astro";
 import { requireSiteUrl } from "../utils/siteUtils";
 
 // Import CSS files
@@ -14,6 +15,7 @@ import "../styles/main.css";
 import "../styles/navbar.css";
 import "../styles/code.css";
 import "../styles/toc.css";
+import "../styles/search-modal.css";
 
 import "@fontsource/inter/400.css";
 import "@fontsource/inter/500.css";
@@ -267,5 +269,9 @@ const extrasEntries = collections?.extrasEntries ?? (await getCollection("extras
         </div>
       </div>
     </footer>
+
+    <div data-pagefind-ignore="all">
+      <SearchModal />
+    </div>
   </body>
 </html>
