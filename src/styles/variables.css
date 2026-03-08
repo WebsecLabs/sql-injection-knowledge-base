@@ -39,6 +39,7 @@
   --color-modal-border: #e2e8f0;
   --color-modal-input-bg: transparent;
   --color-modal-result-hover: #f8f9fa;
+  --color-modal-result-active: #f1f5f9;
   --color-modal-kbd-bg: #f3f4f6;
   --color-modal-kbd-border: #e2e8f0;
   --font-sans:
@@ -116,6 +117,7 @@
     --color-modal-border: #2d3f54;
     --color-modal-input-bg: transparent;
     --color-modal-result-hover: #243044;
+    --color-modal-result-active: #243044;
     --color-modal-kbd-bg: rgb(30 41 59 / 60%);
     --color-modal-kbd-border: #475569;
     --shadow: 0 2px 4px rgb(0 0 0 / 20%);
