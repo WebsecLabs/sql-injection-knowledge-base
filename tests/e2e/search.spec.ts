@@ -185,7 +185,9 @@ test.describe("Navbar Search Trigger", () => {
     await expect(searchTrigger).toBeVisible();
   });
 
-  test("should display search trigger at intermediate viewport width (1280px)", async ({ page }) => {
+  test("should display search trigger at intermediate viewport width (1280px)", async ({
+    page,
+  }) => {
     // Regression test: search trigger should be visible at intermediate widths, not just full-screen
     await page.setViewportSize({ width: 1280, height: 800 });
     const searchTrigger = page.locator("#search-trigger");
