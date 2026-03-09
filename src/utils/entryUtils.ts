@@ -149,23 +149,6 @@ export function sortGroupedEntriesInPlace<T extends AnyEntry>(
 }
 
 /**
- * Sort entries within each category by their order field.
- * Returns a new record without mutating the input.
- *
- * @param grouped - Record of category -> entries from groupByCategory
- * @returns A new record with entries sorted within each category
- */
-export function sortGroupedEntries<T extends AnyEntry>(
-  grouped: Record<string, T[]>
-): Record<string, T[]> {
-  const result: Record<string, T[]> = {};
-  for (const category of Object.keys(grouped)) {
-    result[category] = [...grouped[category]].sort(compareEntriesByOrder);
-  }
-  return result;
-}
-
-/**
  * Get category names sorted by learning progression order.
  * Uses CATEGORY_ORDER for known categories, unknown categories sort last alphabetically.
  *

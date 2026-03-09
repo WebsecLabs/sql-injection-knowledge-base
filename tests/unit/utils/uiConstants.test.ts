@@ -37,9 +37,6 @@ describe("uiConstants", () => {
       expect(constants.SIDEBAR_ATTENTION_DELAY_MS).toBeGreaterThan(0);
     });
 
-    it("should export INIT_FALLBACK_DELAY_MS as a positive number", () => {
-      expect(constants.INIT_FALLBACK_DELAY_MS).toBeGreaterThan(0);
-    });
   });
 
   describe("UI constants", () => {
@@ -48,10 +45,6 @@ describe("uiConstants", () => {
       expect(constants.DROPDOWN_MOBILE_MAX_HEIGHT).toMatch(/^\d+px$/);
     });
 
-    it("should export DROPDOWN_TRANSITION_TIMEOUT_MS as a positive number", () => {
-      expect(typeof constants.DROPDOWN_TRANSITION_TIMEOUT_MS).toBe("number");
-      expect(constants.DROPDOWN_TRANSITION_TIMEOUT_MS).toBeGreaterThan(0);
-    });
   });
 
   describe("TOC constants", () => {
@@ -80,11 +73,9 @@ describe("uiConstants", () => {
       "DROPDOWN_MOBILE_MAX_HEIGHT",
       "COPY_FEEDBACK_DURATION_MS",
       "SIDEBAR_ATTENTION_DELAY_MS",
-      "INIT_FALLBACK_DELAY_MS",
       "TOC_HIDE_BREAKPOINT",
       "TOC_STORAGE_KEY",
       "TOC_MIN_HEADINGS",
-      "DROPDOWN_TRANSITION_TIMEOUT_MS",
     ];
 
     // Using it.each improves test reporting by showing each constant as its own test case

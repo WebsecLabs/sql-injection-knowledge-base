@@ -4,8 +4,8 @@
  * @module collectionLoader
  */
 
-import { getCollection, type CollectionEntry } from "astro:content";
-import { COLLECTION_TYPES, type ValidCollection } from "./constants";
+import { getCollection } from "astro:content";
+import { COLLECTION_TYPES } from "./constants";
 import type { CollectionEntriesMap } from "./types";
 
 /**
@@ -44,23 +44,3 @@ export async function loadAllCollections(): Promise<CollectionEntriesMap> {
   return map;
 }
 
-/**
- * Load a single collection by name
- * Wrapper around getCollection with proper typing and error handling
- *
- * @param collection - The collection name to load
- * @returns Promise resolving to the collection entries
- * @throws Error with descriptive message if collection fails to load
- */
-export async function loadCollection<T extends ValidCollection>(
-  collection: T
-): Promise<CollectionEntry<T>[]> {
-  try {
-    return await getCollection(collection);
-  } catch (error) {
-    throw new Error(
-      `Failed to load collection "${collection}": ${error instanceof Error ? error.message : String(error)}`,
-      { cause: error }
-    );
-  }
-}

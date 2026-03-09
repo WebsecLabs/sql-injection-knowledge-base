@@ -30,10 +30,12 @@ export const COPY_FEEDBACK_DURATION_MS = 2000;
 /** Attention animation delay for sidebar toggle (milliseconds) */
 export const SIDEBAR_ATTENTION_DELAY_MS = 1000;
 
-/** Fallback initialization delay (milliseconds) */
-export const INIT_FALLBACK_DELAY_MS = 100;
-
-/** Breakpoint for hiding TOC on smaller screens (pixels) */
+/**
+ * Breakpoint for hiding TOC on smaller screens (pixels).
+ * Keep in sync with CSS media queries in:
+ *   - src/styles/toc.css (@media width <= 1024px)
+ *   - src/styles/layout.css (@media width <= 1024px)
+ */
 export const TOC_HIDE_BREAKPOINT = 1024;
 
 /** localStorage key for TOC collapsed state */
@@ -57,9 +59,3 @@ export const TOC_OBSERVER_BOTTOM_PERCENT = 80;
 export const TOC_HEADING_SELECTOR =
   ".entry-content h2[id], .entry-content h3[id], .markdown-body h2[id], .markdown-body h3[id]";
 
-/**
- * Fallback timeout for dropdown opacity transitions (milliseconds).
- * Used when listening for transitionend events to ensure cleanup
- * happens even if the event doesn't fire (e.g., transitions disabled).
- */
-export const DROPDOWN_TRANSITION_TIMEOUT_MS = 250;

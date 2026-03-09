@@ -181,7 +181,7 @@ function initScrollSpy(): void {
   );
 
   // Observe all headings
-  headings.forEach((heading) => tocObserver.observe(heading));
+  headings.forEach((heading) => tocObserver!.observe(heading));
 }
 
 /**

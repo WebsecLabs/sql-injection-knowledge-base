@@ -3,7 +3,7 @@ import type { ValidCollection } from "../../../src/utils/constants";
 
 // Import the mock module (aliased in vitest.config.ts)
 import { getCollection, type CollectionEntry } from "astro:content";
-import { loadAllCollections, loadCollection } from "../../../src/utils/collectionLoader";
+import { loadAllCollections } from "../../../src/utils/collectionLoader";
 
 // Type the mocked function
 const mockGetCollection = vi.mocked(getCollection);
@@ -100,33 +100,4 @@ describe("collectionLoader", () => {
     });
   });
 
-  describe("loadCollection", () => {
-    it("loads a single collection by name", async () => {
-      const mockEntries = [
-        createMockEntry("postgresql", "intro", "Introduction", "Basics"),
-        createMockEntry("postgresql", "advanced", "Advanced", "Advanced Techniques"),
-      ];
-
-      mockGetCollection.mockResolvedValue(mockEntries);
-
-      const result = await loadCollection("postgresql");
-
-      expect(mockGetCollection).toHaveBeenCalledWith("postgresql");
-      expect(result).toEqual(mockEntries);
-    });
-
-    it("returns empty array for empty collection", async () => {
-      mockGetCollection.mockResolvedValue([]);
-
-      const result = await loadCollection("mssql");
-
-      expect(result).toEqual([]);
-    });
-
-    it("propagates errors from getCollection", async () => {
-      mockGetCollection.mockRejectedValue(new Error("Collection not found"));
-
-      await expect(loadCollection("oracle")).rejects.toThrow("Collection not found");
-    });
-  });
 });

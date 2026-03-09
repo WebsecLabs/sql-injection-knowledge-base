@@ -177,7 +177,8 @@
   font-size: 0.825rem;
 }
 
-/* Responsive: Hide on mobile/tablet */
+/* Responsive: Hide on mobile/tablet
+   NOTE: 1024px must match TOC_HIDE_BREAKPOINT in uiConstants.ts */
 @media (width <= 1024px) {
   .toc {
     display: none;

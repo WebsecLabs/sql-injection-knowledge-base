@@ -4,17 +4,12 @@
  */
 
 import type { CollectionEntry } from "astro:content";
-import type { ValidCollection, DatabaseCollection } from "./constants";
+import type { ValidCollection } from "./constants";
 
 /**
  * Generic collection entry that works with any valid collection
  */
 export type AnyEntry = CollectionEntry<ValidCollection>;
-
-/**
- * Database-specific collection entry (excludes extras)
- */
-export type DatabaseEntry = CollectionEntry<DatabaseCollection>;
 
 /**
  * Adjacent entry for prev/next navigation
@@ -30,7 +25,7 @@ export interface AdjacentEntry {
  * Type helper to generate collection entries map keys
  * Maps collection names to their entry array property names
  */
-export type CollectionEntriesKey<T extends ValidCollection> = `${T}Entries`;
+type CollectionEntriesKey<T extends ValidCollection> = `${T}Entries`;
 
 /**
  * Collection entries map for component props

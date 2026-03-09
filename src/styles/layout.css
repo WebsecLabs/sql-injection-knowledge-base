@@ -49,7 +49,8 @@
   max-width: 1000px; /* Wider when TOC is collapsed */
 }
 
-/* On tablet/mobile, revert to full width when TOC is hidden */
+/* On tablet/mobile, revert to full width when TOC is hidden
+   NOTE: 1024px must match TOC_HIDE_BREAKPOINT in uiConstants.ts */
 @media (width <= 1024px) {
   .page-layout.with-toc .content-container {
     max-width: 1000px; /* Full width when TOC is hidden */
