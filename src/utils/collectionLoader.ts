@@ -6,7 +6,7 @@
 
 import { getCollection, type CollectionEntry } from "astro:content";
 import { COLLECTION_TYPES, type ValidCollection } from "./constants";
-import type { CollectionEntriesMap, SearchEntry } from "./types";
+import type { CollectionEntriesMap } from "./types";
 
 /**
  * Load all collections in parallel
@@ -42,43 +42,6 @@ export async function loadAllCollections(): Promise<CollectionEntriesMap> {
   }
 
   return map;
-}
-
-/**
- * Map collection entries to search data format
- * Transforms a CollectionEntriesMap into a flat array of SearchEntry objects
- *
- * @param entries - The CollectionEntriesMap from loadAllCollections
- * @returns Array of SearchEntry objects ready for client-side search
- *
- * @example
- * ```typescript
- * const collections = await loadAllCollections();
- * const searchData = mapToSearchEntries(collections);
- * ```
- */
-export function mapToSearchEntries(entries: CollectionEntriesMap): SearchEntry[] {
-  const result: SearchEntry[] = [];
-
-  for (const collection of COLLECTION_TYPES) {
-    const key = `${collection}Entries` as keyof CollectionEntriesMap;
-    const collectionEntries = entries[key];
-
-    if (collectionEntries) {
-      for (const entry of collectionEntries) {
-        result.push({
-          slug: entry.slug,
-          title: entry.data.title,
-          description: entry.data.description,
-          category: entry.data.category,
-          tags: entry.data.tags,
-          collection,
-        });
-      }
-    }
-  }
-
-  return result;
 }
 
 /**

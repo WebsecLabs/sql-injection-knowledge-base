@@ -17,18 +17,6 @@ export type AnyEntry = CollectionEntry<ValidCollection>;
 export type DatabaseEntry = CollectionEntry<DatabaseCollection>;
 
 /**
- * Search entry structure for client-side search
- */
-export interface SearchEntry {
-  slug: string;
-  title: string;
-  description?: string;
-  category: string;
-  tags?: string[];
-  collection: ValidCollection;
-}
-
-/**
  * Adjacent entry for prev/next navigation
  * Note: collection is not included as adjacent entries are within the same collection context
  */
