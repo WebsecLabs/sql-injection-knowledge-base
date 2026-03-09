@@ -120,8 +120,12 @@ const articleData = {
   <StructuredData type="breadcrumb" breadcrumbs={breadcrumbItems} />
   <StructuredData type="article" article={articleData} />
 
-  <div class="entry-container" transition:animate="slide">
-    <div class="entry-header" transition:animate="fade">
+  <div class="entry-container" data-pagefind-body transition:animate="slide">
+    <meta data-pagefind-meta="title" content={entry.data.title} />
+    <meta data-pagefind-meta={`database:${collectionName}`} />
+    <meta data-pagefind-meta={`category:${entry.data.category}`} />
+    <span data-pagefind-filter="database" style="display:none;">{collectionName}</span>
+    <div class="entry-header" data-pagefind-ignore transition:animate="fade">
       <nav class="breadcrumbs" aria-label="Breadcrumb">
         <a href={import.meta.env.BASE_URL}>Home</a>
         <span class="separator" aria-hidden="true">/</span>
@@ -135,7 +139,9 @@ const articleData = {
 
     <MarkdownEntry entry={entry} />
 
-    <EntryNavigation collection={collectionName} previous={previous} next={next} />
+    <div data-pagefind-ignore>
+      <EntryNavigation collection={collectionName} previous={previous} next={next} />
+    </div>
   </div>
 </Layout>
 

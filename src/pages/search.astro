@@ -1,66 +1,53 @@
 ---
 import Layout from "../layouts/Layout.astro";
-import { loadAllCollections, mapToSearchEntries } from "../utils/collectionLoader";
+import { loadAllCollections } from "../utils/collectionLoader";
 
-// Load all entries at build time for client-side search
 const collections = await loadAllCollections();
-const searchData = mapToSearchEntries(collections);
-
 const baseUrl = import.meta.env.BASE_URL;
 ---
 
 <Layout title="Search - SQL Injection KB" showSidebar={false} collections={collections}>
-  <div
-    class="search-results"
-    data-base-url={baseUrl}
-    data-search-entries={JSON.stringify(searchData)}
-  >
-    <h1>Search Results</h1>
-
-    <div class="search-info">
-      <p id="search-status">Loading...</p>
-      <div class="search-form">
-        <form id="search-page-form" action={`${baseUrl}search`} method="get">
-          <input
-            type="text"
-            id="search-page-input"
-            name="q"
-            placeholder="Search..."
-            aria-label="Search"
-          />
-          <button type="submit">Search</button>
-        </form>
-      </div>
-    </div>
-
-    <div id="no-results" class="no-results" style="display: none;">
-      <p>No entries found matching your query. Please try a different search term.</p>
-    </div>
-
-    <div id="initial-search" class="search-form initial-search" style="display: none;">
-      <p>Enter a search term to find entries across all database types</p>
-    </div>
-
-    <div id="results-container"></div>
+  <div class="search-page">
+    <h1>Search</h1>
+    <div id="pagefind-search"></div>
   </div>
 
-  <script>
-    import { initSearch } from "../scripts/search";
+  <link rel="stylesheet" href={`${baseUrl}pagefind/pagefind-ui.css`} />
 
-    // Ensure search is initialized (module has event listeners, but explicit call ensures inclusion)
-    if (typeof document !== "undefined") {
-      if (document.readyState === "loading") {
-        document.addEventListener("DOMContentLoaded", initSearch);
-      } else {
-        initSearch();
+  <script>
+    async function initPagefindUI() {
+      const base = import.meta.env.BASE_URL;
+
+      // Load Pagefind UI
+      const pagefindUI = await import(/* @vite-ignore */ `${base}pagefind/pagefind-ui.js`);
+
+      new pagefindUI.PagefindUI({
+        element: "#pagefind-search",
+        showSubResults: true,
+        showImages: false,
+        baseUrl: base,
+      });
+
+      // Apply URL query parameter if present
+      const params = new URLSearchParams(window.location.search);
+      const query = params.get("q");
+      if (query) {
+        const input = document.querySelector<HTMLInputElement>("#pagefind-search input");
+        if (input) {
+          input.value = query;
+          input.dispatchEvent(new Event("input", { bubbles: true }));
+        }
       }
-      document.addEventListener("astro:page-load", initSearch);
     }
+
+    // Use only astro:page-load — it fires on initial load AND subsequent
+    // View Transition navigations
+    document.addEventListener("astro:page-load", initPagefindUI);
   </script>
 </Layout>
 
 <style>
-  .search-results {
+  .search-page {
     max-width: 900px;
     margin: 0 auto;
     padding: 1rem;
@@ -71,162 +58,18 @@ const baseUrl = import.meta.env.BASE_URL;
     color: var(--color-primary);
   }
 
-  .search-info {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 2rem;
-    flex-wrap: wrap;
-    gap: 1rem;
-  }
-
-  .search-info p {
-    font-size: 1.1rem;
-    opacity: 0.8;
-  }
-
-  .search-form {
-    margin-bottom: 2rem;
-  }
-
-  .initial-search p {
-    margin-bottom: 1rem;
-    font-size: 1.1rem;
-  }
-
-  .search-form form {
-    display: flex;
-    gap: 0.5rem;
-  }
-
-  .search-form input {
-    padding: 0.5rem 1rem;
-    border: 1px solid var(--color-search-border);
-    border-radius: 4px;
-    font-size: 1rem;
-    min-width: 300px;
-  }
-
-  .search-form button {
-    padding: 0.5rem 1rem;
-    background-color: var(--color-primary);
-    color: white;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-    font-size: 1rem;
-  }
-
-  .no-results {
-    background-color: var(--color-search-bg);
-    padding: 2rem;
-    border-radius: 8px;
-    text-align: center;
-    margin: 2rem 0;
-  }
-
-  .result-section {
-    margin-bottom: 3rem;
-  }
-
-  .result-section h2 {
-    margin-bottom: 1rem;
-    padding-bottom: 0.5rem;
-    border-bottom: 1px solid var(--color-border);
-  }
-
-  .result-list {
-    list-style: none;
-    padding: 0;
-    margin: 0;
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-    gap: 1rem;
-  }
-
-  .result-card {
-    display: block;
-    padding: 1.25rem;
-    border-radius: 8px;
-    background-color: var(--color-search-bg);
-    text-decoration: none;
-    color: inherit;
-    transition:
-      transform 0.2s,
-      box-shadow 0.2s;
-    height: 100%;
-  }
-
-  .result-card:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-  }
-
-  .result-title {
-    font-weight: 600;
-    font-size: 1.1rem;
-    margin-bottom: 0.5rem;
-    color: var(--color-primary);
-  }
-
-  .result-category {
-    display: inline-block;
-    font-size: 0.8rem;
-    background-color: var(--color-code-bg);
-    color: var(--color-text-muted);
-    padding: 0.2rem 0.5rem;
-    border-radius: 4px;
-    margin-bottom: 0.75rem;
-  }
-
-  .result-description {
-    font-size: 0.9rem;
-    color: var(--color-text-muted);
-    margin-bottom: 0.75rem;
-    display: -webkit-box;
-    -webkit-line-clamp: 3;
-    -webkit-box-orient: vertical;
-    overflow: hidden;
-  }
-
-  .result-tags {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.5rem;
-    margin-top: 0.75rem;
-  }
-
-  .tag {
-    font-size: 0.75rem;
-    padding: 0.2rem 0.5rem;
-    background-color: var(--color-primary-light);
-    color: var(--color-primary);
-    border-radius: 4px;
-  }
-
-  mark {
-    background-color: var(--color-mark-bg);
-    color: var(--color-mark-text);
-    padding: 0 2px;
-    border-radius: 2px;
-  }
-
-  @media (max-width: 768px) {
-    .search-info {
-      flex-direction: column;
-      align-items: flex-start;
-    }
-
-    .result-list {
-      grid-template-columns: 1fr;
-    }
-
-    .search-form form {
-      flex-direction: column;
-    }
-
-    .search-form input {
-      min-width: 100%;
-    }
+  /* Pagefind UI theme overrides */
+  #pagefind-search {
+    --pagefind-ui-scale: 1;
+    --pagefind-ui-primary: var(--color-primary);
+    --pagefind-ui-text: var(--color-text);
+    --pagefind-ui-background: var(--color-background);
+    --pagefind-ui-border: var(--color-border);
+    --pagefind-ui-tag: var(--color-code-bg);
+    --pagefind-ui-border-width: 1px;
+    --pagefind-ui-border-radius: 4px;
+    --pagefind-ui-image-border-radius: 4px;
+    --pagefind-ui-image-box-ratio: 3 / 2;
+    --pagefind-ui-font: inherit;
   }
 </style>

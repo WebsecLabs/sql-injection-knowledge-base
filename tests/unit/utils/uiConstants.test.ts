@@ -25,10 +25,6 @@ describe("uiConstants", () => {
       expect(constants.SCROLL_HIDE_THRESHOLD).toBeGreaterThan(0);
     });
 
-    it("should export SEARCH_DEBOUNCE_MS as a positive number", () => {
-      expect(constants.SEARCH_DEBOUNCE_MS).toBeGreaterThan(0);
-    });
-
     it("should export RESIZE_DEBOUNCE_MS as a positive number", () => {
       expect(constants.RESIZE_DEBOUNCE_MS).toBeGreaterThan(0);
     });
@@ -47,10 +43,6 @@ describe("uiConstants", () => {
   });
 
   describe("UI constants", () => {
-    it("should export SEARCH_TITLE_MAX_LENGTH as a positive number", () => {
-      expect(constants.SEARCH_TITLE_MAX_LENGTH).toBeGreaterThan(0);
-    });
-
     it("should export DROPDOWN_MOBILE_MAX_HEIGHT as a string", () => {
       expect(typeof constants.DROPDOWN_MOBILE_MAX_HEIGHT).toBe("string");
       expect(constants.DROPDOWN_MOBILE_MAX_HEIGHT).toMatch(/^\d+px$/);
@@ -84,9 +76,7 @@ describe("uiConstants", () => {
       "SIDEBAR_MOBILE_BREAKPOINT",
       "NAVBAR_MOBILE_BREAKPOINT",
       "SCROLL_HIDE_THRESHOLD",
-      "SEARCH_DEBOUNCE_MS",
       "RESIZE_DEBOUNCE_MS",
-      "SEARCH_TITLE_MAX_LENGTH",
       "DROPDOWN_MOBILE_MAX_HEIGHT",
       "COPY_FEEDBACK_DURATION_MS",
       "SIDEBAR_ATTENTION_DELAY_MS",

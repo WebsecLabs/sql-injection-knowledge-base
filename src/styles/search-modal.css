@@ -1,0 +1,511 @@
+/* ==========================================================================
+   Search Modal Styles
+   Styles for the Pagefind-powered search modal dialog.
+   ========================================================================== */
+
+/* --------------------------------------------------------------------------
+   Accessibility: sr-only
+   -------------------------------------------------------------------------- */
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* --------------------------------------------------------------------------
+   Dialog & Backdrop
+   -------------------------------------------------------------------------- */
+
+#search-modal {
+  position: fixed;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  max-width: none;
+  max-height: none;
+  margin: 0;
+  padding: 0;
+  border: none;
+  background: transparent;
+  opacity: 0;
+  pointer-events: none;
+}
+
+#search-modal[open] {
+  pointer-events: auto;
+}
+
+#search-modal::backdrop {
+  background: rgb(0 0 0 / 60%);
+  backdrop-filter: blur(4px);
+}
+
+/* --------------------------------------------------------------------------
+   Container (the visible modal box)
+   -------------------------------------------------------------------------- */
+
+.search-modal-container {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  max-width: 640px;
+  max-height: min(80vh, 600px);
+  margin: auto;
+  background: var(--color-modal-bg);
+  border: 1px solid var(--color-modal-border);
+  border-radius: 12px;
+  box-shadow:
+    0 0 0 1px rgb(0 0 0 / 10%),
+    0 16px 70px rgb(0 0 0 / 50%),
+    0 4px 16px rgb(0 0 0 / 30%);
+}
+
+/* Light mode shadow override */
+:root:not(.dark) .search-modal-container {
+  box-shadow: 0 25px 50px -12px rgb(0 0 0 / 15%);
+}
+
+/* --------------------------------------------------------------------------
+   Header (search input area)
+   -------------------------------------------------------------------------- */
+
+.search-modal-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--color-modal-border);
+}
+
+.search-modal-icon {
+  flex-shrink: 0;
+  color: var(--color-text-muted);
+}
+
+#search-modal-input {
+  flex: 1;
+  min-width: 0;
+  padding: 4px 0;
+  border: none;
+  background: var(--color-modal-input-bg);
+  color: var(--color-text);
+  font-family: var(--font-sans);
+  font-size: 16px;
+  font-weight: 400;
+  line-height: 1.5;
+  outline: none;
+}
+
+#search-modal-input::placeholder {
+  color: var(--color-text-muted);
+}
+
+/* Hide browser-default search cancel button */
+#search-modal-input::-webkit-search-cancel-button,
+#search-modal-input::-webkit-search-decoration {
+  display: none;
+}
+
+.search-modal-esc {
+  flex-shrink: 0;
+  padding: 1px 6px;
+  border: 1px solid var(--color-modal-kbd-border);
+  border-radius: 4px;
+  background: var(--color-modal-kbd-bg);
+  color: var(--color-text-muted);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 500;
+  line-height: 1.5;
+}
+
+/* --------------------------------------------------------------------------
+   Body (scrollable results area)
+   -------------------------------------------------------------------------- */
+
+.search-modal-body {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 8px;
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-scrollbar-thumb) transparent;
+
+  /* Scroll shadows: local gradients mask the shadow, scroll gradients create it */
+  background:
+    linear-gradient(var(--color-modal-bg) 30%, transparent) center top / 100% 40px no-repeat local,
+    linear-gradient(transparent, var(--color-modal-bg) 70%) center bottom / 100% 40px no-repeat
+      local,
+    radial-gradient(farthest-side at 50% 0, rgb(0 0 0 / 15%), transparent) center top / 100% 12px
+      no-repeat scroll,
+    radial-gradient(farthest-side at 50% 100%, rgb(0 0 0 / 15%), transparent) center bottom / 100%
+      12px no-repeat scroll;
+}
+
+.search-modal-body::-webkit-scrollbar {
+  width: 6px;
+}
+
+.search-modal-body::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.search-modal-body::-webkit-scrollbar-thumb {
+  background-color: var(--color-scrollbar-thumb);
+  border-radius: 3px;
+}
+
+/* --------------------------------------------------------------------------
+   Results list
+   -------------------------------------------------------------------------- */
+
+#search-modal-results {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+/* Section headings within results */
+.search-result-section {
+  padding: 8px 12px 4px;
+  color: var(--color-text-muted);
+  font-family: var(--font-sans);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+/* Individual result items */
+.search-result-item {
+  padding: 12px;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.search-result-item[aria-selected="true"] {
+  background: var(--color-modal-result-active);
+  border-left: 3px solid var(--color-primary);
+  padding-left: 9px;
+}
+
+/* Result title */
+.search-result-title {
+  font-family: var(--font-sans);
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--color-text);
+  margin: 0 0 4px;
+}
+
+/* Result snippet / excerpt */
+.search-result-snippet {
+  font-family: var(--font-sans);
+  font-size: 13px;
+  font-weight: 400;
+  color: var(--color-text-muted);
+  margin: 0;
+  line-height: 1.5;
+}
+
+/* Highlight marks in results */
+.search-result-item mark {
+  background: rgb(250 204 21 / 20%);
+  color: #fbbf24;
+  padding: 0;
+  border-radius: 0;
+}
+
+/* Light mode mark overrides */
+:root:not(.dark) .search-result-item mark {
+  background: var(--color-mark-bg);
+  color: var(--color-mark-text);
+}
+
+/* Code within results */
+.search-result-item code {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  padding: 1px 4px;
+  border-radius: 3px;
+  background: var(--color-code-bg);
+}
+
+/* --------------------------------------------------------------------------
+   Database badges (colored pills)
+   -------------------------------------------------------------------------- */
+
+.search-result-badge {
+  display: inline-block;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-family: var(--font-sans);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  line-height: 1.4;
+  vertical-align: middle;
+}
+
+/* Dark mode badge colors (default for dark-first approach) */
+.search-result-badge[data-database="mysql"] {
+  background: rgb(96 165 250 / 12%);
+  color: #60a5fa;
+}
+
+.search-result-badge[data-database="postgresql"] {
+  background: rgb(52 211 153 / 12%);
+  color: #34d399;
+}
+
+.search-result-badge[data-database="mssql"] {
+  background: rgb(248 113 113 / 12%);
+  color: #f87171;
+}
+
+.search-result-badge[data-database="oracle"] {
+  background: rgb(251 191 36 / 12%);
+  color: #fbbf24;
+}
+
+.search-result-badge[data-database="mariadb"] {
+  background: rgb(167 139 250 / 12%);
+  color: #a78bfa;
+}
+
+.search-result-badge[data-database="extras"] {
+  background: rgb(107 114 128 / 12%);
+  color: #9ca3af;
+}
+
+/* Light mode badge colors */
+:root:not(.dark) .search-result-badge[data-database="mysql"] {
+  background: #dbeafe;
+  color: #1d4ed8;
+}
+
+:root:not(.dark) .search-result-badge[data-database="postgresql"] {
+  background: #dcfce7;
+  color: #15803d;
+}
+
+:root:not(.dark) .search-result-badge[data-database="mssql"] {
+  background: #fee2e2;
+  color: #b91c1c;
+}
+
+:root:not(.dark) .search-result-badge[data-database="oracle"] {
+  background: #fef3c7;
+  color: #b45309;
+}
+
+:root:not(.dark) .search-result-badge[data-database="mariadb"] {
+  background: #f3e8ff;
+  color: #7c3aed;
+}
+
+:root:not(.dark) .search-result-badge[data-database="extras"] {
+  background: #f3f4f6;
+  color: #4b5563;
+}
+
+/* System dark-mode preference: restore dark badge colors for non-light-forced roots */
+@media (prefers-color-scheme: dark) {
+  :root:not(.light) .search-result-badge[data-database="mysql"] {
+    background: rgb(96 165 250 / 12%);
+    color: #60a5fa;
+  }
+
+  :root:not(.light) .search-result-badge[data-database="postgresql"] {
+    background: rgb(52 211 153 / 12%);
+    color: #34d399;
+  }
+
+  :root:not(.light) .search-result-badge[data-database="mssql"] {
+    background: rgb(248 113 113 / 12%);
+    color: #f87171;
+  }
+
+  :root:not(.light) .search-result-badge[data-database="oracle"] {
+    background: rgb(251 191 36 / 12%);
+    color: #fbbf24;
+  }
+
+  :root:not(.light) .search-result-badge[data-database="mariadb"] {
+    background: rgb(167 139 250 / 12%);
+    color: #a78bfa;
+  }
+
+  :root:not(.light) .search-result-badge[data-database="extras"] {
+    background: rgb(107 114 128 / 12%);
+    color: #9ca3af;
+  }
+}
+
+/* --------------------------------------------------------------------------
+   Empty & initial states
+   -------------------------------------------------------------------------- */
+
+.search-modal-empty,
+.search-modal-initial {
+  padding: 32px 16px;
+  text-align: center;
+  color: var(--color-text-muted);
+  font-family: var(--font-sans);
+  font-size: 14px;
+}
+
+/* --------------------------------------------------------------------------
+   Footer (keyboard hints)
+   -------------------------------------------------------------------------- */
+
+.search-modal-footer {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 8px 16px;
+  border-top: 1px solid var(--color-modal-border);
+  color: var(--color-text-muted);
+  font-family: var(--font-sans);
+  font-size: 12px;
+}
+
+.search-hint {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.search-modal-footer kbd {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 20px;
+  padding: 1px 6px;
+  border: 1px solid var(--color-modal-kbd-border);
+  border-radius: 4px;
+  background: var(--color-modal-kbd-bg);
+  color: var(--color-text-muted);
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 1.5;
+}
+
+/* --------------------------------------------------------------------------
+   Animations (respect prefers-reduced-motion)
+   -------------------------------------------------------------------------- */
+
+@media (prefers-reduced-motion: no-preference) {
+  #search-modal {
+    transition: opacity 80ms ease-in;
+  }
+
+  #search-modal.is-open {
+    opacity: 1;
+    transition: opacity 120ms ease-out;
+  }
+
+  .search-modal-container {
+    transform: translateY(8px);
+    transition: transform 80ms ease-in;
+  }
+
+  #search-modal.is-open .search-modal-container {
+    transform: translateY(0);
+    transition: transform 120ms ease-out;
+  }
+
+  .search-result-item {
+    transition: background-color 100ms ease;
+  }
+}
+
+/* Reduced motion: just toggle visibility, no animation */
+@media (prefers-reduced-motion: reduce) {
+  #search-modal.is-open {
+    opacity: 1;
+  }
+}
+
+/* --------------------------------------------------------------------------
+   Hover states
+   -------------------------------------------------------------------------- */
+
+@media (hover: hover) {
+  .search-result-item:hover {
+    background: var(--color-modal-result-hover);
+  }
+}
+
+/* --------------------------------------------------------------------------
+   Responsive: mobile full-screen
+   -------------------------------------------------------------------------- */
+
+@media (width <= 768px) {
+  .search-modal-container {
+    max-width: 100%;
+    max-height: 100%;
+    height: 100%;
+    border-radius: 0;
+    margin: 0;
+  }
+
+  .search-modal-footer {
+    display: none;
+  }
+}
+
+/* --------------------------------------------------------------------------
+   Responsive: small phones
+   -------------------------------------------------------------------------- */
+
+@media (width <= 375px) {
+  .search-modal-header {
+    padding: 8px 12px;
+  }
+
+  .search-modal-body {
+    padding: 4px;
+  }
+
+  .search-result-item {
+    padding: 8px;
+  }
+
+  #search-modal-input {
+    font-size: 15px;
+  }
+}
+
+/* --------------------------------------------------------------------------
+   Responsive: landscape / short viewports
+   -------------------------------------------------------------------------- */
+
+@media (height <= 500px) {
+  .search-modal-container {
+    max-height: 100%;
+    border-radius: 0;
+  }
+
+  .search-modal-header {
+    padding: 8px 16px;
+  }
+
+  .search-result-item {
+    padding: 8px 12px;
+  }
+
+  .search-modal-footer {
+    display: none;
+  }
+}

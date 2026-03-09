@@ -13,14 +13,8 @@ export const NAVBAR_MOBILE_BREAKPOINT = 1024;
 /** Scroll threshold before hiding mobile sidebar toggle (pixels) */
 export const SCROLL_HIDE_THRESHOLD = 100;
 
-/** Debounce delay for search input (milliseconds) */
-export const SEARCH_DEBOUNCE_MS = 300;
-
 /** Debounce delay for resize events (milliseconds) */
 export const RESIZE_DEBOUNCE_MS = 100;
-
-/** Maximum title length before truncation in search results */
-export const SEARCH_TITLE_MAX_LENGTH = 50;
 
 /**
  * Max-height for mobile dropdown menus.

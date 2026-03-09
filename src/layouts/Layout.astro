@@ -7,6 +7,7 @@ import Sidebar from "../components/Sidebar.astro";
 import TableOfContents from "../components/TableOfContents.astro";
 import websecLogo from "../assets/websec-logo.png";
 import { TOC_MIN_HEADINGS } from "../utils/uiConstants";
+import SearchModal from "../components/search/SearchModal.astro";
 import { requireSiteUrl } from "../utils/siteUtils";
 
 // Import CSS files
@@ -14,6 +15,7 @@ import "../styles/main.css";
 import "../styles/navbar.css";
 import "../styles/code.css";
 import "../styles/toc.css";
+import "../styles/search-modal.css";
 
 import "@fontsource/inter/400.css";
 import "@fontsource/inter/500.css";
@@ -115,6 +117,9 @@ const extrasEntries = collections?.extrasEntries ?? (await getCollection("extras
     <script>
       import "../scripts/main.ts";
     </script>
+    <script>
+      import "../scripts/searchModal.ts";
+    </script>
     <ClientRouter />
 
     <!-- Open Graph / Facebook -->
@@ -172,28 +177,32 @@ const extrasEntries = collections?.extrasEntries ?? (await getCollection("extras
   </head>
   <body>
     <a href="#main-content" class="skip-link">Skip to main content</a>
-    <NavBar
-      mysqlEntries={mysqlEntries}
-      mariadbEntries={mariadbEntries}
-      mssqlEntries={mssqlEntries}
-      oracleEntries={oracleEntries}
-      postgresqlEntries={postgresqlEntries}
-      extrasEntries={extrasEntries}
-    />
+    <div data-pagefind-ignore="all">
+      <NavBar
+        mysqlEntries={mysqlEntries}
+        mariadbEntries={mariadbEntries}
+        mssqlEntries={mssqlEntries}
+        oracleEntries={oracleEntries}
+        postgresqlEntries={postgresqlEntries}
+        extrasEntries={extrasEntries}
+      />
+    </div>
 
     <div class={`page-layout ${showToc ? "with-toc" : ""}`}>
       {
         showSidebar && (
           <>
             <div id="sidebar-overlay" class="sidebar-overlay" />
-            <Sidebar
-              mysqlEntries={mysqlEntries}
-              mariadbEntries={mariadbEntries}
-              mssqlEntries={mssqlEntries}
-              oracleEntries={oracleEntries}
-              postgresqlEntries={postgresqlEntries}
-              extrasEntries={extrasEntries}
-            />
+            <div data-pagefind-ignore="all">
+              <Sidebar
+                mysqlEntries={mysqlEntries}
+                mariadbEntries={mariadbEntries}
+                mssqlEntries={mssqlEntries}
+                oracleEntries={oracleEntries}
+                postgresqlEntries={postgresqlEntries}
+                extrasEntries={extrasEntries}
+              />
+            </div>
           </>
         )
       }
@@ -239,7 +248,7 @@ const extrasEntries = collections?.extrasEntries ?? (await getCollection("extras
       {showToc && <TableOfContents headings={tocHeadings} />}
     </div>
 
-    <footer>
+    <footer data-pagefind-ignore="all">
       <div class="container">
         <div class="footer-content">
           <div class="footer-branding">
@@ -263,5 +272,9 @@ const extrasEntries = collections?.extrasEntries ?? (await getCollection("extras
         </div>
       </div>
     </footer>
+
+    <div data-pagefind-ignore="all">
+      <SearchModal />
+    </div>
   </body>
 </html>

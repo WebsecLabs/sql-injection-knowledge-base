@@ -309,50 +309,6 @@ window.initializeNavbar = function () {
     });
   }
 
-  // Initialize search functionality
-  function initSearch() {
-    const searchContainer = document.querySelector(".search-container") as HTMLElement | null;
-    if (!searchContainer || !searchContainer.parentNode) {
-      return;
-    }
-
-    const freshSearchContainer = cloneAndReplace(searchContainer) as HTMLElement;
-
-    const searchForm = freshSearchContainer.querySelector(
-      "#navbar-search-form"
-    ) as HTMLFormElement | null;
-    const searchInput = freshSearchContainer.querySelector(
-      "#navbar-search-input"
-    ) as HTMLInputElement | null;
-    const searchIcon = freshSearchContainer.querySelector(".search-icon") as HTMLElement | null;
-
-    if (!searchForm || !searchInput) {
-      return;
-    }
-
-    // Make search icon clickable
-    if (searchIcon) {
-      searchIcon.addEventListener("click", function () {
-        if (searchInput.value.trim()) {
-          searchForm.submit();
-        } else {
-          searchInput.focus();
-        }
-      });
-    }
-
-    // Prevent empty searches - native Enter-to-submit behavior will trigger this handler
-    searchForm.addEventListener("submit", function (e) {
-      if (!searchInput.value.trim()) {
-        e.preventDefault();
-        searchInput.focus();
-      }
-    });
-    // Note: Removed redundant keydown listener for Enter key.
-    // Native Enter-to-submit behavior triggers the form's submit handler above,
-    // which properly validates the input before submission.
-  }
-
   // Handle window resize - only re-initialize when crossing the mobile/desktop breakpoint
   function handleResize() {
     const isMobile = window.innerWidth < MOBILE_BREAKPOINT;
@@ -409,7 +365,6 @@ window.initializeNavbar = function () {
   // Set initial mobile state to ensure first resize only triggers on actual change
   prevIsMobile = window.innerWidth < MOBILE_BREAKPOINT;
   initNavbar();
-  initSearch();
 
   // Update the last-initialized path after successful initialization
   window.__navbarLastPath = currentPath;

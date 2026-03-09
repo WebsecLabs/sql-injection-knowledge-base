@@ -96,9 +96,9 @@ test.describe("Navbar - Desktop", () => {
     await expect(page.locator('.dropdown-item:has-text("About")')).toBeVisible();
   });
 
-  test("should show search bar on desktop", async ({ page }) => {
-    const searchInput = page.locator("#navbar-search-input");
-    await expect(searchInput).toBeVisible();
+  test("should show search trigger on desktop", async ({ page }) => {
+    const searchTrigger = page.locator("#search-trigger");
+    await expect(searchTrigger).toBeVisible();
   });
 
   test("should show GitHub link on desktop", async ({ page }) => {
@@ -181,8 +181,8 @@ test.describe("Navbar - Mobile", () => {
     const navbarMenu = page.locator("#navbar-menu");
     await expect(navbarMenu).toHaveClass(/active/);
 
-    const searchInput = navbarMenu.locator("#navbar-search-input");
-    await expect(searchInput).toBeVisible();
+    const searchTrigger = navbarMenu.locator("#search-trigger");
+    await expect(searchTrigger).toBeVisible();
 
     const githubLink = navbarMenu.locator('a.github-link:has-text("GitHub")');
     await expect(githubLink).toBeVisible();

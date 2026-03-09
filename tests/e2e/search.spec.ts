@@ -174,48 +174,38 @@ test.describe("Search Page - Mobile", () => {
   });
 });
 
-test.describe("Navbar Search", () => {
+test.describe("Navbar Search Trigger", () => {
   test.beforeEach(async ({ page }) => {
     await page.setViewportSize({ width: 1920, height: 1080 });
     await page.goto("/");
   });
 
-  test("should display search input in navbar", async ({ page }) => {
-    const searchInput = page.locator("#navbar-search-input");
-    await expect(searchInput).toBeVisible();
+  test("should display search trigger button in navbar", async ({ page }) => {
+    const searchTrigger = page.locator("#search-trigger");
+    await expect(searchTrigger).toBeVisible();
   });
 
-  test("should display search input at intermediate viewport width (1280px)", async ({ page }) => {
-    // Regression test: search bar should be visible at intermediate widths, not just full-screen
+  test("should display search trigger at intermediate viewport width (1280px)", async ({
+    page,
+  }) => {
+    // Regression test: search trigger should be visible at intermediate widths, not just full-screen
     await page.setViewportSize({ width: 1280, height: 800 });
-    const searchInput = page.locator("#navbar-search-input");
-    await expect(searchInput).toBeVisible();
+    const searchTrigger = page.locator("#search-trigger");
+    await expect(searchTrigger).toBeVisible();
   });
 
-  test("should navigate to search page when Enter is pressed", async ({ page }) => {
-    const searchInput = page.locator("#navbar-search-input");
-    await searchInput.fill("UNION");
-    await page.keyboard.press("Enter");
+  test("should open search modal when trigger is clicked", async ({ page }) => {
+    const searchTrigger = page.locator("#search-trigger");
+    await searchTrigger.click();
 
-    // Should navigate to search page with query (using full path pattern)
-    await page.waitForURL(/search.*q=UNION/, { timeout: LONG_TIMEOUT_MS });
-    expect(page.url()).toContain("search");
-    expect(page.url()).toContain("q=UNION");
+    const searchModal = page.locator("#search-modal");
+    await expect(searchModal).toBeVisible();
   });
 
-  test("should navigate to search page on search icon click", async ({ page }) => {
-    // Check for search icon at the start before any other interactions
-    const searchIcon = page.locator(".navbar-search .search-icon, .navbar-search button");
-    const iconCount = await searchIcon.count();
+  test("should open search modal with Ctrl+K shortcut", async ({ page }) => {
+    await page.keyboard.press("Control+k");
 
-    // Skip test if search icon is not present in current implementation
-    // Using test.skip() at the top of the test is the idiomatic Playwright pattern
-    test.skip(iconCount === 0, "Search icon not present in current navbar implementation");
-
-    const searchInput = page.locator("#navbar-search-input");
-    await searchInput.fill("test query");
-
-    await searchIcon.click();
-    await expect(page).toHaveURL(/\/search/);
+    const searchModal = page.locator("#search-modal");
+    await expect(searchModal).toBeVisible();
   });
 });

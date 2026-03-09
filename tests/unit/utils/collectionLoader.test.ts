@@ -1,14 +1,9 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import type { ValidCollection } from "../../../src/utils/constants";
-import type { CollectionEntriesMap } from "../../../src/utils/types";
 
 // Import the mock module (aliased in vitest.config.ts)
 import { getCollection, type CollectionEntry } from "astro:content";
-import {
-  loadAllCollections,
-  mapToSearchEntries,
-  loadCollection,
-} from "../../../src/utils/collectionLoader";
+import { loadAllCollections, loadCollection } from "../../../src/utils/collectionLoader";
 
 // Type the mocked function
 const mockGetCollection = vi.mocked(getCollection);
@@ -102,136 +97,6 @@ describe("collectionLoader", () => {
 
       expect(result.mysqlEntries).toEqual([]);
       expect(result.mariadbEntries).toEqual([]);
-    });
-  });
-
-  describe("mapToSearchEntries", () => {
-    it("transforms collection entries to search entries", () => {
-      const entries: CollectionEntriesMap = {
-        mysqlEntries: [
-          createMockEntry("mysql", "intro", "Introduction", "Basics", 1, "MySQL intro", [
-            "getting-started",
-          ]),
-        ],
-        mariadbEntries: [
-          createMockEntry("mariadb", "setup", "Setup Guide", "Basics", 1, "MariaDB setup", [
-            "installation",
-          ]),
-        ],
-      };
-
-      const result = mapToSearchEntries(entries);
-
-      expect(result).toHaveLength(2);
-      expect(result).toContainEqual({
-        slug: "intro",
-        title: "Introduction",
-        description: "MySQL intro",
-        category: "Basics",
-        tags: ["getting-started"],
-        collection: "mysql",
-      });
-      expect(result).toContainEqual({
-        slug: "setup",
-        title: "Setup Guide",
-        description: "MariaDB setup",
-        category: "Basics",
-        tags: ["installation"],
-        collection: "mariadb",
-      });
-    });
-
-    it("handles empty collections map", () => {
-      const entries: CollectionEntriesMap = {};
-      const result = mapToSearchEntries(entries);
-      expect(result).toEqual([]);
-    });
-
-    it("handles undefined collection entries", () => {
-      const entries: CollectionEntriesMap = {
-        mysqlEntries: undefined,
-      };
-      const result = mapToSearchEntries(entries);
-      expect(result).toEqual([]);
-    });
-
-    it("preserves all entry metadata", () => {
-      const entries: CollectionEntriesMap = {
-        oracleEntries: [
-          createMockEntry(
-            "oracle",
-            "plsql-injection",
-            "PL/SQL Injection",
-            "Injection Techniques",
-            5,
-            "Advanced PL/SQL injection techniques",
-            ["oracle", "plsql", "advanced"]
-          ),
-        ],
-      };
-
-      const result = mapToSearchEntries(entries);
-
-      expect(result).toHaveLength(1);
-      const entry = result[0];
-      expect(entry.slug).toBe("plsql-injection");
-      expect(entry.title).toBe("PL/SQL Injection");
-      expect(entry.description).toBe("Advanced PL/SQL injection techniques");
-      expect(entry.category).toBe("Injection Techniques");
-      expect(entry.tags).toEqual(["oracle", "plsql", "advanced"]);
-      expect(entry.collection).toBe("oracle");
-    });
-
-    it("processes multiple entries from multiple collections", () => {
-      const entries: CollectionEntriesMap = {
-        mysqlEntries: [
-          createMockEntry("mysql", "a", "A", "Basics"),
-          createMockEntry("mysql", "b", "B", "Basics"),
-        ],
-        postgresqlEntries: [
-          createMockEntry("postgresql", "c", "C", "Advanced Techniques"),
-          createMockEntry("postgresql", "d", "D", "Advanced Techniques"),
-        ],
-        extrasEntries: [createMockEntry("extras", "e", "E", "Reference")],
-      };
-
-      const result = mapToSearchEntries(entries);
-
-      expect(result).toHaveLength(5);
-      expect(result.filter((e) => e.collection === "mysql")).toHaveLength(2);
-      expect(result.filter((e) => e.collection === "postgresql")).toHaveLength(2);
-      expect(result.filter((e) => e.collection === "extras")).toHaveLength(1);
-    });
-
-    it("handles entries with optional fields missing", () => {
-      const entryWithMinimalData = {
-        id: "minimal",
-        slug: "minimal",
-        collection: "mysql",
-        data: {
-          title: "Minimal Entry",
-          category: "Basics",
-          order: 1,
-          // description and tags are optional
-        },
-        body: "",
-        render: async () => ({
-          Content: () => null,
-          headings: [],
-          remarkPluginFrontmatter: {},
-        }),
-      } as unknown as CollectionEntry<"mysql">;
-
-      const entries: CollectionEntriesMap = {
-        mysqlEntries: [entryWithMinimalData],
-      };
-
-      const result = mapToSearchEntries(entries);
-
-      expect(result).toHaveLength(1);
-      expect(result[0].slug).toBe("minimal");
-      expect(result[0].description).toBeUndefined();
-      expect(result[0].tags).toBeUndefined();
     });
   });
 
