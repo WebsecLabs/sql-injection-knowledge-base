@@ -1,0 +1,3 @@
+# audit-level=critical: remaining moderate/high vulns are in transitive
+# deps (lodash, minimatch) with no non-breaking fix.
+npm audit --audit-level=critical

@@ -25,7 +25,8 @@
     "test:e2e:headed": "playwright test --headed",
     "test:a11y": "playwright test accessibility.spec.ts",
     "test:a11y:headed": "playwright test accessibility.spec.ts --headed",
-    "test:all": "npm run test:unit && npm run test:e2e"
+    "test:all": "npm run test:unit && npm run test:e2e",
+    "prepare": "husky"
   },
   "keywords": [
     "SQL Injection",
@@ -53,9 +54,10 @@
     "eslint": "^9.39.1",
     "eslint-plugin-astro": "^1.5.0",
     "globals": "^16.5.0",
+    "husky": "^9.1.7",
     "jsdom": "^27.3.0",
     "markdownlint-cli": "^0.46.0",
-    "pagefind": "^1",
+    "pagefind": "^1.4",
     "prettier": "^3.6.2",
     "prettier-plugin-astro": "^0.14.1",
     "stylelint": "^16.26.1",
