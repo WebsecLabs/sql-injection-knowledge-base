@@ -99,5 +99,4 @@ describe("collectionLoader", () => {
       expect(result.mariadbEntries).toEqual([]);
     });
   });
-
 });

@@ -43,4 +43,3 @@ export async function loadAllCollections(): Promise<CollectionEntriesMap> {
 
   return map;
 }
-

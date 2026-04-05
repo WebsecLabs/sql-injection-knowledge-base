@@ -1,176 +1,190 @@
-import { test, expect, type Page } from "@playwright/test";
+import { test, expect } from "@playwright/test";
 
 // E2E test timeout constants for consistent and maintainable test configuration.
-// Note: These are intentionally separate from uiConstants.ts values which are for
-// UI behavior timing (debounce, animations). E2E timeouts account for network
-// latency, rendering delays, and CI environment variability.
 const LONG_TIMEOUT_MS = 15000;
 const MEDIUM_TIMEOUT_MS = 10000;
 
-/**
- * Waits for the search page JavaScript to fully initialize.
- * The search module sets data-initialized="true" on the container after setup.
- * This is necessary because the HTML starts with "Loading..." status which
- * only clears after JavaScript runs - slower in CI/Docker environments.
- */
-async function waitForSearchInit(page: Page, timeout = MEDIUM_TIMEOUT_MS): Promise<void> {
-  // Use 'attached' state since the element is already visible, we're just waiting
-  // for the data-initialized attribute to be set by JavaScript
-  await page.waitForSelector('.search-results[data-initialized="true"]', {
-    timeout,
-    state: "attached",
-  });
-}
-
-test.describe("Search Page", () => {
+test.describe("Search Modal", () => {
   test.beforeEach(async ({ page }) => {
     await page.setViewportSize({ width: 1440, height: 900 });
-    await page.goto("/search");
-    // Wait for search JavaScript to initialize before running tests
-    await waitForSearchInit(page);
+    await page.goto("/");
   });
 
-  test("should show the initial search prompt and not stay in loading state", async ({ page }) => {
-    const status = page.locator("#search-status");
-    const initialPrompt = page.locator("#initial-search");
+  test("should open with Ctrl+K shortcut", async ({ page }) => {
+    await page.keyboard.press("Control+k");
 
-    await expect(status).not.toHaveText("Loading...");
-    await expect(initialPrompt).toBeVisible();
+    const modal = page.locator("#search-modal");
+    await expect(modal).toBeVisible();
+
+    const input = page.locator("#search-modal-input");
+    await expect(input).toBeFocused();
   });
 
-  test("should return results with highlights for a common query", async ({ page }) => {
-    // Consolidated test: validates search status, result visibility, and highlighting
-    const input = page.locator("#search-page-input");
+  test("should show initial prompt before typing", async ({ page }) => {
+    await page.keyboard.press("Control+k");
+
+    const initial = page.locator("#search-modal-initial");
+    await expect(initial).toBeVisible();
+    await expect(initial).toContainText("Start typing to search");
+  });
+
+  test("should return results for a common query", async ({ page }) => {
+    await page.keyboard.press("Control+k");
+
+    const input = page.locator("#search-modal-input");
     await input.fill("Intro");
 
-    // Check status shows results found
-    const status = page.locator("#search-status");
-    await expect(status).toContainText("Found");
-
-    // Check result cards are visible
-    const results = page.locator(".result-card");
+    // Wait for results to appear
+    const results = page.locator("#search-modal-results [role='option']");
     await expect(results.first()).toBeVisible({ timeout: LONG_TIMEOUT_MS });
 
-    // Check matching terms are highlighted
-    const highlights = page.locator(".result-card mark");
-    await expect(highlights.first()).toBeVisible({ timeout: LONG_TIMEOUT_MS });
+    // Should have multiple results (one Intro per database)
+    const count = await results.count();
+    expect(count).toBeGreaterThan(0);
 
-    // Verify multiple results are returned
-    const resultCount = await results.count();
-    expect(resultCount).toBeGreaterThan(0);
+    // Initial prompt should be hidden
+    const initial = page.locator("#search-modal-initial");
+    await expect(initial).toBeHidden();
+  });
+
+  test("should show result titles and database badges", async ({ page }) => {
+    await page.keyboard.press("Control+k");
+
+    const input = page.locator("#search-modal-input");
+    await input.fill("Intro");
+
+    const firstResult = page.locator("#search-modal-results [role='option']").first();
+    await expect(firstResult).toBeVisible({ timeout: LONG_TIMEOUT_MS });
+
+    // Result should have a title
+    const title = firstResult.locator(".search-result-title");
+    await expect(title).toBeVisible();
+
+    // Result should have a database badge
+    const badge = firstResult.locator(".search-result-badge");
+    await expect(badge).toBeVisible();
   });
 
   test("should navigate to result when clicked", async ({ page }) => {
-    const input = page.locator("#search-page-input");
+    await page.keyboard.press("Control+k");
+
+    const input = page.locator("#search-modal-input");
     await input.fill("Intro");
 
-    // Wait for results to appear (state-based wait instead of fixed timeout)
-    const firstResult = page.locator(".result-card").first();
-    await expect(firstResult).toBeVisible({ timeout: MEDIUM_TIMEOUT_MS });
+    const firstResult = page.locator("#search-modal-results [role='option']").first();
+    await expect(firstResult).toBeVisible({ timeout: LONG_TIMEOUT_MS });
 
-    // Click the result card link
     await firstResult.click();
 
-    // Should navigate to a content page
-    await expect(page).not.toHaveURL(/\/search/);
+    // Should navigate to a content page (URL contains /intro or similar)
+    await page.waitForURL(/\/\w+\/\w+/, { timeout: MEDIUM_TIMEOUT_MS });
   });
 
-  test("should show status for non-matching query", async ({ page }) => {
-    const input = page.locator("#search-page-input");
-    await input.fill("xyznonexistentqueryxyz");
+  test("should close with Escape key from empty input", async ({ page }) => {
+    await page.keyboard.press("Control+k");
 
-    // Wait for status to update (state-based wait instead of fixed timeout)
-    const status = page.locator("#search-status");
-    // Status should update (either "No results" or "Found 0")
-    await expect(status).not.toHaveText("Loading...");
-    await expect(status).toBeVisible();
+    const modal = page.locator("#search-modal");
+    await expect(modal).toBeVisible();
+
+    // With empty input, Escape closes the modal (with animation delay)
+    await page.keyboard.press("Escape");
+    await expect(modal).not.toHaveAttribute("open", { timeout: MEDIUM_TIMEOUT_MS });
   });
 
-  test("should load search from URL query parameter", async ({ page }) => {
-    await page.goto("/search?q=Intro");
+  test("should clear input on first Escape, close on second", async ({ page }) => {
+    await page.keyboard.press("Control+k");
 
-    const input = page.locator("#search-page-input");
-    await expect(input).toHaveValue("Intro");
+    const modal = page.locator("#search-modal");
+    const input = page.locator("#search-modal-input");
+    await input.fill("Intro");
 
-    const results = page.locator(".result-card");
-    await expect(results.first()).toBeVisible();
-  });
-
-  test("should filter by collection when specified in URL", async ({ page }) => {
-    await page.goto("/search?q=Intro&collection=mysql");
-
-    // Wait for results to appear
-    const results = page.locator(".result-card");
+    const results = page.locator("#search-modal-results [role='option']");
     await expect(results.first()).toBeVisible({ timeout: LONG_TIMEOUT_MS });
 
-    // Verify the MySQL collection section is visible
-    // Search results are grouped by collection with headers like "MySQL (3)"
-    const mysqlSection = page.locator('.result-section h2:has-text("MySQL")');
-    await expect(mysqlSection).toBeVisible({ timeout: LONG_TIMEOUT_MS });
+    // First Escape clears the search input (native <input type="search"> behavior)
+    await page.keyboard.press("Escape");
+    await expect(modal).toBeVisible();
+    await expect(input).toHaveValue("");
 
-    // Verify MySQL section header includes a count (indicates results were found)
-    const mysqlHeaderText = await mysqlSection.textContent();
-    expect(mysqlHeaderText).toMatch(/MySQL\s*\(\d+\)/);
-
-    // Verify the result card links point to MySQL content
-    // The result-card is itself an <a> element
-    const href = await results.first().getAttribute("href");
-    expect(href).toContain("/mysql/");
+    // Second Escape closes the modal
+    await page.keyboard.press("Escape");
+    await expect(modal).not.toHaveAttribute("open", { timeout: MEDIUM_TIMEOUT_MS });
   });
 
-  test("should debounce search input", async ({ page }) => {
-    const input = page.locator("#search-page-input");
-    const status = page.locator("#search-status");
+  test("should navigate results with arrow keys", async ({ page }) => {
+    await page.keyboard.press("Control+k");
 
-    // Focus the input
-    await input.click();
+    const input = page.locator("#search-modal-input");
+    await input.fill("Intro");
 
-    // Simulate real typing with pressSequentially (sends keystrokes with minimal delay)
-    // This better tests debounce behavior than fill() which sets value instantly
-    // Using "Intro" which matches multiple content titles (MySQL Intro, etc.)
-    await page.keyboard.type("Intro", { delay: 30 });
+    const results = page.locator("#search-modal-results [role='option']");
+    await expect(results.first()).toBeVisible({ timeout: LONG_TIMEOUT_MS });
 
-    // Note: Debounce behavior means results won't appear immediately after typing.
-    // The status transitions from initial state to "Found" after debounce completes.
+    // Press down arrow to select first result
+    await page.keyboard.press("ArrowDown");
 
-    // Wait for debounce to complete and results to appear
-    await expect(status).toContainText("Found", { timeout: MEDIUM_TIMEOUT_MS });
+    const firstResult = results.first();
+    await expect(firstResult).toHaveAttribute("aria-selected", "true");
 
-    // Verify results appeared only after debounce completed
-    const results = page.locator(".result-card");
-    await expect(results.first()).toBeVisible({ timeout: MEDIUM_TIMEOUT_MS });
+    // Input should reference active descendant
+    await expect(input).toHaveAttribute("aria-activedescendant", "search-result-0");
+  });
+
+  test("should announce results to screen readers", async ({ page }) => {
+    await page.keyboard.press("Control+k");
+
+    const input = page.locator("#search-modal-input");
+    await input.fill("Intro");
+
+    const srStatus = page.locator("#search-modal-sr-status");
+    await expect(srStatus).toContainText(/\d+ results? found/, { timeout: LONG_TIMEOUT_MS });
+  });
+
+  test("should reset state when reopened", async ({ page }) => {
+    // Open and type
+    await page.keyboard.press("Control+k");
+    const input = page.locator("#search-modal-input");
+    await input.fill("Intro");
+
+    const results = page.locator("#search-modal-results [role='option']");
+    await expect(results.first()).toBeVisible({ timeout: LONG_TIMEOUT_MS });
+
+    // Close
+    await page.keyboard.press("Escape");
+
+    // Reopen — should be reset
+    await page.keyboard.press("Control+k");
+    await expect(input).toHaveValue("");
+
+    const initial = page.locator("#search-modal-initial");
+    await expect(initial).toBeVisible();
   });
 });
 
-test.describe("Search Page - Mobile", () => {
+test.describe("Search Modal - Mobile", () => {
   test.beforeEach(async ({ page }) => {
     await page.setViewportSize({ width: 375, height: 667 });
-    await page.goto("/search");
-    // Wait for search JavaScript to initialize before running tests
-    await waitForSearchInit(page);
+    await page.goto("/");
   });
 
-  test("should display search input on mobile", async ({ page }) => {
-    const input = page.locator("#search-page-input");
+  test("should open with Ctrl+K on mobile", async ({ page }) => {
+    await page.keyboard.press("Control+k");
+
+    const modal = page.locator("#search-modal");
+    await expect(modal).toBeVisible();
+
+    const input = page.locator("#search-modal-input");
     await expect(input).toBeVisible();
   });
 
-  test("should show results in mobile-friendly layout", async ({ page }) => {
-    const input = page.locator("#search-page-input");
+  test("should show results on mobile", async ({ page }) => {
+    await page.keyboard.press("Control+k");
+
+    const input = page.locator("#search-modal-input");
     await input.fill("Intro");
 
-    // Wait for results to appear (state-based wait instead of fixed timeout)
-    const results = page.locator(".result-card");
-    await expect(results.first()).toBeVisible({ timeout: MEDIUM_TIMEOUT_MS });
-
-    // Result cards should fit within viewport
-    const firstResult = results.first();
-    const boundingBox = await firstResult.boundingBox();
-    const viewportWidth = page.viewportSize()?.width ?? 375;
-
-    // Explicitly fail if boundingBox is null (element not visible/rendered)
-    expect(boundingBox, "Result card should have a valid bounding box").not.toBeNull();
-    expect(boundingBox!.width).toBeLessThanOrEqual(viewportWidth);
+    const results = page.locator("#search-modal-results [role='option']");
+    await expect(results.first()).toBeVisible({ timeout: LONG_TIMEOUT_MS });
   });
 });
 
@@ -188,7 +202,6 @@ test.describe("Navbar Search Trigger", () => {
   test("should display search trigger at intermediate viewport width (1280px)", async ({
     page,
   }) => {
-    // Regression test: search trigger should be visible at intermediate widths, not just full-screen
     await page.setViewportSize({ width: 1280, height: 800 });
     const searchTrigger = page.locator("#search-trigger");
     await expect(searchTrigger).toBeVisible();

@@ -10,12 +10,13 @@
 
 .navbar {
   background-color: var(--color-primary);
-  background-image: linear-gradient(135deg, var(--color-primary), #1a365d);
+  background-image: linear-gradient(135deg, var(--color-primary), var(--color-gradient-end));
   box-shadow: 0 2px 10px rgb(0 0 0 / 5%);
   position: sticky;
   top: 0;
   z-index: var(--z-navbar);
-  color: white;
+  contain: layout style paint;
+  color: var(--color-nav-text);
   width: 100%;
   max-width: 100%;
   overflow: visible;
@@ -63,7 +64,7 @@
 .navbar-logo .logo-text {
   font-weight: 700;
   font-size: 1.25rem;
-  color: white;
+  color: var(--color-nav-text);
   line-height: 1;
   margin-top: -1px;
 }
@@ -86,6 +87,10 @@
   border: none;
   padding: 0.5rem;
   cursor: pointer;
+  min-width: 44px;
+  min-height: 44px;
+  align-items: center;
+  justify-content: center;
 }
 
 /* Keyboard focus indicator for mobile toggle */
@@ -100,7 +105,7 @@
   width: 25px;
   height: 3px;
   margin: 5px auto;
-  background-color: white;
+  background-color: var(--color-nav-text);
   transition: all 0.3s ease-in-out;
 }
 
@@ -144,7 +149,7 @@
   border-radius: 4px;
   font-size: 0.9rem;
   background-color: rgb(255 255 255 / 10%);
-  color: white;
+  color: var(--color-nav-text);
   cursor: pointer;
   transition: background-color 0.2s ease;
 }
@@ -172,7 +177,7 @@
 
 .navbar .search-trigger-kbd {
   font-family: var(--font-mono);
-  font-size: 11px;
+  font-size: 0.6875rem;
   background: rgb(255 255 255 / 10%);
   border: 1px solid rgb(255 255 255 / 20%);
   border-radius: 4px;
@@ -202,7 +207,7 @@
   padding: 0 0.75rem;
   height: 70px;
   font-weight: 500;
-  color: white;
+  color: var(--color-nav-text);
   text-decoration: none;
   transition: background-color 0.2s ease;
   background: none;
@@ -228,7 +233,7 @@
 
 .navbar .github-link svg {
   margin-right: 0.5rem;
-  stroke: white;
+  stroke: var(--color-nav-text);
 }
 
 /* ============================================
@@ -240,6 +245,7 @@
   top: 100%;
   left: 0;
   width: 280px;
+  max-width: calc(100vw - 2rem);
   background-color: white;
   border-radius: 4px;
   box-shadow: 0 4px 12px rgb(0 0 0 / 10%);
@@ -345,13 +351,17 @@
 
 .navbar .database-section-content {
   padding: 0;
-  max-height: 0;
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows 0.3s ease;
+}
+
+.navbar .database-section-content > * {
   overflow: hidden;
-  transition: max-height 0.3s ease;
 }
 
 .navbar .database-section.expanded .database-section-content {
-  max-height: var(--max-height-database-section-desktop);
+  grid-template-rows: 1fr;
 }
 
 .navbar .database-section-divider {
@@ -444,8 +454,12 @@
   outline-offset: 2px;
 }
 
+.navbar .theme-toggle-label {
+  display: none;
+}
+
 .navbar .theme-toggle svg {
-  stroke: white;
+  stroke: var(--color-nav-text);
 }
 
 .navbar .sun-icon {
@@ -658,6 +672,22 @@
 }
 
 /* ============================================
+   Responsive: Narrow desktop search trigger
+   Reduce search trigger width before mobile breakpoint
+   ============================================ */
+
+@media (width <= 1200px) and (width > 1023px) {
+  .navbar .search-trigger {
+    width: auto;
+    min-width: 0;
+  }
+
+  .navbar .search-trigger-text {
+    display: none;
+  }
+}
+
+/* ============================================
    Responsive: Mobile (1023px)
    NOTE: 1023px = MOBILE_BREAKPOINT (1024) - 1
    ============================================ */
@@ -753,7 +783,7 @@
   }
 
   .navbar .search-trigger .search-icon {
-    color: white;
+    color: var(--color-nav-text);
   }
 
   .navbar .nav-links {
@@ -780,6 +810,13 @@
     display: flex;
     justify-content: flex-start;
     gap: 0.75rem;
+  }
+
+  .navbar .theme-toggle-label {
+    display: inline;
+    color: var(--color-text);
+    font-size: 1rem;
+    font-weight: 500;
   }
 
   .navbar .github-link svg {
@@ -875,7 +912,7 @@
   }
 
   .navbar .database-section.expanded .database-section-content {
-    max-height: var(--max-height-database-section-mobile);
+    grid-template-rows: 1fr;
   }
 
   .navbar .theme-toggle svg {

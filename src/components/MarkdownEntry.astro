@@ -1,5 +1,5 @@
 ---
-import { type CollectionEntry } from "astro:content";
+import { render, type CollectionEntry } from "astro:content";
 // Note: transition:animate directives use built-in Astro values, no import needed
 
 interface Props {
@@ -7,15 +7,15 @@ interface Props {
 }
 
 const { entry } = Astro.props;
-const { Content } = await entry.render();
+const { Content } = await render(entry);
 ---
 
 <article class="markdown-entry" transition:animate="slide">
   <header class="entry-header">
-    <h1 transition:name={`title-${entry.collection}-${entry.slug}`}>{entry.data.title}</h1>
+    <h1 transition:name={`title-${entry.collection}-${entry.id}`}>{entry.data.title}</h1>
     {
       entry.data.description && (
-        <p class="entry-description" transition:name={`desc-${entry.collection}-${entry.slug}`}>
+        <p class="entry-description" transition:name={`desc-${entry.collection}-${entry.id}`}>
           {entry.data.description}
         </p>
       )

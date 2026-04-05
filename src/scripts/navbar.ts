@@ -102,6 +102,14 @@ window.initializeNavbar = function () {
       // Clone the button to remove all existing event listeners
       const newMobileToggle = cloneAndReplace(mobileToggle) as HTMLButtonElement;
 
+      // Set initial aria-hidden state based on current menu visibility
+      const isMobileView = window.innerWidth < MOBILE_BREAKPOINT;
+      if (isMobileView && !navbarMenu.classList.contains("active")) {
+        navbarMenu.setAttribute("aria-hidden", "true");
+      } else {
+        navbarMenu.removeAttribute("aria-hidden");
+      }
+
       // Add fresh event listener
       newMobileToggle.addEventListener("click", (e) => {
         e.preventDefault();
@@ -114,6 +122,7 @@ window.initializeNavbar = function () {
           newMobileToggle.setAttribute("aria-expanded", String(nextExpanded));
           navbarMenu.classList.toggle("active");
           newMobileToggle.classList.toggle("active");
+          navbarMenu.setAttribute("aria-hidden", String(!nextExpanded));
         });
       });
     }
@@ -343,10 +352,16 @@ window.initializeNavbar = function () {
 
       if (navbarMenu && navbarMenu.classList.contains("active")) {
         navbarMenu.classList.remove("active");
+        navbarMenu.setAttribute("aria-hidden", "true");
         if (mobileToggle) {
           mobileToggle.classList.remove("active");
           mobileToggle.setAttribute("aria-expanded", "false");
         }
+      }
+
+      // On desktop, menu is always visible so remove aria-hidden
+      if (navbarMenu) {
+        navbarMenu.removeAttribute("aria-hidden");
       }
 
       // Reset all dropdowns and remove any stuck transitioning classes

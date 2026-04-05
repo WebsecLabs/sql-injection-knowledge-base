@@ -45,10 +45,17 @@ const sortedCategories = entriesByCategory ? getSortedCategories(entriesByCatego
 
 // Create section-specific active path checker using shared utility
 const isActivePath = createSectionActiveChecker(currentPath, import.meta.env.BASE_URL, sectionId);
+
+const contentId = `sidebar-section-content-${sectionId}`;
 ---
 
 <div class={`sidebar-section ${isActive ? "active" : ""}`} data-section={sectionId}>
-  <button type="button" class="sidebar-heading" aria-expanded={isActive ? "true" : "false"}>
+  <button
+    type="button"
+    class="sidebar-heading"
+    aria-expanded={isActive ? "true" : "false"}
+    aria-controls={contentId}
+  >
     <span>{title}</span>
     <svg
       xmlns="http://www.w3.org/2000/svg"
@@ -66,7 +73,7 @@ const isActivePath = createSectionActiveChecker(currentPath, import.meta.env.BAS
       <polyline points="6 9 12 15 18 9"></polyline>
     </svg>
   </button>
-  <div class="sidebar-items">
+  <div id={contentId} class="sidebar-items">
     {
       showCategories && entriesByCategory ? (
         sortedCategories.map((category) => (
@@ -76,8 +83,8 @@ const isActivePath = createSectionActiveChecker(currentPath, import.meta.env.BAS
               {entriesByCategory[category].map((entry) => (
                 <li>
                   <a
-                    href={`${import.meta.env.BASE_URL}${sectionId}/${entry.slug}`}
-                    class={isActivePath(entry.slug) ? "active" : ""}
+                    href={`${import.meta.env.BASE_URL}${sectionId}/${entry.id}`}
+                    class={isActivePath(entry.id) ? "active" : ""}
                   >
                     {entry.data.title}
                   </a>
@@ -91,8 +98,8 @@ const isActivePath = createSectionActiveChecker(currentPath, import.meta.env.BAS
           {entries.map((entry) => (
             <li>
               <a
-                href={`${import.meta.env.BASE_URL}${sectionId}/${entry.slug}`}
-                class={isActivePath(entry.slug) ? "active" : ""}
+                href={`${import.meta.env.BASE_URL}${sectionId}/${entry.id}`}
+                class={isActivePath(entry.id) ? "active" : ""}
               >
                 {entry.data.title}
               </a>

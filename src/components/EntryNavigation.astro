@@ -19,7 +19,11 @@ const nextUrl = next ? getEntryURL(collection, next.slug, baseUrl) : null;
 <nav class="entry-navigation" aria-label="Entry navigation">
   {
     previousUrl ? (
-      <a href={previousUrl} class="nav-link nav-previous">
+      <a
+        href={previousUrl}
+        class="nav-link nav-previous"
+        aria-label={`Previous: ${previous!.title}`}
+      >
         <div class="nav-arrow-wrapper">
           <svg
             xmlns="http://www.w3.org/2000/svg"
@@ -50,7 +54,7 @@ const nextUrl = next ? getEntryURL(collection, next.slug, baseUrl) : null;
 
   {
     nextUrl ? (
-      <a href={nextUrl} class="nav-link nav-next">
+      <a href={nextUrl} class="nav-link nav-next" aria-label={`Next: ${next!.title}`}>
         <div class="nav-content">
           <span class="nav-label">Next</span>
           <span class="nav-title">{next!.title}</span>
@@ -110,6 +114,11 @@ const nextUrl = next ? getEntryURL(collection, next.slug, baseUrl) : null;
     border-color: var(--color-primary);
     box-shadow: var(--shadow-md);
     transform: translateY(-2px);
+  }
+
+  .nav-link:focus-visible {
+    outline: 2px solid var(--color-primary);
+    outline-offset: 2px;
   }
 
   /* Specific grid layouts for prev/next */

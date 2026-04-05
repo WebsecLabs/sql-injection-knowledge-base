@@ -101,25 +101,26 @@ describe("sidebar", () => {
 
       initSidebar();
 
-      // Initially, all links should be visible
-      const links = document.querySelectorAll<HTMLElement>(".sidebar-nav a");
-      links.forEach((link) => {
-        expect(link.style.display).toBe("");
-      });
+      // Initially, body should not have sidebar-filtering class
+      expect(document.body.classList.contains("sidebar-filtering")).toBe(false);
 
       // Trigger search
       searchInput.value = "timing";
       searchInput.dispatchEvent(new Event("input"));
 
-      // Only matching link should be visible
+      // Body should have sidebar-filtering class
+      expect(document.body.classList.contains("sidebar-filtering")).toBe(true);
+
+      // Only matching link should have data-match attribute
+      const links = document.querySelectorAll<HTMLElement>(".sidebar-nav a");
       const timingLink = Array.from(links).find((link) => link.textContent?.includes("Timing"));
-      expect(timingLink?.style.display).toBe("");
+      expect(timingLink?.hasAttribute("data-match")).toBe(true);
 
       const nonMatchingLinks = Array.from(links).filter(
         (link) => !link.textContent?.toLowerCase().includes("timing")
       );
       nonMatchingLinks.forEach((link) => {
-        expect(link.style.display).toBe("none");
+        expect(link.hasAttribute("data-match")).toBe(false);
       });
     });
 
@@ -298,20 +299,22 @@ describe("sidebar", () => {
       searchInput.value = "timing";
       searchInput.dispatchEvent(new Event("input"));
 
-      // Some links should be hidden
-      const hiddenLinks = Array.from(links).filter((link) => link.style.display === "none");
-      expect(hiddenLinks.length).toBeGreaterThan(0);
+      // Body should have sidebar-filtering class and some links should lack data-match
+      expect(document.body.classList.contains("sidebar-filtering")).toBe(true);
+      const unmatchedLinks = Array.from(links).filter((link) => !link.hasAttribute("data-match"));
+      expect(unmatchedLinks.length).toBeGreaterThan(0);
 
       // Reset with short search
       searchInput.value = "t";
       searchInput.dispatchEvent(new Event("input"));
 
-      // All elements should have empty display style
+      // Filtering mode should be off and data-match attributes removed
+      expect(document.body.classList.contains("sidebar-filtering")).toBe(false);
       links.forEach((link) => {
-        expect(link.style.display).toBe("");
+        expect(link.hasAttribute("data-match")).toBe(false);
       });
       categories.forEach((category) => {
-        expect(category.style.display).toBe("");
+        expect(category.hasAttribute("data-match")).toBe(false);
       });
     });
 
@@ -326,8 +329,9 @@ describe("sidebar", () => {
       searchInput.value = "";
       searchInput.dispatchEvent(new Event("input"));
 
+      expect(document.body.classList.contains("sidebar-filtering")).toBe(false);
       links.forEach((link) => {
-        expect(link.style.display).toBe("");
+        expect(link.hasAttribute("data-match")).toBe(false);
       });
     });
 
@@ -343,9 +347,9 @@ describe("sidebar", () => {
         (link) => !link.textContent?.toLowerCase().includes("timing")
       );
 
-      expect(timingLink?.style.display).toBe("");
+      expect(timingLink?.hasAttribute("data-match")).toBe(true);
       nonTimingLinks.forEach((link) => {
-        expect(link.style.display).toBe("none");
+        expect(link.hasAttribute("data-match")).toBe(false);
       });
     });
 
@@ -358,7 +362,7 @@ describe("sidebar", () => {
         link.textContent?.toLowerCase().includes("timing")
       );
 
-      expect(timingLink?.style.display).toBe("");
+      expect(timingLink?.hasAttribute("data-match")).toBe(true);
     });
 
     it("shows parent category when child link matches", () => {
@@ -370,7 +374,7 @@ describe("sidebar", () => {
       );
 
       const category = timingLink?.closest<HTMLElement>(".sidebar-category");
-      expect(category?.style.display).toBe("");
+      expect(category?.hasAttribute("data-match")).toBe(true);
     });
 
     it("hides categories with no matching links", () => {
@@ -386,7 +390,7 @@ describe("sidebar", () => {
       });
 
       categoriesWithoutTiming.forEach((category) => {
-        expect(category.style.display).toBe("none");
+        expect(category.hasAttribute("data-match")).toBe(false);
       });
     });
 
@@ -502,14 +506,14 @@ describe("sidebar", () => {
       const links = document.querySelectorAll<HTMLElement>(".sidebar-nav a");
       const categories = document.querySelectorAll<HTMLElement>(".sidebar-category");
 
-      // All links should be hidden
+      // All links should lack data-match (hidden by CSS)
       links.forEach((link) => {
-        expect(link.style.display).toBe("none");
+        expect(link.hasAttribute("data-match")).toBe(false);
       });
 
-      // All categories should be hidden
+      // All categories should lack data-match (hidden by CSS)
       categories.forEach((category) => {
-        expect(category.style.display).toBe("none");
+        expect(category.hasAttribute("data-match")).toBe(false);
       });
     });
 
@@ -524,7 +528,7 @@ describe("sidebar", () => {
       );
 
       // "SQL Basics" contains "sql bas" as substring
-      expect(sqlBasicsLink?.style.display).toBe("");
+      expect(sqlBasicsLink?.hasAttribute("data-match")).toBe(true);
     });
 
     it("handles partial word matching", () => {
@@ -536,7 +540,7 @@ describe("sidebar", () => {
         link.textContent?.toLowerCase().includes("advanced")
       );
 
-      expect(advancedLink?.style.display).toBe("");
+      expect(advancedLink?.hasAttribute("data-match")).toBe(true);
     });
 
     it("resets sections to collapsed if they were not active before search", () => {
@@ -570,7 +574,7 @@ describe("sidebar", () => {
       ).filter((link) => link.textContent?.toLowerCase().includes("intro"));
 
       introLinks.forEach((link) => {
-        expect(link.style.display).toBe("");
+        expect(link.hasAttribute("data-match")).toBe(true);
       });
 
       // Second search
@@ -586,11 +590,11 @@ describe("sidebar", () => {
       ).filter((link) => !link.textContent?.toLowerCase().includes("timing"));
 
       timingLinks.forEach((link) => {
-        expect(link.style.display).toBe("");
+        expect(link.hasAttribute("data-match")).toBe(true);
       });
 
       nonTimingLinks.forEach((link) => {
-        expect(link.style.display).toBe("none");
+        expect(link.hasAttribute("data-match")).toBe(false);
       });
     });
   });

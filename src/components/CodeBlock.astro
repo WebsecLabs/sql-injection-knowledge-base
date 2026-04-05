@@ -23,7 +23,8 @@ const highlightSet = new Set(highlightLines.map((n) => Number(n)));
     </div>
   </div>
   <pre
-    class="code-content"><code class={`language-${language}`}>{
+    class="code-content"
+    aria-label={`${language.toUpperCase()} code example`}><code class={`language-${language}`}>{
       lines.map((line, index) => {
         const lineNumber = index + 1;
         const isHighlighted = highlightSet.has(lineNumber);

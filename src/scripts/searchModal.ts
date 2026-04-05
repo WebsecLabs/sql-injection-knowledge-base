@@ -83,17 +83,13 @@ let savedScrollY = 0;
 
 function lockScroll(): void {
   savedScrollY = window.scrollY;
-  document.documentElement.style.overflow = "hidden";
-  document.body.style.position = "fixed";
-  document.body.style.top = `-${savedScrollY}px`;
-  document.body.style.width = "100%";
+  document.body.style.setProperty("--scroll-lock-top", `-${savedScrollY}px`);
+  document.body.classList.add("search-modal-open");
 }
 
 function unlockScroll(): void {
-  document.documentElement.style.overflow = "";
-  document.body.style.position = "";
-  document.body.style.top = "";
-  document.body.style.width = "";
+  document.body.classList.remove("search-modal-open");
+  document.body.style.removeProperty("--scroll-lock-top");
   window.scrollTo(0, savedScrollY);
 }
 
@@ -103,18 +99,10 @@ function unlockScroll(): void {
 
 const INERT_SELECTORS = ["main", "nav", "footer", ".sidebar", ".button-container"] as const;
 
-function applyInert(): void {
+function setInert(enable: boolean): void {
   for (const selector of INERT_SELECTORS) {
     for (const el of document.querySelectorAll(selector)) {
-      el.setAttribute("inert", "");
-    }
-  }
-}
-
-function removeInert(): void {
-  for (const selector of INERT_SELECTORS) {
-    for (const el of document.querySelectorAll(selector)) {
-      el.removeAttribute("inert");
+      el.toggleAttribute("inert", enable);
     }
   }
 }
@@ -139,20 +127,38 @@ function returnFocus(): void {
 const MAX_RESULTS = 12;
 let activeIndex = -1;
 
+interface ModalElements {
+  input: HTMLInputElement | null;
+  resultsList: HTMLElement | null;
+  emptyEl: HTMLElement | null;
+  initialEl: HTMLElement | null;
+  srStatus: HTMLElement | null;
+}
+
+function getModalElements(): ModalElements {
+  return {
+    input: document.getElementById("search-modal-input") as HTMLInputElement | null,
+    resultsList: document.getElementById("search-modal-results"),
+    emptyEl: document.getElementById("search-modal-empty"),
+    initialEl: document.getElementById("search-modal-initial"),
+    srStatus: document.getElementById("search-modal-sr-status"),
+  };
+}
+
+function clearResultsList(resultsList: HTMLElement): void {
+  resultsList.replaceChildren();
+}
+
 function resetSearchState(): void {
   activeIndex = -1;
-  const input = document.getElementById("search-modal-input") as HTMLInputElement | null;
-  const resultsList = document.getElementById("search-modal-results");
-  const emptyEl = document.getElementById("search-modal-empty");
-  const initialEl = document.getElementById("search-modal-initial");
-  const srStatus = document.getElementById("search-modal-sr-status");
+  const { input, resultsList, emptyEl, initialEl, srStatus } = getModalElements();
 
   if (input) {
     input.value = "";
     input.setAttribute("aria-expanded", "false");
     input.setAttribute("aria-activedescendant", "");
   }
-  if (resultsList) resultsList.innerHTML = "";
+  if (resultsList) clearResultsList(resultsList);
   if (emptyEl) emptyEl.hidden = true;
   if (initialEl) initialEl.hidden = false;
   if (srStatus) srStatus.textContent = "";
@@ -163,19 +169,14 @@ function resetSearchState(): void {
 // ---------------------------------------------------------------------------
 
 function renderResults(results: PagefindResultData[]): void {
-  const resultsList = document.getElementById("search-modal-results");
-  const emptyEl = document.getElementById("search-modal-empty");
-  const initialEl = document.getElementById("search-modal-initial");
-  const srStatus = document.getElementById("search-modal-sr-status");
-  const input = document.getElementById("search-modal-input") as HTMLInputElement | null;
-
+  const { input, resultsList, emptyEl, initialEl, srStatus } = getModalElements();
   if (!resultsList) return;
 
   // Always hide initial state when we have a query
   if (initialEl) initialEl.hidden = true;
 
   // Clear previous results
-  resultsList.innerHTML = "";
+  clearResultsList(resultsList);
   activeIndex = -1;
   if (input) {
     input.setAttribute("aria-activedescendant", "");
@@ -246,14 +247,11 @@ function renderResults(results: PagefindResultData[]): void {
 // ---------------------------------------------------------------------------
 
 function navigateToResult(url: string): void {
-  if (url) {
-    // Close modal first, then navigate
-    const dialog = document.getElementById("search-modal") as HTMLDialogElement | null;
-    if (dialog?.open) {
-      dialog.close();
-    }
-    window.location.href = url;
+  const dialog = document.getElementById("search-modal") as HTMLDialogElement | null;
+  if (dialog?.open) {
+    dialog.close();
   }
+  window.location.href = url;
 }
 
 // ---------------------------------------------------------------------------
@@ -261,8 +259,7 @@ function navigateToResult(url: string): void {
 // ---------------------------------------------------------------------------
 
 function updateActiveResult(newIndex: number): void {
-  const resultsList = document.getElementById("search-modal-results");
-  const input = document.getElementById("search-modal-input") as HTMLInputElement | null;
+  const { input, resultsList } = getModalElements();
   if (!resultsList) return;
 
   const items = resultsList.querySelectorAll<HTMLElement>('[role="option"]');
@@ -275,23 +272,20 @@ function updateActiveResult(newIndex: number): void {
 
   activeIndex = newIndex;
 
-  // Select new
-  if (activeIndex >= 0 && activeIndex < items.length) {
+  // Select new and update ARIA
+  const isValidIndex = activeIndex >= 0 && activeIndex < items.length;
+  if (isValidIndex) {
     const activeItem = items[activeIndex];
     activeItem.setAttribute("aria-selected", "true");
     activeItem.scrollIntoView({ block: "nearest" });
-    if (input) {
-      input.setAttribute("aria-activedescendant", activeItem.id);
-    }
-  } else {
-    if (input) {
-      input.setAttribute("aria-activedescendant", "");
-    }
+  }
+  if (input) {
+    input.setAttribute("aria-activedescendant", isValidIndex ? items[activeIndex].id : "");
   }
 }
 
 function handleResultKeydown(e: KeyboardEvent): void {
-  const resultsList = document.getElementById("search-modal-results");
+  const { resultsList } = getModalElements();
   if (!resultsList) return;
 
   const items = resultsList.querySelectorAll<HTMLElement>('[role="option"]');
@@ -330,10 +324,7 @@ async function performSearch(query: string): Promise<void> {
     );
     renderResults(resultData);
   } catch (_err) {
-    // Show error in empty state
-    const emptyEl = document.getElementById("search-modal-empty");
-    const initialEl = document.getElementById("search-modal-initial");
-    const srStatus = document.getElementById("search-modal-sr-status");
+    const { emptyEl, initialEl, srStatus } = getModalElements();
 
     if (initialEl) initialEl.hidden = true;
     if (emptyEl) {
@@ -374,7 +365,7 @@ function openSearchModal(): void {
 
   // Lock scroll and apply inert
   lockScroll();
-  applyInert();
+  setInert(true);
 
   // Open dialog
   dialog.showModal();
@@ -385,10 +376,8 @@ function openSearchModal(): void {
   });
 
   // Focus the search input
-  const input = document.getElementById("search-modal-input") as HTMLInputElement | null;
-  if (input) {
-    input.focus();
-  }
+  const { input } = getModalElements();
+  input?.focus();
 }
 
 function closeSearchModal(): void {
@@ -437,7 +426,7 @@ function bindModalEvents(): void {
   dialog.addEventListener("close", () => {
     dialog.classList.remove("is-open");
     unlockScroll();
-    removeInert();
+    setInert(false);
     returnFocus();
     resetSearchState();
   });
@@ -446,6 +435,31 @@ function bindModalEvents(): void {
   dialog.addEventListener("cancel", (e) => {
     e.preventDefault();
     closeSearchModal();
+  });
+
+  // Focus trapping: keep Tab cycling within the modal when open
+  dialog.addEventListener("keydown", (e) => {
+    if (e.key !== "Tab") return;
+
+    const focusableEls = dialog.querySelectorAll<HTMLElement>(
+      'input, button, [tabindex]:not([tabindex="-1"]), a[href]'
+    );
+    if (focusableEls.length === 0) return;
+
+    const firstEl = focusableEls[0];
+    const lastEl = focusableEls[focusableEls.length - 1];
+
+    if (e.shiftKey) {
+      if (document.activeElement === firstEl) {
+        e.preventDefault();
+        lastEl.focus();
+      }
+    } else {
+      if (document.activeElement === lastEl) {
+        e.preventDefault();
+        firstEl.focus();
+      }
+    }
   });
 
   // Click on backdrop (the dialog element itself, not the container) to close
@@ -484,7 +498,7 @@ function setupGlobalListeners(): void {
       // Force close without animation since page is about to swap
       dialog.classList.remove("is-open");
       unlockScroll();
-      removeInert();
+      setInert(false);
       dialog.close();
       resetSearchState();
       lastFocusedElement = null;

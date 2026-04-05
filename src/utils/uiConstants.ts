@@ -58,4 +58,3 @@ export const TOC_OBSERVER_BOTTOM_PERCENT = 80;
  */
 export const TOC_HEADING_SELECTOR =
   ".entry-content h2[id], .entry-content h3[id], .markdown-body h2[id], .markdown-body h3[id]";
-

@@ -68,6 +68,21 @@
   margin-bottom: 2rem;
 }
 
+/* Large desktop: constrain content width for readability */
+@media (width >= 1920px) {
+  .content-container {
+    max-width: 1100px;
+  }
+}
+
+/* Intermediate tablet: refine layout between mobile and desktop */
+@media (width <= 900px) and (width > 768px) {
+  .content-container {
+    max-width: 100%;
+    padding: 0 1.25rem;
+  }
+}
+
 /* Mobile layout adjustments */
 @media (width <= 768px) {
   .page-layout {

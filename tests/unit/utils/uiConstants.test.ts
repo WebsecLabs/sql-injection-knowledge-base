@@ -36,7 +36,6 @@ describe("uiConstants", () => {
     it("should export SIDEBAR_ATTENTION_DELAY_MS as a positive number", () => {
       expect(constants.SIDEBAR_ATTENTION_DELAY_MS).toBeGreaterThan(0);
     });
-
   });
 
   describe("UI constants", () => {
@@ -44,7 +43,6 @@ describe("uiConstants", () => {
       expect(typeof constants.DROPDOWN_MOBILE_MAX_HEIGHT).toBe("string");
       expect(constants.DROPDOWN_MOBILE_MAX_HEIGHT).toMatch(/^\d+px$/);
     });
-
   });
 
   describe("TOC constants", () => {

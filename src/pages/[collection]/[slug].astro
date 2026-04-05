@@ -1,5 +1,5 @@
 ---
-import { getCollection, type CollectionEntry } from "astro:content";
+import { getCollection, render, type CollectionEntry } from "astro:content";
 import Layout from "../../layouts/Layout.astro";
 import MarkdownEntry from "../../components/MarkdownEntry.astro";
 import EntryNavigation from "../../components/EntryNavigation.astro";
@@ -26,7 +26,7 @@ export async function getStaticPaths() {
     const entries = await getCollection(collectionName);
     for (const entry of entries) {
       paths.push({
-        params: { collection: collectionName, slug: entry.slug },
+        params: { collection: collectionName, slug: entry.id },
         props: { entry: entry as AnyEntry, collectionName },
       });
     }
@@ -68,14 +68,14 @@ const collections = {
 const entriesKey = `${collectionName}Entries` as keyof typeof collections;
 const currentCollectionEntries = collections[entriesKey] as AnyEntry[];
 const sortedEntries = sortEntriesByCategory(currentCollectionEntries);
-const { previous, next } = getAdjacentEntries(currentCollectionEntries, entry.slug, sortedEntries);
+const { previous, next } = getAdjacentEntries(currentCollectionEntries, entry.id, sortedEntries);
 
 // Get first entry slug for breadcrumb (uses pre-sorted entries to avoid re-sorting)
 const firstEntrySlug = getFirstEntrySlug(currentCollectionEntries, sortedEntries) ?? "intro";
 
 // Render entry to extract headings for Table of Contents
 // Note: Astro caches render() calls, so this doesn't duplicate work done in MarkdownEntry
-const { headings } = await entry.render();
+const { headings } = await render(entry);
 
 // Filter to H2 and H3 headings for TOC (depth 2 and 3)
 const tocHeadings = headings.filter((h) => h.depth === 2 || h.depth === 3);
@@ -121,7 +121,7 @@ const articleData = {
   <StructuredData type="article" article={articleData} />
 
   <div class="entry-container" data-pagefind-body transition:animate="slide">
-    <meta data-pagefind-meta="title" content={entry.data.title} />
+    <meta data-pagefind-meta={`title:${entry.data.title}`} />
     <meta data-pagefind-meta={`database:${collectionName}`} />
     <meta data-pagefind-meta={`category:${entry.data.category}`} />
     <span data-pagefind-filter="database" style="display:none;">{collectionName}</span>

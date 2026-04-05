@@ -1,4 +1,35 @@
+/* Design Tokens
+ * --color-background:    Page background
+ * --color-text:          Primary body text
+ * --color-primary:       Brand blue, links, active states
+ * --color-secondary:     Danger/error accent
+ * --color-accent:        Lighter brand blue for highlights
+ * --color-card-bg:       Card/panel surfaces
+ * --color-sidebar-bg:    Sidebar background
+ * --color-border:        Default border color
+ * --color-text-muted:    Secondary text (labels, captions)
+ * --color-text-light:    Tertiary text (placeholders, hints) — must meet WCAG AA 4.5:1
+ * --color-heading-1/2/3: Heading hierarchy colors
+ * --color-code-bg:       Code block background
+ * --color-mac-*:         Decorative code block window buttons
+ * --color-sidebar-toggle-*: Mobile sidebar FAB button
+ * --color-gradient-end:     Gradient endpoint for navbar/footer
+ * --color-nav-text:         Text color on navbar/footer gradient backgrounds
+ * --color-code-button-bg:   Copy button background on code blocks
+ * --color-code-button-hover-bg: Copy button hover background
+ * --color-modal-backdrop:   Search modal backdrop overlay
+ * --color-scroll-shadow:    Scroll shadow indicator color
+ * --color-badge-*-bg/text:  Database badge colors for search results
+ */
+
 :root {
+  /* Spacing scale */
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-6: 1.5rem;
+  --space-8: 2rem;
   --color-background: #f9fafb;
   --color-text: #1a202c;
   --color-primary: #3182ce;
@@ -16,9 +47,11 @@
   --color-mac-red: #fc8181;
   --color-mac-yellow: #f6e05e;
   --color-mac-green: #68d391;
+  --color-sidebar-toggle-bg: #0d4a86;
+  --color-sidebar-toggle-active: #1a365d;
   --color-code-bg: #f8fafc;
   --color-text-muted: #4a5568;
-  --color-text-light: #718096;
+  --color-text-light: #64748b; /* WCAG AA: 5.4:1 on white, 5.2:1 on #f8fafc, 4.7:1 on #f1f5f9 */
   --color-border-light: #cbd5e0;
   --color-search-bg: #f8f9fa;
   --color-search-border: #ccc;
@@ -42,6 +75,24 @@
   --color-modal-result-active: #f1f5f9;
   --color-modal-kbd-bg: #f3f4f6;
   --color-modal-kbd-border: #e2e8f0;
+  --color-gradient-end: #1a365d;
+  --color-nav-text: white;
+  --color-code-button-bg: rgb(0 0 0 / 50%);
+  --color-code-button-hover-bg: rgb(0 0 0 / 70%);
+  --color-modal-backdrop: rgb(0 0 0 / 60%);
+  --color-scroll-shadow: rgb(0 0 0 / 15%);
+  --color-badge-mysql-bg: #dbeafe;
+  --color-badge-mysql-text: #1d4ed8;
+  --color-badge-postgresql-bg: #dcfce7;
+  --color-badge-postgresql-text: #15803d;
+  --color-badge-mssql-bg: #fee2e2;
+  --color-badge-mssql-text: #b91c1c;
+  --color-badge-oracle-bg: #fef3c7;
+  --color-badge-oracle-text: #b45309;
+  --color-badge-mariadb-bg: #f3e8ff;
+  --color-badge-mariadb-text: #7c3aed;
+  --color-badge-extras-bg: #f3f4f6;
+  --color-badge-extras-text: #4b5563;
   --font-sans:
     "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial,
     sans-serif;
@@ -94,6 +145,11 @@
     --color-false-text: #fc8181;
     --color-injection-bg: rgb(237 100 166 / 15%);
     --color-injection-text: #f687b3;
+    --color-mac-red: #e27272;
+    --color-mac-yellow: #d4c04e;
+    --color-mac-green: #5ab880;
+    --color-sidebar-toggle-bg: #1e5a9e;
+    --color-sidebar-toggle-active: #2d4a6f;
     --color-code-bg: #1e293b;
     --color-text-muted: #94a3b8;
     --color-text-light: #94a3b8;
@@ -120,6 +176,24 @@
     --color-modal-result-active: #243044;
     --color-modal-kbd-bg: rgb(30 41 59 / 60%);
     --color-modal-kbd-border: #475569;
+    --color-gradient-end: #0c2340;
+    --color-nav-text: white;
+    --color-code-button-bg: rgb(255 255 255 / 20%);
+    --color-code-button-hover-bg: rgb(255 255 255 / 35%);
+    --color-modal-backdrop: rgb(0 0 0 / 75%);
+    --color-scroll-shadow: rgb(0 0 0 / 30%);
+    --color-badge-mysql-bg: rgb(96 165 250 / 12%);
+    --color-badge-mysql-text: #60a5fa;
+    --color-badge-postgresql-bg: rgb(52 211 153 / 12%);
+    --color-badge-postgresql-text: #34d399;
+    --color-badge-mssql-bg: rgb(248 113 113 / 12%);
+    --color-badge-mssql-text: #f87171;
+    --color-badge-oracle-bg: rgb(251 191 36 / 12%);
+    --color-badge-oracle-text: #fbbf24;
+    --color-badge-mariadb-bg: rgb(167 139 250 / 12%);
+    --color-badge-mariadb-text: #a78bfa;
+    --color-badge-extras-bg: rgb(107 114 128 / 12%);
+    --color-badge-extras-text: #9ca3af;
     --shadow: 0 2px 4px rgb(0 0 0 / 20%);
     --shadow-md: 0 4px 6px rgb(0 0 0 / 25%);
     --shadow-lg: 0 10px 15px rgb(0 0 0 / 30%);
@@ -142,6 +216,11 @@
   --color-false-text: #fc8181;
   --color-injection-bg: rgb(237 100 166 / 15%);
   --color-injection-text: #f687b3;
+  --color-mac-red: #e27272;
+  --color-mac-yellow: #d4c04e;
+  --color-mac-green: #5ab880;
+  --color-sidebar-toggle-bg: #1e5a9e;
+  --color-sidebar-toggle-active: #2d4a6f;
   --color-code-bg: #1e293b;
   --color-text-muted: #94a3b8;
   --color-text-light: #94a3b8;
@@ -168,6 +247,24 @@
   --color-modal-result-active: #243044;
   --color-modal-kbd-bg: rgb(30 41 59 / 60%);
   --color-modal-kbd-border: #475569;
+  --color-gradient-end: #0c2340;
+  --color-nav-text: white;
+  --color-code-button-bg: rgb(255 255 255 / 20%);
+  --color-code-button-hover-bg: rgb(255 255 255 / 35%);
+  --color-modal-backdrop: rgb(0 0 0 / 75%);
+  --color-scroll-shadow: rgb(0 0 0 / 30%);
+  --color-badge-mysql-bg: rgb(96 165 250 / 12%);
+  --color-badge-mysql-text: #60a5fa;
+  --color-badge-postgresql-bg: rgb(52 211 153 / 12%);
+  --color-badge-postgresql-text: #34d399;
+  --color-badge-mssql-bg: rgb(248 113 113 / 12%);
+  --color-badge-mssql-text: #f87171;
+  --color-badge-oracle-bg: rgb(251 191 36 / 12%);
+  --color-badge-oracle-text: #fbbf24;
+  --color-badge-mariadb-bg: rgb(167 139 250 / 12%);
+  --color-badge-mariadb-text: #a78bfa;
+  --color-badge-extras-bg: rgb(107 114 128 / 12%);
+  --color-badge-extras-text: #9ca3af;
   --shadow: 0 2px 4px rgb(0 0 0 / 20%);
   --shadow-md: 0 4px 6px rgb(0 0 0 / 25%);
   --shadow-lg: 0 10px 15px rgb(0 0 0 / 30%);

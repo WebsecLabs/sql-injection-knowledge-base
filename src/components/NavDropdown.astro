@@ -17,18 +17,29 @@ interface Props {
 const { category, entries, baseUrl, section, isActivePath } = Astro.props;
 ---
 
-<div class="dropdown-submenu">
-  <div class="dropdown-header">{category}</div>
+<div
+  class="dropdown-submenu"
+  role="group"
+  aria-labelledby={`dropdown-header-${section}-${category.toLowerCase().replace(/\s+/g, "-")}`}
+>
+  <div
+    class="dropdown-header"
+    id={`dropdown-header-${section}-${category.toLowerCase().replace(/\s+/g, "-")}`}
+    role="heading"
+    aria-level={4}
+  >
+    {category}
+  </div>
   <ul class="dropdown-list">
     {
       entries.map((entry) => (
         <li>
           <a
-            href={`${baseUrl}${section}/${entry.slug}`}
-            class:list={["dropdown-item", { active: isActivePath(section, entry.slug) }]}
-            aria-label={entry.data.title || `${section.toUpperCase()} ${entry.slug}`}
+            href={`${baseUrl}${section}/${entry.id}`}
+            class:list={["dropdown-item", { active: isActivePath(section, entry.id) }]}
+            aria-label={entry.data.title || `${section.toUpperCase()} ${entry.id}`}
           >
-            {entry.data.title || entry.slug}
+            {entry.data.title || entry.id}
           </a>
         </li>
       ))

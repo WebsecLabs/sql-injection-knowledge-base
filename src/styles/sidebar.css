@@ -1,5 +1,14 @@
 /* Sidebar styles */
 
+/* Sidebar search filtering: hide non-matching items via CSS class */
+body.sidebar-filtering .sidebar-nav a:not([data-match]) {
+  display: none;
+}
+
+body.sidebar-filtering .sidebar-category:not([data-match]) {
+  display: none;
+}
+
 /* Hide sidebar overlay, toggle button, and button container by default (desktop) */
 .sidebar-overlay {
   display: none;
@@ -23,6 +32,7 @@
   position: sticky;
   top: 70px;
   height: calc(100vh - 70px);
+  contain: layout style paint;
   padding: 0;
   margin: 0;
   padding-bottom: 1rem;
@@ -46,12 +56,12 @@
 }
 
 /* Search in sidebar */
-.search-container {
+.sidebar .search-container {
   width: 300px;
   position: relative;
 }
 
-.search-icon {
+.sidebar .search-icon {
   position: absolute;
   left: 10px;
   top: 50%;
@@ -159,6 +169,11 @@
 
 .sidebar-heading:hover {
   background-color: var(--color-code-bg);
+}
+
+.sidebar-heading:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: -2px;
 }
 
 .sidebar-section.active .sidebar-heading {
@@ -334,7 +349,7 @@
     width: 56px;
     height: 56px;
     border-radius: 50%;
-    background-color: #0d4a86;
+    background-color: var(--color-sidebar-toggle-bg);
     color: white;
     border: 2px solid rgb(255 255 255 / 25%);
     box-shadow: 0 4px 12px rgb(0 0 0 / 40%);
@@ -350,7 +365,7 @@
   }
 
   .sidebar-toggle.active {
-    background-color: #1a365d;
+    background-color: var(--color-sidebar-toggle-active);
   }
 
   .sidebar-toggle.attention {
@@ -389,6 +404,12 @@
 
     100% {
       transform: scale(1);
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .sidebar-toggle.attention {
+      animation: none;
     }
   }
 

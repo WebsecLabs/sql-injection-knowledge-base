@@ -15,7 +15,7 @@ const { entries, title, collectionType } = Astro.props;
 const sortedEntries = [...entries].sort((a, b) => {
   const orderA = Number.isFinite(a.data.order) ? a.data.order : Number.MAX_SAFE_INTEGER;
   const orderB = Number.isFinite(b.data.order) ? b.data.order : Number.MAX_SAFE_INTEGER;
-  return orderA - orderB || a.slug.localeCompare(b.slug);
+  return orderA - orderB || a.id.localeCompare(b.id);
 });
 
 // Group entries by category using shared utility
@@ -36,17 +36,17 @@ const sortedCategories = getSortedCategories(entriesByCategory);
           {entriesByCategory[category].map((entry) => (
             <li class="entry-item">
               <a
-                href={getEntryURL(collectionType, entry.slug, import.meta.env.BASE_URL)}
+                href={getEntryURL(collectionType, entry.id, import.meta.env.BASE_URL)}
                 class="entry-card"
-                transition:name={`card-${collectionType}-${entry.slug}`}
+                transition:name={`card-${collectionType}-${entry.id}`}
               >
-                <h4 class="entry-title" transition:name={`title-${collectionType}-${entry.slug}`}>
+                <h4 class="entry-title" transition:name={`title-${collectionType}-${entry.id}`}>
                   {entry.data.title}
                 </h4>
                 {entry.data.description && (
                   <p
                     class="entry-description"
-                    transition:name={`desc-${collectionType}-${entry.slug}`}
+                    transition:name={`desc-${collectionType}-${entry.id}`}
                   >
                     {entry.data.description}
                   </p>

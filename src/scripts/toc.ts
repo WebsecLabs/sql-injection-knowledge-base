@@ -154,18 +154,12 @@ function initScrollSpy(): void {
             newActiveLink.classList.add(TOC_ACTIVE_CLASS);
 
             // Scroll TOC link into view if needed (within the TOC container)
-            const tocContent = document.getElementById("toc-content");
-            if (tocContent) {
-              const linkRect = newActiveLink.getBoundingClientRect();
-              const contentRect = tocContent.getBoundingClientRect();
-
-              if (linkRect.top < contentRect.top || linkRect.bottom > contentRect.bottom) {
-                newActiveLink.scrollIntoView({
-                  block: "nearest",
-                  behavior: "smooth",
-                });
-              }
-            }
+            // scrollIntoView with block:"nearest" is a no-op when already visible,
+            // so no manual getBoundingClientRect check is needed
+            newActiveLink.scrollIntoView({
+              block: "nearest",
+              behavior: "smooth",
+            });
 
             currentActiveLink = newActiveLink;
           }

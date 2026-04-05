@@ -240,6 +240,30 @@ const searchUrl = new URL(`${import.meta.env.BASE_URL}search`, site).href;
   }
 
   /* Styles for the Tabs component integration */
+  .database-tabs {
+    position: relative;
+  }
+
+  /* Scroll fade indicator — hints at overflowing tabs on narrow viewports */
+  .database-tabs::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 40px;
+    height: 49px; /* Match tab-list height (padding + border) */
+    background: linear-gradient(to right, transparent, var(--color-card-bg));
+    pointer-events: none;
+    opacity: 1;
+    transition: opacity 0.2s ease;
+    z-index: 1;
+  }
+
+  /* Hide fade when tabs fit (JS adds this class, or we rely on wide viewports) */
+  .database-tabs.tabs-fit::after {
+    opacity: 0;
+  }
+
   :global(.tab-list) {
     display: flex;
     list-style: none;
@@ -248,6 +272,8 @@ const searchUrl = new URL(`${import.meta.env.BASE_URL}search`, site).href;
     border-bottom: 1px solid var(--color-border);
     overflow-x: auto;
     scrollbar-width: none;
+    -webkit-overflow-scrolling: touch;
+    scroll-snap-type: x mandatory;
   }
 
   :global(.tab-list::-webkit-scrollbar) {
@@ -262,6 +288,7 @@ const searchUrl = new URL(`${import.meta.env.BASE_URL}search`, site).href;
     border-bottom: 3px solid transparent;
     transition: all 0.3s ease;
     white-space: nowrap;
+    scroll-snap-align: start;
   }
 
   :global(.tab-item:hover) {
@@ -292,6 +319,13 @@ const searchUrl = new URL(`${import.meta.env.BASE_URL}search`, site).href;
     to {
       opacity: 1;
       transform: translateY(0);
+    }
+  }
+
+  /* On wider viewports where tabs fit, hide the scroll fade */
+  @media (min-width: 769px) {
+    .database-tabs::after {
+      display: none;
     }
   }
 

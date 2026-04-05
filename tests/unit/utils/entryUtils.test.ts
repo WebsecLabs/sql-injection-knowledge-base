@@ -15,7 +15,6 @@ import type { AnyEntry } from "../../../src/utils/entryUtils";
 function createMockEntry(slug: string, title: string, category: string, order: number): AnyEntry {
   return {
     id: slug,
-    slug,
     collection: "mysql",
     data: {
       title,
@@ -98,7 +97,7 @@ describe("entryUtils", () => {
 
       const sorted = sortEntriesByCategory(entries);
 
-      expect(sorted.map((e) => e.slug)).toEqual(["first", "second", "third"]);
+      expect(sorted.map((e) => e.id)).toEqual(["first", "second", "third"]);
     });
 
     it("uses slug as tiebreaker for same order", () => {
@@ -109,8 +108,8 @@ describe("entryUtils", () => {
 
       const sorted = sortEntriesByCategory(entries);
 
-      expect(sorted[0].slug).toBe("aaa");
-      expect(sorted[1].slug).toBe("zzz");
+      expect(sorted[0].id).toBe("aaa");
+      expect(sorted[1].id).toBe("zzz");
     });
 
     it("puts unknown categories at the end", () => {
@@ -247,8 +246,8 @@ describe("entryUtils", () => {
 
       const grouped = groupByCategory(entries);
 
-      expect(grouped["Basics"][0].slug).toBe("first");
-      expect(grouped["Basics"][1].slug).toBe("second");
+      expect(grouped["Basics"][0].id).toBe("first");
+      expect(grouped["Basics"][1].id).toBe("second");
     });
   });
 
@@ -263,8 +262,8 @@ describe("entryUtils", () => {
 
       const sorted = sortGroupedEntriesInPlace(grouped);
 
-      expect(sorted["Basics"][0].slug).toBe("first");
-      expect(sorted["Basics"][1].slug).toBe("second");
+      expect(sorted["Basics"][0].id).toBe("first");
+      expect(sorted["Basics"][1].id).toBe("second");
     });
 
     it("mutates the input object (in-place sort)", () => {
@@ -294,8 +293,8 @@ describe("entryUtils", () => {
 
       const sorted = sortGroupedEntriesInPlace(grouped);
 
-      expect(sorted["Basics"].map((e) => e.slug)).toEqual(["b1", "b2"]);
-      expect(sorted["Advanced"].map((e) => e.slug)).toEqual(["a1", "a2"]);
+      expect(sorted["Basics"].map((e) => e.id)).toEqual(["b1", "b2"]);
+      expect(sorted["Advanced"].map((e) => e.id)).toEqual(["a1", "a2"]);
     });
   });
 

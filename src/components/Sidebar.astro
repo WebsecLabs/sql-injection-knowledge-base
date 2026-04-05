@@ -34,7 +34,7 @@ const postgresqlByCategory = sortGroupedEntriesInPlace(groupByCategory(postgresq
 
 // Sort extras entries by order with stable tiebreaker
 const sortedExtras = [...extrasEntries].sort(
-  (a, b) => a.data.order - b.data.order || a.slug.localeCompare(b.slug)
+  (a, b) => a.data.order - b.data.order || a.id.localeCompare(b.id)
 );
 
 // Current path to highlight active link
@@ -59,6 +59,7 @@ const activeSection = getActiveSection(currentPath);
   </div>
 
   <div class="sidebar-search">
+    <label for="sidebar-search-input" class="sr-only">Search documentation</label>
     <input
       type="text"
       id="sidebar-search-input"

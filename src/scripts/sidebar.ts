@@ -26,10 +26,15 @@ const handleSearch = (e: Event): void => {
   const searchTerm = input.value.toLowerCase().trim();
 
   if (searchTerm.length < 2) {
-    // Reset all elements if search term is too short
-    document.querySelectorAll<HTMLElement>(".sidebar-nav a, .sidebar-category").forEach((el) => {
-      el.style.display = "";
-    });
+    // Exit filtering mode - CSS will restore visibility
+    document.body.classList.remove("sidebar-filtering");
+
+    // Clean up data-match attributes
+    document
+      .querySelectorAll<HTMLElement>(".sidebar-nav a[data-match], .sidebar-category[data-match]")
+      .forEach((el) => {
+        el.removeAttribute("data-match");
+      });
 
     // Restore previous active states with aria-expanded sync
     document.querySelectorAll<HTMLElement>(".sidebar-section").forEach((section) => {
@@ -53,23 +58,18 @@ const handleSearch = (e: Event): void => {
   }
 
   // Remember which sections were active before searching (only on first search)
-  const hasStoredState = Array.from(
-    document.querySelectorAll<HTMLElement>(".sidebar-section")
-  ).some((s) => s.dataset.wasActive !== undefined);
-  if (!hasStoredState) {
+  if (!document.querySelector(".sidebar-section[data-was-active]")) {
     document.querySelectorAll<HTMLElement>(".sidebar-section.active").forEach((section) => {
       section.dataset.wasActive = "true";
     });
   }
 
-  // Hide all categories initially
-  document.querySelectorAll<HTMLElement>(".sidebar-category").forEach((category) => {
-    category.style.display = "none";
-  });
+  // Enter filtering mode - CSS hides all non-matching elements
+  document.body.classList.add("sidebar-filtering");
 
-  // Hide all items initially
-  document.querySelectorAll<HTMLElement>(".sidebar-nav a").forEach((link) => {
-    link.style.display = "none";
+  // Clear previous matches
+  document.querySelectorAll<HTMLElement>("[data-match]").forEach((el) => {
+    el.removeAttribute("data-match");
   });
 
   // Expand all sections for search
@@ -81,14 +81,14 @@ const handleSearch = (e: Event): void => {
     }
   });
 
-  // Show matching items
+  // Mark matching items with data-match attribute
   document.querySelectorAll<HTMLAnchorElement>(".sidebar-nav a").forEach((link) => {
     const text = link.textContent?.toLowerCase() || "";
 
     if (text.includes(searchTerm)) {
-      link.style.display = "";
+      link.setAttribute("data-match", "");
       const category = link.closest<HTMLElement>(".sidebar-category");
-      if (category) category.style.display = "";
+      if (category) category.setAttribute("data-match", "");
     }
   });
 };

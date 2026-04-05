@@ -8,6 +8,17 @@
 import { cloneAndReplace } from "../utils/domUtils";
 
 /**
+ * Update the theme toggle button's aria-label to reflect the current theme state.
+ */
+function updateThemeToggleLabel(toggle: Element): void {
+  const isDark =
+    document.documentElement.classList.contains("dark") ||
+    (!document.documentElement.classList.contains("light") &&
+      window.matchMedia("(prefers-color-scheme: dark)").matches);
+  toggle.setAttribute("aria-label", isDark ? "Switch to light theme" : "Switch to dark theme");
+}
+
+/**
  * Initialize theme toggle functionality.
  * Clones the toggle button to remove existing listeners, then attaches new handlers.
  */
@@ -17,6 +28,9 @@ export function initializeThemeToggle(): void {
 
   // Clone to remove existing listeners
   const newThemeToggle = cloneAndReplace(themeToggle);
+
+  // Set initial aria-label based on current theme
+  updateThemeToggleLabel(newThemeToggle);
 
   newThemeToggle.addEventListener("click", () => {
     const html = document.documentElement;
@@ -45,6 +59,9 @@ export function initializeThemeToggle(): void {
       html.classList.add("dark");
       localStorage.setItem("theme", "dark");
     }
+
+    // Update aria-label to reflect new state
+    updateThemeToggleLabel(newThemeToggle);
   });
 }
 

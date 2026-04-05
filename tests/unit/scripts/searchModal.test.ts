@@ -279,10 +279,8 @@ describe("searchModal", () => {
       const trigger = document.getElementById("search-trigger")!;
       trigger.click();
 
-      expect(document.body.style.position).toBe("fixed");
-      expect(document.body.style.top).toBe("-150px");
-      expect(document.body.style.width).toBe("100%");
-      expect(document.documentElement.style.overflow).toBe("hidden");
+      expect(document.body.classList.contains("search-modal-open")).toBe(true);
+      expect(document.body.style.getPropertyValue("--scroll-lock-top")).toBe("-150px");
     });
 
     it("unlocks scroll when modal closes and restores scroll position", () => {
@@ -296,10 +294,8 @@ describe("searchModal", () => {
       // Close the dialog
       (dialog as unknown as { close: () => void }).close();
 
-      expect(document.body.style.position).toBe("");
-      expect(document.body.style.top).toBe("");
-      expect(document.body.style.width).toBe("");
-      expect(document.documentElement.style.overflow).toBe("");
+      expect(document.body.classList.contains("search-modal-open")).toBe(false);
+      expect(document.body.style.getPropertyValue("--scroll-lock-top")).toBe("");
       expect(window.scrollTo).toHaveBeenCalledWith(0, 200);
     });
   });

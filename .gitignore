@@ -46,4 +46,11 @@ playwright/.cache/.zencoder/rules/
 
 # Claude Code
 CLAUDE.md
+.claude/
 .worktrees/
+
+# CodeRabbit review artifacts
+.coderabbit-results/
+
+# Playwright MCP artifacts
+.playwright-mcp/

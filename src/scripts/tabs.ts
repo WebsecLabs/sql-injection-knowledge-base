@@ -21,6 +21,11 @@ export function initializeTabs(): void {
     const panels = tabContainer.querySelectorAll(".tab-content");
     const defaultTabId = tabContainer.getAttribute("data-default-tab");
 
+    // Add aria-label to tablist if not already present
+    if (tabList && !tabList.getAttribute("aria-label")) {
+      tabList.setAttribute("aria-label", "Database platforms");
+    }
+
     // Generate unique IDs and set up ARIA attributes
     const containerId = `tabs-${Math.random().toString(36).slice(2, 9)}`;
 

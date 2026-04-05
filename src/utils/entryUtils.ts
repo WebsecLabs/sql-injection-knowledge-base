@@ -46,7 +46,7 @@ export function sortEntriesByCategory(entries: AnyEntry[]): AnyEntry[] {
     const bOrder = CATEGORY_ORDER[b.data.category] ?? DEFAULT_CATEGORY_ORDER;
     if (aOrder !== bOrder) return aOrder - bOrder;
     if (a.data.order !== b.data.order) return a.data.order - b.data.order;
-    return a.slug.localeCompare(b.slug); // Stable tiebreaker
+    return a.id.localeCompare(b.id); // Stable tiebreaker
   });
 }
 
@@ -65,7 +65,7 @@ export function getAdjacentEntries(
   sortedEntries?: AnyEntry[]
 ): AdjacentEntries {
   const sorted = sortedEntries ?? sortEntriesByCategory(allEntries);
-  const currentIndex = sorted.findIndex((e) => e.slug === currentSlug);
+  const currentIndex = sorted.findIndex((e) => e.id === currentSlug);
 
   if (currentIndex === -1) {
     return { previous: null, next: null };
@@ -74,7 +74,7 @@ export function getAdjacentEntries(
   const previous =
     currentIndex > 0
       ? {
-          slug: sorted[currentIndex - 1].slug,
+          slug: sorted[currentIndex - 1].id,
           title: sorted[currentIndex - 1].data.title,
           category: sorted[currentIndex - 1].data.category,
         }
@@ -83,7 +83,7 @@ export function getAdjacentEntries(
   const next =
     currentIndex < sorted.length - 1
       ? {
-          slug: sorted[currentIndex + 1].slug,
+          slug: sorted[currentIndex + 1].id,
           title: sorted[currentIndex + 1].data.title,
           category: sorted[currentIndex + 1].data.category,
         }
@@ -103,7 +103,7 @@ export function getAdjacentEntries(
 export function getFirstEntrySlug(entries: AnyEntry[], sortedEntries?: AnyEntry[]): string | null {
   if (entries.length === 0) return null;
   const sorted = sortedEntries ?? sortEntriesByCategory(entries);
-  return sorted[0].slug;
+  return sorted[0].id;
 }
 
 /**
@@ -129,7 +129,7 @@ export function groupByCategory<T extends AnyEntry>(entries: T[]): Record<string
  * Ensures deterministic ordering when entries have the same order value.
  */
 function compareEntriesByOrder<T extends AnyEntry>(a: T, b: T): number {
-  return a.data.order - b.data.order || a.slug.localeCompare(b.slug);
+  return a.data.order - b.data.order || a.id.localeCompare(b.id);
 }
 
 /**

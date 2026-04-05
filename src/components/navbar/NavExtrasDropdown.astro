@@ -44,11 +44,11 @@ const { otherExtras, resourceLinks, baseUrl, isActivePath } = Astro.props;
     {
       otherExtras.map((entry) => (
         <a
-          href={`${baseUrl}extras/${entry.slug}`}
-          class={isActivePath("extras", entry.slug) ? "dropdown-item active" : "dropdown-item"}
-          aria-label={entry.data.title || `Extras ${entry.slug}`}
+          href={`${baseUrl}extras/${entry.id}`}
+          class={isActivePath("extras", entry.id) ? "dropdown-item active" : "dropdown-item"}
+          aria-label={entry.data.title || `Extras ${entry.id}`}
         >
-          {entry.data.title || entry.slug}
+          {entry.data.title || entry.id}
         </a>
       ))
     }
@@ -58,9 +58,9 @@ const { otherExtras, resourceLinks, baseUrl, isActivePath } = Astro.props;
     {
       resourceLinks.length > 0 && (
         <a
-          href={`${baseUrl}extras/${resourceLinks[0].slug}`}
+          href={`${baseUrl}extras/${resourceLinks[0].id}`}
           class={
-            isActivePath("extras", resourceLinks[0].slug) ? "dropdown-item active" : "dropdown-item"
+            isActivePath("extras", resourceLinks[0].id) ? "dropdown-item active" : "dropdown-item"
           }
           aria-label="External Resources"
         >
