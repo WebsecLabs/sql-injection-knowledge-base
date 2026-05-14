@@ -55,8 +55,7 @@ export default defineConfig({
   webServer: {
     command: webServerCommand,
     url: baseURL,
-    // In CI, always start fresh; locally, reuse existing server if running
-    reuseExistingServer: !isCI,
+    reuseExistingServer: true,
     timeout: webServerTimeout,
   },
 });
