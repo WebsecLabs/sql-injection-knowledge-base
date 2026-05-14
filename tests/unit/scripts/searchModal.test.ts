@@ -95,7 +95,6 @@ function setupSearchModalDOM(): void {
   input.type = "text";
   input.setAttribute("role", "combobox");
   input.setAttribute("aria-expanded", "false");
-  input.setAttribute("aria-activedescendant", "");
   input.setAttribute("aria-controls", "search-modal-results");
   container.appendChild(input);
 
@@ -384,7 +383,7 @@ describe("searchModal", () => {
       expect(input.value).toBe("");
       expect(resultsList.children.length).toBe(0);
       expect(input.getAttribute("aria-expanded")).toBe("false");
-      expect(input.getAttribute("aria-activedescendant")).toBe("");
+      expect(input.hasAttribute("aria-activedescendant")).toBe(false);
     });
 
     it("shows initial state element and hides empty state on reset", () => {

@@ -35,6 +35,13 @@ export default defineConfig({
   markdown: {
     remarkPlugins: [[remarkBasePath, { base }]],
     rehypePlugins: [rehypeSlug],
+    shikiConfig: {
+      themes: {
+        light: "github-light",
+        dark: "github-dark",
+      },
+      defaultColor: false,
+    },
   },
 
   integrations: [sitemap()],

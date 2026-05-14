@@ -170,10 +170,13 @@ test.describe("Accessibility - Interactive Component States", () => {
 
   test("Search page maintains accessibility with results", async ({ page }) => {
     await page.goto("/search");
-    await page.waitForSelector('.search-results[data-initialized="true"]');
 
-    await page.locator("#search-page-input").fill("Intro");
-    await expect(page.locator(".result-card").first()).toBeVisible();
+    // Pagefind UI initializes dynamically — wait for its input to appear
+    const searchInput = page.locator("#pagefind-search .pagefind-ui__search-input");
+    await expect(searchInput).toBeVisible({ timeout: 10000 });
+
+    await searchInput.fill("Intro");
+    await expect(page.locator(".pagefind-ui__result").first()).toBeVisible({ timeout: 10000 });
 
     const results = await runAxeAnalysis(page);
 
@@ -374,16 +377,15 @@ test.describe("Accessibility - Form Controls", () => {
   test("Search inputs have accessible labels", async ({ page }) => {
     await page.goto("/");
 
-    // Navbar search
-    const navbarSearch = page.locator("#navbar-search-input");
-    await expect(navbarSearch).toHaveAttribute("aria-label");
+    // Navbar search trigger button
+    const searchTrigger = page.locator("#search-trigger");
+    await expect(searchTrigger).toBeVisible();
 
-    // Search page
-    await page.goto("/search");
-    await page.waitForSelector('.search-results[data-initialized="true"]');
-
-    const searchPageInput = page.locator("#search-page-input");
-    await expect(searchPageInput).toHaveAttribute("aria-label");
+    // Open search modal and verify input has accessible label
+    await searchTrigger.click();
+    const searchModalInput = page.locator("#search-modal-input");
+    await expect(searchModalInput).toBeVisible();
+    await expect(searchModalInput).toHaveAttribute("aria-label");
   });
 
   test("Sidebar search input has accessible label", async ({ page }) => {
@@ -442,8 +444,8 @@ test.describe("Accessibility - Landmarks", () => {
     // Check for main landmark
     await expect(page.locator("main")).toBeVisible();
 
-    // Check for navigation
-    await expect(page.locator("nav")).toBeVisible();
+    // Check for primary navigation
+    await expect(page.locator("nav.navbar")).toBeVisible();
 
     // Check for footer
     await expect(page.locator("footer")).toBeVisible();
@@ -454,7 +456,7 @@ test.describe("Accessibility - Landmarks", () => {
 
     const mainContent = page.locator("#main-content");
     await expect(mainContent).toBeVisible();
-    await expect(mainContent).toHaveAttribute("tabindex", "-1");
+    await expect(mainContent).not.toHaveAttribute("tabindex");
   });
 
   test("Skip link targets main content correctly", async ({ page }) => {
@@ -495,8 +497,8 @@ test.describe("Accessibility - Content Pages", () => {
     if ((await breadcrumbs.count()) > 0) {
       await expect(breadcrumbs).toBeVisible();
 
-      // Current page should have aria-current
-      const currentPage = page.locator('[aria-current="page"]');
+      // Current page should have aria-current (scoped to breadcrumbs)
+      const currentPage = breadcrumbs.locator('[aria-current="page"]');
       await expect(currentPage).toBeVisible();
     }
   });

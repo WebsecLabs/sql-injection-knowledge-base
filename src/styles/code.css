@@ -8,6 +8,40 @@ pre {
   overflow-x: auto;
 }
 
+pre code,
+.astro-code code {
+  background-color: transparent;
+  padding: 0;
+  border-radius: 0;
+  font-size: inherit;
+}
+
+/* Shiki dual-theme color application (defaultColor: false) */
+.astro-code {
+  color: var(--shiki-light);
+  background-color: var(--shiki-light-bg);
+}
+
+.astro-code span {
+  color: var(--shiki-light);
+}
+
+:root.dark .astro-code {
+  color: var(--shiki-dark);
+  background-color: var(--shiki-dark-bg);
+}
+
+:root.dark .astro-code span {
+  color: var(--shiki-dark);
+}
+
+/* Both github themes use #6A737D for comments — fails contrast on dark bg (3.05:1).
+   Override to #8b949e (4.75:1 on #24292e). Uses color directly because the inline
+   style sets --shiki-dark, which wins the cascade over any stylesheet rule. */
+:root.dark .astro-code span[style*="--shiki-dark:#6A737D" i] {
+  color: #8b949e;
+}
+
 .code-block-wrapper {
   position: relative;
   margin: 1.5rem 0;

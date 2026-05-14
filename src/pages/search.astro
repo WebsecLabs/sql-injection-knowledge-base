@@ -17,20 +17,29 @@ const baseUrl = import.meta.env.BASE_URL;
   <script>
     async function initPagefindUI() {
       const base = import.meta.env.BASE_URL;
+      const container = document.getElementById("pagefind-search");
 
-      // Load Pagefind UI
-      let pagefindUI;
+      // Load Pagefind UI (IIFE bundle sets window.PagefindUI)
       try {
-        pagefindUI = await import(/* @vite-ignore */ `${base}pagefind/pagefind-ui.js`);
+        await import(/* @vite-ignore */ `${base}pagefind/pagefind-ui.js`);
       } catch {
-        const container = document.getElementById("pagefind-search");
         if (container) {
           container.textContent = "Search requires a build. Run npm run build first.";
         }
         return;
       }
 
-      new pagefindUI.PagefindUI({
+      const PagefindUI = (
+        window as Window & { PagefindUI?: new (opts: Record<string, unknown>) => unknown }
+      ).PagefindUI;
+      if (!PagefindUI) {
+        if (container) {
+          container.textContent = "Search failed to initialize.";
+        }
+        return;
+      }
+
+      new PagefindUI({
         element: "#pagefind-search",
         showSubResults: true,
         showImages: false,

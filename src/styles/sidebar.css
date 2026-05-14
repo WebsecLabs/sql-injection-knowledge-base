@@ -274,7 +274,7 @@ body.sidebar-filtering .sidebar-category:not([data-match]) {
 }
 
 .sidebar-nav a.active {
-  background-color: var(--color-primary-tint-10);
+  background-color: var(--color-primary-tint-5);
   color: var(--color-primary);
   border-left-color: var(--color-primary);
   font-weight: 500;

@@ -49,8 +49,9 @@ CLAUDE.md
 .claude/
 .worktrees/
 
-# CodeRabbit review artifacts
+# Code review artifacts
 .coderabbit-results/
+.codex-review/
 
 # Playwright MCP artifacts
 .playwright-mcp/

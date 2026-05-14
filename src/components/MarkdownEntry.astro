@@ -135,11 +135,13 @@ const { Content } = await render(entry);
 
   .entry-content :global(a) {
     color: var(--color-primary);
-    text-decoration: none;
+    text-decoration: underline;
+    text-decoration-color: color-mix(in srgb, var(--color-primary) 40%, transparent);
+    text-underline-offset: 2px;
   }
 
   .entry-content :global(a:hover) {
-    text-decoration: underline;
+    text-decoration-color: var(--color-primary);
   }
 
   .entry-content :global(ul),
@@ -161,10 +163,6 @@ const { Content } = await render(entry);
   }
 
   .entry-content :global(pre) {
-    background-color: var(--color-code-bg);
-    border-radius: 6px;
-    padding: 1rem;
-    overflow-x: auto;
     margin: 1rem 0;
     border: 1px solid var(--color-border);
   }
@@ -181,6 +179,7 @@ const { Content } = await render(entry);
     background-color: transparent;
     padding: 0;
     border-radius: 0;
+    font-size: inherit;
   }
 
   .entry-content :global(table) {

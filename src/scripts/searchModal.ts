@@ -156,7 +156,7 @@ function resetSearchState(): void {
   if (input) {
     input.value = "";
     input.setAttribute("aria-expanded", "false");
-    input.setAttribute("aria-activedescendant", "");
+    input.removeAttribute("aria-activedescendant");
   }
   if (resultsList) clearResultsList(resultsList);
   if (emptyEl) emptyEl.hidden = true;
@@ -179,7 +179,7 @@ function renderResults(results: PagefindResultData[]): void {
   clearResultsList(resultsList);
   activeIndex = -1;
   if (input) {
-    input.setAttribute("aria-activedescendant", "");
+    input.removeAttribute("aria-activedescendant");
   }
 
   if (results.length === 0) {
@@ -280,7 +280,11 @@ function updateActiveResult(newIndex: number): void {
     activeItem.scrollIntoView({ block: "nearest" });
   }
   if (input) {
-    input.setAttribute("aria-activedescendant", isValidIndex ? items[activeIndex].id : "");
+    if (isValidIndex) {
+      input.setAttribute("aria-activedescendant", items[activeIndex].id);
+    } else {
+      input.removeAttribute("aria-activedescendant");
+    }
   }
 }
 

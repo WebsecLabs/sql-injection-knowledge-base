@@ -102,13 +102,9 @@ window.initializeNavbar = function () {
       // Clone the button to remove all existing event listeners
       const newMobileToggle = cloneAndReplace(mobileToggle) as HTMLButtonElement;
 
-      // Set initial aria-hidden state based on current menu visibility
+      // Set initial inert state based on current menu visibility
       const isMobileView = window.innerWidth < MOBILE_BREAKPOINT;
-      if (isMobileView && !navbarMenu.classList.contains("active")) {
-        navbarMenu.setAttribute("aria-hidden", "true");
-      } else {
-        navbarMenu.removeAttribute("aria-hidden");
-      }
+      navbarMenu.inert = isMobileView && !navbarMenu.classList.contains("active");
 
       // Add fresh event listener
       newMobileToggle.addEventListener("click", (e) => {
@@ -122,7 +118,7 @@ window.initializeNavbar = function () {
           newMobileToggle.setAttribute("aria-expanded", String(nextExpanded));
           navbarMenu.classList.toggle("active");
           newMobileToggle.classList.toggle("active");
-          navbarMenu.setAttribute("aria-hidden", String(!nextExpanded));
+          navbarMenu.inert = !nextExpanded;
         });
       });
     }
@@ -344,24 +340,21 @@ window.initializeNavbar = function () {
       const navbarMenu = document.getElementById("navbar-menu");
       const mobileToggle = document.getElementById("mobile-toggle") as HTMLButtonElement | null;
 
-      // Always remove the transitioning class when switching to desktop
-      // This safeguards against the class getting stuck if a resize happens during transition
       if (navbarMenu) {
+        // Always remove the transitioning class when switching to desktop
+        // This safeguards against the class getting stuck if a resize happens during transition
         navbarMenu.classList.remove("menu-transitioning");
-      }
 
-      if (navbarMenu && navbarMenu.classList.contains("active")) {
-        navbarMenu.classList.remove("active");
-        navbarMenu.setAttribute("aria-hidden", "true");
-        if (mobileToggle) {
-          mobileToggle.classList.remove("active");
-          mobileToggle.setAttribute("aria-expanded", "false");
+        if (navbarMenu.classList.contains("active")) {
+          navbarMenu.classList.remove("active");
+          if (mobileToggle) {
+            mobileToggle.classList.remove("active");
+            mobileToggle.setAttribute("aria-expanded", "false");
+          }
         }
-      }
 
-      // On desktop, menu is always visible so remove aria-hidden
-      if (navbarMenu) {
-        navbarMenu.removeAttribute("aria-hidden");
+        // On desktop, menu is always visible so remove inert
+        navbarMenu.inert = false;
       }
 
       // Reset all dropdowns and remove any stuck transitioning classes

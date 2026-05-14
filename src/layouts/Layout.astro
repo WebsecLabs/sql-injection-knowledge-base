@@ -196,6 +196,22 @@ const extrasEntries = collections?.extrasEntries ?? (await getCollection("extras
   </head>
   <body>
     <a href="#main-content" class="skip-link">Skip to main content</a>
+    <script is:inline>
+      document.querySelector(".skip-link")?.addEventListener("click", function () {
+        const target = document.getElementById("main-content");
+        if (target) {
+          target.setAttribute("tabindex", "-1");
+          target.focus();
+          target.addEventListener(
+            "blur",
+            function () {
+              target.removeAttribute("tabindex");
+            },
+            { once: true }
+          );
+        }
+      });
+    </script>
     <div data-pagefind-ignore="all">
       <NavBar
         mysqlEntries={mysqlEntries}
@@ -229,7 +245,7 @@ const extrasEntries = collections?.extrasEntries ?? (await getCollection("extras
         )
       }
 
-      <main id="main-content" tabindex="-1" class="main-content">
+      <main id="main-content" class="main-content">
         <div class="content-container">
           <slot />
         </div>

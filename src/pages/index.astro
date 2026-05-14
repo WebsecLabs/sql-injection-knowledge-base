@@ -121,14 +121,16 @@ const searchUrl = new URL(`${import.meta.env.BASE_URL}search`, site).href;
       <Fragment slot="tab-list">
         {
           COLLECTION_TYPES.map((type, index) => (
-            <li
-              class={`tab-item ${type === "mysql" ? "active" : ""}`}
-              data-tab={type}
-              role="tab"
-              tabindex={index === 0 ? "0" : "-1"}
-              aria-selected={type === "mysql" ? "true" : "false"}
-            >
-              {COLLECTION_LABELS[type]}
+            <li role="presentation">
+              <button
+                class={`tab-item ${type === "mysql" ? "active" : ""}`}
+                data-tab={type}
+                role="tab"
+                tabindex={index === 0 ? 0 : -1}
+                aria-selected={type === "mysql" ? "true" : "false"}
+              >
+                {COLLECTION_LABELS[type]}
+              </button>
             </li>
           ))
         }
@@ -340,18 +342,25 @@ const searchUrl = new URL(`${import.meta.env.BASE_URL}search`, site).href;
     display: none;
   }
 
+  :global(.tab-list li) {
+    scroll-snap-align: start;
+  }
+
   :global(.tab-item) {
     padding: 1rem 1.5rem;
     cursor: pointer;
     font-weight: 600;
     color: var(--color-text-muted);
+    border: none;
     border-bottom: 3px solid transparent;
+    background: none;
+    font-family: inherit;
+    font-size: inherit;
     transition:
       color 0.3s ease,
       background-color 0.3s ease,
       border-color 0.3s ease;
     white-space: nowrap;
-    scroll-snap-align: start;
   }
 
   :global(.tab-item:hover) {

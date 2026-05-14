@@ -37,6 +37,7 @@
 .navbar-logo {
   display: flex;
   align-items: center;
+  min-width: 0;
 }
 
 .navbar-logo .logo {
@@ -44,6 +45,12 @@
   align-items: center;
   text-decoration: none;
   white-space: nowrap;
+  overflow: hidden;
+}
+
+.navbar-logo .logo:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
 }
 
 .navbar-logo .logo:hover {

@@ -180,6 +180,10 @@ const sortedCategories = getSortedCategories(entriesByCategory);
     font-weight: 500;
   }
 
+  :global(:root.dark) .tag-more {
+    color: var(--color-text);
+  }
+
   @media (max-width: 768px) {
     .entry-grid {
       grid-template-columns: 1fr;
