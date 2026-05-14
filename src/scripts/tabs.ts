@@ -85,7 +85,7 @@ export function initializeTabs(): void {
         const currentIndex = tabs.findIndex((tab) => tab === document.activeElement);
         if (currentIndex === -1) return;
 
-        let newIndex = currentIndex;
+        let newIndex: number;
 
         switch (e.key) {
           case "ArrowRight":
@@ -113,7 +113,6 @@ export function initializeTabs(): void {
             return;
         }
 
-        // Move focus and activate the new tab
         (tabs[newIndex] as HTMLElement).focus();
         activateTab(tabContainer, tabs, panels, newIndex);
       }) as EventListener);
