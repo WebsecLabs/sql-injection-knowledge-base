@@ -166,14 +166,20 @@ const searchUrl = new URL(`${import.meta.env.BASE_URL}search`, site).href;
     const tabList = tabsContainer?.querySelector(".tab-list") as HTMLElement | null;
     if (!tabsContainer || !tabList) return;
 
+    let rafPending = false;
     function updateScrollState() {
-      const { scrollLeft, scrollWidth, clientWidth } = tabList!;
-      const atStart = scrollLeft <= 2;
-      const atEnd = scrollLeft + clientWidth >= scrollWidth - 2;
+      if (rafPending) return;
+      rafPending = true;
+      requestAnimationFrame(() => {
+        rafPending = false;
+        const { scrollLeft, scrollWidth, clientWidth } = tabList!;
+        const atStart = scrollLeft <= 2;
+        const atEnd = scrollLeft + clientWidth >= scrollWidth - 2;
 
-      tabsContainer!.classList.toggle("scrolled-start", atStart);
-      tabsContainer!.classList.toggle("scrolled-end", atEnd);
-      tabsContainer!.classList.toggle("scrolled-middle", !atStart && !atEnd);
+        tabsContainer!.classList.toggle("scrolled-start", atStart);
+        tabsContainer!.classList.toggle("scrolled-end", atEnd);
+        tabsContainer!.classList.toggle("scrolled-middle", !atStart && !atEnd);
+      });
     }
 
     tabList.addEventListener("scroll", updateScrollState, { passive: true, signal });
