@@ -27,6 +27,12 @@ const VIEWPORTS = {
  * Runs axe accessibility analysis on the current page.
  */
 async function runAxeAnalysis(page: Page, options?: { disableRules?: string[] }) {
+  // Finish all in-flight CSS animations/transitions so axe sees final
+  // computed colors, not mid-fade intermediate values.
+  await page.evaluate(() =>
+    Promise.all(document.getAnimations().map((a) => a.finished)).catch(() => {})
+  );
+
   let builder = new AxeBuilder({ page }).withTags(WCAG_AA_TAGS);
 
   if (options?.disableRules) {
