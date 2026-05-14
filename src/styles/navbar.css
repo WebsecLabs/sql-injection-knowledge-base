@@ -9,13 +9,13 @@
    ============================================ */
 
 .navbar {
-  background-color: var(--color-primary);
-  background-image: linear-gradient(135deg, var(--color-primary), var(--color-gradient-end));
+  background-color: var(--color-navbar-bg);
+  background-image: linear-gradient(135deg, var(--color-navbar-bg), var(--color-gradient-end));
   box-shadow: 0 2px 10px rgb(0 0 0 / 5%);
   position: sticky;
   top: 0;
   z-index: var(--z-navbar);
-  contain: layout style paint;
+  contain: layout style;
   color: var(--color-nav-text);
   width: 100%;
   max-width: 100%;
@@ -59,6 +59,7 @@
 .navbar-logo .websec-logo {
   height: 34px;
   width: auto;
+  filter: brightness(0) invert(1);
 }
 
 .navbar-logo .logo-text {
@@ -75,6 +76,56 @@
 
 .navbar-logo .logo-text-short {
   display: none;
+}
+
+/* ============================================
+   Mobile Always-Visible Controls (search + theme)
+   Hidden on desktop, shown on mobile alongside hamburger
+   ============================================ */
+
+.navbar-mobile-controls {
+  display: none;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.mobile-control-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: none;
+  border: none;
+  padding: 0.5rem;
+  cursor: pointer;
+  color: white;
+  border-radius: 4px;
+  transition: background-color 0.2s ease;
+}
+
+.mobile-control-btn:hover {
+  background-color: rgb(255 255 255 / 10%);
+}
+
+.mobile-control-btn:focus-visible {
+  outline: 2px solid rgb(255 255 255 / 80%);
+  outline-offset: 2px;
+}
+
+/* Theme icon visibility for mobile controls (mirrors NavThemeToggle) */
+.mobile-control-btn .sun-icon {
+  display: block;
+}
+
+.mobile-control-btn .moon-icon {
+  display: none;
+}
+
+.dark .mobile-control-btn .sun-icon {
+  display: none;
+}
+
+.dark .mobile-control-btn .moon-icon {
+  display: block;
 }
 
 /* ============================================
@@ -106,7 +157,7 @@
   height: 3px;
   margin: 5px auto;
   background-color: var(--color-nav-text);
-  transition: all 0.3s ease-in-out;
+  transition: transform 0.3s ease-in-out;
 }
 
 #mobile-toggle.active .bar:nth-child(1) {
@@ -246,7 +297,7 @@
   left: 0;
   width: 280px;
   max-width: calc(100vw - 2rem);
-  background-color: white;
+  background-color: var(--color-card-bg);
   border-radius: 4px;
   box-shadow: 0 4px 12px rgb(0 0 0 / 10%);
   visibility: hidden;
@@ -326,11 +377,11 @@
 .navbar .database-section.expanded .database-section-header {
   color: var(--color-primary);
   font-weight: 700;
-  background-color: rgb(66 153 225 / 5%);
+  background-color: var(--color-primary-tint-5);
 }
 
 .navbar .database-section.expanded .database-section-header:hover {
-  background-color: rgb(66 153 225 / 10%);
+  background-color: var(--color-primary-tint-10);
 }
 
 /* Keyboard focus indicator for database section headers */
@@ -406,7 +457,11 @@
   padding: 0.75rem 1rem;
   color: var(--color-text-muted);
   text-decoration: none;
-  transition: all 0.2s ease;
+  transition:
+    background-color 0.2s ease,
+    color 0.2s ease,
+    border-color 0.2s ease,
+    padding-left 0.2s ease;
   font-size: 0.95rem;
   border-left: 3px solid transparent;
 }
@@ -427,7 +482,7 @@
 }
 
 .navbar .dropdown-item.active {
-  background-color: rgb(66 153 225 / 10%);
+  background-color: var(--color-primary-tint-10);
   color: var(--color-primary);
   border-left-color: var(--color-primary);
   font-weight: 500;
@@ -479,26 +534,14 @@
   display: block;
 }
 
-/* System dark mode when no manual override */
-@media (prefers-color-scheme: dark) {
-  html:not(.light, .dark) .navbar .sun-icon {
-    display: none;
-  }
-
-  html:not(.light, .dark) .navbar .moon-icon {
-    display: block;
-  }
-}
-
 /* ============================================
    Dark Mode Dropdown Styles
-   Uses CSS custom properties to avoid value duplication between
-   manual .dark class and system preference media query.
-   Note: Media query rules cannot be combined with class selectors
-   in pure CSS, so property definitions must appear in both contexts.
+   Uses CSS custom properties for dark mode via the .dark class on :root.
+   The theme initialization script applies .dark for both explicit toggle
+   and system-preference auto mode, so a single .dark selector covers all cases.
    ============================================ */
 
-/* Dark mode custom properties - manual .dark class */
+/* Dark mode custom properties */
 .dark .navbar {
   --navbar-dropdown-bg: var(--color-card-bg);
   --navbar-dropdown-text: var(--color-text);
@@ -507,30 +550,13 @@
   --navbar-header-text: var(--color-text);
   --navbar-header-muted: var(--color-text-muted);
   --navbar-chevron-stroke: var(--color-text-muted);
-  --navbar-expanded-bg: rgb(66 153 225 / 10%);
-  --navbar-expanded-hover-bg: rgb(66 153 225 / 15%);
+  --navbar-expanded-bg: var(--color-primary-tint-10);
+  --navbar-expanded-hover-bg: var(--color-primary-tint-15);
   --navbar-expanded-text: var(--color-primary);
   --navbar-expanded-chevron: var(--color-primary);
 }
 
-/* Dark mode custom properties - system preference */
-@media (prefers-color-scheme: dark) {
-  html:not(.light, .dark) .navbar {
-    --navbar-dropdown-bg: var(--color-card-bg);
-    --navbar-dropdown-text: var(--color-text);
-    --navbar-dropdown-hover-bg: var(--color-code-bg);
-    --navbar-divider-bg: var(--color-border);
-    --navbar-header-text: var(--color-text);
-    --navbar-header-muted: var(--color-text-muted);
-    --navbar-chevron-stroke: var(--color-text-muted);
-    --navbar-expanded-bg: rgb(66 153 225 / 10%);
-    --navbar-expanded-hover-bg: rgb(66 153 225 / 15%);
-    --navbar-expanded-text: var(--color-primary);
-    --navbar-expanded-chevron: var(--color-primary);
-  }
-}
-
-/* Dark mode dropdown rules - manual .dark class */
+/* Dark mode dropdown rules */
 .dark .navbar .dropdown-menu {
   background-color: var(--navbar-dropdown-bg);
 }
@@ -577,57 +603,6 @@
 
 .dark .navbar .dropdown-header {
   color: var(--navbar-header-muted);
-}
-
-/* Dark mode dropdown rules - system preference */
-@media (prefers-color-scheme: dark) {
-  html:not(.light, .dark) .navbar .dropdown-menu {
-    background-color: var(--navbar-dropdown-bg);
-  }
-
-  html:not(.light, .dark) .navbar .dropdown-item {
-    color: var(--navbar-dropdown-text);
-  }
-
-  html:not(.light, .dark) .navbar .dropdown-item:hover,
-  html:not(.light, .dark) .navbar .dropdown-item.active {
-    background-color: var(--navbar-dropdown-hover-bg);
-  }
-
-  html:not(.light, .dark) .navbar .dropdown-divider,
-  html:not(.light, .dark) .navbar .database-section-divider {
-    background-color: var(--navbar-divider-bg);
-  }
-
-  html:not(.light, .dark) .navbar .database-section-header {
-    background-color: transparent;
-    color: var(--navbar-header-text);
-  }
-
-  html:not(.light, .dark) .navbar .database-section-header:hover {
-    background-color: var(--navbar-dropdown-hover-bg);
-  }
-
-  html:not(.light, .dark) .navbar .database-section.expanded .database-section-header {
-    background-color: var(--navbar-expanded-bg);
-    color: var(--navbar-expanded-text);
-  }
-
-  html:not(.light, .dark) .navbar .database-section.expanded .database-section-header:hover {
-    background-color: var(--navbar-expanded-hover-bg);
-  }
-
-  html:not(.light, .dark) .navbar .database-chevron {
-    stroke: var(--navbar-chevron-stroke);
-  }
-
-  html:not(.light, .dark) .navbar .database-section.expanded .database-chevron {
-    stroke: var(--navbar-expanded-chevron);
-  }
-
-  html:not(.light, .dark) .navbar .dropdown-header {
-    color: var(--navbar-header-muted);
-  }
 }
 
 /* ============================================
@@ -689,7 +664,10 @@
 
 /* ============================================
    Responsive: Mobile (1023px)
-   NOTE: 1023px = MOBILE_BREAKPOINT (1024) - 1
+   NOTE: 1023px = NAVBAR_MOBILE_BREAKPOINT (1024) - 1
+   This breakpoint intentionally differs from the sidebar mobile breakpoint (768px).
+   Between 769-1023px, navbar uses mobile layout while sidebar remains in desktop mode.
+   See also: sidebar.css mobile breakpoint at 768px, uiConstants.ts NAVBAR_MOBILE_BREAKPOINT
    ============================================ */
 
 @media (width <= 1023px) {
@@ -704,15 +682,35 @@
 
   #mobile-toggle {
     display: block;
+  }
+
+  /* Show mobile-only controls (search + theme toggle) in top bar */
+  .navbar-mobile-controls {
+    display: flex;
+    margin-left: auto;
     margin-right: 0.5rem;
+  }
+
+  /* Hide search container inside the hamburger menu on mobile (it's now in the top bar) */
+  .navbar-menu > .search-container {
+    display: none;
+  }
+
+  /* Hide theme toggle inside hamburger menu on mobile (it's now in the top bar).
+     :has() is supported in Chrome 105+, Firefox 121+, Safari 15.4+.
+     Browsers lacking :has() will show the toggle in both locations, which is functional. */
+  @supports selector(:has(*)) {
+    .navbar-menu .nav-item:has(.theme-toggle) {
+      display: none;
+    }
   }
 
   .navbar-menu {
     position: fixed;
-    top: 70px;
+    top: var(--navbar-height);
     left: 0;
     width: 100%;
-    height: calc(100vh - 70px);
+    height: calc(100vh - var(--navbar-height));
     background-color: var(--color-card-bg);
     flex-direction: column;
     align-items: flex-start;
@@ -758,32 +756,6 @@
   .navbar .dropdown.show {
     position: relative;
     z-index: 10;
-  }
-
-  .navbar .search-container {
-    display: block;
-    width: auto;
-    margin-right: 0.5rem;
-    margin-bottom: 0;
-  }
-
-  .navbar .search-trigger {
-    width: auto;
-    padding: 0.5rem;
-    background-color: transparent;
-  }
-
-  .navbar .search-trigger:hover {
-    background-color: rgb(255 255 255 / 10%);
-  }
-
-  .navbar .search-trigger-text,
-  .navbar .search-trigger-kbd {
-    display: none;
-  }
-
-  .navbar .search-trigger .search-icon {
-    color: var(--color-nav-text);
   }
 
   .navbar .nav-links {
@@ -892,11 +864,11 @@
 
   .navbar .database-section.expanded .database-section-header {
     color: var(--color-primary);
-    background-color: rgb(66 153 225 / 10%);
+    background-color: var(--color-primary-tint-10);
   }
 
   .navbar .database-section.expanded .database-section-header:hover {
-    background-color: rgb(66 153 225 / 15%);
+    background-color: var(--color-primary-tint-15);
   }
 
   .navbar .database-chevron {
@@ -952,8 +924,7 @@
    Mobile Dark Mode Styles
    NOTE: 1023px = MOBILE_BREAKPOINT (1024) - 1 to match main mobile layout
 
-   Uses CSS custom properties (defined in desktop dark mode section above)
-   to avoid value duplication between manual .dark and system preference.
+   Uses CSS custom properties (defined in desktop dark mode section above).
    ============================================ */
 
 @media (width <= 1023px) {
@@ -979,31 +950,5 @@
 
   .dark .navbar .dropdown-menu {
     background-color: var(--navbar-mobile-dropdown-bg);
-  }
-
-  /* System dark mode on mobile */
-  @media (prefers-color-scheme: dark) {
-    html:not(.light, .dark) .navbar {
-      --navbar-mobile-menu-bg: var(--color-card-bg);
-      --navbar-mobile-dropdown-bg: var(--color-sidebar-bg);
-      --navbar-mobile-text: var(--color-text);
-      --navbar-mobile-border: var(--color-border);
-    }
-
-    html:not(.light, .dark) .navbar-menu {
-      background-color: var(--navbar-mobile-menu-bg);
-    }
-
-    html:not(.light, .dark) .navbar .nav-link {
-      color: var(--navbar-mobile-text);
-    }
-
-    html:not(.light, .dark) .navbar .nav-item {
-      border-bottom-color: var(--navbar-mobile-border);
-    }
-
-    html:not(.light, .dark) .navbar .dropdown-menu {
-      background-color: var(--navbar-mobile-dropdown-bg);
-    }
   }
 }

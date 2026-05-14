@@ -44,12 +44,8 @@ let resizeDebounceTimer: ReturnType<typeof setTimeout> | null = null;
  * Prevents keyboard focus on code blocks that shouldn't be interactive.
  */
 function removeTabindexFromPreElements(): void {
-  document.querySelectorAll("pre[tabindex]").forEach((pre) => {
-    pre.removeAttribute("tabindex");
-  });
-
-  document.querySelectorAll(".astro-code[tabindex]").forEach((element) => {
-    element.removeAttribute("tabindex");
+  document.querySelectorAll("pre[tabindex], .astro-code[tabindex]").forEach((el) => {
+    el.removeAttribute("tabindex");
   });
 }
 
@@ -123,6 +119,7 @@ function setupResizeHandler(): void {
         }
         if (currentOverlay) {
           currentOverlay.classList.remove("active");
+          currentOverlay.setAttribute("aria-hidden", "true");
         }
       } else {
         currentButtonContainer.style.display = "block";
@@ -198,6 +195,7 @@ function setupOverlayHandler(): void {
       });
     }
     target.classList.remove("active");
+    target.setAttribute("aria-hidden", "true");
     document.body.style.overflow = "";
   };
 
@@ -222,7 +220,13 @@ function setupSidebarToggle(
 
     withTransition(sidebar, "sidebar-transitioning", () => {
       sidebar.classList.toggle("mobile-open");
-      if (overlay) overlay.classList.toggle("active");
+      if (overlay) {
+        overlay.classList.toggle("active");
+        overlay.setAttribute(
+          "aria-hidden",
+          overlay.classList.contains("active") ? "false" : "true"
+        );
+      }
     });
 
     document.body.style.overflow = sidebar.classList.contains("mobile-open") ? "hidden" : "";
@@ -243,7 +247,10 @@ function setupSidebarToggle(
           currentSidebar.classList.remove("mobile-open");
         });
 
-        if (currentOverlay) currentOverlay.classList.remove("active");
+        if (currentOverlay) {
+          currentOverlay.classList.remove("active");
+          currentOverlay.setAttribute("aria-hidden", "true");
+        }
         document.body.style.overflow = "";
       }
     });

@@ -52,7 +52,12 @@ if (!headings || headings.length === 0) {
       {
         headings.map((heading) => (
           <li class={`toc-item toc-item-h${heading.depth}`}>
-            <a href={`#${heading.slug}`} class="toc-link" data-heading-id={heading.slug}>
+            <a
+              href={`#${heading.slug}`}
+              class="toc-link"
+              data-heading-id={heading.slug}
+              title={heading.text}
+            >
               {heading.text}
             </a>
           </li>

@@ -44,6 +44,19 @@ export function addCopyButtons(): void {
       return;
     }
 
+    // Wrap the code block in a non-scrolling container so the copy button
+    // stays pinned to the top-right corner during horizontal scroll.
+    let wrapper: Element;
+    const existingWrapper = buttonContainer.parentElement;
+    if (existingWrapper?.classList.contains("code-block-wrapper")) {
+      wrapper = existingWrapper;
+    } else {
+      wrapper = document.createElement("div");
+      wrapper.className = "code-block-wrapper";
+      buttonContainer.parentNode?.insertBefore(wrapper, buttonContainer);
+      wrapper.appendChild(buttonContainer);
+    }
+
     // Create button
     const button = document.createElement("button");
     button.className = "copy-button";
@@ -51,8 +64,8 @@ export function addCopyButtons(): void {
     button.setAttribute("aria-label", "Copy code");
     button.setAttribute("title", "Copy code to clipboard");
 
-    // Add button to container element
-    buttonContainer.appendChild(button);
+    // Add button to the wrapper (outside the scrolling pre)
+    wrapper.appendChild(button);
 
     // Add click handler - get text from the code element (for astro-code, find nested code)
     const codeElement = block.classList.contains("astro-code")

@@ -95,28 +95,22 @@ describe("themeToggle", () => {
       expect(localStorage.getItem("theme")).toBe("dark");
     });
 
-    it("removes existing event listeners via cloneAndReplace", () => {
+    it("does not duplicate theme toggle handlers on re-initialization", () => {
       document.body.innerHTML = '<button id="theme-toggle">Toggle</button>';
-
-      // Track click count from old listener
-      let oldListenerCalled = false;
-      const originalButton = document.getElementById("theme-toggle")!;
-      originalButton.addEventListener("click", () => {
-        oldListenerCalled = true;
-      });
 
       // Initialize twice (simulating View Transitions re-init)
       initializeThemeToggle();
       initializeThemeToggle();
 
-      // Get the newest button (after cloneAndReplace)
       const button = document.getElementById("theme-toggle")!;
-      button.click();
 
-      // Old listener should NOT fire (removed by cloneAndReplace)
-      expect(oldListenerCalled).toBe(false);
-      // But theme toggle should still work
+      // If duplicate handlers were attached, two toggles would cancel each other out.
+      // With AbortController cleanup, only one handler runs.
+      button.click();
       expect(document.documentElement.classList.contains("dark")).toBe(true);
+
+      button.click();
+      expect(document.documentElement.classList.contains("dark")).toBe(false);
     });
   });
 

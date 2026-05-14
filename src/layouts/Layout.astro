@@ -10,10 +10,9 @@ import { TOC_MIN_HEADINGS } from "../utils/uiConstants";
 import SearchModal from "../components/search/SearchModal.astro";
 import { requireSiteUrl } from "../utils/siteUtils";
 
-// Import CSS files
+// Import CSS — main.css imports variables, base, layout, navbar, sidebar, components, code, footer.
+// toc.css and search-modal.css are additional and imported separately.
 import "../styles/main.css";
-import "../styles/navbar.css";
-import "../styles/code.css";
 import "../styles/toc.css";
 import "../styles/search-modal.css";
 
@@ -34,6 +33,8 @@ interface Props {
   pageType?: "website" | "article";
   /** Last modified date for article pages (used in OG meta) */
   lastModified?: Date;
+  /** Additional CSS class for page-layout div */
+  pageClass?: string;
   // Allow pages to pass their own collections to avoid duplicate loading
   collections?: {
     mysqlEntries?: CollectionEntry<"mysql">[];
@@ -52,6 +53,7 @@ const {
   tocHeadings = [],
   pageType = "website",
   lastModified,
+  pageClass = "",
   collections,
 } = Astro.props;
 
@@ -95,14 +97,24 @@ const extrasEntries = collections?.extrasEntries ?? (await getCollection("extras
     <!-- Theme initialization - runs before page renders to prevent flash -->
     <script is:inline>
       (function () {
+        // Guard: prevent duplicate listeners if script re-executes
+        if (window.__themeInitDone) return;
+        window.__themeInitDone = true;
+        const darkMQ = window.matchMedia("(prefers-color-scheme: dark)");
+
         function applyTheme() {
           const theme = localStorage.getItem("theme");
+          const html = document.documentElement;
           if (theme === "dark") {
-            document.documentElement.classList.add("dark");
-            document.documentElement.classList.remove("light");
+            html.classList.add("dark");
+            html.classList.remove("light");
           } else if (theme === "light") {
-            document.documentElement.classList.add("light");
-            document.documentElement.classList.remove("dark");
+            html.classList.add("light");
+            html.classList.remove("dark");
+          } else {
+            // Auto mode: follow system preference
+            html.classList.remove("light");
+            html.classList.toggle("dark", darkMQ.matches);
           }
         }
 
@@ -111,6 +123,13 @@ const extrasEntries = collections?.extrasEntries ?? (await getCollection("extras
 
         // Re-apply after View Transitions swap to persist theme across navigation
         document.addEventListener("astro:after-swap", applyTheme);
+
+        // React to system preference changes (for auto mode)
+        darkMQ.addEventListener("change", function () {
+          if (!localStorage.getItem("theme")) {
+            applyTheme();
+          }
+        });
       })();
     </script>
 
@@ -159,7 +178,7 @@ const extrasEntries = collections?.extrasEntries ?? (await getCollection("extras
         position: absolute;
         top: -40px;
         left: 0;
-        background: #1a56db; /* Darker blue for WCAG AA contrast (7:1 with white) */
+        background: var(--color-skip-link-bg);
         color: white;
         padding: 8px;
         z-index: var(--z-above-navbar); /* Must be above sticky navbar (z-index: 1000) */
@@ -188,53 +207,24 @@ const extrasEntries = collections?.extrasEntries ?? (await getCollection("extras
       />
     </div>
 
-    <div class={`page-layout ${showToc ? "with-toc" : ""}`}>
-      {
-        showSidebar && (
-          <>
-            <div id="sidebar-overlay" class="sidebar-overlay" />
-            <div data-pagefind-ignore="all">
-              <Sidebar
-                mysqlEntries={mysqlEntries}
-                mariadbEntries={mariadbEntries}
-                mssqlEntries={mssqlEntries}
-                oracleEntries={oracleEntries}
-                postgresqlEntries={postgresqlEntries}
-                extrasEntries={extrasEntries}
-              />
-            </div>
-          </>
-        )
-      }
+    {
+      /* Sidebar overlay and FAB button are outside .page-layout to prevent
+         overflow-x: clip from breaking position: fixed on mobile */
+    }
+    {showSidebar && <div id="sidebar-overlay" class="sidebar-overlay" aria-hidden="true" />}
 
-      {/* Mobile-only button container - only visible when sidebar should be shown */}
+    <div class={`page-layout ${showToc ? "with-toc" : ""} ${pageClass}`}>
       {
         showSidebar && (
-          <div class="button-container">
-            <button
-              type="button"
-              id="sidebar-toggle"
-              class="sidebar-toggle"
-              aria-label="Toggle navigation"
-            >
-              <div class="hamburger-icon">
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  width="24"
-                  height="24"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="white"
-                  stroke-width="2.5"
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                >
-                  <line x1="3" y1="12" x2="21" y2="12" />
-                  <line x1="3" y1="6" x2="21" y2="6" />
-                  <line x1="3" y1="18" x2="21" y2="18" />
-                </svg>
-              </div>
-            </button>
+          <div data-pagefind-ignore="all">
+            <Sidebar
+              mysqlEntries={mysqlEntries}
+              mariadbEntries={mariadbEntries}
+              mssqlEntries={mssqlEntries}
+              oracleEntries={oracleEntries}
+              postgresqlEntries={postgresqlEntries}
+              extrasEntries={extrasEntries}
+            />
           </div>
         )
       }
@@ -247,6 +237,41 @@ const extrasEntries = collections?.extrasEntries ?? (await getCollection("extras
 
       {showToc && <TableOfContents headings={tocHeadings} />}
     </div>
+
+    {
+      /* Mobile-only FAB button - outside page-layout to avoid overflow-x: clip
+         breaking position: fixed on some browsers */
+    }
+    {
+      showSidebar && (
+        <div class="button-container" data-pagefind-ignore="all">
+          <button
+            type="button"
+            id="sidebar-toggle"
+            class="sidebar-toggle"
+            aria-label="Toggle navigation"
+          >
+            <div class="hamburger-icon">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="24"
+                height="24"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="white"
+                stroke-width="2.5"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <line x1="3" y1="12" x2="21" y2="12" />
+                <line x1="3" y1="6" x2="21" y2="6" />
+                <line x1="3" y1="18" x2="21" y2="18" />
+              </svg>
+            </div>
+          </button>
+        </div>
+      )
+    }
 
     <footer data-pagefind-ignore="all">
       <div class="container">

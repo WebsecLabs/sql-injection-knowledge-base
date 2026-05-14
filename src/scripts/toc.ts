@@ -3,11 +3,7 @@
  * Handles scroll-spy highlighting and toggle functionality
  */
 
-import {
-  cloneAndReplace,
-  updateToggleAccessibility,
-  type ToggleAccessibilityConfig,
-} from "../utils/domUtils";
+import { updateToggleAccessibility, type ToggleAccessibilityConfig } from "../utils/domUtils";
 import {
   TOC_STORAGE_KEY,
   TOC_OBSERVER_TOP_MARGIN_PX,
@@ -30,6 +26,7 @@ const TOC_COLLAPSED_CLASS = "toc-collapsed";
 /** Module state */
 let tocObserver: IntersectionObserver | null = null;
 let lastInitializedPath: string | null = null;
+let tocToggleController: AbortController | null = null;
 
 /**
  * Initialize TOC functionality
@@ -61,19 +58,24 @@ function initToggle(toc: HTMLElement): void {
   const toggle = document.getElementById("toc-toggle");
   if (!toggle) return;
 
-  // Clone to remove stale event listeners
-  const newToggle = cloneAndReplace(toggle) as HTMLButtonElement;
+  // Abort previous listeners
+  tocToggleController?.abort();
+  tocToggleController = new AbortController();
 
-  newToggle.addEventListener("click", () => {
-    const isCollapsed = toc.classList.toggle(TOC_COLLAPSED_CLASS);
-    updateToggleAccessibility(newToggle, isCollapsed, TOC_TOGGLE_CONFIG);
+  toggle.addEventListener(
+    "click",
+    () => {
+      const isCollapsed = toc.classList.toggle(TOC_COLLAPSED_CLASS);
+      updateToggleAccessibility(toggle, isCollapsed, TOC_TOGGLE_CONFIG);
 
-    try {
-      localStorage.setItem(TOC_STORAGE_KEY, String(isCollapsed));
-    } catch {
-      // localStorage may be unavailable
-    }
-  });
+      try {
+        localStorage.setItem(TOC_STORAGE_KEY, String(isCollapsed));
+      } catch {
+        // localStorage may be unavailable
+      }
+    },
+    { signal: tocToggleController.signal }
+  );
 }
 
 /**
@@ -149,17 +151,25 @@ function initScrollSpy(): void {
           if (newActiveLink && newActiveLink !== currentActiveLink) {
             // Remove previous active state from single tracked element
             currentActiveLink?.classList.remove(TOC_ACTIVE_CLASS);
+            currentActiveLink?.removeAttribute("aria-current");
 
             // Add new active state
             newActiveLink.classList.add(TOC_ACTIVE_CLASS);
+            newActiveLink.setAttribute("aria-current", "location");
 
             // Scroll TOC link into view if needed (within the TOC container)
-            // scrollIntoView with block:"nearest" is a no-op when already visible,
-            // so no manual getBoundingClientRect check is needed
-            newActiveLink.scrollIntoView({
-              block: "nearest",
-              behavior: "smooth",
-            });
+            const tocContent = document.getElementById("toc-content");
+            if (tocContent) {
+              const linkRect = newActiveLink.getBoundingClientRect();
+              const contentRect = tocContent.getBoundingClientRect();
+
+              if (linkRect.top < contentRect.top || linkRect.bottom > contentRect.bottom) {
+                newActiveLink.scrollIntoView({
+                  block: "nearest",
+                  behavior: "smooth",
+                });
+              }
+            }
 
             currentActiveLink = newActiveLink;
           }

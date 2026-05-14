@@ -40,7 +40,7 @@ function processCode(rawCode: string) {
   <div class="modern-code-block">
     <div class="code-header">
       <span class="code-label">SQL</span>
-      <div class="fake-buttons">
+      <div class="fake-buttons" aria-hidden="true">
         <span></span><span></span><span></span>
       </div>
     </div>
@@ -77,52 +77,14 @@ function processCode(rawCode: string) {
     border-bottom: 1px solid var(--color-border);
   }
 
+  /* Shared .modern-code-block, .code-header, .code-label, .fake-buttons
+     are in components.css to avoid duplication with CodeBlock.astro */
+
+  /* Override: no margin or shadow when nested inside .sql-example */
   .modern-code-block {
     margin: 0;
-    background-color: var(--color-code-bg);
-    font-family: var(--font-mono);
-    font-size: 0.9rem;
-    line-height: 1.5;
-  }
-
-  .code-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 0.5rem 1rem;
-    background-color: var(--color-sidebar-bg);
-    border-bottom: 1px solid var(--color-border);
-  }
-
-  .code-label {
-    font-size: 0.75rem;
-    font-weight: 600;
-    text-transform: uppercase;
-    color: var(--color-text-muted);
-  }
-
-  .fake-buttons {
-    display: flex;
-    gap: 6px;
-  }
-
-  .fake-buttons span {
-    width: 12px;
-    height: 12px;
-    border-radius: 50%;
-    display: block;
-  }
-
-  .fake-buttons span:nth-child(1) {
-    background-color: var(--color-mac-red);
-  }
-
-  .fake-buttons span:nth-child(2) {
-    background-color: var(--color-mac-yellow);
-  }
-
-  .fake-buttons span:nth-child(3) {
-    background-color: var(--color-mac-green);
+    box-shadow: none;
+    border-radius: 0;
   }
 
   .code-content {

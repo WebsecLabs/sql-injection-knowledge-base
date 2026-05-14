@@ -30,15 +30,15 @@ body.sidebar-filtering .sidebar-category:not([data-match]) {
   border-right: 1px solid var(--color-border);
   overflow-y: auto;
   position: sticky;
-  top: 70px;
-  height: calc(100vh - 70px);
+  top: var(--navbar-height);
+  height: calc(100vh - var(--navbar-height));
   contain: layout style paint;
   padding: 0;
   margin: 0;
   padding-bottom: 1rem;
   scrollbar-width: thin;
   scrollbar-color: var(--color-scrollbar-thumb) var(--color-scrollbar-track);
-  z-index: 50;
+  z-index: var(--z-sidebar);
   align-self: flex-start; /* Prevents flex stretching, enables sticky positioning */
 }
 
@@ -79,9 +79,10 @@ body.sidebar-filtering .sidebar-category:not([data-match]) {
   transition: box-shadow 0.2s ease;
 }
 
-#search:focus {
-  outline: none;
-  box-shadow: 0 0 0 3px rgb(66 153 225 / 20%);
+#search:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 1px;
+  box-shadow: 0 0 0 3px var(--color-primary-tint-15);
 }
 
 /* Sidebar header */
@@ -111,10 +112,23 @@ body.sidebar-filtering .sidebar-category:not([data-match]) {
   font-size: 0.9rem;
 }
 
-#sidebar-search-input:focus {
-  outline: none;
+#sidebar-search-input:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 1px;
   border-color: var(--color-primary);
-  box-shadow: 0 0 0 2px rgb(49 130 206 / 10%);
+  box-shadow: 0 0 0 2px var(--color-primary-tint-10);
+}
+
+/* Sidebar search empty state */
+.sidebar-search-empty {
+  padding: 1.5rem 1.25rem;
+  text-align: center;
+  color: var(--color-text-muted);
+  font-size: 0.9rem;
+}
+
+.sidebar-search-empty p {
+  margin: 0;
 }
 
 /* Sidebar content */
@@ -142,11 +156,13 @@ body.sidebar-filtering .sidebar-category:not([data-match]) {
   align-items: center;
   background-color: var(--color-sidebar-bg);
   color: var(--color-heading-3);
-  transition: var(--transition);
+  transition:
+    color 0.2s ease,
+    background-color 0.2s ease;
   user-select: none;
   position: relative;
   z-index: 1;
-  -webkit-tap-highlight-color: rgb(66 153 225 / 15%);
+  -webkit-tap-highlight-color: var(--color-primary-tint-15);
 
   /* Button reset styles */
   width: 100%;
@@ -181,13 +197,17 @@ body.sidebar-filtering .sidebar-category:not([data-match]) {
 }
 
 .sidebar-items {
-  max-height: 0;
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows 0.3s ease;
+}
+
+.sidebar-items-inner {
   overflow: hidden;
-  transition: max-height 0.3s ease;
 }
 
 .sidebar-section.active .sidebar-items {
-  max-height: 2000px;
+  grid-template-rows: 1fr;
 }
 
 .sidebar-heading svg.toggle-icon {
@@ -206,12 +226,13 @@ body.sidebar-filtering .sidebar-category:not([data-match]) {
 }
 
 .category-name {
-  font-size: 0.85rem;
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
   font-weight: 600;
   padding: 0.5rem 1.25rem 0.25rem;
   color: var(--color-text-muted);
   text-transform: uppercase;
-  letter-spacing: 0.05em;
+  letter-spacing: 0.1em;
 }
 
 /* Sidebar navigation links */
@@ -231,19 +252,29 @@ body.sidebar-filtering .sidebar-category:not([data-match]) {
   padding: 0.4rem 1rem 0.4rem 1.5rem;
   color: var(--color-text);
   font-size: 0.9rem;
-  transition: var(--transition);
+  transition:
+    color 0.2s ease,
+    background-color 0.2s ease,
+    border-color 0.2s ease;
   border-left: 2px solid transparent;
   position: relative;
   line-height: 1.4;
 }
 
 .sidebar-nav a:hover {
-  background-color: rgb(66 153 225 / 5%);
+  background-color: var(--color-primary-tint-5);
+  text-decoration: none;
+}
+
+.sidebar-nav a:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: -2px;
+  background-color: var(--color-primary-tint-5);
   text-decoration: none;
 }
 
 .sidebar-nav a.active {
-  background-color: rgb(66 153 225 / 10%);
+  background-color: var(--color-primary-tint-10);
   color: var(--color-primary);
   border-left-color: var(--color-primary);
   font-weight: 500;
@@ -269,7 +300,12 @@ body.sidebar-filtering .sidebar-category:not([data-match]) {
   margin: 0;
 }
 
-/* Mobile sidebar */
+/* Mobile sidebar layout
+ * NOTE: This breakpoint (768px) intentionally differs from the navbar mobile breakpoint (1023px).
+ * Between 769-1023px (tablet), the sidebar remains visible in its desktop layout while the
+ * navbar uses its mobile hamburger menu. This provides optimal tablet UX where sidebar
+ * navigation is always accessible without requiring the mobile toggle button.
+ * See also: navbar.css mobile breakpoint at 1023px, uiConstants.ts SIDEBAR_MOBILE_BREAKPOINT */
 @media (width <= 768px) {
   .sidebar-heading {
     padding: 1.25rem;
@@ -280,7 +316,7 @@ body.sidebar-filtering .sidebar-category:not([data-match]) {
   }
 
   .sidebar-heading:active {
-    background-color: rgb(66 153 225 / 15%);
+    background-color: var(--color-primary-tint-15);
   }
 
   .sidebar-heading::after {
@@ -303,16 +339,16 @@ body.sidebar-filtering .sidebar-category:not([data-match]) {
     width: 100%;
     position: fixed;
     left: 0;
-    top: 70px;
-    height: calc(100vh - 70px);
-    max-height: calc(100vh - 70px);
+    top: var(--navbar-height);
+    height: calc(100vh - var(--navbar-height));
+    max-height: calc(100vh - var(--navbar-height));
     margin-top: 0;
     border-right: none;
     border-top: none;
     border-radius: 0;
     border-bottom: none;
     background-color: var(--color-card-bg);
-    z-index: 90;
+    z-index: var(--z-sidebar-mobile);
     transform: translateX(-100%);
     transition: none; /* Disable transitions to prevent flash on resize */
     box-shadow: 2px 0 10px rgb(0 0 0 / 10%);
@@ -356,7 +392,10 @@ body.sidebar-filtering .sidebar-category:not([data-match]) {
     cursor: pointer;
     align-items: center;
     justify-content: center;
-    transition: all 0.3s ease;
+    transition:
+      background-color 0.3s ease,
+      transform 0.3s ease,
+      box-shadow 0.3s ease;
     padding: 0;
   }
 
@@ -365,7 +404,7 @@ body.sidebar-filtering .sidebar-category:not([data-match]) {
   }
 
   .sidebar-toggle.active {
-    background-color: var(--color-sidebar-toggle-active);
+    background-color: var(--color-primary-dark);
   }
 
   .sidebar-toggle.attention {
@@ -417,12 +456,12 @@ body.sidebar-filtering .sidebar-category:not([data-match]) {
   .sidebar-overlay {
     display: block;
     position: fixed;
-    top: 70px;
+    top: var(--navbar-height);
     left: 0;
     right: 0;
     bottom: 0;
     background-color: rgb(0 0 0 / 50%);
-    z-index: 89;
+    z-index: var(--z-sidebar-backdrop);
     opacity: 0;
     visibility: hidden;
     transition: opacity 0.3s ease;

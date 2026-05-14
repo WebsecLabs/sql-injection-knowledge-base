@@ -120,8 +120,14 @@ const searchUrl = new URL(`${import.meta.env.BASE_URL}search`, site).href;
     <Tabs defaultTab="mysql">
       <Fragment slot="tab-list">
         {
-          COLLECTION_TYPES.map((type) => (
-            <li class="tab-item" data-tab={type}>
+          COLLECTION_TYPES.map((type, index) => (
+            <li
+              class={`tab-item ${type === "mysql" ? "active" : ""}`}
+              data-tab={type}
+              role="tab"
+              tabindex={index === 0 ? "0" : "-1"}
+              aria-selected={type === "mysql" ? "true" : "false"}
+            >
               {COLLECTION_LABELS[type]}
             </li>
           ))
@@ -130,7 +136,7 @@ const searchUrl = new URL(`${import.meta.env.BASE_URL}search`, site).href;
 
       {
         COLLECTION_TYPES.map((type) => (
-          <div class="tab-content" data-tab={type}>
+          <div class={`tab-content${type === "mysql" ? " active" : ""}`} data-tab={type}>
             <EntryList
               entries={entries[type]}
               title={type === "extras" ? "Additional Resources" : COLLECTION_LABELS[type]}
@@ -142,6 +148,42 @@ const searchUrl = new URL(`${import.meta.env.BASE_URL}search`, site).href;
     </Tabs>
   </div>
 </Layout>
+
+<script>
+  declare global {
+    interface Window {
+      __tabScrollAC?: AbortController;
+    }
+  }
+
+  function initTabScrollIndicators() {
+    window.__tabScrollAC?.abort();
+    const ac = new AbortController();
+    window.__tabScrollAC = ac;
+    const { signal } = ac;
+
+    const tabsContainer = document.querySelector(".database-tabs");
+    const tabList = tabsContainer?.querySelector(".tab-list") as HTMLElement | null;
+    if (!tabsContainer || !tabList) return;
+
+    function updateScrollState() {
+      const { scrollLeft, scrollWidth, clientWidth } = tabList!;
+      const atStart = scrollLeft <= 2;
+      const atEnd = scrollLeft + clientWidth >= scrollWidth - 2;
+
+      tabsContainer!.classList.toggle("scrolled-start", atStart);
+      tabsContainer!.classList.toggle("scrolled-end", atEnd);
+      tabsContainer!.classList.toggle("scrolled-middle", !atStart && !atEnd);
+    }
+
+    tabList.addEventListener("scroll", updateScrollState, { passive: true, signal });
+    window.addEventListener("resize", updateScrollState, { passive: true, signal });
+    updateScrollState();
+  }
+
+  initTabScrollIndicators();
+  document.addEventListener("astro:page-load", initTabScrollIndicators);
+</script>
 
 <style>
   .home-intro {
@@ -191,15 +233,32 @@ const searchUrl = new URL(`${import.meta.env.BASE_URL}search`, site).href;
     border-radius: 4px;
     font-weight: 600;
     text-decoration: none;
-    transition: all 0.2s ease;
-    box-shadow: 0 4px 6px rgba(49, 130, 206, 0.2);
+    transition:
+      filter 0.2s ease,
+      transform 0.2s ease,
+      box-shadow 0.2s ease;
+    box-shadow: 0 4px 6px rgb(43 108 176 / 20%);
   }
 
   .explore-button:hover {
     filter: brightness(0.9);
     transform: translateY(-2px);
-    box-shadow: 0 6px 12px rgba(49, 130, 206, 0.3);
+    box-shadow: 0 6px 12px rgb(43 108 176 / 30%);
     text-decoration: none;
+  }
+
+  .explore-button:focus-visible {
+    outline: 2px solid var(--color-primary);
+    outline-offset: 2px;
+  }
+
+  :global(:root.dark) .explore-button {
+    background-color: #2563eb;
+    box-shadow: 0 4px 6px rgb(37 99 235 / 30%);
+  }
+
+  :global(:root.dark) .explore-button:hover {
+    box-shadow: 0 6px 12px rgb(37 99 235 / 40%);
   }
 
   .explore-button svg {
@@ -237,10 +296,6 @@ const searchUrl = new URL(`${import.meta.env.BASE_URL}search`, site).href;
 
   .database-tabs {
     margin-top: 2rem;
-  }
-
-  /* Styles for the Tabs component integration */
-  .database-tabs {
     position: relative;
   }
 
@@ -251,7 +306,7 @@ const searchUrl = new URL(`${import.meta.env.BASE_URL}search`, site).href;
     top: 0;
     right: 0;
     width: 40px;
-    height: 49px; /* Match tab-list height (padding + border) */
+    height: 49px;
     background: linear-gradient(to right, transparent, var(--color-card-bg));
     pointer-events: none;
     opacity: 1;
@@ -259,7 +314,6 @@ const searchUrl = new URL(`${import.meta.env.BASE_URL}search`, site).href;
     z-index: 1;
   }
 
-  /* Hide fade when tabs fit (JS adds this class, or we rely on wide viewports) */
   .database-tabs.tabs-fit::after {
     opacity: 0;
   }
@@ -286,14 +340,17 @@ const searchUrl = new URL(`${import.meta.env.BASE_URL}search`, site).href;
     font-weight: 600;
     color: var(--color-text-muted);
     border-bottom: 3px solid transparent;
-    transition: all 0.3s ease;
+    transition:
+      color 0.3s ease,
+      background-color 0.3s ease,
+      border-color 0.3s ease;
     white-space: nowrap;
     scroll-snap-align: start;
   }
 
   :global(.tab-item:hover) {
     color: var(--color-primary);
-    background-color: rgba(66, 153, 225, 0.05);
+    background-color: var(--color-primary-tint-5);
   }
 
   :global(.tab-item.active) {
@@ -314,22 +371,19 @@ const searchUrl = new URL(`${import.meta.env.BASE_URL}search`, site).href;
   @keyframes fadeIn {
     from {
       opacity: 0;
-      transform: translateY(10px);
     }
     to {
       opacity: 1;
-      transform: translateY(0);
     }
   }
 
-  /* On wider viewports where tabs fit, hide the scroll fade */
-  @media (min-width: 769px) {
+  @media (width >= 769px) {
     .database-tabs::after {
       display: none;
     }
   }
 
-  @media (max-width: 768px) {
+  @media (width <= 768px) {
     .home-intro {
       padding: 1.5rem;
     }
@@ -376,6 +430,43 @@ const searchUrl = new URL(`${import.meta.env.BASE_URL}search`, site).href;
     :global(.tab-item) {
       padding: 0.75rem 1rem;
       font-size: 0.9rem;
+    }
+
+    .database-tabs::before,
+    .database-tabs::after {
+      content: "";
+      position: absolute;
+      top: 0;
+      width: 32px;
+      height: 48px;
+      pointer-events: none;
+      z-index: 1;
+      transition: opacity 0.2s ease;
+    }
+
+    .database-tabs::before {
+      left: 0;
+      background: linear-gradient(to right, var(--color-card-bg), transparent);
+      opacity: 0;
+    }
+
+    .database-tabs::after {
+      right: 0;
+      background: linear-gradient(to left, var(--color-card-bg), transparent);
+      opacity: 1;
+    }
+
+    .database-tabs.scrolled-start::before {
+      opacity: 0;
+    }
+
+    .database-tabs.scrolled-middle::before,
+    .database-tabs.scrolled-end::before {
+      opacity: 1;
+    }
+
+    .database-tabs.scrolled-end::after {
+      opacity: 0;
     }
   }
 </style>

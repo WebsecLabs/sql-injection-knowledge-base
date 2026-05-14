@@ -1,10 +1,18 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
 import { initSidebar } from "../../../src/scripts/sidebar";
 
+// Helper: trigger search input and flush the debounce timer
+function triggerSearch(input: HTMLInputElement, value: string): void {
+  input.value = value;
+  input.dispatchEvent(new Event("input"));
+  vi.advanceTimersByTime(200); // flush debounce (150ms + buffer)
+}
+
 describe("sidebar", () => {
   let container: HTMLDivElement;
 
   beforeEach(() => {
+    vi.useFakeTimers();
     // Create a realistic sidebar structure
     container = document.createElement("div");
     container.innerHTML = `
@@ -60,6 +68,7 @@ describe("sidebar", () => {
   });
 
   afterEach(() => {
+    vi.useRealTimers();
     // Deterministic cleanup: remove() is a no-op per DOM spec if element is already detached
     // No try/catch needed - any real errors should surface in tests
     if (container) {
@@ -82,16 +91,15 @@ describe("sidebar", () => {
       expect(firstSection?.classList.contains("active")).toBe(false);
     });
 
-    it("attaches keydown handlers to all sidebar headings", () => {
+    it("toggles section via click (keyboard handled natively by button element)", () => {
       const headings = document.querySelectorAll(".sidebar-heading");
       initSidebar();
 
       const firstSection = headings[0].closest(".sidebar-section");
       expect(firstSection?.classList.contains("active")).toBe(true);
 
-      // Trigger Enter key
-      const enterEvent = new KeyboardEvent("keydown", { key: "Enter" });
-      headings[0].dispatchEvent(enterEvent);
+      // Click to toggle (in production, Enter/Space on <button> fires click natively)
+      (headings[0] as HTMLElement).click();
       expect(firstSection?.classList.contains("active")).toBe(false);
     });
 
@@ -104,9 +112,8 @@ describe("sidebar", () => {
       // Initially, body should not have sidebar-filtering class
       expect(document.body.classList.contains("sidebar-filtering")).toBe(false);
 
-      // Trigger search
-      searchInput.value = "timing";
-      searchInput.dispatchEvent(new Event("input"));
+      // Trigger search (debounced)
+      triggerSearch(searchInput, "timing");
 
       // Body should have sidebar-filtering class
       expect(document.body.classList.contains("sidebar-filtering")).toBe(true);
@@ -210,51 +217,21 @@ describe("sidebar", () => {
     });
   });
 
-  describe("handleKeyDown", () => {
+  describe("click toggle (keyboard handled natively by button)", () => {
     beforeEach(() => {
       initSidebar();
     });
 
-    it("toggles section when Enter key is pressed", () => {
+    it("toggles section on click", () => {
       const headings = document.querySelectorAll(".sidebar-heading");
       const firstSection = headings[0].closest(".sidebar-section");
 
       expect(firstSection?.classList.contains("active")).toBe(true);
-
-      const enterEvent = new KeyboardEvent("keydown", { key: "Enter" });
-      headings[0].dispatchEvent(enterEvent);
-
+      (headings[0] as HTMLElement).click();
       expect(firstSection?.classList.contains("active")).toBe(false);
     });
 
-    it("toggles section when Space key is pressed", () => {
-      const headings = document.querySelectorAll(".sidebar-heading");
-      const firstSection = headings[0].closest(".sidebar-section");
-
-      expect(firstSection?.classList.contains("active")).toBe(true);
-
-      const spaceEvent = new KeyboardEvent("keydown", { key: " " });
-      headings[0].dispatchEvent(spaceEvent);
-
-      expect(firstSection?.classList.contains("active")).toBe(false);
-    });
-
-    it("prevents default behavior for Enter and Space keys", () => {
-      const headings = document.querySelectorAll(".sidebar-heading");
-
-      // cancelable: true is required for preventDefault() to have effect in jsdom
-      const enterEvent = new KeyboardEvent("keydown", { key: "Enter", cancelable: true });
-      const preventDefaultSpy = vi.spyOn(enterEvent, "preventDefault");
-      headings[0].dispatchEvent(enterEvent);
-      expect(preventDefaultSpy).toHaveBeenCalled();
-
-      const spaceEvent = new KeyboardEvent("keydown", { key: " ", cancelable: true });
-      const spacePreventDefaultSpy = vi.spyOn(spaceEvent, "preventDefault");
-      headings[0].dispatchEvent(spaceEvent);
-      expect(spacePreventDefaultSpy).toHaveBeenCalled();
-    });
-
-    it("does not toggle for other keys", () => {
+    it("does not toggle for non-click events like arbitrary keys", () => {
       const headings = document.querySelectorAll(".sidebar-heading");
       const firstSection = headings[0].closest(".sidebar-section");
       const initialState = firstSection?.classList.contains("active");
@@ -263,22 +240,14 @@ describe("sidebar", () => {
       headings[0].dispatchEvent(arrowEvent);
 
       expect(firstSection?.classList.contains("active")).toBe(initialState);
-
-      const tabEvent = new KeyboardEvent("keydown", { key: "Tab" });
-      headings[0].dispatchEvent(tabEvent);
-
-      expect(firstSection?.classList.contains("active")).toBe(initialState);
     });
 
-    it("updates aria-expanded on keyboard toggle", () => {
+    it("updates aria-expanded on click toggle", () => {
       const headings = document.querySelectorAll(".sidebar-heading");
       const firstHeading = headings[0] as HTMLElement;
 
       expect(firstHeading.getAttribute("aria-expanded")).toBe("true");
-
-      const enterEvent = new KeyboardEvent("keydown", { key: "Enter" });
-      headings[0].dispatchEvent(enterEvent);
-
+      firstHeading.click();
       expect(firstHeading.getAttribute("aria-expanded")).toBe("false");
     });
   });
@@ -296,8 +265,7 @@ describe("sidebar", () => {
       const categories = document.querySelectorAll<HTMLElement>(".sidebar-category");
 
       // First, perform a search
-      searchInput.value = "timing";
-      searchInput.dispatchEvent(new Event("input"));
+      triggerSearch(searchInput, "timing");
 
       // Body should have sidebar-filtering class and some links should lack data-match
       expect(document.body.classList.contains("sidebar-filtering")).toBe(true);
@@ -305,8 +273,7 @@ describe("sidebar", () => {
       expect(unmatchedLinks.length).toBeGreaterThan(0);
 
       // Reset with short search
-      searchInput.value = "t";
-      searchInput.dispatchEvent(new Event("input"));
+      triggerSearch(searchInput, "t");
 
       // Filtering mode should be off and data-match attributes removed
       expect(document.body.classList.contains("sidebar-filtering")).toBe(false);
@@ -322,12 +289,10 @@ describe("sidebar", () => {
       const links = document.querySelectorAll<HTMLElement>(".sidebar-nav a");
 
       // Perform a search
-      searchInput.value = "oracle";
-      searchInput.dispatchEvent(new Event("input"));
+      triggerSearch(searchInput, "oracle");
 
       // Reset with empty search
-      searchInput.value = "";
-      searchInput.dispatchEvent(new Event("input"));
+      triggerSearch(searchInput, "");
 
       expect(document.body.classList.contains("sidebar-filtering")).toBe(false);
       links.forEach((link) => {
@@ -336,8 +301,7 @@ describe("sidebar", () => {
     });
 
     it("filters links by search term (case-insensitive)", () => {
-      searchInput.value = "TIMING";
-      searchInput.dispatchEvent(new Event("input"));
+      triggerSearch(searchInput, "TIMING");
 
       const links = document.querySelectorAll<HTMLElement>(".sidebar-nav a");
       const timingLink = Array.from(links).find((link) =>
@@ -354,8 +318,7 @@ describe("sidebar", () => {
     });
 
     it("trims whitespace from search term", () => {
-      searchInput.value = "  timing  ";
-      searchInput.dispatchEvent(new Event("input"));
+      triggerSearch(searchInput, "  timing  ");
 
       const links = document.querySelectorAll<HTMLElement>(".sidebar-nav a");
       const timingLink = Array.from(links).find((link) =>
@@ -366,8 +329,7 @@ describe("sidebar", () => {
     });
 
     it("shows parent category when child link matches", () => {
-      searchInput.value = "timing";
-      searchInput.dispatchEvent(new Event("input"));
+      triggerSearch(searchInput, "timing");
 
       const timingLink = Array.from(document.querySelectorAll<HTMLElement>(".sidebar-nav a")).find(
         (link) => link.textContent?.toLowerCase().includes("timing")
@@ -378,8 +340,7 @@ describe("sidebar", () => {
     });
 
     it("hides categories with no matching links", () => {
-      searchInput.value = "timing";
-      searchInput.dispatchEvent(new Event("input"));
+      triggerSearch(searchInput, "timing");
 
       const categories = document.querySelectorAll<HTMLElement>(".sidebar-category");
       const categoriesWithoutTiming = Array.from(categories).filter((category) => {
@@ -401,8 +362,7 @@ describe("sidebar", () => {
       expect(sections[1].classList.contains("active")).toBe(false);
       expect(sections[2].classList.contains("active")).toBe(false);
 
-      searchInput.value = "intro";
-      searchInput.dispatchEvent(new Event("input"));
+      triggerSearch(searchInput, "intro");
 
       // All sections should be expanded
       sections.forEach((section) => {
@@ -413,8 +373,7 @@ describe("sidebar", () => {
     it("sets aria-expanded to true on all headings when searching", () => {
       const headings = document.querySelectorAll<HTMLElement>(".sidebar-heading");
 
-      searchInput.value = "intro";
-      searchInput.dispatchEvent(new Event("input"));
+      triggerSearch(searchInput, "intro");
 
       headings.forEach((heading) => {
         expect(heading.getAttribute("aria-expanded")).toBe("true");
@@ -429,8 +388,7 @@ describe("sidebar", () => {
       const initialStates = Array.from(sections).map((s) => s.classList.contains("active"));
 
       // Perform search (expands all)
-      searchInput.value = "intro";
-      searchInput.dispatchEvent(new Event("input"));
+      triggerSearch(searchInput, "intro");
 
       // All should be expanded
       sections.forEach((section) => {
@@ -438,8 +396,7 @@ describe("sidebar", () => {
       });
 
       // Clear search
-      searchInput.value = "";
-      searchInput.dispatchEvent(new Event("input"));
+      triggerSearch(searchInput, "");
 
       // Should restore to initial states
       sections.forEach((section, index) => {
@@ -457,12 +414,10 @@ describe("sidebar", () => {
       const headings = document.querySelectorAll<HTMLElement>(".sidebar-heading");
 
       // Perform search
-      searchInput.value = "timing";
-      searchInput.dispatchEvent(new Event("input"));
+      triggerSearch(searchInput, "timing");
 
       // Clear search
-      searchInput.value = "x";
-      searchInput.dispatchEvent(new Event("input"));
+      triggerSearch(searchInput, "x");
 
       // Check sync
       sections.forEach((section, index) => {
@@ -477,31 +432,27 @@ describe("sidebar", () => {
       const sections = document.querySelectorAll<HTMLElement>(".sidebar-section");
 
       // First search
-      searchInput.value = "intro";
-      searchInput.dispatchEvent(new Event("input"));
+      triggerSearch(searchInput, "intro");
 
       // Check that wasActive is set
       const activeSection = sections[0];
       expect(activeSection.dataset.wasActive).toBe("true");
 
       // Modify search without clearing
-      searchInput.value = "timing";
-      searchInput.dispatchEvent(new Event("input"));
+      triggerSearch(searchInput, "timing");
 
       // wasActive should still exist (not reset)
       expect(activeSection.dataset.wasActive).toBe("true");
 
       // Clear search
-      searchInput.value = "";
-      searchInput.dispatchEvent(new Event("input"));
+      triggerSearch(searchInput, "");
 
       // wasActive should be removed - explicitly check the attribute is not present
       expect("wasActive" in activeSection.dataset).toBe(false);
     });
 
     it("handles search with no matches", () => {
-      searchInput.value = "nonexistent";
-      searchInput.dispatchEvent(new Event("input"));
+      triggerSearch(searchInput, "nonexistent");
 
       const links = document.querySelectorAll<HTMLElement>(".sidebar-nav a");
       const categories = document.querySelectorAll<HTMLElement>(".sidebar-category");
@@ -519,8 +470,7 @@ describe("sidebar", () => {
 
     it("handles search with substring matching", () => {
       // Sidebar uses simple includes() matching, not word-by-word
-      searchInput.value = "sql bas";
-      searchInput.dispatchEvent(new Event("input"));
+      triggerSearch(searchInput, "sql bas");
 
       const links = document.querySelectorAll<HTMLElement>(".sidebar-nav a");
       const sqlBasicsLink = Array.from(links).find((link) =>
@@ -532,8 +482,7 @@ describe("sidebar", () => {
     });
 
     it("handles partial word matching", () => {
-      searchInput.value = "advan";
-      searchInput.dispatchEvent(new Event("input"));
+      triggerSearch(searchInput, "advan");
 
       const links = document.querySelectorAll<HTMLElement>(".sidebar-nav a");
       const advancedLink = Array.from(links).find((link) =>
@@ -550,15 +499,13 @@ describe("sidebar", () => {
       expect(sections[1].classList.contains("active")).toBe(false);
 
       // Perform search
-      searchInput.value = "timing";
-      searchInput.dispatchEvent(new Event("input"));
+      triggerSearch(searchInput, "timing");
 
       // All expanded during search
       expect(sections[1].classList.contains("active")).toBe(true);
 
       // Clear search
-      searchInput.value = "";
-      searchInput.dispatchEvent(new Event("input"));
+      triggerSearch(searchInput, "");
 
       // Should go back to collapsed
       expect(sections[1].classList.contains("active")).toBe(false);
@@ -566,8 +513,7 @@ describe("sidebar", () => {
 
     it("handles consecutive searches correctly", () => {
       // First search
-      searchInput.value = "intro";
-      searchInput.dispatchEvent(new Event("input"));
+      triggerSearch(searchInput, "intro");
 
       const introLinks = Array.from(
         document.querySelectorAll<HTMLElement>(".sidebar-nav a")
@@ -578,8 +524,7 @@ describe("sidebar", () => {
       });
 
       // Second search
-      searchInput.value = "timing";
-      searchInput.dispatchEvent(new Event("input"));
+      triggerSearch(searchInput, "timing");
 
       const timingLinks = Array.from(
         document.querySelectorAll<HTMLElement>(".sidebar-nav a")

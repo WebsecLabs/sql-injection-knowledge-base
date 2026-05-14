@@ -4,10 +4,20 @@
  * @module uiConstants
  */
 
-/** Mobile breakpoint for sidebar behavior (pixels) */
+/**
+ * Mobile breakpoint for sidebar behavior (pixels).
+ * Intentionally lower than NAVBAR_MOBILE_BREAKPOINT so that between 769-1023px (tablet),
+ * the sidebar stays in desktop mode while the navbar uses its mobile hamburger menu.
+ * Keep in sync with: src/styles/sidebar.css (@media width <= 768px)
+ */
 export const SIDEBAR_MOBILE_BREAKPOINT = 768;
 
-/** Mobile breakpoint for navbar behavior (pixels) */
+/**
+ * Mobile breakpoint for navbar behavior (pixels).
+ * Intentionally higher than SIDEBAR_MOBILE_BREAKPOINT so that between 769-1023px (tablet),
+ * the navbar uses mobile layout while the sidebar remains visible in desktop mode.
+ * Keep in sync with: src/styles/navbar.css (@media width <= 1023px)
+ */
 export const NAVBAR_MOBILE_BREAKPOINT = 1024;
 
 /** Scroll threshold before hiding mobile sidebar toggle (pixels) */

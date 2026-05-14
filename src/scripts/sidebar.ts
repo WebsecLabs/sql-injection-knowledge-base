@@ -2,6 +2,8 @@
  * Sidebar functionality for the SQL Injection Knowledge Base
  */
 
+import { debounce } from "../utils/domUtils";
+
 // Module-level handlers with stable references (no `this` binding issues)
 const toggleSection = (e: Event): void => {
   const heading = e.currentTarget as HTMLElement;
@@ -13,21 +15,19 @@ const toggleSection = (e: Event): void => {
   }
 };
 
-const handleKeyDown = (e: Event): void => {
-  const keyEvent = e as KeyboardEvent;
-  if (keyEvent.key === "Enter" || keyEvent.key === " ") {
-    keyEvent.preventDefault();
-    toggleSection(e);
-  }
-};
-
-const handleSearch = (e: Event): void => {
-  const input = e.currentTarget as HTMLInputElement;
+const handleSearch = (): void => {
+  const input = document.getElementById("sidebar-search-input") as HTMLInputElement | null;
+  if (!input) return;
   const searchTerm = input.value.toLowerCase().trim();
+
+  const emptyState = document.getElementById("sidebar-search-empty");
 
   if (searchTerm.length < 2) {
     // Exit filtering mode - CSS will restore visibility
     document.body.classList.remove("sidebar-filtering");
+
+    // Hide empty state
+    if (emptyState) emptyState.hidden = true;
 
     // Clean up data-match attributes
     document
@@ -67,10 +67,12 @@ const handleSearch = (e: Event): void => {
   // Enter filtering mode - CSS hides all non-matching elements
   document.body.classList.add("sidebar-filtering");
 
-  // Clear previous matches
-  document.querySelectorAll<HTMLElement>("[data-match]").forEach((el) => {
-    el.removeAttribute("data-match");
-  });
+  // Clear previous matches (scoped to sidebar)
+  document
+    .querySelectorAll<HTMLElement>(".sidebar-nav a[data-match], .sidebar-category[data-match]")
+    .forEach((el) => {
+      el.removeAttribute("data-match");
+    });
 
   // Expand all sections for search
   document.querySelectorAll(".sidebar-section").forEach((section) => {
@@ -82,16 +84,25 @@ const handleSearch = (e: Event): void => {
   });
 
   // Mark matching items with data-match attribute
+  let matchCount = 0;
   document.querySelectorAll<HTMLAnchorElement>(".sidebar-nav a").forEach((link) => {
     const text = link.textContent?.toLowerCase() || "";
 
     if (text.includes(searchTerm)) {
       link.setAttribute("data-match", "");
+      matchCount++;
       const category = link.closest<HTMLElement>(".sidebar-category");
       if (category) category.setAttribute("data-match", "");
     }
   });
+
+  // Show or hide empty state based on results
+  if (emptyState) {
+    emptyState.hidden = matchCount > 0;
+  }
 };
+
+const debouncedSearch = debounce(handleSearch, 150);
 
 export function initSidebar(): void {
   // Add click handlers to sidebar headings
@@ -99,15 +110,12 @@ export function initSidebar(): void {
   headings.forEach((heading) => {
     heading.removeEventListener("click", toggleSection);
     heading.addEventListener("click", toggleSection);
-
-    heading.removeEventListener("keydown", handleKeyDown);
-    heading.addEventListener("keydown", handleKeyDown);
   });
 
-  // Search functionality
+  // Search functionality with debounce to reduce DOM thrashing
   const searchInput = document.getElementById("sidebar-search-input") as HTMLInputElement | null;
   if (searchInput) {
-    searchInput.removeEventListener("input", handleSearch);
-    searchInput.addEventListener("input", handleSearch);
+    searchInput.removeEventListener("input", debouncedSearch);
+    searchInput.addEventListener("input", debouncedSearch);
   }
 }

@@ -32,7 +32,7 @@
   --space-8: 2rem;
   --color-background: #f9fafb;
   --color-text: #1a202c;
-  --color-primary: #3182ce;
+  --color-primary: #2b6cb0;
   --color-secondary: #e53e3e;
   --color-accent: #4299e1;
   --color-card-bg: #fff;
@@ -48,7 +48,6 @@
   --color-mac-yellow: #f6e05e;
   --color-mac-green: #68d391;
   --color-sidebar-toggle-bg: #0d4a86;
-  --color-sidebar-toggle-active: #1a365d;
   --color-code-bg: #f8fafc;
   --color-text-muted: #4a5568;
   --color-text-light: #64748b; /* WCAG AA: 5.4:1 on white, 5.2:1 on #f8fafc, 4.7:1 on #f1f5f9 */
@@ -66,6 +65,8 @@
   --color-notes-bg: #fffbea;
   --color-notes-border: #f6e05e;
   --color-notes-heading: #744210;
+  --color-primary-dark: #1a365d;
+  --color-skip-link-bg: #1a56db;
   --color-scrollbar-track: #f1f5f9;
   --color-scrollbar-thumb: #cbd5e0;
   --color-modal-bg: #fff;
@@ -75,6 +76,16 @@
   --color-modal-result-active: #f1f5f9;
   --color-modal-kbd-bg: #f3f4f6;
   --color-modal-kbd-border: #e2e8f0;
+  --color-navbar-bg: #2b6cb0;
+  --color-footer-bg: #1a365d;
+  --color-footer-border: #2a4365;
+  --color-footer-text: #e2e8f0;
+  --color-footer-text-muted: #a0aec0;
+  --color-bg-secondary: #f1f5f9;
+  --color-primary-tint-5: rgb(43 108 176 / 5%);
+  --color-primary-tint-10: rgb(43 108 176 / 10%);
+  --color-primary-tint-15: rgb(43 108 176 / 15%);
+  --color-highlight-line: rgb(43 108 176 / 15%);
   --color-gradient-end: #1a365d;
   --color-nav-text: white;
   --color-code-button-bg: rgb(0 0 0 / 50%);
@@ -100,10 +111,9 @@
   --shadow: 0 2px 4px rgb(0 0 0 / 5%);
   --shadow-md: 0 4px 6px rgb(0 0 0 / 7%);
   --shadow-lg: 0 10px 15px rgb(0 0 0 / 10%);
-  --transition: all 0.2s ease;
 
   /* Z-index scale - layer priorities (higher = on top)
-   * 1-10:    Local stacking within components
+   * 1:       Local stacking within components (e.g. dropdown items)
    * 50:      Sidebar (desktop)
    * 89-90:   Sidebar backdrop and mobile sidebar
    * 100:     Mobile navbar menu
@@ -112,7 +122,6 @@
    * 1002:    Elements above navbar (modals, tooltips)
    */
   --z-dropdown-item: 1;
-  --z-dropdown-expanded: 10;
   --z-sidebar: 50;
   --z-sidebar-backdrop: 89;
   --z-sidebar-mobile: 90;
@@ -121,92 +130,27 @@
   --z-sidebar-toggle: 1001;
   --z-above-navbar: 1002;
 
-  /* Database section max-heights for smooth expand/collapse animations
-   * Desktop uses larger value to accommodate all database entries
-   * Mobile uses smaller value since dropdowns have constrained height */
-  --max-height-database-section-desktop: 2000px;
+  /* Database section max-height for smooth expand/collapse animations.
+   * Mobile dropdowns have constrained height. */
   --max-height-database-section-mobile: 1200px;
 }
 
-/* Dark mode - system preference */
-@media (prefers-color-scheme: dark) {
-  :root:not(.light) {
-    --color-background: #0f172a;
-    --color-text: #e2e8f0;
-    --color-primary: #60a5fa;
-    --color-secondary: #f87171;
-    --color-accent: #93c5fd;
-    --color-card-bg: #1e293b;
-    --color-sidebar-bg: #1e293b;
-    --color-border: #334155;
-    --color-true: rgb(72 187 120 / 20%);
-    --color-true-text: #68d391;
-    --color-false: rgb(245 101 101 / 20%);
-    --color-false-text: #fc8181;
-    --color-injection-bg: rgb(237 100 166 / 15%);
-    --color-injection-text: #f687b3;
-    --color-mac-red: #e27272;
-    --color-mac-yellow: #d4c04e;
-    --color-mac-green: #5ab880;
-    --color-sidebar-toggle-bg: #1e5a9e;
-    --color-sidebar-toggle-active: #2d4a6f;
-    --color-code-bg: #1e293b;
-    --color-text-muted: #94a3b8;
-    --color-text-light: #94a3b8;
-    --color-border-light: #475569;
-    --color-search-bg: #1e293b;
-    --color-search-border: #475569;
-    --color-mark-bg: #854d0e;
-    --color-mark-text: #fef3c7;
-    --color-heading-1: #e2e8f0;
-    --color-heading-2: #cbd5e1;
-    --color-heading-3: #94a3b8;
-    --color-table-header-bg: #1e293b;
-    --color-table-header-text: #94a3b8;
-    --color-table-row-alt: #1e293b;
-    --color-notes-bg: #422006;
-    --color-notes-border: #ca8a04;
-    --color-notes-heading: #fef3c7;
-    --color-scrollbar-track: #1e293b;
-    --color-scrollbar-thumb: #475569;
-    --color-modal-bg: #1a2332;
-    --color-modal-border: #2d3f54;
-    --color-modal-input-bg: transparent;
-    --color-modal-result-hover: #243044;
-    --color-modal-result-active: #243044;
-    --color-modal-kbd-bg: rgb(30 41 59 / 60%);
-    --color-modal-kbd-border: #475569;
-    --color-gradient-end: #0c2340;
-    --color-nav-text: white;
-    --color-code-button-bg: rgb(255 255 255 / 20%);
-    --color-code-button-hover-bg: rgb(255 255 255 / 35%);
-    --color-modal-backdrop: rgb(0 0 0 / 75%);
-    --color-scroll-shadow: rgb(0 0 0 / 30%);
-    --color-badge-mysql-bg: rgb(96 165 250 / 12%);
-    --color-badge-mysql-text: #60a5fa;
-    --color-badge-postgresql-bg: rgb(52 211 153 / 12%);
-    --color-badge-postgresql-text: #34d399;
-    --color-badge-mssql-bg: rgb(248 113 113 / 12%);
-    --color-badge-mssql-text: #f87171;
-    --color-badge-oracle-bg: rgb(251 191 36 / 12%);
-    --color-badge-oracle-text: #fbbf24;
-    --color-badge-mariadb-bg: rgb(167 139 250 / 12%);
-    --color-badge-mariadb-text: #a78bfa;
-    --color-badge-extras-bg: rgb(107 114 128 / 12%);
-    --color-badge-extras-text: #9ca3af;
-    --shadow: 0 2px 4px rgb(0 0 0 / 20%);
-    --shadow-md: 0 4px 6px rgb(0 0 0 / 25%);
-    --shadow-lg: 0 10px 15px rgb(0 0 0 / 30%);
-  }
-}
-
-/* Dark mode - manual toggle */
+/* Dark mode - applied via .dark class on :root
+ * The .dark class is set by the theme initialization script in Layout.astro,
+ * which handles all three states:
+ *   - Explicit dark: user toggled dark mode (localStorage theme=dark)
+ *   - Explicit light: user toggled light mode (localStorage theme=light)
+ *   - Auto: no preference set, follows system via matchMedia detection
+ * This eliminates the need to duplicate dark variables in both a .dark selector
+ * and a prefers-color-scheme media query. */
 :root.dark {
   --color-background: #0f172a;
   --color-text: #e2e8f0;
   --color-primary: #60a5fa;
   --color-secondary: #f87171;
   --color-accent: #93c5fd;
+  --color-primary-dark: #1e3a5f;
+  --color-skip-link-bg: #1e5a9e;
   --color-card-bg: #1e293b;
   --color-sidebar-bg: #1e293b;
   --color-border: #334155;
@@ -220,7 +164,6 @@
   --color-mac-yellow: #d4c04e;
   --color-mac-green: #5ab880;
   --color-sidebar-toggle-bg: #1e5a9e;
-  --color-sidebar-toggle-active: #2d4a6f;
   --color-code-bg: #1e293b;
   --color-text-muted: #94a3b8;
   --color-text-light: #94a3b8;
@@ -247,6 +190,16 @@
   --color-modal-result-active: #243044;
   --color-modal-kbd-bg: rgb(30 41 59 / 60%);
   --color-modal-kbd-border: #475569;
+  --color-navbar-bg: #1e293b;
+  --color-footer-bg: #1e293b;
+  --color-footer-border: #334155;
+  --color-footer-text: #e2e8f0;
+  --color-footer-text-muted: #94a3b8;
+  --color-bg-secondary: #1e293b;
+  --color-primary-tint-5: rgb(96 165 250 / 5%);
+  --color-primary-tint-10: rgb(96 165 250 / 10%);
+  --color-primary-tint-15: rgb(96 165 250 / 15%);
+  --color-highlight-line: rgb(96 165 250 / 15%);
   --color-gradient-end: #0c2340;
   --color-nav-text: white;
   --color-code-button-bg: rgb(255 255 255 / 20%);

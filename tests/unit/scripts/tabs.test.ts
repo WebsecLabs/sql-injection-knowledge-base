@@ -122,12 +122,12 @@ describe("initializeTabs", () => {
       });
     });
 
-    it("sets tabindex=0 on panels", () => {
+    it("does not add tabindex to panels (avoids making entire panels focusable)", () => {
       initializeTabs();
       const panels = container.querySelectorAll(".tab-content");
 
       panels.forEach((panel) => {
-        expect(panel.getAttribute("tabindex")).toBe("0");
+        expect(panel.getAttribute("tabindex")).toBeNull();
       });
     });
 

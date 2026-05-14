@@ -9,8 +9,8 @@
   width: 250px;
   flex-shrink: 0;
   position: sticky;
-  top: 70px; /* Below navbar */
-  height: calc(100vh - 70px);
+  top: var(--navbar-height);
+  height: calc(100vh - var(--navbar-height));
   padding: 1rem 0;
   background-color: var(--color-card-bg);
   border-left: 1px solid var(--color-border);
@@ -56,11 +56,12 @@
 }
 
 .toc-title {
-  font-size: 0.85rem;
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
   font-weight: 600;
   color: var(--color-text-muted);
   text-transform: uppercase;
-  letter-spacing: 0.05em;
+  letter-spacing: 0.1em;
   opacity: 1;
   transition: opacity 0.2s ease;
 }
@@ -92,7 +93,9 @@
   background: transparent;
   cursor: pointer;
   color: var(--color-text-muted);
-  transition: var(--transition);
+  transition:
+    color 0.2s ease,
+    background-color 0.2s ease;
   border-radius: 4px;
 }
 
@@ -152,7 +155,10 @@
   font-size: 0.875rem;
   text-decoration: none;
   border-left: 2px solid transparent;
-  transition: var(--transition);
+  transition:
+    color 0.2s ease,
+    background-color 0.2s ease,
+    border-color 0.2s ease;
   line-height: 1.4;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -161,7 +167,14 @@
 
 .toc-link:hover {
   color: var(--color-primary);
-  background-color: rgb(66 153 225 / 5%);
+  background-color: var(--color-primary-tint-5);
+}
+
+.toc-link:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: -2px;
+  color: var(--color-primary);
+  text-decoration: none;
 }
 
 /* Active link state */
@@ -169,7 +182,7 @@
   color: var(--color-primary);
   border-left-color: var(--color-primary);
   font-weight: 500;
-  background-color: rgb(66 153 225 / 10%);
+  background-color: var(--color-primary-tint-10);
 }
 
 /* Heading depth indentation */

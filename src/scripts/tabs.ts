@@ -49,7 +49,6 @@ export function initializeTabs(): void {
         panel.setAttribute("id", panelElementId);
         panel.setAttribute("aria-labelledby", tabElementId);
         panel.setAttribute("aria-hidden", "true");
-        panel.setAttribute("tabindex", "0");
       }
     });
 

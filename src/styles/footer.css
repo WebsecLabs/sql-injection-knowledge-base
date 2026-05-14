@@ -1,12 +1,13 @@
-/* Footer styles */
+/* Footer styles — intentionally quieter than the navbar
+   to avoid the "sandwiched" effect of identical treatments top and bottom. */
 footer {
-  background-color: var(--color-primary);
-  background-image: linear-gradient(135deg, var(--color-primary), var(--color-gradient-end));
-  color: var(--color-nav-text);
+  background-color: var(--color-footer-bg);
+  border-top: 1px solid var(--color-footer-border);
+  color: var(--color-footer-text);
   height: 70px;
   padding: 0;
   text-align: center;
-  box-shadow: 0 -4px 6px rgb(0 0 0 / 5%);
+  box-shadow: 0 -1px 3px rgb(0 0 0 / 8%);
   margin-bottom: 0;
   margin-top: auto;
   display: flex;
@@ -35,10 +36,9 @@ footer .container {
 }
 
 .footer-text {
-  color: var(--color-nav-text);
-  font-size: 0.9rem;
-  font-weight: 500;
-  opacity: 0.9;
+  color: var(--color-footer-text-muted);
+  font-size: 0.85rem;
+  font-weight: 400;
 }
 
 .footer-logo {
@@ -63,18 +63,4 @@ footer .container {
   width: auto;
   object-fit: contain;
   opacity: 0.95;
-  filter: brightness(1.1);
-}
-
-/* Dark mode footer */
-.dark footer {
-  background-image: linear-gradient(135deg, var(--color-primary), var(--color-gradient-end));
-  box-shadow: 0 -4px 6px rgb(0 0 0 / 15%);
-}
-
-@media (prefers-color-scheme: dark) {
-  html:not(.light, .dark) footer {
-    background-image: linear-gradient(135deg, var(--color-primary), var(--color-gradient-end));
-    box-shadow: 0 -4px 6px rgb(0 0 0 / 15%);
-  }
 }

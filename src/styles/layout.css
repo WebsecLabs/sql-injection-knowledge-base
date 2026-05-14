@@ -32,8 +32,7 @@
   position: relative;
   padding-top: 0;
   margin-top: 0;
-  overflow-x: hidden; /* Fallback for older browsers */
-  overflow-x: clip; /* Use clip instead of hidden to avoid triggering overflow-y: auto */
+  overflow-x: clip;
   background-color: var(--color-card-bg);
   flex: 1;
 }
@@ -41,7 +40,6 @@
 /* Three-column layout when TOC is present */
 .page-layout.with-toc .content-container {
   max-width: 850px; /* Slightly narrower to accommodate TOC */
-  transition: max-width 0.3s ease;
 }
 
 /* When TOC is collapsed, allow content to expand */
@@ -60,7 +58,7 @@
 /* Content sections */
 .section {
   margin-bottom: 3.5rem;
-  scroll-margin-top: 80px;
+  scroll-margin-top: calc(var(--navbar-height) + var(--scroll-offset));
   padding: 0 1rem;
 }
 
@@ -88,7 +86,6 @@
   .page-layout {
     flex-direction: column;
     width: 100%;
-    overflow-x: hidden; /* Fallback for older browsers */
     overflow-x: clip;
     margin-top: 0;
   }
@@ -110,6 +107,9 @@
 
   .main-content {
     padding: 1.5rem 0;
+
+    /* Add bottom safe area for the sidebar FAB (56px button + 20px bottom offset + 16px breathing room) */
+    padding-bottom: 92px;
   }
 
   header .container {

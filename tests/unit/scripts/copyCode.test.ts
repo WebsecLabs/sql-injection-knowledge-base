@@ -88,22 +88,35 @@ describe("copyCode", () => {
       const button = document.querySelector(".copy-button");
       expect(button).not.toBeNull();
       expect(button?.textContent).toBe("Copy");
-      // Verify button is appended to astro-code div
-      const astroCodeDiv = document.querySelector(".astro-code");
-      expect(button?.parentNode).toBe(astroCodeDiv);
+      const wrapper = document.querySelector(".code-block-wrapper");
+      expect(button?.parentNode).toBe(wrapper);
     });
 
-    it("button is appended to the pre element", () => {
+    it("button is appended to the wrapper, not the pre", () => {
       document.body.innerHTML = `
         <pre><code>test code</code></pre>
       `;
 
       addCopyButtons();
 
-      const pre = document.querySelector("pre");
-      const button = pre?.querySelector(".copy-button");
+      const wrapper = document.querySelector(".code-block-wrapper");
+      expect(wrapper).not.toBeNull();
+      const button = wrapper?.querySelector(".copy-button");
       expect(button).not.toBeNull();
-      expect(button?.parentNode).toBe(pre);
+      expect(button?.parentNode).toBe(wrapper);
+    });
+
+    it("wraps the pre in a .code-block-wrapper div", () => {
+      document.body.innerHTML = `
+        <pre><code>test code</code></pre>
+      `;
+
+      addCopyButtons();
+
+      const wrapper = document.querySelector(".code-block-wrapper");
+      expect(wrapper).not.toBeNull();
+      const pre = wrapper?.querySelector("pre");
+      expect(pre).not.toBeNull();
     });
   });
 

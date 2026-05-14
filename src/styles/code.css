@@ -2,17 +2,28 @@
 
 .astro-code,
 pre {
-  position: relative;
   border-radius: 6px;
   margin: 1.5rem 0;
   padding: 1rem;
   overflow-x: auto;
 }
 
-/* Style for copy buttons — uses parent selector for specificity over
-   Shiki's inline styles on .astro-code (which set color/background) */
-pre .copy-button,
-.astro-code .copy-button {
+.code-block-wrapper {
+  position: relative;
+  margin: 1.5rem 0;
+}
+
+/* No wrapper margin when inside a modern-code-block (CodeBlock/SQLExample chrome) */
+.modern-code-block .code-block-wrapper {
+  margin: 0;
+}
+
+.code-block-wrapper > pre,
+.code-block-wrapper > .astro-code {
+  margin: 0;
+}
+
+.code-block-wrapper > .copy-button {
   position: absolute;
   top: 0.5rem;
   right: 0.5rem;
@@ -24,20 +35,29 @@ pre .copy-button,
   font-size: 0.75rem;
   cursor: pointer;
   z-index: 10;
-  opacity: 0.7;
+  opacity: 0;
   transition: opacity 0.2s ease;
 }
 
-pre .copy-button:hover,
-.astro-code .copy-button:hover {
+.code-block-wrapper:hover > .copy-button {
+  opacity: 0.7;
+}
+
+.code-block-wrapper > .copy-button:hover {
   opacity: 1;
   background: var(--color-code-button-hover-bg);
 }
 
-/* Mobile optimization */
+.code-block-wrapper > .copy-button:focus-visible {
+  opacity: 1;
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
+/* Mobile optimization — always show copy button on touch devices (no hover) */
 @media (width <= 768px) {
-  pre .copy-button,
-  .astro-code .copy-button {
+  .code-block-wrapper > .copy-button {
+    opacity: 0.7;
     padding: 6px 10px;
     font-size: 0.875rem;
   }

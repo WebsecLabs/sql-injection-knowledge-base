@@ -28,6 +28,9 @@ body.search-modal-open {
   position: fixed;
   top: var(--scroll-lock-top, 0);
   width: 100%;
+
+  /* Preserve scrollbar space to prevent layout shift on non-overlay scrollbar systems (Windows) */
+  overflow-y: scroll;
 }
 
 /* --------------------------------------------------------------------------
@@ -224,16 +227,10 @@ body.search-modal-open {
 
 /* Highlight marks in results */
 .search-result-item mark {
-  background: rgb(250 204 21 / 20%);
-  color: #fbbf24;
-  padding: 0;
-  border-radius: 0;
-}
-
-/* Light mode mark overrides */
-:root:not(.dark) .search-result-item mark {
   background: var(--color-mark-bg);
   color: var(--color-mark-text);
+  padding: 0;
+  border-radius: 0;
 }
 
 /* Code within results */

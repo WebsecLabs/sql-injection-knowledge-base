@@ -5,64 +5,49 @@
  * Supports system preference detection as fallback.
  */
 
-import { cloneAndReplace } from "../utils/domUtils";
+/** AbortController for theme toggle event listeners — allows clean teardown */
+let themeToggleController: AbortController | null = null;
 
 /**
- * Update the theme toggle button's aria-label to reflect the current theme state.
+ * Shared theme toggle logic used by both desktop and mobile toggle buttons.
  */
-function updateThemeToggleLabel(toggle: Element): void {
+function toggleTheme(): void {
+  const html = document.documentElement;
+  const currentTheme = localStorage.getItem("theme");
+
+  // Determine current effective theme
   const isDark =
-    document.documentElement.classList.contains("dark") ||
-    (!document.documentElement.classList.contains("light") &&
-      window.matchMedia("(prefers-color-scheme: dark)").matches);
-  toggle.setAttribute("aria-label", isDark ? "Switch to light theme" : "Switch to dark theme");
+    currentTheme === "dark" ||
+    (currentTheme !== "light" && window.matchMedia("(prefers-color-scheme: dark)").matches);
+
+  // Toggle to the opposite theme
+  const newTheme = isDark ? "light" : "dark";
+  html.classList.remove(isDark ? "dark" : "light");
+  html.classList.add(newTheme);
+  localStorage.setItem("theme", newTheme);
 }
 
 /**
  * Initialize theme toggle functionality.
- * Clones the toggle button to remove existing listeners, then attaches new handlers.
+ * Uses AbortController to cleanly remove previous listeners before attaching new ones.
  */
 export function initializeThemeToggle(): void {
+  // Abort previous listeners
+  themeToggleController?.abort();
+  themeToggleController = new AbortController();
+  const { signal } = themeToggleController;
+
+  // Desktop theme toggle (inside hamburger menu)
   const themeToggle = document.getElementById("theme-toggle");
-  if (!themeToggle || !themeToggle.parentNode) return;
+  if (themeToggle) {
+    themeToggle.addEventListener("click", toggleTheme, { signal });
+  }
 
-  // Clone to remove existing listeners
-  const newThemeToggle = cloneAndReplace(themeToggle);
-
-  // Set initial aria-label based on current theme
-  updateThemeToggleLabel(newThemeToggle);
-
-  newThemeToggle.addEventListener("click", () => {
-    const html = document.documentElement;
-    const currentTheme = localStorage.getItem("theme");
-
-    // Determine current effective theme
-    let isDark = false;
-    if (currentTheme === "dark") {
-      isDark = true;
-    } else if (currentTheme === "light") {
-      isDark = false;
-    } else {
-      // No manual override, check system preference
-      isDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
-    }
-
-    // Toggle theme
-    if (isDark) {
-      // Switch to light
-      html.classList.remove("dark");
-      html.classList.add("light");
-      localStorage.setItem("theme", "light");
-    } else {
-      // Switch to dark
-      html.classList.remove("light");
-      html.classList.add("dark");
-      localStorage.setItem("theme", "dark");
-    }
-
-    // Update aria-label to reflect new state
-    updateThemeToggleLabel(newThemeToggle);
-  });
+  // Mobile theme toggle (always visible in navbar)
+  const mobileThemeToggle = document.getElementById("mobile-theme-toggle");
+  if (mobileThemeToggle) {
+    mobileThemeToggle.addEventListener("click", toggleTheme, { signal });
+  }
 }
 
 // Module-level flag to prevent duplicate event listener registration

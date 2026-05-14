@@ -67,7 +67,7 @@ function detectMac(): boolean {
 
   const agentData = navigator as unknown as { userAgentData?: { platform: string } };
   if (agentData.userAgentData?.platform === "macOS") return true;
-  if (/Mac|iPod|iPhone|iPad/.test(navigator.platform)) return true;
+  if (/Mac|iPod|iPhone|iPad/.test(navigator.userAgent)) return true;
   if (navigator.userAgent.includes("Mac") && "ontouchend" in document) return true;
 
   return false;
@@ -348,7 +348,10 @@ function closeMobileSidebar(): void {
   if (sidebar?.classList.contains("mobile-open")) {
     sidebar.classList.remove("mobile-open");
     const overlay = document.getElementById("sidebar-overlay");
-    if (overlay) overlay.classList.remove("active");
+    if (overlay) {
+      overlay.classList.remove("active");
+      overlay.setAttribute("aria-hidden", "true");
+    }
     document.body.style.overflow = "";
   }
 }
@@ -483,9 +486,9 @@ function setupGlobalListeners(): void {
     }
   });
 
-  // Delegated click handler for search trigger button
+  // Delegated click handler for search trigger buttons (desktop and mobile)
   document.addEventListener("click", (e) => {
-    const trigger = (e.target as Element).closest("#search-trigger");
+    const trigger = (e.target as Element).closest("#search-trigger, #mobile-search-trigger");
     if (trigger) {
       openSearchModal();
     }
