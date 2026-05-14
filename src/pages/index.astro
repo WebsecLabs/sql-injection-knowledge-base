@@ -136,7 +136,7 @@ const searchUrl = new URL(`${import.meta.env.BASE_URL}search`, site).href;
 
       {
         COLLECTION_TYPES.map((type) => (
-          <div class={`tab-content${type === "mysql" ? " active" : ""}`} data-tab={type}>
+          <div class:list={["tab-content", { active: type === "mysql" }]} data-tab={type}>
             <EntryList
               entries={entries[type]}
               title={type === "extras" ? "Additional Resources" : COLLECTION_LABELS[type]}
@@ -313,7 +313,7 @@ const searchUrl = new URL(`${import.meta.env.BASE_URL}search`, site).href;
     right: 0;
     width: 40px;
     height: 49px;
-    background: linear-gradient(to right, transparent, var(--color-card-bg));
+    background: linear-gradient(to left, transparent, var(--color-card-bg));
     pointer-events: none;
     opacity: 1;
     transition: opacity 0.2s ease;
