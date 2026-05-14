@@ -43,24 +43,27 @@ async function waitForScrollToStabilize(page: Page, timeout = 5000): Promise<voi
  * Useful for waiting for layout/rendering to settle after DOM changes.
  */
 async function waitForAnimationFrames(page: Page, frameCount = 3, timeout = 1000): Promise<void> {
-  await page.waitForFunction(
-    (frames: number) => {
-      return new Promise<boolean>((resolve) => {
-        let count = 0;
-        const waitFrames = () => {
-          count++;
-          if (count >= frames) {
-            resolve(true);
-          } else {
-            requestAnimationFrame(waitFrames);
-          }
-        };
-        requestAnimationFrame(waitFrames);
-      });
-    },
-    frameCount,
-    { timeout }
-  );
+  // rAF may not fire in headless webkit; fall back to a short delay.
+  await page
+    .waitForFunction(
+      (frames: number) => {
+        return new Promise<boolean>((resolve) => {
+          let count = 0;
+          const waitFrames = () => {
+            count++;
+            if (count >= frames) {
+              resolve(true);
+            } else {
+              requestAnimationFrame(waitFrames);
+            }
+          };
+          requestAnimationFrame(waitFrames);
+        });
+      },
+      frameCount,
+      { timeout }
+    )
+    .catch(() => page.waitForTimeout(100));
 }
 
 test.describe("Table of Contents", () => {
