@@ -40,16 +40,6 @@ let escapeListenerAdded = false;
 let resizeDebounceTimer: ReturnType<typeof setTimeout> | null = null;
 
 /**
- * Remove tabindex from pre elements for accessibility.
- * Prevents keyboard focus on code blocks that shouldn't be interactive.
- */
-function removeTabindexFromPreElements(): void {
-  document.querySelectorAll("pre[tabindex], .astro-code[tabindex]").forEach((el) => {
-    el.removeAttribute("tabindex");
-  });
-}
-
-/**
  * Set up mobile sidebar visibility based on viewport.
  */
 function initializeSidebarVisibility(
@@ -268,9 +258,6 @@ window.initializeSidebar = function (): void {
     return;
   }
   lastInitializedPath = currentPath;
-
-  // Accessibility fix
-  removeTabindexFromPreElements();
 
   // Initialize sidebar section toggles, search, and keyboard navigation
   initSidebar();

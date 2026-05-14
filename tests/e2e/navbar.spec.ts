@@ -56,7 +56,7 @@ test.describe("Navbar - Desktop", () => {
     await expect(mysqlSection).not.toHaveClass(/expanded/);
 
     const mysqlContent = mysqlSection.locator(".database-section-content");
-    await expect(mysqlContent).toHaveCSS("max-height", "0px");
+    await expect(mysqlContent).toHaveCSS("grid-template-rows", "0px");
   });
 
   test("should expand database section when clicked", async ({ page }) => {
@@ -174,21 +174,21 @@ test.describe("Navbar - Mobile", () => {
     await expect(databasesButton).toBeVisible();
   });
 
-  test("should show search, GitHub, and theme toggle inside mobile menu", async ({ page }) => {
+  test("should show search and theme toggle in mobile top bar, GitHub in menu", async ({
+    page,
+  }) => {
+    const mobileControls = page.locator(".navbar-mobile-controls");
+    await expect(mobileControls.locator("#mobile-search-trigger")).toBeVisible();
+    await expect(mobileControls.locator("#mobile-theme-toggle")).toBeVisible();
+
     const mobileToggle = page.locator("#mobile-toggle");
     await mobileToggle.click();
 
     const navbarMenu = page.locator("#navbar-menu");
     await expect(navbarMenu).toHaveClass(/active/);
 
-    const searchTrigger = navbarMenu.locator("#search-trigger");
-    await expect(searchTrigger).toBeVisible();
-
     const githubLink = navbarMenu.locator('a.github-link:has-text("GitHub")');
     await expect(githubLink).toBeVisible();
-
-    const themeToggle = navbarMenu.locator("#theme-toggle");
-    await expect(themeToggle).toBeVisible();
   });
 
   test("should expand Databases dropdown in mobile menu", async ({ page }) => {
