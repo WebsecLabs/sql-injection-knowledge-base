@@ -23,4 +23,7 @@ node_modules/
 # Internal tooling
 .zencoder/
 .superpowers/
-docs/
+docs/plans/
+docs/font-comparison/
+docs/lighthouse/
+docs/lighthouse-mobile/
