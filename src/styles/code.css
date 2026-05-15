@@ -6,6 +6,13 @@ pre {
   margin: 1.5rem 0;
   padding: 1rem;
   overflow-x: auto;
+  scrollbar-width: thin;
+  scrollbar-color: transparent transparent;
+}
+
+.astro-code:hover,
+pre:hover {
+  scrollbar-color: var(--color-scrollbar-thumb) var(--color-scrollbar-track);
 }
 
 pre code,

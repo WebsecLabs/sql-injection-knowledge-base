@@ -23,4 +23,4 @@ node_modules/
 # Internal tooling
 .zencoder/
 .superpowers/
-docs/plans/
+docs/
