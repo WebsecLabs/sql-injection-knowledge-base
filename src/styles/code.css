@@ -11,7 +11,9 @@ pre {
 }
 
 .astro-code:hover,
-pre:hover {
+pre:hover,
+.astro-code:focus-within,
+pre:focus-within {
   scrollbar-color: var(--color-scrollbar-thumb) var(--color-scrollbar-track);
 }
 
