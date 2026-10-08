@@ -44,6 +44,9 @@ const baseUrl = import.meta.env.BASE_URL;
         showSubResults: true,
         showImages: false,
         baseUrl: base,
+        // The UI is loaded via dynamic import, so it cannot infer its bundle
+        // location from a <script> tag; without this it requests /pagefind/
+        bundlePath: `${base}pagefind/`,
       });
 
       // Apply URL query parameter if present
