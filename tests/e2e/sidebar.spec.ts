@@ -103,19 +103,12 @@ test.describe("Sidebar - Desktop", () => {
   });
 
   test("should navigate to correct page when sidebar link is clicked", async ({ page }) => {
-    // NOTE: Skip decision requires runtime evaluation because link availability depends on page content.
-    // Per Playwright docs, conditional skipping inside test body is valid for runtime conditions.
-
     const currentUrl = page.url();
     const currentPathname = new URL(currentUrl).pathname.replace(/\/$/, "");
     const sidebarLinks = page.locator(".sidebar-nav a");
     const count = await sidebarLinks.count();
 
-    // Early skip check: if no sidebar links exist at all, skip immediately
-    if (count === 0) {
-      test.skip(true, "No sidebar links found - cannot test navigation");
-      return;
-    }
+    expect(count).toBeGreaterThan(0);
 
     // Helper to normalize pathname (remove trailing slash for comparison)
     const normalizePath = (path: string): string => path.replace(/\/$/, "");
@@ -148,11 +141,9 @@ test.describe("Sidebar - Desktop", () => {
       }
     }
 
-    // Skip test if no different link found - cannot verify navigation to same page
-    if (!targetLink) {
-      test.skip(true, "No sidebar link to a different page found - cannot test navigation");
-      return;
-    }
+    // The sidebar always lists other entries in the collection
+    expect(targetLink, "sidebar should link to another page").not.toBeNull();
+    if (!targetLink) return;
 
     // Click and wait for navigation
     await targetLink.click();

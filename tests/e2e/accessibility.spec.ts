@@ -510,16 +510,13 @@ test.describe("Accessibility - Content Pages", () => {
   });
 
   test("Code blocks are accessible", async ({ page }) => {
-    await page.goto("mysql/intro");
+    await page.goto("mysql/stacked-queries");
 
-    // Check that code blocks exist and have proper structure
-    const codeBlocks = page.locator("pre code");
-    const count = await codeBlocks.count();
-
-    if (count > 0) {
-      // Code blocks should be within pre elements
-      const preElements = page.locator("pre");
-      expect(await preElements.count()).toBeGreaterThan(0);
-    }
+    // Code is marked up as <pre><code>, and each scrollable block is
+    // reachable by keyboard so it can be scrolled without a mouse
+    const preElements = page.locator("#main-content pre");
+    await expect(preElements.first()).toBeVisible();
+    await expect(preElements.first().locator("code")).toHaveCount(1);
+    await expect(preElements.first()).toHaveAttribute("tabindex", "0");
   });
 });
