@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { escapeHtml } from "../../../src/utils/htmlEscape";
+import { escapeHtml, serializeJsonForScript } from "../../../src/utils/htmlEscape";
 
 describe("escapeHtml", () => {
   describe("XSS prevention", () => {
@@ -102,5 +102,38 @@ describe("escapeHtml", () => {
     it("returns unicode text unchanged", () => {
       expect(escapeHtml("Caf\u00e9 \ud83d\udc4d")).toBe("Caf\u00e9 \ud83d\udc4d");
     });
+  });
+});
+
+describe("serializeJsonForScript", () => {
+  it("cannot close the surrounding script element", () => {
+    const result = serializeJsonForScript({ name: "</script><script>alert(1)</script>" });
+
+    expect(result).not.toContain("</script");
+    expect(result).not.toContain("<");
+    expect(result).not.toContain(">");
+  });
+
+  it("escapes HTML comment and CDATA openers", () => {
+    const result = serializeJsonForScript({ a: "<!--", b: "<![CDATA[", c: "a & b" });
+
+    expect(result).not.toMatch(/[<>&]/);
+  });
+
+  it("escapes JavaScript line terminators", () => {
+    const result = serializeJsonForScript({ text: "a\u2028b\u2029c" });
+
+    expect(result).not.toMatch(/[\u2028\u2029]/);
+  });
+
+  it("round-trips to the original value", () => {
+    const value = {
+      "@type": "TechArticle",
+      headline: "Comments: -- and /* */ in <MySQL> & 'friends'",
+      tags: ["a\u2028b", "x>y"],
+      nested: { n: 1, ok: true, none: null },
+    };
+
+    expect(JSON.parse(serializeJsonForScript(value))).toEqual(value);
   });
 });

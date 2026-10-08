@@ -31,3 +31,32 @@ export function escapeHtml(text: string | null | undefined): string {
   }
   return text.replace(HTML_ESCAPE_PATTERN, (char) => HTML_ESCAPE_MAP[char]);
 }
+
+const SCRIPT_JSON_ESCAPE_MAP: Record<string, string> = {
+  "<": "\\u003c",
+  ">": "\\u003e",
+  "&": "\\u0026",
+  "\u2028": "\\u2028",
+  "\u2029": "\\u2029",
+};
+
+const SCRIPT_JSON_ESCAPE_PATTERN = /[<>&\u2028\u2029]/g;
+
+/**
+ * Serialize a value as JSON that is safe to embed inside a <script> element,
+ * such as a JSON-LD block.
+ *
+ * JSON.stringify alone leaves "<" intact, so a string containing "</script>"
+ * would end the element early. Escaping these characters as \uXXXX keeps the
+ * output valid JSON with identical parsed values.
+ *
+ * @example
+ * serializeJsonForScript({ name: "</script>" })
+ * // Returns: '{"name":"\\u003c/script\\u003e"}'
+ */
+export function serializeJsonForScript(value: unknown): string {
+  return JSON.stringify(value).replace(
+    SCRIPT_JSON_ESCAPE_PATTERN,
+    (char) => SCRIPT_JSON_ESCAPE_MAP[char]
+  );
+}
