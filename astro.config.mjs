@@ -3,6 +3,7 @@ import sitemap from "@astrojs/sitemap";
 import { satteri } from "@astrojs/markdown-satteri";
 import { hastBasePath } from "./src/plugins/hast-base-path.mjs";
 import { contentGuardIntegration, hastContentGuard } from "./src/plugins/hast-content-guard.mjs";
+import { cspIntegration } from "./src/plugins/csp-integration.mjs";
 
 // Use "/" for standalone mode, "/sql-injection-knowledge-base/" for integrated mode
 const isStandalone = process.env.STANDALONE === "true";
@@ -32,6 +33,12 @@ export default defineConfig({
     resolve: {
       tsconfigPaths: true,
     },
+    build: {
+      // Emit every asset and script as a file instead of a data: URI or inline
+      // module. Fonts stay cacheable and out of the render-blocking CSS, and the
+      // CSP needs neither data: sources nor ClientRouter's inline-module probe.
+      assetsInlineLimit: 0,
+    },
   },
 
   markdown: {
@@ -51,5 +58,5 @@ export default defineConfig({
     },
   },
 
-  integrations: [sitemap(), contentGuardIntegration()],
+  integrations: [sitemap(), contentGuardIntegration(), cspIntegration()],
 });
