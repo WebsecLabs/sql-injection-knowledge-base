@@ -9,7 +9,7 @@ COPY dist/ /usr/share/nginx/html/
 
 # Move the build-generated CSP snippet out of the served directory
 USER root
-RUN mv /usr/share/nginx/html/.csp-policy.conf /etc/nginx/csp-policy.conf
+RUN mv /usr/share/nginx/html/nginx-csp-policy.conf /etc/nginx/csp-policy.conf
 USER nginx
 
 # Expose port 80 (containers allow unprivileged binding to low ports)

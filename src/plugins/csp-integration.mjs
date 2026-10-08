@@ -4,7 +4,7 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 
 /** nginx snippet written into the build output; the Dockerfile moves it into nginx's config */
-export const CSP_SNIPPET_FILE = ".csp-policy.conf";
+export const CSP_SNIPPET_FILE = "nginx-csp-policy.conf";
 
 // Inline <script> elements without a src. JSON-LD and other data blocks are
 // never executed, so CSP does not apply to them.
