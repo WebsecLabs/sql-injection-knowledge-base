@@ -16,7 +16,7 @@ updates:
     labels:
       - "dependencies"
     commit-message:
-      prefix: "chore(deps)"
+      prefix: "chore"
       include: "scope"
     open-pull-requests-limit: 5
     versioning-strategy: "auto"
@@ -34,3 +34,31 @@ updates:
         update-types:
           - "minor"
           - "patch"
+
+  # Keep CI actions current (they are pinned to commit SHAs)
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "03:00"
+    labels:
+      - "dependencies"
+    commit-message:
+      prefix: "chore(ci)"
+    groups:
+      github-actions:
+        patterns:
+          - "*"
+
+  # Keep the nginx base image current (pinned by version and digest)
+  - package-ecosystem: "docker"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "03:00"
+    labels:
+      - "dependencies"
+    commit-message:
+      prefix: "chore(docker)"

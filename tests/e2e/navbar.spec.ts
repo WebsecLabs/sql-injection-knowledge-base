@@ -23,7 +23,7 @@ async function clickOutsideNavbar(page: Page): Promise<void> {
 test.describe("Navbar - Desktop", () => {
   test.beforeEach(async ({ page }) => {
     await page.setViewportSize({ width: 1920, height: 1080 });
-    await page.goto("/");
+    await page.goto("./");
   });
 
   test("should display single 'Databases' dropdown instead of individual database menus", async ({
@@ -139,7 +139,7 @@ test.describe("Navbar - Desktop", () => {
 test.describe("Navbar - Mobile", () => {
   test.beforeEach(async ({ page }) => {
     await page.setViewportSize({ width: 375, height: 667 });
-    await page.goto("/");
+    await page.goto("./");
   });
 
   test("should show hamburger menu toggle on mobile", async ({ page }) => {
@@ -253,7 +253,7 @@ test.describe("Navbar - Mobile", () => {
 test.describe("Navbar - Tablet/Intermediate", () => {
   test.beforeEach(async ({ page }) => {
     await page.setViewportSize({ width: 1024, height: 768 });
-    await page.goto("/");
+    await page.goto("./");
   });
 
   test("should handle intermediate screen sizes without overflow", async ({ page }) => {
@@ -274,7 +274,7 @@ test.describe("Navbar - Tablet/Intermediate", () => {
 test.describe("Navbar - Scalability", () => {
   test("should maintain compact layout regardless of database count", async ({ page }) => {
     await page.setViewportSize({ width: 1920, height: 1080 });
-    await page.goto("/");
+    await page.goto("./");
 
     const navLinks = page.locator(".nav-links > .nav-item");
     const count = await navLinks.count();
@@ -296,7 +296,7 @@ test.describe("Navbar - Scalability", () => {
 test.describe("Navbar - Dropdown Switching", () => {
   test.beforeEach(async ({ page }) => {
     await page.setViewportSize({ width: 1920, height: 1080 });
-    await page.goto("/");
+    await page.goto("./");
   });
 
   test("should open Databases dropdown when clicked", async ({ page }) => {
@@ -416,7 +416,7 @@ test.describe("Navbar - Dropdown Switching", () => {
 test.describe("Navbar - Dropdown Switching on Mobile", () => {
   test.beforeEach(async ({ page }) => {
     await page.setViewportSize({ width: 375, height: 667 });
-    await page.goto("/");
+    await page.goto("./");
     // Open mobile menu first
     await page.locator("#mobile-toggle").click();
     await expect(page.locator("#navbar-menu")).toHaveClass(/active/);
@@ -457,7 +457,7 @@ test.describe("Navbar - Resize Transitions", () => {
   test("should keep Databases dropdown working after mobile toggle and resize to desktop", async ({
     page,
   }, _testInfo) => {
-    await page.goto("/");
+    await page.goto("./");
     await page.setViewportSize({ width: 375, height: 667 });
 
     const mobileToggle = page.locator("#mobile-toggle");
@@ -495,7 +495,7 @@ test.describe("Navbar - Resize Transitions", () => {
   test("should keep Extras dropdown working after mobile toggle and resize to desktop", async ({
     page,
   }, _testInfo) => {
-    await page.goto("/");
+    await page.goto("./");
     await page.setViewportSize({ width: 375, height: 667 });
 
     const mobileToggle = page.locator("#mobile-toggle");
@@ -534,7 +534,7 @@ test.describe("Navbar - Resize Transitions", () => {
     page,
   }) => {
     // Start at desktop width
-    await page.goto("/");
+    await page.goto("./");
     await page.setViewportSize({ width: 1280, height: 800 });
 
     const navbarMenu = page.locator("#navbar-menu");
@@ -580,7 +580,7 @@ test.describe("Navbar - Resize Transitions", () => {
   test("should have menu-transitioning class only during user-initiated menu toggle", async ({
     page,
   }) => {
-    await page.goto("/");
+    await page.goto("./");
     await page.setViewportSize({ width: 375, height: 667 });
 
     const navbarMenu = page.locator("#navbar-menu");
@@ -632,7 +632,7 @@ test.describe("Navbar - Resize Transitions", () => {
     page,
   }) => {
     // Start at mobile width
-    await page.goto("/");
+    await page.goto("./");
     await page.setViewportSize({ width: 375, height: 667 });
 
     // Open mobile menu and expand Databases dropdown
@@ -665,7 +665,7 @@ test.describe("Navbar - Resize Transitions", () => {
   test("should show dropdown smoothly on hover without transitioning class getting stuck", async ({
     page,
   }) => {
-    await page.goto("/");
+    await page.goto("./");
     await page.setViewportSize({ width: 1280, height: 800 });
 
     const databasesDropdown = page.locator('.nav-item.dropdown:has(button:text("Databases"))');
@@ -708,7 +708,7 @@ test.describe("Navbar - Resize Transitions", () => {
 test.describe("Navbar - Mobile Menu Visual Integrity", () => {
   test.beforeEach(async ({ page }) => {
     await page.setViewportSize({ width: 375, height: 667 });
-    await page.goto("/");
+    await page.goto("./");
     // Open mobile menu first
     await page.locator("#mobile-toggle").click();
     await expect(page.locator("#navbar-menu")).toHaveClass(/active/);
@@ -900,7 +900,7 @@ test.describe("Navbar - Mobile Menu Visual Integrity", () => {
 test.describe("Navbar - Mobile Extras Dropdown", () => {
   test.beforeEach(async ({ page }) => {
     await page.setViewportSize({ width: 375, height: 667 });
-    await page.goto("/");
+    await page.goto("./");
     // Open mobile menu first
     await page.locator("#mobile-toggle").click();
     await expect(page.locator("#navbar-menu")).toHaveClass(/active/);
@@ -1039,6 +1039,11 @@ test.describe("Navbar - Mobile Extras Dropdown", () => {
     const extrasDropdown = page.locator('.nav-item.dropdown:has(button:text("Extras"))');
     const extrasButton = extrasDropdown.locator("button.dropdown-toggle");
     const githubLink = page.locator('a.github-link:has-text("GitHub")');
+
+    // Let the mobile menu's open transition settle so the baseline positions are final
+    await page.evaluate(() =>
+      Promise.all(document.getAnimations().map((a) => a.finished)).catch(() => {})
+    );
 
     // Initially collapsed - GitHub should be positioned right after Extras button
     const extrasButtonBox = await extrasButton.boundingBox();

@@ -26,7 +26,7 @@ test.describe("Theme Toggle", () => {
     // Note: addInitScript runs on EVERY navigation/reload, so we use evaluate+reload
     // to ensure localStorage is only cleared at test start, not on subsequent navigations
     await page.setViewportSize({ width: 1920, height: 1080 });
-    await page.goto("/");
+    await page.goto("./");
     await page.evaluate(() => localStorage.clear());
     await page.reload();
   });
@@ -106,7 +106,7 @@ test.describe("Theme Toggle", () => {
     expect(toggledBg).not.toBe(initialBg);
 
     // Navigate to another page
-    await page.goto("/mysql/intro");
+    await page.goto("mysql/intro");
 
     // Theme should persist
     const persistedBg = await page.evaluate(
@@ -147,7 +147,7 @@ test.describe("Theme - Respects System Preference", () => {
   test("should respect prefers-color-scheme: dark", async ({ page }) => {
     // Emulate dark mode preference
     await page.emulateMedia({ colorScheme: "dark" });
-    await page.goto("/");
+    await page.goto("./");
     await page.evaluate(() => localStorage.clear());
     await page.reload();
 
@@ -165,7 +165,7 @@ test.describe("Theme - Respects System Preference", () => {
   test("should respect prefers-color-scheme: light", async ({ page }) => {
     // Emulate light mode preference
     await page.emulateMedia({ colorScheme: "light" });
-    await page.goto("/");
+    await page.goto("./");
     await page.evaluate(() => localStorage.clear());
     await page.reload();
 

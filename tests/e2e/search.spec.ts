@@ -7,7 +7,7 @@ const MEDIUM_TIMEOUT_MS = 10000;
 test.describe("Search Modal", () => {
   test.beforeEach(async ({ page }) => {
     await page.setViewportSize({ width: 1440, height: 900 });
-    await page.goto("/");
+    await page.goto("./");
   });
 
   test("should open with Ctrl+K shortcut", async ({ page }) => {
@@ -164,7 +164,7 @@ test.describe("Search Modal", () => {
 test.describe("Search Modal - Mobile", () => {
   test.beforeEach(async ({ page }) => {
     await page.setViewportSize({ width: 375, height: 667 });
-    await page.goto("/");
+    await page.goto("./");
   });
 
   test("should open with Ctrl+K on mobile", async ({ page }) => {
@@ -191,7 +191,7 @@ test.describe("Search Modal - Mobile", () => {
 test.describe("Navbar Search Trigger", () => {
   test.beforeEach(async ({ page }) => {
     await page.setViewportSize({ width: 1920, height: 1080 });
-    await page.goto("/");
+    await page.goto("./");
   });
 
   test("should display search trigger button in navbar", async ({ page }) => {

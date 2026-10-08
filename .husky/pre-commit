@@ -1,3 +1,4 @@
 npm run lint
-npm test
-npm audit --audit-level=high
+npm run test:unit
+# Shipped dependencies must be free of known vulnerabilities (same policy as CI)
+npm audit --omit=dev --audit-level=low
