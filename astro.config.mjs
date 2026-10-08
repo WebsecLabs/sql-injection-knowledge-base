@@ -2,6 +2,7 @@ import { defineConfig } from "astro/config";
 import sitemap from "@astrojs/sitemap";
 import { satteri } from "@astrojs/markdown-satteri";
 import { hastBasePath } from "./src/plugins/hast-base-path.mjs";
+import { contentGuardIntegration, hastContentGuard } from "./src/plugins/hast-content-guard.mjs";
 
 // Use "/" for standalone mode, "/sql-injection-knowledge-base/" for integrated mode
 const isStandalone = process.env.STANDALONE === "true";
@@ -37,7 +38,9 @@ export default defineConfig({
     // Keep SQL syntax such as "--" and quotes literal in prose and headings
     smartypants: false,
     processor: satteri({
-      hastPlugins: [hastBasePath({ base })],
+      // Parse raw HTML into elements so plugins can inspect and rewrite it
+      features: { rawHtml: true },
+      hastPlugins: [hastContentGuard, hastBasePath({ base })],
     }),
     shikiConfig: {
       themes: {
@@ -48,5 +51,5 @@ export default defineConfig({
     },
   },
 
-  integrations: [sitemap()],
+  integrations: [sitemap(), contentGuardIntegration()],
 });
