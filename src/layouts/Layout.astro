@@ -102,8 +102,18 @@ const extrasEntries = collections?.extrasEntries ?? (await getCollection("extras
         window.__themeInitDone = true;
         const darkMQ = window.matchMedia("(prefers-color-scheme: dark)");
 
+        // Storage access throws when site data is blocked; fall back to the
+        // in-memory choice set by the theme toggle
+        function getStoredTheme() {
+          try {
+            return localStorage.getItem("theme") || window.__themeFallback || null;
+          } catch {
+            return window.__themeFallback || null;
+          }
+        }
+
         function applyTheme() {
-          const theme = localStorage.getItem("theme");
+          const theme = getStoredTheme();
           const html = document.documentElement;
           if (theme === "dark") {
             html.classList.add("dark");
@@ -126,7 +136,7 @@ const extrasEntries = collections?.extrasEntries ?? (await getCollection("extras
 
         // React to system preference changes (for auto mode)
         darkMQ.addEventListener("change", function () {
-          if (!localStorage.getItem("theme")) {
+          if (!getStoredTheme()) {
             applyTheme();
           }
         });
