@@ -23,9 +23,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - CI actions are pinned to commit SHAs; Dependabot now also tracks GitHub Actions and the Docker base image
 - The nginx base image is pinned by version and digest
 
+### Security
+
+- Content-Security-Policy generated at build time from the site's inline script hashes, embedded in every page as a `<meta>` tag and sent by the nginx image as a header with `frame-ancestors` and violation reporting
+- Build-time content guard: raw HTML in Markdown is parsed and the build fails on executable elements, inline event handlers or script-capable URLs
+- Structured data is serialized with `<`, `>` and `&` escaped for safe embedding in `<script>` elements
+- The Docker image runs nginx as an unprivileged user and no longer advertises the nginx version
+- Assets and scripts are emitted as files rather than inlined, so the CSP needs no `data:` script or font sources
+
 ### Fixed
 
 - Full search page (`/search`) failed to load results when the site is served under a base path
+- Theme toggle no longer breaks when browser storage is unavailable
 
 ## [1.1.0] - 2025-01
 
