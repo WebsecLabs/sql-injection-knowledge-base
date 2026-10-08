@@ -1,9 +1,8 @@
 import { defineConfig } from "vitest/config";
-import tsconfigPaths from "vite-tsconfig-paths";
 
 export default defineConfig({
-  plugins: [tsconfigPaths()],
   resolve: {
+    tsconfigPaths: true,
     alias: {
       // Mock astro:content virtual module for unit tests
       "astro:content": new URL("./tests/mocks/astro-content.ts", import.meta.url).pathname,

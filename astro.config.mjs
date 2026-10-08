@@ -1,8 +1,7 @@
 import { defineConfig } from "astro/config";
-import tsconfigPaths from "vite-tsconfig-paths";
 import sitemap from "@astrojs/sitemap";
-import rehypeSlug from "rehype-slug";
-import { remarkBasePath } from "./src/plugins/remark-base-path.mjs";
+import { satteri } from "@astrojs/markdown-satteri";
+import { hastBasePath } from "./src/plugins/hast-base-path.mjs";
 
 // Use "/" for standalone mode, "/sql-injection-knowledge-base/" for integrated mode
 const isStandalone = process.env.STANDALONE === "true";
@@ -29,12 +28,17 @@ export default defineConfig({
   },
 
   vite: {
-    plugins: [tsconfigPaths()],
+    resolve: {
+      tsconfigPaths: true,
+    },
   },
 
   markdown: {
-    remarkPlugins: [[remarkBasePath, { base }]],
-    rehypePlugins: [rehypeSlug],
+    // Keep SQL syntax such as "--" and quotes literal in prose and headings
+    smartypants: false,
+    processor: satteri({
+      hastPlugins: [hastBasePath({ base })],
+    }),
     shikiConfig: {
       themes: {
         light: "github-light",
