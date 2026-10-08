@@ -153,8 +153,6 @@ switch (type) {
 }
 ---
 
-{
-  schema && (
-    <script is:inline type="application/ld+json" set:html={JSON.stringify(schema, null, 0)} />
-  )
-}
+{schema && (
+  <script is:inline type="application/ld+json" set:html={JSON.stringify(schema, null, 0)} />
+)}

@@ -132,7 +132,6 @@ const extrasEntries = collections?.extrasEntries ?? (await getCollection("extras
         });
       })();
     </script>
-
     <script>
       import "../scripts/main.ts";
     </script>
@@ -156,11 +155,9 @@ const extrasEntries = collections?.extrasEntries ?? (await getCollection("extras
       content="SQL Injection Knowledge Base - Comprehensive security documentation"
     />
     <meta property="og:locale" content="en_US" />
-    {
-      pageType === "article" && lastModified && (
-        <meta property="article:modified_time" content={lastModified.toISOString()} />
-      )
-    }
+    {pageType === "article" && lastModified && (
+      <meta property="article:modified_time" content={lastModified.toISOString()} />
+    )}
 
     <!-- Twitter -->
     <meta name="twitter:card" content="summary_large_image" />
@@ -196,7 +193,9 @@ const extrasEntries = collections?.extrasEntries ?? (await getCollection("extras
     </style>
   </head>
   <body>
-    <a href="#main-content" class="skip-link">Skip to main content</a>
+    <a href="#main-content" class="skip-link">
+      Skip to main content
+    </a>
     <script is:inline>
       document.querySelector(".skip-link")?.addEventListener("click", function () {
         const target = document.getElementById("main-content");
@@ -224,27 +223,23 @@ const extrasEntries = collections?.extrasEntries ?? (await getCollection("extras
       />
     </div>
 
-    {
-      /* Sidebar overlay and FAB button are outside .page-layout to prevent
-         overflow-x: clip from breaking position: fixed on mobile */
-    }
+    {/* Sidebar overlay and FAB button are outside .page-layout to prevent
+         overflow-x: clip from breaking position: fixed on mobile */}
     {showSidebar && <div id="sidebar-overlay" class="sidebar-overlay" aria-hidden="true" />}
 
     <div class={`page-layout ${showToc ? "with-toc" : ""} ${pageClass}`}>
-      {
-        showSidebar && (
-          <div data-pagefind-ignore="all">
-            <Sidebar
-              mysqlEntries={mysqlEntries}
-              mariadbEntries={mariadbEntries}
-              mssqlEntries={mssqlEntries}
-              oracleEntries={oracleEntries}
-              postgresqlEntries={postgresqlEntries}
-              extrasEntries={extrasEntries}
-            />
-          </div>
-        )
-      }
+      {showSidebar && (
+        <div data-pagefind-ignore="all">
+          <Sidebar
+            mysqlEntries={mysqlEntries}
+            mariadbEntries={mariadbEntries}
+            mssqlEntries={mssqlEntries}
+            oracleEntries={oracleEntries}
+            postgresqlEntries={postgresqlEntries}
+            extrasEntries={extrasEntries}
+          />
+        </div>
+      )}
 
       <main id="main-content" class="main-content">
         <div class="content-container">
@@ -255,40 +250,36 @@ const extrasEntries = collections?.extrasEntries ?? (await getCollection("extras
       {showToc && <TableOfContents headings={tocHeadings} />}
     </div>
 
-    {
-      /* Mobile-only FAB button - outside page-layout to avoid overflow-x: clip
-         breaking position: fixed on some browsers */
-    }
-    {
-      showSidebar && (
-        <div class="button-container" data-pagefind-ignore="all">
-          <button
-            type="button"
-            id="sidebar-toggle"
-            class="sidebar-toggle"
-            aria-label="Toggle navigation"
-          >
-            <div class="hamburger-icon">
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                width="24"
-                height="24"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="white"
-                stroke-width="2.5"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-              >
-                <line x1="3" y1="12" x2="21" y2="12" />
-                <line x1="3" y1="6" x2="21" y2="6" />
-                <line x1="3" y1="18" x2="21" y2="18" />
-              </svg>
-            </div>
-          </button>
-        </div>
-      )
-    }
+    {/* Mobile-only FAB button - outside page-layout to avoid overflow-x: clip
+         breaking position: fixed on some browsers */}
+    {showSidebar && (
+      <div class="button-container" data-pagefind-ignore="all">
+        <button
+          type="button"
+          id="sidebar-toggle"
+          class="sidebar-toggle"
+          aria-label="Toggle navigation"
+        >
+          <div class="hamburger-icon">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="24"
+              height="24"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="white"
+              stroke-width="2.5"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <line x1="3" y1="12" x2="21" y2="12" />
+              <line x1="3" y1="6" x2="21" y2="6" />
+              <line x1="3" y1="18" x2="21" y2="18" />
+            </svg>
+          </div>
+        </button>
+      </div>
+    )}
 
     <footer data-pagefind-ignore="all">
       <div class="container">

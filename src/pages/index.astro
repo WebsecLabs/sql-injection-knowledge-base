@@ -119,34 +119,30 @@ const searchUrl = new URL(`${import.meta.env.BASE_URL}search`, site).href;
   <div class="database-tabs" transition:animate="slide">
     <Tabs defaultTab="mysql">
       <Fragment slot="tab-list">
-        {
-          COLLECTION_TYPES.map((type, index) => (
-            <li role="presentation">
-              <button
-                class={`tab-item ${type === "mysql" ? "active" : ""}`}
-                data-tab={type}
-                role="tab"
-                tabindex={index === 0 ? 0 : -1}
-                aria-selected={type === "mysql" ? "true" : "false"}
-              >
-                {COLLECTION_LABELS[type]}
-              </button>
-            </li>
-          ))
-        }
+        {COLLECTION_TYPES.map((type, index) => (
+          <li role="presentation">
+            <button
+              class={`tab-item ${type === "mysql" ? "active" : ""}`}
+              data-tab={type}
+              role="tab"
+              tabindex={index === 0 ? 0 : -1}
+              aria-selected={type === "mysql" ? "true" : "false"}
+            >
+              {COLLECTION_LABELS[type]}
+            </button>
+          </li>
+        ))}
       </Fragment>
 
-      {
-        COLLECTION_TYPES.map((type) => (
-          <div class:list={["tab-content", { active: type === "mysql" }]} data-tab={type}>
-            <EntryList
-              entries={entries[type]}
-              title={type === "extras" ? "Additional Resources" : COLLECTION_LABELS[type]}
-              collectionType={type}
-            />
-          </div>
-        ))
-      }
+      {COLLECTION_TYPES.map((type) => (
+        <div class:list={["tab-content", { active: type === "mysql" }]} data-tab={type}>
+          <EntryList
+            entries={entries[type]}
+            title={type === "extras" ? "Additional Resources" : COLLECTION_LABELS[type]}
+            collectionType={type}
+          />
+        </div>
+      ))}
     </Tabs>
   </div>
 </Layout>

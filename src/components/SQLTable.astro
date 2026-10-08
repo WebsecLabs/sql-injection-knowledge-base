@@ -25,29 +25,25 @@ const columns =
 
 <div class="table-wrapper">
   <table class={noborder ? "noborder" : ""}>
-    {
-      headers.length > 0 && (
-        <thead>
-          <tr>
-            {headers.map((header) => (
-              <th>{header}</th>
-            ))}
-          </tr>
-        </thead>
-      )
-    }
+    {headers.length > 0 && (
+      <thead>
+        <tr>
+          {headers.map((header) => (
+            <th>{header}</th>
+          ))}
+        </tr>
+      </thead>
+    )}
     <tbody>
-      {
-        rows.map((row) => (
-          <tr class={row.result ? `result-${row.result}` : ""}>
-            {columns.map((column) => (
-              <td class={column === "code" ? "code" : ""}>
-                {column === "code" ? <code>{row[column]}</code> : row[column]}
-              </td>
-            ))}
-          </tr>
-        ))
-      }
+      {rows.map((row) => (
+        <tr class={row.result ? `result-${row.result}` : ""}>
+          {columns.map((column) => (
+            <td class={column === "code" ? "code" : ""}>
+              {column === "code" ? <code>{row[column]}</code> : row[column]}
+            </td>
+          ))}
+        </tr>
+      ))}
     </tbody>
   </table>
 </div>
