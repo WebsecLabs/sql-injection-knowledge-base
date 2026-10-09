@@ -175,22 +175,24 @@ const extrasEntries = collections?.extrasEntries ?? (await getCollection("extras
         navigation: auto;
       }
 
+      /* bottom: 100% puts the link's bottom edge exactly at the top of the page,
+         whatever its height; focus slides it down into view */
       .skip-link {
         position: absolute;
-        top: -40px;
+        bottom: 100%;
         left: 0;
         background: var(--color-skip-link-bg);
         color: white;
         padding: 8px;
         z-index: var(--z-above-navbar); /* Must be above sticky navbar (z-index: 1000) */
-        transition: top 0.2s;
+        transition: transform 0.2s;
         text-decoration: none;
         font-weight: bold;
         border-bottom-right-radius: 6px;
       }
 
       .skip-link:focus {
-        top: 0;
+        transform: translateY(100%);
         outline: 2px solid var(--color-accent);
       }
     </style>

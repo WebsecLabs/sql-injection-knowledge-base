@@ -1,5 +1,6 @@
 # SQL Injection Knowledge Base
 
+[![Live site](https://img.shields.io/badge/Live%20site-websec.ca-1e5a9e.svg)](https://websec.ca/sql-injection-knowledge-base/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
 [![Built with Astro](https://img.shields.io/badge/Built%20with-Astro-BC52EE.svg?logo=astro)](https://astro.build/)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](./src/content/extras/contributing.md)
@@ -9,6 +10,15 @@
 A modern, comprehensive resource for SQL injection techniques, examples, and bypasses across multiple database platforms.
 
 **Read it at [websec.ca/sql-injection-knowledge-base](https://websec.ca/sql-injection-knowledge-base/)**, its official home.
+
+<p align="center">
+  <a href="https://websec.ca/sql-injection-knowledge-base/">
+    <img src="docs/screenshots/home.webp" alt="Knowledge base home page with entry counts and tabs for each database" width="49%">
+  </a>
+  <a href="https://websec.ca/sql-injection-knowledge-base/mysql/conditional-statements/">
+    <img src="docs/screenshots/article.webp" alt="MySQL conditional statements article in dark mode, with sidebar navigation, table of contents and highlighted SQL" width="49%">
+  </a>
+</p>
 
 ## About
 
