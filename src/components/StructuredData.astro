@@ -5,6 +5,7 @@
  * Provides structured data for SEO optimization.
  * Supports: WebSite, TechArticle, BreadcrumbList schemas
  */
+import { serializeJsonForScript } from "@/utils/htmlEscape";
 
 export interface BreadcrumbItem {
   name: string;
@@ -154,5 +155,5 @@ switch (type) {
 ---
 
 {schema && (
-  <script is:inline type="application/ld+json" set:html={JSON.stringify(schema, null, 0)} />
+  <script is:inline type="application/ld+json" set:html={serializeJsonForScript(schema)} />
 )}

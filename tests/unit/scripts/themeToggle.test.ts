@@ -207,4 +207,37 @@ describe("themeToggle", () => {
       expect(localStorage.getItem("theme")).toBe("dark");
     });
   });
+
+  describe("when localStorage is unavailable", () => {
+    beforeEach(() => {
+      delete window.__themeFallback;
+      vi.spyOn(Storage.prototype, "setItem").mockImplementation(() => {
+        throw new DOMException("Blocked", "SecurityError");
+      });
+      vi.spyOn(Storage.prototype, "getItem").mockImplementation(() => {
+        throw new DOMException("Blocked", "SecurityError");
+      });
+    });
+
+    it("still toggles the theme without throwing", () => {
+      document.body.innerHTML = '<button id="theme-toggle">Toggle</button>';
+      initializeThemeToggle();
+
+      const button = document.getElementById("theme-toggle")!;
+      expect(() => button.click()).not.toThrow();
+      expect(document.documentElement.classList.contains("dark")).toBe(true);
+
+      button.click();
+      expect(document.documentElement.classList.contains("light")).toBe(true);
+    });
+
+    it("keeps the choice in memory for reapplying after navigation", () => {
+      document.body.innerHTML = '<button id="theme-toggle">Toggle</button>';
+      initializeThemeToggle();
+
+      document.getElementById("theme-toggle")!.click();
+
+      expect(window.__themeFallback).toBe("dark");
+    });
+  });
 });

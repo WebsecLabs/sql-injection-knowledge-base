@@ -140,6 +140,8 @@ jobs:
         env:
           CI: true
           PLAYWRIGHT_WEBSERVER_TIMEOUT: "30000"
+          # The production container must send the CSP header
+          EXPECT_CSP_HEADER: "true"
 
       - name: Upload report on failure
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2

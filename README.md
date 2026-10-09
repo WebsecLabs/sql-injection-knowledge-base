@@ -64,6 +64,35 @@ Built with:
    npm run build
    ```
 
+## Deployment
+
+The build output in `dist/` is a fully static site. Choose a build mode first:
+
+- `npm run build` serves the site under `/sql-injection-knowledge-base/`, as on websec.ca.
+- `STANDALONE=true SITE_URL=https://your.domain npm run build:standalone` serves it at the root of your domain.
+
+### Docker (recommended)
+
+```bash
+npm run build
+docker build -t sqli-kb .
+docker run -d -p 8080:80 sqli-kb
+```
+
+The image runs nginx as an unprivileged user. It sends a Content-Security-Policy header together with the other security headers.
+
+### Any static host
+
+Upload `dist/` to any static host, such as GitHub Pages, Netlify or Cloudflare Pages. No server configuration is required. Every page embeds its Content-Security-Policy as a `<meta>` tag generated at build time. That policy allows only the site's own scripts and the hashes of its inline scripts.
+
+If your host lets you set response headers, also send these. They cannot be set from a `<meta>` tag:
+
+```text
+Content-Security-Policy: frame-ancestors 'none'
+X-Content-Type-Options: nosniff
+Referrer-Policy: strict-origin-when-cross-origin
+```
+
 ## Contributing
 
 Contributions are welcome! Please see our [Contributing Guide](./src/content/extras/contributing.md) for more details on how to contribute to this project.
