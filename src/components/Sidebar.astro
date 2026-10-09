@@ -53,9 +53,9 @@ function getActiveSection(path: string): string {
 const activeSection = getActiveSection(currentPath);
 ---
 
-<aside class="sidebar" aria-label="Documentation navigation">
+<aside id="sidebar" class="sidebar" tabindex="-1" aria-label="Documentation navigation">
   <div class="sidebar-header">
-    <h3>Navigation</h3>
+    <h2 class="sidebar-title">Navigation</h2>
   </div>
 
   <div class="sidebar-search">

@@ -93,10 +93,18 @@ body.sidebar-filtering .sidebar-category:not([data-match]) {
   background-color: var(--color-sidebar-bg);
 }
 
-.sidebar-header h3 {
+.sidebar-title {
   margin: 0;
+  padding: 0;
+  border: none;
   font-size: 1.1rem;
+  font-weight: 600;
   color: var(--color-primary);
+}
+
+/* Not a content heading: no accent bar */
+.sidebar-title::before {
+  content: none;
 }
 
 .sidebar-search {
@@ -350,6 +358,9 @@ body.sidebar-filtering .sidebar-category:not([data-match]) {
     background-color: var(--color-card-bg);
     z-index: var(--z-sidebar-mobile);
     transform: translateX(-100%);
+
+    /* Off-screen links stay out of the tab order and accessibility tree */
+    visibility: hidden;
     transition: none; /* Disable transitions to prevent flash on resize */
     box-shadow: 2px 0 10px rgb(0 0 0 / 10%);
     overflow-y: auto;
@@ -369,12 +380,23 @@ body.sidebar-filtering .sidebar-category:not([data-match]) {
 
   .sidebar.mobile-open {
     transform: translateX(0);
+    visibility: visible;
   }
 
   /* Enable transitions only when user is interacting with the menu (toggle click).
-     This prevents the flash/slide animation when resizing the viewport across the breakpoint. */
+     This prevents the flash/slide animation when resizing the viewport across the breakpoint.
+     Closing: hide (and drop from the tab order) once the slide has finished. */
   .sidebar.sidebar-transitioning {
-    transition: transform 0.3s ease;
+    transition:
+      transform 0.3s ease,
+      visibility 0s linear 0.3s;
+  }
+
+  /* Opening: visible at once so focus can move into the drawer */
+  .sidebar.sidebar-transitioning.mobile-open {
+    transition:
+      transform 0.3s ease,
+      visibility 0s;
   }
 
   /* Mobile sidebar toggle button */
@@ -407,6 +429,15 @@ body.sidebar-filtering .sidebar-category:not([data-match]) {
     background-color: var(--color-primary-dark);
   }
 
+  .sidebar-toggle .close-icon,
+  .sidebar-toggle.active .hamburger-icon {
+    display: none;
+  }
+
+  .sidebar-toggle.active .close-icon {
+    display: flex;
+  }
+
   .sidebar-toggle.attention {
     animation: pulse 1s ease;
   }
@@ -424,7 +455,8 @@ body.sidebar-filtering .sidebar-category:not([data-match]) {
     transform: translateY(100px);
   }
 
-  .hamburger-icon {
+  .hamburger-icon,
+  .close-icon {
     display: flex;
     align-items: center;
     justify-content: center;

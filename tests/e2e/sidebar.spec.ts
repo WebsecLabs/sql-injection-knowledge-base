@@ -309,4 +309,46 @@ test.describe("Sidebar - Mobile", () => {
     const isHiddenOnMobile = await isSidebarHiddenOnMobile(sidebar, viewport);
     expect(isHiddenOnMobile).toBe(true);
   });
+
+  test("closed drawer keeps its links out of the tab order", async ({ page }) => {
+    await expect(page.locator(".sidebar")).toHaveCSS("visibility", "hidden");
+    await expect(page.locator(".sidebar a").first()).not.toBeVisible();
+  });
+
+  test("toggle reports its state and moves focus into the drawer", async ({ page }) => {
+    const toggle = page.locator("#sidebar-toggle");
+    await expect(toggle).toHaveAttribute("aria-expanded", "false");
+    await expect(toggle).toHaveAttribute("aria-controls", "sidebar");
+
+    await toggle.click();
+
+    await expect(page.locator(".sidebar")).toHaveClass(/mobile-open/);
+    await expect(toggle).toHaveAttribute("aria-expanded", "true");
+    await expect(toggle).toHaveAttribute("aria-label", "Close navigation");
+    await expect(page.locator(".sidebar")).toBeFocused();
+    await expect(page.locator(".sidebar a").first()).toBeVisible();
+  });
+
+  test("Escape closes the drawer and returns focus to the toggle", async ({ page }) => {
+    const toggle = page.locator("#sidebar-toggle");
+    await toggle.click();
+    await expect(page.locator(".sidebar")).toHaveClass(/mobile-open/);
+
+    await page.keyboard.press("Escape");
+
+    await expect(page.locator(".sidebar")).not.toHaveClass(/mobile-open/);
+    await expect(toggle).toHaveAttribute("aria-expanded", "false");
+    await expect(toggle).toBeFocused();
+  });
+
+  test("overlay click closes the drawer", async ({ page }) => {
+    await page.locator("#sidebar-toggle").click();
+    await expect(page.locator("#sidebar-overlay")).toHaveClass(/active/);
+
+    // The drawer spans the full width below the navbar; dispatch on the overlay itself
+    await page.locator("#sidebar-overlay").dispatchEvent("click");
+
+    await expect(page.locator(".sidebar")).not.toHaveClass(/mobile-open/);
+    await expect(page.locator("#sidebar-toggle")).toHaveAttribute("aria-expanded", "false");
+  });
 });

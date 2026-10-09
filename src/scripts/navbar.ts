@@ -26,7 +26,6 @@ import {
 declare global {
   interface Window {
     initializeNavbar?: () => void;
-    __navbarLastPath?: string;
   }
 }
 
@@ -38,6 +37,7 @@ let navbarInitialized = false;
 let prevIsMobile: boolean | undefined;
 let navbarDocumentClickHandler: ((e: Event) => void) | null = null;
 let navbarDropdownClickHandler: ((e: Event) => void) | null = null;
+let navbarKeydownRegistered = false;
 
 /**
  * Toggle dropdown expanded/collapsed state
@@ -73,6 +73,58 @@ function collapseDropdown(dropdown: Element, isMobileView: boolean): void {
   }
 }
 
+/**
+ * Close the mobile menu, mirroring the toggle button's behaviour.
+ */
+function closeMobileMenu(): void {
+  const navbarMenu = document.getElementById("navbar-menu");
+  const mobileToggle = document.getElementById("mobile-toggle");
+  if (!navbarMenu || !mobileToggle || !navbarMenu.classList.contains("active")) {
+    return;
+  }
+  withTransition(navbarMenu, "menu-transitioning", () => {
+    mobileToggle.setAttribute("aria-expanded", "false");
+    navbarMenu.classList.remove("active");
+    mobileToggle.classList.remove("active");
+    navbarMenu.inert = true;
+  });
+}
+
+/**
+ * Escape closes the innermost open navigation layer: an open dropdown first,
+ * then the mobile menu. Focus returns to the control that opened it, so
+ * keyboard users are not stranded inside a hidden menu (WCAG 1.4.13, 2.1.1).
+ */
+export function handleNavbarEscape(e: KeyboardEvent): void {
+  if (e.key !== "Escape" || e.defaultPrevented) {
+    return;
+  }
+  // The search dialog handles its own Escape
+  if (document.querySelector("dialog[open]")) {
+    return;
+  }
+
+  const isMobileView = window.innerWidth < MOBILE_BREAKPOINT;
+  const openDropdown = document.querySelector(".dropdown.show");
+  if (openDropdown) {
+    const hadFocus = openDropdown.contains(document.activeElement);
+    collapseDropdown(openDropdown, isMobileView);
+    const toggle = openDropdown.querySelector(".dropdown-toggle");
+    if (hadFocus && toggle instanceof HTMLElement) {
+      toggle.focus();
+    }
+    e.preventDefault();
+    return;
+  }
+
+  const navbarMenu = document.getElementById("navbar-menu");
+  if (isMobileView && navbarMenu?.classList.contains("active")) {
+    closeMobileMenu();
+    document.getElementById("mobile-toggle")?.focus();
+    e.preventDefault();
+  }
+}
+
 function resetDatabaseSections(): void {
   document.querySelectorAll(".database-section").forEach((section) => {
     section.classList.remove("expanded");
@@ -85,10 +137,11 @@ function resetDatabaseSections(): void {
 
 // Main initialization function
 window.initializeNavbar = function () {
-  // Per-path deduplication: skip re-initialization if we're on the same path
-  // This prevents redundant DOM cloning and handler re-attachment during same-route transitions
-  const currentPath = window.location.pathname;
-  if (window.__navbarLastPath === currentPath && navbarInitialized) {
+  // Skip re-initialization when this navbar element is already wired up.
+  // Keyed to the DOM rather than the URL: a View Transition swap (even to the
+  // same URL) brings in a fresh navbar that needs its handlers attached.
+  const navbar = document.querySelector<HTMLElement>(".navbar");
+  if (navbar?.dataset.navbarReady === "true" && navbarInitialized) {
     return;
   }
 
@@ -147,6 +200,17 @@ window.initializeNavbar = function () {
       }
 
       if (!isMobile) {
+        // On desktop, close when keyboard focus moves out of the dropdown
+        dropdown.addEventListener("focusout", function (this: Element, e: Event) {
+          const next = (e as FocusEvent).relatedTarget;
+          if (next instanceof Node && this.contains(next)) {
+            return;
+          }
+          if (this.classList.contains("show") && window.innerWidth >= MOBILE_BREAKPOINT) {
+            collapseDropdown(this, false);
+          }
+        });
+
         // On desktop, show on hover with transitions enabled
         dropdown.addEventListener("mouseenter", function (this: Element) {
           if (window.innerWidth < MOBILE_BREAKPOINT) {
@@ -374,8 +438,16 @@ window.initializeNavbar = function () {
   prevIsMobile = window.innerWidth < MOBILE_BREAKPOINT;
   initNavbar();
 
-  // Update the last-initialized path after successful initialization
-  window.__navbarLastPath = currentPath;
+  // Mark this navbar element as initialized
+  if (navbar) {
+    navbar.dataset.navbarReady = "true";
+  }
+
+  // Escape handling is document-level and independent of the swapped DOM
+  if (!navbarKeydownRegistered) {
+    navbarKeydownRegistered = true;
+    document.addEventListener("keydown", handleNavbarEscape);
+  }
 
   // Set up resize listener only once
   if (!navbarInitialized) {

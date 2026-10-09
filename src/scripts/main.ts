@@ -13,13 +13,14 @@ import { initSidebar } from "./sidebar";
 import { addCopyButtons } from "./copyCode";
 import { setupThemeToggle } from "./themeToggle";
 import { initToc } from "./toc";
+import { setSidebarOpen } from "./mobileSidebar";
 import {
   SIDEBAR_MOBILE_BREAKPOINT,
   SCROLL_HIDE_THRESHOLD,
   SIDEBAR_ATTENTION_DELAY_MS,
   RESIZE_DEBOUNCE_MS,
 } from "../utils/uiConstants";
-import { cloneAndReplace, withTransition } from "../utils/domUtils";
+import { cloneAndReplace } from "../utils/domUtils";
 
 // Make this a module
 export {};
@@ -32,7 +33,6 @@ declare global {
 }
 
 // Module-level state for tracking listener registration (persists across View Transitions)
-let lastInitializedPath: string | null = null;
 let sidebarResizeListenerAdded = false;
 let sidebarScrollListenerAdded = false;
 let overlayClickHandler: ((e: Event) => void) | null = null;
@@ -177,16 +177,7 @@ function setupOverlayHandler(): void {
 
     e.preventDefault();
     e.stopPropagation();
-
-    const currentSidebar = document.querySelector(".sidebar") as HTMLElement | null;
-    if (currentSidebar) {
-      withTransition(currentSidebar, "sidebar-transitioning", () => {
-        currentSidebar.classList.remove("mobile-open");
-      });
-    }
-    target.classList.remove("active");
-    target.setAttribute("aria-hidden", "true");
-    document.body.style.overflow = "";
+    setSidebarOpen(false);
   };
 
   document.addEventListener("click", overlayClickHandler, true);
@@ -195,11 +186,7 @@ function setupOverlayHandler(): void {
 /**
  * Set up sidebar toggle button and related handlers.
  */
-function setupSidebarToggle(
-  toggleButton: HTMLElement | null,
-  sidebar: HTMLElement | null,
-  overlay: HTMLElement | null
-): void {
+function setupSidebarToggle(toggleButton: HTMLElement | null, sidebar: HTMLElement | null): void {
   if (!toggleButton || !sidebar || !toggleButton.parentNode) return;
 
   const newToggleButton = cloneAndReplace(toggleButton);
@@ -208,18 +195,7 @@ function setupSidebarToggle(
     e.preventDefault();
     e.stopPropagation();
 
-    withTransition(sidebar, "sidebar-transitioning", () => {
-      sidebar.classList.toggle("mobile-open");
-      if (overlay) {
-        overlay.classList.toggle("active");
-        overlay.setAttribute(
-          "aria-hidden",
-          overlay.classList.contains("active") ? "false" : "true"
-        );
-      }
-    });
-
-    document.body.style.overflow = sidebar.classList.contains("mobile-open") ? "hidden" : "";
+    setSidebarOpen(!sidebar.classList.contains("mobile-open"));
   });
 
   // NOTE: Overlay click handling uses event delegation via setupOverlayHandler()
@@ -229,19 +205,10 @@ function setupSidebarToggle(
   if (!escapeListenerAdded) {
     escapeListenerAdded = true;
     document.addEventListener("keydown", function (e) {
-      // Re-query current DOM elements to handle View Transitions
-      const currentSidebar = document.querySelector(".sidebar") as HTMLElement | null;
-      const currentOverlay = document.getElementById("sidebar-overlay");
-      if (e.key === "Escape" && currentSidebar?.classList.contains("mobile-open")) {
-        withTransition(currentSidebar, "sidebar-transitioning", () => {
-          currentSidebar.classList.remove("mobile-open");
-        });
-
-        if (currentOverlay) {
-          currentOverlay.classList.remove("active");
-          currentOverlay.setAttribute("aria-hidden", "true");
-        }
-        document.body.style.overflow = "";
+      if (e.key !== "Escape" || e.defaultPrevented || document.querySelector("dialog[open]"))
+        return;
+      if (document.querySelector(".sidebar.mobile-open")) {
+        setSidebarOpen(false, { restoreFocus: true });
       }
     });
   }
@@ -252,12 +219,11 @@ function setupSidebarToggle(
  * Attached to window for global access and View Transitions support.
  */
 window.initializeSidebar = function (): void {
-  // Prevent duplicate initialization for the same page
-  const currentPath = window.location.pathname + window.location.search;
-  if (lastInitializedPath === currentPath) {
-    return;
-  }
-  lastInitializedPath = currentPath;
+  // Runs on both DOMContentLoaded and astro:page-load; a marker on the
+  // sidebar (replaced with each new page) prevents initializing it twice
+  const marker = document.querySelector<HTMLElement>(".sidebar") ?? document.body;
+  if (marker.dataset.sidebarReady === "true") return;
+  marker.dataset.sidebarReady = "true";
 
   // Initialize sidebar section toggles, search, and keyboard navigation
   initSidebar();
@@ -266,14 +232,13 @@ window.initializeSidebar = function (): void {
   const toggleButton = document.getElementById("sidebar-toggle");
   const buttonContainer = document.querySelector(".button-container") as HTMLElement | null;
   const sidebar = document.querySelector(".sidebar") as HTMLElement | null;
-  const overlay = document.getElementById("sidebar-overlay");
 
   // Initialize mobile sidebar functionality
   initializeSidebarVisibility(sidebar, buttonContainer);
   addMobileButtonAttention(toggleButton);
   setupResizeHandler();
   setupScrollHandler();
-  setupSidebarToggle(toggleButton, sidebar, overlay);
+  setupSidebarToggle(toggleButton, sidebar);
   setupOverlayHandler();
 
   // Add copy buttons to code blocks
