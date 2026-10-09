@@ -4,7 +4,7 @@ description: Techniques for commenting out the remainder of SQL queries in Maria
 category: Basics
 order: 3
 tags: ["comments", "basics", "query manipulation"]
-lastUpdated: 2025-12-18
+lastUpdated: 2026-10-08
 ---
 
 The following methods can be used to comment out the rest of a query after your injection. MariaDB supports the same comment syntax as MySQL.
@@ -62,11 +62,15 @@ SELECT /* outer /* inner */ 'visible' AS result
 
 ## SQL Comment (-- -)
 
-The SQL standard comment `--` requires a space after the dashes. The `-- -` pattern (double-dash, space, dash) is commonly used because URL encoding can strip trailing spaces.
+In MariaDB, `--` only starts a comment when followed by whitespace or a control character (`%09`, `%01` and so on). The `-- -` pattern (double-dash, space, dash) is commonly used because URL encoding can strip trailing spaces.
 
 ```sql
 SELECT * FROM users WHERE username = '' OR 1=1 -- -' AND password = ''
 ```
+
+Without the space, `--` is two minus signs: `SELECT 1--1` returns `2` (`1 - (-1)`), where PostgreSQL, SQL Server and Oracle return `1`.
+
+`--` and `#` comments end only at a line feed (`%0A`). A carriage return (`%0D`) stays inside the comment, unlike PostgreSQL and SQL Server, where it ends a `--` comment.
 
 ## Nullbyte (;%00)
 
