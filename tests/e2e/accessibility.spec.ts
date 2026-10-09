@@ -244,12 +244,12 @@ test.describe("Accessibility - Keyboard Navigation", () => {
     // No part of the link may peek into the viewport
     await expect.poll(bottomEdge).toBeLessThanOrEqual(0);
 
-    // Once focused it slides fully into view
+    // Once focused it slides fully into view (allowing sub-pixel rounding)
     await page.keyboard.press("Tab");
     await expect(skipLink).toBeFocused();
     await expect
       .poll(() => skipLink.evaluate((el) => el.getBoundingClientRect().top))
-      .toBeGreaterThanOrEqual(0);
+      .toBeGreaterThan(-0.5);
   });
 
   test("Focus order follows logical reading order", async ({ page }) => {

@@ -175,12 +175,12 @@ const extrasEntries = collections?.extrasEntries ?? (await getCollection("extras
         navigation: auto;
       }
 
-      /* Hidden by its own height, so no edge peeks out whatever the font size */
+      /* bottom: 100% puts the link's bottom edge exactly at the top of the page,
+         whatever its height; focus slides it down into view */
       .skip-link {
         position: absolute;
-        top: 0;
+        bottom: 100%;
         left: 0;
-        transform: translateY(-100%);
         background: var(--color-skip-link-bg);
         color: white;
         padding: 8px;
@@ -192,7 +192,7 @@ const extrasEntries = collections?.extrasEntries ?? (await getCollection("extras
       }
 
       .skip-link:focus {
-        transform: translateY(0);
+        transform: translateY(100%);
         outline: 2px solid var(--color-accent);
       }
     </style>
