@@ -102,8 +102,8 @@ const { Content } = await render(entry);
 
   .tag {
     display: inline-block;
-    background-color: var(--color-sidebar-bg);
-    color: var(--color-text-muted);
+    background-color: var(--color-tag-bg);
+    color: var(--color-tag-text);
     padding: 0.25rem 0.75rem;
     border-radius: 9999px;
     font-size: 0.75rem;
@@ -210,5 +210,12 @@ const { Content } = await render(entry);
     height: auto;
     border-radius: 4px;
     margin: 1rem 0;
+  }
+
+  /* Phones: give the text and code more of the narrow screen */
+  @media (width <= 480px) {
+    .markdown-entry {
+      padding: 1.25rem 1rem;
+    }
   }
 </style>

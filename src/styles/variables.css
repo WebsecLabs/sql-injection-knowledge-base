@@ -51,6 +51,8 @@
   --color-code-bg: #f8fafc;
   --color-text-muted: #4a5568;
   --color-text-light: #64748b; /* WCAG AA: 5.4:1 on white, 5.2:1 on #f8fafc, 4.7:1 on #f1f5f9 */
+  --color-tag-bg: #f1f5f9;
+  --color-tag-text: #4a5568; /* 7.1:1 on the tag background */
   --color-border-light: #cbd5e0;
   --color-search-bg: #f8f9fa;
   --color-search-border: #ccc;
@@ -167,6 +169,8 @@
   --color-code-bg: #1e293b;
   --color-text-muted: #94a3b8;
   --color-text-light: #94a3b8;
+  --color-tag-bg: #334155; /* Distinct from card and code surfaces (#1e293b) */
+  --color-tag-text: #cbd5e1; /* 7.6:1 on the tag background */
   --color-border-light: #475569;
   --color-search-bg: #1e293b;
   --color-search-border: #475569;

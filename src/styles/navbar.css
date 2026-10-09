@@ -81,7 +81,8 @@
   display: inline;
 }
 
-.navbar-logo .logo-text-short {
+.navbar-logo .logo-text-short,
+.navbar-logo .logo-text-tiny {
   display: none;
 }
 
@@ -914,6 +915,14 @@
    ============================================ */
 
 @media (width <= 480px) {
+  .navbar-logo .logo-text {
+    font-size: 1.1rem;
+  }
+}
+
+/* Title variants sized to the room left beside the logo and mobile controls
+   (measured: the full title needs ~580px, the short one ~450px) */
+@media (width <= 579px) {
   .navbar-logo .logo-text-full {
     display: none;
   }
@@ -921,9 +930,27 @@
   .navbar-logo .logo-text-short {
     display: inline;
   }
+}
 
-  .navbar-logo .logo-text {
-    font-size: 1.1rem;
+@media (width <= 449px) {
+  .navbar-logo .logo-text-short {
+    display: none;
+  }
+
+  .navbar-logo .logo-text-tiny {
+    display: inline;
+  }
+}
+
+/* Smallest phones: the logo alone, with the title kept for screen readers */
+@media (width <= 379px) {
+  .navbar-logo .logo-text-tiny {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
   }
 }
 
