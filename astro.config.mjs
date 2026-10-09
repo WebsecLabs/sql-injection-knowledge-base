@@ -3,6 +3,7 @@ import sitemap from "@astrojs/sitemap";
 import { satteri } from "@astrojs/markdown-satteri";
 import { hastBasePath } from "./src/plugins/hast-base-path.mjs";
 import { contentGuardIntegration, hastContentGuard } from "./src/plugins/hast-content-guard.mjs";
+import { hastTableWrapper } from "./src/plugins/hast-table-wrapper.mjs";
 import { cspIntegration } from "./src/plugins/csp-integration.mjs";
 import { linkCheckIntegration } from "./src/plugins/link-check-integration.mjs";
 import {
@@ -112,7 +113,7 @@ export default defineConfig({
     processor: satteri({
       // Parse raw HTML into elements so plugins can inspect and rewrite it
       features: { rawHtml: true },
-      hastPlugins: [hastContentGuard, hastBasePath({ base })],
+      hastPlugins: [hastContentGuard, hastBasePath({ base }), hastTableWrapper()],
     }),
     shikiConfig: {
       themes: {

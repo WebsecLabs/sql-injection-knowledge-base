@@ -7,8 +7,6 @@ tags: ["conditional logic", "if", "case", "boolean"]
 lastUpdated: 2025-12-18
 ---
 
-## Conditional Statements
-
 Conditional statements are crucial for blind SQL injection techniques, allowing attackers to extract information one bit at a time by analyzing the application's response to different conditions.
 
 ## IF() Function

@@ -1,13 +1,15 @@
 ---
 interface Props {
   defaultTab?: string;
+  /** Accessible name for the tab list */
+  label: string;
 }
 
-const { defaultTab } = Astro.props;
+const { defaultTab, label } = Astro.props;
 ---
 
 <div class="tabs" data-default-tab={defaultTab}>
-  <ul class="tab-list" role="tablist">
+  <ul class="tab-list" role="tablist" aria-label={label}>
     <slot name="tab-list" />
   </ul>
 

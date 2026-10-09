@@ -7,15 +7,13 @@ tags: ["password cracking", "authentication", "hash breaking"]
 lastUpdated: 2025-12-18
 ---
 
-## Password Cracking
-
 After extracting MariaDB password hashes through SQL injection, the next step is often to attempt to crack these hashes to obtain cleartext passwords. This knowledge can be useful for privilege escalation, lateral movement, or accessing other systems where credentials might be reused.
 
-### MariaDB Hash Types
+## MariaDB Hash Types
 
 > **Note:** See [Password Hashing](/mariadb/password-hashing) for detailed information on hash formats, algorithms, and how MariaDB generates password hashes.
 
-### Cracking Tools
+## Cracking Tools
 
 Several tools can be used to crack MariaDB password hashes:
 
@@ -26,7 +24,7 @@ Several tools can be used to crack MariaDB password hashes:
 | Hydra           | Online password cracker          | For direct MariaDB authentication |
 | Medusa          | Online password cracker          | For direct MariaDB authentication |
 
-### Hashcat Commands for MariaDB Hashes
+## Hashcat Commands for MariaDB Hashes
 
 ```bash
 # MySQL/MariaDB sha1(sha1(pass)) (hash mode 300)
@@ -37,7 +35,7 @@ hashcat -m 300 -a 0 mariadb_hashes.txt wordlist.txt
 
 > **Note:** Mode 300 is the standard mode for cracking stored MariaDB/MySQL password hashes. The leading asterisk (`*`) must be stripped before cracking. Mode 11200 exists for MySQL CRAM (Challenge-Response Authentication) captured from network traffic, which is a different use case requiring a challenge-response pair in the format `$mysqlna$challenge*response`.
 
-### John the Ripper Commands
+## John the Ripper Commands
 
 ```bash
 # MariaDB pre-4.1 (if present)
@@ -47,13 +45,13 @@ john --format=mysql mariadb_old_hashes.txt
 john --format=mysql-sha1 mariadb_hashes.txt
 ```
 
-### Hash Extraction Queries
+## Hash Extraction Queries
 
 Before cracking, you need to extract the hashes from the database.
 
 > **Note:** See [Password Hashing](/mariadb/password-hashing) for comprehensive extraction queries and techniques.
 
-#### mysql.user Table Structure
+### mysql.user Table Structure
 
 ```sql
 -- Check if mysql.user table is accessible
@@ -69,7 +67,7 @@ AND table_name = 'user'
 AND column_name IN ('authentication_string', 'Password')
 ```
 
-#### Extract User and Hash Data
+### Extract User and Hash Data
 
 ```sql
 -- Query user and host from mysql.user
@@ -91,7 +89,7 @@ SELECT
 -- Returns: Two different hashes (ensures hash function is working correctly)
 ```
 
-### Authentication Plugin Detection
+## Authentication Plugin Detection
 
 Understanding which authentication plugin is used helps determine the hash cracking approach.
 
@@ -121,9 +119,9 @@ FROM information_schema.plugins
 WHERE plugin_type = 'AUTHENTICATION'
 ```
 
-### Attack Strategies
+## Attack Strategies
 
-#### Dictionary Attack
+### Dictionary Attack
 
 Using a wordlist of common passwords:
 
@@ -131,7 +129,7 @@ Using a wordlist of common passwords:
 hashcat -m 300 -a 0 mariadb_hashes.txt rockyou.txt
 ```
 
-#### Rule-based Attack
+### Rule-based Attack
 
 Applying transformations to dictionary words:
 
@@ -139,7 +137,7 @@ Applying transformations to dictionary words:
 hashcat -m 300 -a 0 mariadb_hashes.txt rockyou.txt -r rules/best64.rule
 ```
 
-#### Brute Force Attack
+### Brute Force Attack
 
 Trying all possible combinations of characters:
 
@@ -148,7 +146,7 @@ Trying all possible combinations of characters:
 hashcat -m 300 -a 3 mariadb_hashes.txt ?l?l?l?l?l?l?l?l
 ```
 
-#### Mask Attack
+### Mask Attack
 
 Targeted brute force using patterns:
 
@@ -157,7 +155,7 @@ Targeted brute force using patterns:
 hashcat -m 300 -a 3 mariadb_hashes.txt ?l?l?l?l?l?l?d?d?d
 ```
 
-#### Hybrid Attack
+### Hybrid Attack
 
 Combining dictionary words with patterns:
 
@@ -169,7 +167,7 @@ hashcat -m 300 -a 6 mariadb_hashes.txt rockyou.txt ?d?d?d?d
 hashcat -m 300 -a 7 ?d?d?d?d mariadb_hashes.txt rockyou.txt
 ```
 
-### Wordlist Resources
+## Wordlist Resources
 
 Some useful wordlist sources:
 
@@ -180,7 +178,7 @@ Some useful wordlist sources:
 
 > **Legal and Ethical Considerations:** Some wordlist sources (particularly those containing "real-world password leaks") may include data from unauthorized breaches. The use of such lists may have legal implications depending on your jurisdiction. Always verify the legality of using specific wordlists in your region, use them only for authorized security testing with proper documentation, and consider using curated or synthetically generated datasets when possible.
 
-### Common Default Passwords
+## Common Default Passwords
 
 Many MariaDB installations use default or weak passwords:
 
@@ -192,7 +190,7 @@ Many MariaDB installations use default or weak passwords:
 | user     | user, password                   |
 | test     | test, password                   |
 
-#### Common Password Pattern Tests
+### Common Password Pattern Tests
 
 ```sql
 -- Generate hash for empty password (returns empty string)
@@ -218,7 +216,7 @@ SELECT
 -- All three are different - passwords ARE case-sensitive
 ```
 
-### Special Considerations for MariaDB Passwords
+## Special Considerations for MariaDB Passwords
 
 1. **Salt Absence**: MariaDB hashes do not use a per-user salt, making them vulnerable to rainbow table attacks.
 
@@ -228,7 +226,7 @@ SELECT
 
 4. **mysql_native_password**: MariaDB uses this as default, making hashes compatible with MySQL 5.7 cracking techniques.
 
-### Hash Format Manipulation
+## Hash Format Manipulation
 
 Cracking tools often require specific hash formats. Use SQL to prepare hashes.
 
@@ -253,11 +251,11 @@ SELECT GROUP_CONCAT(
 FROM (SELECT 1 AS id UNION SELECT 2 UNION SELECT 3) AS nums
 ```
 
-### Hash Export Formats
+## Hash Export Formats
 
 Different tools require different hash formats.
 
-#### Hashcat Mode 300 (No Asterisk)
+### Hashcat Mode 300 (No Asterisk)
 
 ```sql
 -- Format for Hashcat -m 300 (lowercase, no asterisk)
@@ -265,7 +263,7 @@ SELECT LOWER(SUBSTRING(PASSWORD('test'), 2)) AS hashcat_format
 -- Returns: '94bdcebe19083ce2a1f959fd02f964c7af4cfc29'
 ```
 
-#### John the Ripper Format
+### John the Ripper Format
 
 John the Ripper accepts the full hash with the asterisk prefix using `--format=mysql-sha1`:
 
@@ -289,13 +287,13 @@ FROM (
 ) AS hashes
 ```
 
-### Understanding Double SHA1 (mysql_native_password)
+## Understanding Double SHA1 (mysql_native_password)
 
 The `mysql_native_password` algorithm uses SHA1(SHA1(password)). This double SHA1 is why cracking tools need to perform two SHA1 rounds per guess.
 
 > **Note:** See [Password Hashing](/mariadb/password-hashing) for detailed information on the hash algorithm and manual hash generation.
 
-### Privilege Requirements for Hash Extraction
+## Privilege Requirements for Hash Extraction
 
 Extracting password hashes requires specific privileges.
 
@@ -322,7 +320,7 @@ AND privilege_type = 'FILE'
 -- granted with wildcard hosts (e.g., 'user'@'%'). SHOW GRANTS is more reliable.
 ```
 
-### Hash Length Validation
+## Hash Length Validation
 
 Use hash length to identify the algorithm and validate format.
 
@@ -347,7 +345,7 @@ SELECT PASSWORD('test') REGEXP '^\\*[0-9A-Fa-f]{40}$' AS is_valid
 -- Returns: 1
 ```
 
-### MariaDB Authentication Features
+## MariaDB Authentication Features
 
 MariaDB supports multiple authentication plugins, but only `mysql_native_password` produces hashes that can be cracked offline.
 
@@ -361,11 +359,11 @@ MariaDB supports multiple authentication plugins, but only `mysql_native_passwor
 | gssapi                | No              |
 | pam                   | No              |
 
-### Password Functions
+## Password Functions
 
 > **Note:** See [Password Hashing](/mariadb/password-hashing) for comprehensive documentation on PASSWORD(), SHA1(), SHA2(), MD5(), and other hash generation functions.
 
-### Practical Example Workflow
+## Practical Example Workflow
 
 1. **Extract hashes**:
 
@@ -401,14 +399,14 @@ MariaDB supports multiple authentication plugins, but only `mysql_native_passwor
    hashcat -m 300 mariadb_hashes_clean.txt --show
    ```
 
-### Ethical and Legal Considerations
+## Ethical and Legal Considerations
 
 - Only crack password hashes of systems you have explicit permission to test
 - Maintain proper documentation and authorization
 - Report findings responsibly
 - Do not use cracked passwords for unauthorized access
 
-### Mitigation Strategies
+## Mitigation Strategies
 
 To protect against password cracking:
 

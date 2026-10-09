@@ -1074,3 +1074,35 @@ test.describe("Navbar - Mobile Extras Dropdown", () => {
       .toBe(true);
   });
 });
+
+test.describe("Navbar - Escape key", () => {
+  test("closes an open desktop dropdown and returns focus to its toggle", async ({ page }) => {
+    await page.setViewportSize({ width: 1920, height: 1080 });
+    await page.goto("./");
+
+    const toggle = page.locator("#databases-dropdown-toggle");
+    await toggle.click();
+    await expect(toggle).toHaveAttribute("aria-expanded", "true");
+    await page.locator(".database-section-header").first().focus();
+
+    await page.keyboard.press("Escape");
+
+    await expect(toggle).toHaveAttribute("aria-expanded", "false");
+    await expect(toggle).toBeFocused();
+  });
+
+  test("closes the mobile menu and returns focus to the menu button", async ({ page }) => {
+    await page.setViewportSize({ width: 375, height: 667 });
+    await page.goto("./");
+
+    const menuButton = page.locator("#mobile-toggle");
+    await menuButton.click();
+    await expect(page.locator("#navbar-menu")).toHaveClass(/active/);
+
+    await page.keyboard.press("Escape");
+
+    await expect(page.locator("#navbar-menu")).not.toHaveClass(/active/);
+    await expect(menuButton).toHaveAttribute("aria-expanded", "false");
+    await expect(menuButton).toBeFocused();
+  });
+});

@@ -1,8 +1,8 @@
 import { test, expect, type Page } from "@playwright/test";
 import AxeBuilder from "@axe-core/playwright";
 
-// WCAG 2.1 AA tags for axe-core
-const WCAG_AA_TAGS = ["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"];
+// WCAG 2.2 AA tags for axe-core (2.2 adds no new level A rules to axe)
+const WCAG_AA_TAGS = ["wcag2a", "wcag2aa", "wcag21a", "wcag21aa", "wcag22aa"];
 
 // Pages to test for comprehensive coverage
 const PAGES_TO_TEST = [
@@ -519,5 +519,64 @@ test.describe("Accessibility - Content Pages", () => {
     await expect(preElements.first()).toBeVisible();
     await expect(preElements.first().locator("code")).toHaveCount(1);
     await expect(preElements.first()).toHaveAttribute("tabindex", "0");
+  });
+});
+
+test.describe("Accessibility - Overlays", () => {
+  test("Search modal with results has no violations", async ({ page }) => {
+    await page.setViewportSize(VIEWPORTS.desktop);
+    await page.goto("./");
+
+    await page.keyboard.press("Control+k");
+    await page.locator("#search-modal-input").fill("union");
+    await expect(page.locator("#search-modal-results [role='option']").first()).toBeVisible({
+      timeout: 10000,
+    });
+
+    const results = await runAxeAnalysis(page);
+    if (results.violations.length > 0) {
+      console.log(`\nViolations with search modal open:\n${formatViolations(results.violations)}`);
+    }
+    expect(results.violations).toHaveLength(0);
+  });
+
+  test("Open mobile sidebar has no violations", async ({ page }) => {
+    await page.setViewportSize(VIEWPORTS.mobile);
+    await page.goto("mysql/intro/");
+
+    await page.locator("#sidebar-toggle").click();
+    await expect(page.locator(".sidebar")).toHaveClass(/mobile-open/);
+
+    const results = await runAxeAnalysis(page);
+    if (results.violations.length > 0) {
+      console.log(`\nViolations with sidebar open:\n${formatViolations(results.violations)}`);
+    }
+    expect(results.violations).toHaveLength(0);
+  });
+});
+
+test.describe("Accessibility - Reflow (WCAG 1.4.10)", () => {
+  // Pages with wide tables and long code samples
+  const REFLOW_PAGES = ["mysql/timing/", "mssql/default-databases/", "postgresql/intro/"];
+
+  for (const path of REFLOW_PAGES) {
+    test(`${path} does not scroll horizontally at 320px`, async ({ page }) => {
+      await page.setViewportSize({ width: 320, height: 640 });
+      await page.goto(path);
+
+      const overflow = await page.evaluate(
+        () => document.documentElement.scrollWidth - document.documentElement.clientWidth
+      );
+      expect(overflow).toBeLessThanOrEqual(0);
+    });
+  }
+
+  test("wide tables scroll inside a focusable, named region", async ({ page }) => {
+    await page.setViewportSize({ width: 320, height: 640 });
+    await page.goto("mysql/timing/");
+
+    const region = page.getByRole("region", { name: "MySQL Sleep Functions (table)" });
+    await expect(region).toHaveAttribute("tabindex", "0");
+    await expect(region.locator("table")).toBeVisible();
   });
 });

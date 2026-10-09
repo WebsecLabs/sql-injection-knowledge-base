@@ -186,6 +186,20 @@ test.describe("Search Modal - Mobile", () => {
     const results = page.locator("#search-modal-results [role='option']");
     await expect(results.first()).toBeVisible({ timeout: LONG_TIMEOUT_MS });
   });
+
+  test("has a visible Cancel button that closes the modal", async ({ page }) => {
+    await page.locator("#mobile-search-trigger").click();
+    const modal = page.locator("#search-modal");
+    await expect(modal).toBeVisible();
+
+    const close = page.getByRole("button", { name: "Close search" });
+    await expect(close).toBeVisible();
+    await expect(close).toContainText("Cancel");
+    await close.click();
+
+    await expect(modal).not.toHaveAttribute("open", { timeout: MEDIUM_TIMEOUT_MS });
+    await expect(modal).not.toBeVisible();
+  });
 });
 
 test.describe("Navbar Search Trigger", () => {

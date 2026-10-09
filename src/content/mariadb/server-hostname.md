@@ -7,8 +7,6 @@ tags: ["hostname", "server information", "fingerprinting"]
 lastUpdated: 2025-12-18
 ---
 
-## Server Hostname
-
 Retrieving the server hostname and system information can provide valuable intelligence about the target environment during SQL injection testing. This information can help with lateral movement or identifying specific servers in a network.
 
 ```sql

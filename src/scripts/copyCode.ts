@@ -6,6 +6,7 @@
  */
 
 import { COPY_FEEDBACK_DURATION_MS } from "../utils/uiConstants";
+import { announce } from "../utils/announce";
 
 /**
  * Add copy buttons to all code blocks on the page.
@@ -140,6 +141,8 @@ function legacyCopy(text: string, button: HTMLElement): void {
 function showCopyFeedback(button: HTMLElement, status: "success" | "error"): void {
   button.textContent = status === "success" ? "Copied!" : "Error!";
   button.classList.add(status);
+  // The button's aria-label stays "Copy code", so announce the outcome
+  announce(status === "success" ? "Code copied to clipboard" : "Copy failed");
 
   setTimeout(() => {
     // Check element is still in DOM before modifying (View Transitions may have removed it)

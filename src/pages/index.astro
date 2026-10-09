@@ -117,7 +117,7 @@ const searchUrl = toCanonicalUrl(`${baseUrl}search/`, baseUrl, CANONICAL_URL);
   </div>
 
   <div class="database-tabs" transition:animate="slide">
-    <Tabs defaultTab="mysql">
+    <Tabs defaultTab="mysql" label="Knowledge base sections">
       <Fragment slot="tab-list">
         {COLLECTION_TYPES.map((type, index) => (
           <li role="presentation">

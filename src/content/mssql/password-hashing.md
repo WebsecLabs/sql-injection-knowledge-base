@@ -7,18 +7,16 @@ tags: ["password hashing", "authentication", "security"]
 lastUpdated: 2025-03-15
 ---
 
-## Password Hashing
-
 Microsoft SQL Server uses various password hashing algorithms depending on the version and authentication method. Understanding these mechanisms is important for security assessment and potential password cracking during penetration testing.
 
-### SQL Server Authentication Types
+## SQL Server Authentication Types
 
 SQL Server supports two primary authentication modes:
 
 1. **Windows Authentication**: Uses Windows credentials, no passwords stored in SQL Server
 2. **SQL Server Authentication**: Uses username/password stored within SQL Server
 
-### Password Storage Evolution
+## Password Storage Evolution
 
 Password storage in SQL Server has evolved over time:
 
@@ -30,7 +28,7 @@ Password storage in SQL Server has evolved over time:
 | SQL Server 2017+            | Additional encryption | Password encryption at rest    |
 | Azure SQL                   | SHA-256 or bcrypt     | Cloud-specific implementations |
 
-### SQL Server Password Hash Locations
+## SQL Server Password Hash Locations
 
 SQL Server stores password hashes in several system tables:
 
@@ -45,11 +43,11 @@ SELECT name, password FROM sysxlogins;
 SELECT name, password FROM master.dbo.syslogins;
 ```
 
-### Password Hash Format
+## Password Hash Format
 
 SQL Server password hashes have specific formats:
 
-#### SQL Server 2000 and Earlier
+### SQL Server 2000 and Earlier
 
 ```plaintext
 0x0100[16-byte hash]
@@ -57,7 +55,7 @@ SQL Server password hashes have specific formats:
 
 Example: `0x0100B58E58130D2B6FF57F70737D3978`
 
-#### SQL Server 2005 and Later
+### SQL Server 2005 and Later
 
 ```plaintext
 0x0200[SHA-1 hash of salt+password][salt]
@@ -71,7 +69,7 @@ The format consists of:
 - First 20 bytes: SHA-1 hash of (password + salt)
 - Remaining bytes: The salt value
 
-### SQL Server 2012+ Format
+## SQL Server 2012+ Format
 
 ```plaintext
 0x0200[SHA-512 hash][salt]
@@ -79,7 +77,7 @@ The format consists of:
 
 The salt is typically 32 bytes, and the resulting hash is significantly longer.
 
-### Extracting Password Hashes
+## Extracting Password Hashes
 
 With appropriate permissions, password hashes can be extracted:
 
@@ -94,7 +92,7 @@ SELECT name, CAST(password_hash AS varbinary(256)) FROM sys.sql_logins;
 SELECT name, CONVERT(varchar(max), password_hash, 2) FROM sys.sql_logins;
 ```
 
-### SQL Server Authentication Process
+## SQL Server Authentication Process
 
 When a user attempts to log in:
 
@@ -104,7 +102,7 @@ When a user attempts to log in:
 4. Compares the computed hash with the stored hash
 5. Grants access if they match
 
-### Password Policy Enforcement
+## Password Policy Enforcement
 
 SQL Server can enforce Windows password policies:
 
@@ -126,7 +124,7 @@ Policies can include:
 - Password history
 - Maximum password age
 
-### SQL Server Password Salting
+## SQL Server Password Salting
 
 SQL Server uses salting to prevent dictionary and rainbow table attacks:
 
@@ -143,7 +141,7 @@ User2: Password "Password123" + Salt "XYZABC" = Hash2
 
 Even though both users have the same password, the stored hashes are different.
 
-### Practical SQL Injection Examples
+## Practical SQL Injection Examples
 
 If you have SQL injection access to a database, you might be able to extract hashes:
 
@@ -158,7 +156,7 @@ AND 1=CONVERT(int, (SELECT TOP 1 name + ':' + CAST(password_hash AS nvarchar(max
 AND ASCII(SUBSTRING((SELECT TOP 1 CAST(password_hash AS nvarchar(max)) FROM sys.sql_logins), 1, 1)) > 65--
 ```
 
-### Detecting Weak Password Implementations
+## Detecting Weak Password Implementations
 
 Some signs of weak password storage:
 
@@ -173,7 +171,7 @@ To check password policy enforcement:
 SELECT name FROM sys.sql_logins WHERE is_policy_checked = 0;
 ```
 
-### Password Storage Best Practices
+## Password Storage Best Practices
 
 To secure SQL Server passwords:
 
@@ -193,7 +191,7 @@ CREATE LOGIN SecureUser WITH PASSWORD = 'C0mpl3xP@$$w0rd!',
     DEFAULT_DATABASE = master;
 ```
 
-### Mitigations Against Hash Theft
+## Mitigations Against Hash Theft
 
 To protect against password hash theft:
 

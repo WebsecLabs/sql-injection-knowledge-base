@@ -7,8 +7,6 @@ tags: ["stacked queries", "multiple statements", "advanced injection"]
 lastUpdated: 2025-12-18
 ---
 
-## Stacked Queries
-
 Stacked queries (also known as query stacking or multi-queries) allow attackers to execute multiple SQL statements in a single injection. This technique significantly extends the capabilities of SQL injection attacks beyond simple data extraction.
 
 ## Basic Syntax

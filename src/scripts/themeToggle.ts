@@ -34,18 +34,32 @@ function storeTheme(theme: string): void {
  * The classes on <html> reflect the theme being displayed; with neither
  * class set, the page follows the system preference.
  */
+function isDarkTheme(): boolean {
+  const html = document.documentElement;
+  return (
+    html.classList.contains("dark") ||
+    (!html.classList.contains("light") && window.matchMedia("(prefers-color-scheme: dark)").matches)
+  );
+}
+
+/** Reflect the displayed theme on the "Dark theme" toggle buttons */
+function syncTogglePressed(): void {
+  const pressed = String(isDarkTheme());
+  for (const id of ["theme-toggle", "mobile-theme-toggle"]) {
+    document.getElementById(id)?.setAttribute("aria-pressed", pressed);
+  }
+}
+
 function toggleTheme(): void {
   const html = document.documentElement;
-  const isDark =
-    html.classList.contains("dark") ||
-    (!html.classList.contains("light") &&
-      window.matchMedia("(prefers-color-scheme: dark)").matches);
+  const isDark = isDarkTheme();
 
   // Toggle to the opposite theme
   const newTheme = isDark ? "light" : "dark";
   html.classList.remove(isDark ? "dark" : "light");
   html.classList.add(newTheme);
   storeTheme(newTheme);
+  syncTogglePressed();
 }
 
 /**
@@ -69,6 +83,12 @@ export function initializeThemeToggle(): void {
   if (mobileThemeToggle) {
     mobileThemeToggle.addEventListener("click", toggleTheme, { signal });
   }
+
+  // While following the system theme, keep the pressed state in step with it
+  window
+    .matchMedia("(prefers-color-scheme: dark)")
+    .addEventListener?.("change", syncTogglePressed, { signal });
+  syncTogglePressed();
 }
 
 // Module-level flag to prevent duplicate event listener registration

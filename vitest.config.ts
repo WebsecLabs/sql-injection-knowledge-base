@@ -6,6 +6,10 @@ export default defineConfig({
     alias: {
       // Mock astro:content virtual module for unit tests
       "astro:content": new URL("./tests/mocks/astro-content.ts", import.meta.url).pathname,
+      "astro:transitions/client": new URL(
+        "./tests/mocks/astro-transitions-client.ts",
+        import.meta.url
+      ).pathname,
     },
   },
   test: {

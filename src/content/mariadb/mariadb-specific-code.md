@@ -7,8 +7,6 @@ tags: ["mariadb specific", "special syntax", "version compatibility"]
 lastUpdated: 2025-12-18
 ---
 
-## MariaDB-specific Code
-
 MariaDB provides several unique syntax features and functions that can be leveraged in SQL injection attacks. While MariaDB maintains strong MySQL compatibility, it also includes exclusive features.
 
 ## Version-Specific Comments

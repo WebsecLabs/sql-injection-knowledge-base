@@ -39,6 +39,9 @@ vi.mock("/pagefind/pagefind.js", () => ({
   search: mockPagefindSearch,
 }));
 
+const mockNavigate = vi.fn();
+vi.mock("astro:transitions/client", () => ({ navigate: mockNavigate }));
+
 // ---------------------------------------------------------------------------
 // DOM setup helper
 // ---------------------------------------------------------------------------
@@ -102,6 +105,10 @@ function setupSearchModalDOM(): void {
   resultsList.id = "search-modal-results";
   resultsList.setAttribute("role", "listbox");
   container.appendChild(resultsList);
+
+  const closeButton = document.createElement("button");
+  closeButton.className = "search-modal-close";
+  container.appendChild(closeButton);
 
   const emptyEl = document.createElement("div");
   emptyEl.id = "search-modal-empty";
@@ -188,6 +195,7 @@ describe("searchModal", () => {
     Element.prototype.scrollIntoView = vi.fn();
 
     mockPagefindSearch.mockReset();
+    mockNavigate.mockReset();
     mockPagefindInit.mockReset().mockResolvedValue(undefined);
 
     await initModule();
@@ -688,23 +696,12 @@ describe("searchModal", () => {
         new KeyboardEvent("keydown", { key: "ArrowDown", bubbles: true, cancelable: true })
       );
 
-      // Mock location.href setter
-      const hrefSetter = vi.fn();
-      Object.defineProperty(window, "location", {
-        value: { href: "" },
-        writable: true,
-        configurable: true,
-      });
-      Object.defineProperty(window.location, "href", {
-        set: hrefSetter,
-        configurable: true,
-      });
-
       input.dispatchEvent(
         new KeyboardEvent("keydown", { key: "Enter", bubbles: true, cancelable: true })
       );
 
-      expect(hrefSetter).toHaveBeenCalledWith("/a");
+      // Navigates with the client router rather than a full page load
+      expect(mockNavigate).toHaveBeenCalledWith("/a");
     });
 
     it("ArrowDown/Up prevents default", async () => {
@@ -749,9 +746,7 @@ describe("searchModal", () => {
 
       const emptyEl = document.getElementById("search-modal-empty")!;
       expect(emptyEl.hidden).toBe(false);
-      // The error message depends on pagefindLoadError state. Since the mock
-      // import succeeds (init doesn't fail), the error is from search() itself,
-      // so we get "Search failed. Please try again."
+      // The index loaded, so the failure came from search() itself
       expect(emptyEl.textContent).toBe("Search failed. Please try again.");
     });
 
@@ -768,7 +763,97 @@ describe("searchModal", () => {
       await vi.runAllTimersAsync();
 
       const srStatus = document.getElementById("search-modal-sr-status")!;
-      expect(srStatus.textContent).toBe("Search failed.");
+      expect(srStatus.textContent).toBe("Search failed. Please try again.");
+    });
+
+    it("shows the no-results text again after an earlier error", async () => {
+      mockPagefindSearch.mockImplementation((query: string) =>
+        query === "first" ? Promise.reject(new Error("fail")) : Promise.resolve({ results: [] })
+      );
+
+      document.getElementById("search-trigger")!.click();
+      const input = document.getElementById("search-modal-input") as HTMLInputElement;
+      const emptyEl = document.getElementById("search-modal-empty")!;
+
+      input.value = "first";
+      input.dispatchEvent(new Event("input"));
+      await vi.runAllTimersAsync();
+      expect(emptyEl.textContent).toBe("Search failed. Please try again.");
+
+      input.value = "second";
+      input.dispatchEvent(new Event("input"));
+      await vi.runAllTimersAsync();
+      expect(emptyEl.textContent).toBe("No results found.");
+    });
+  });
+
+  // -------------------------------------------------------------------------
+  // Out-of-order responses
+  // -------------------------------------------------------------------------
+
+  describe("out-of-order responses", () => {
+    it("never renders results from a search that a newer one replaced", async () => {
+      const slowResolvers: ((value: unknown) => void)[] = [];
+      mockPagefindSearch.mockImplementation((query: string) =>
+        query === "old"
+          ? new Promise((resolve) => slowResolvers.push(resolve))
+          : Promise.resolve({
+              results: [makeMockResult({ url: "/new", title: "New", excerpt: "e" })],
+            })
+      );
+
+      document.getElementById("search-trigger")!.click();
+      const input = document.getElementById("search-modal-input") as HTMLInputElement;
+
+      input.value = "old";
+      input.dispatchEvent(new Event("input"));
+      await vi.advanceTimersByTimeAsync(200);
+
+      input.value = "new";
+      input.dispatchEvent(new Event("input"));
+      await vi.runAllTimersAsync();
+
+      for (const resolve of slowResolvers) {
+        resolve({ results: [makeMockResult({ url: "/old", title: "Old", excerpt: "e" })] });
+      }
+      await vi.runAllTimersAsync();
+
+      const items = document.querySelectorAll<HTMLElement>("#search-modal-results li");
+      expect([...items].map((item) => item.dataset.url)).toEqual(["/new"]);
+    });
+  });
+
+  // -------------------------------------------------------------------------
+  // Close button
+  // -------------------------------------------------------------------------
+
+  describe("reopening during the close animation", () => {
+    it("keeps the modal open with a fresh search", async () => {
+      document.getElementById("search-trigger")!.click();
+      const dialog = document.getElementById("search-modal") as HTMLDialogElement;
+      const input = document.getElementById("search-modal-input") as HTMLInputElement;
+      input.value = "union";
+
+      document.querySelector<HTMLButtonElement>(".search-modal-close")!.click();
+      document.getElementById("search-trigger")!.click();
+      await vi.runAllTimersAsync();
+
+      expect(dialog.open).toBe(true);
+      expect(dialog.classList.contains("is-open")).toBe(true);
+      expect(input.value).toBe("");
+    });
+  });
+
+  describe("close button", () => {
+    it("closes the modal", async () => {
+      document.getElementById("search-trigger")!.click();
+      const dialog = document.getElementById("search-modal") as HTMLDialogElement;
+      expect(dialog.open).toBe(true);
+
+      document.querySelector<HTMLButtonElement>(".search-modal-close")!.click();
+      await vi.runAllTimersAsync();
+
+      expect(dialog.open).toBe(false);
     });
   });
 
@@ -957,22 +1042,10 @@ describe("searchModal", () => {
       await vi.advanceTimersByTimeAsync(200);
       await vi.runAllTimersAsync();
 
-      // Mock location.href
-      const hrefSetter = vi.fn();
-      Object.defineProperty(window, "location", {
-        value: { href: "" },
-        writable: true,
-        configurable: true,
-      });
-      Object.defineProperty(window.location, "href", {
-        set: hrefSetter,
-        configurable: true,
-      });
-
       const resultItem = document.querySelector(".search-result-item") as HTMLElement;
       resultItem.click();
 
-      expect(hrefSetter).toHaveBeenCalledWith("/mysql/test");
+      expect(mockNavigate).toHaveBeenCalledWith("/mysql/test");
     });
   });
 

