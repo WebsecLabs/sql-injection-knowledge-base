@@ -12,6 +12,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `handleOpacityTransition()` utility in `domUtils.ts` for DRY transition handling
 - `DROPDOWN_TRANSITION_TIMEOUT_MS` constant in `uiConstants.ts` (eliminates magic number 250)
 - Unit tests for `collectionLoader.ts` with mocked `astro:content`
+- Oracle Fuzzing and Obfuscation article (whitespace bytes, comments as separators, alternative quoting), and `DBMS_XMLGEN.GETXML` for dumping a whole query in one column
 
 ### Changed
 
@@ -60,6 +61,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Oracle and SQL Server articles corrected after running every example against Oracle 23ai and SQL Server 2022: wrong column and view names, functions that do not exist, MySQL syntax, procedures used where only functions work, blind payloads that could never fire, outdated version and privilege claims, and examples that ignored their injection context
+- Comment articles now cover how each database ends a `--` comment (a carriage return ends it on PostgreSQL and SQL Server only) and that `--1` is subtraction on MySQL and MariaDB; vertical tab is whitespace in PostgreSQL 17+
+- MySQL operator precedence listed `XOR` below `OR`; `||` and `&&` are deprecated on MySQL 8.0+ and become concatenation under `PIPES_AS_CONCAT`, `ANSI` or MariaDB's `ORACLE` mode; SQL Server 2025 adds `||` for concatenation only, which also identifies the version, and `QUOTED_IDENTIFIER OFF` makes double quotes delimit strings. SQL Server 2025 version, hash format and PBKDF2 iteration claims were checked on 2025 CU9
 - The table of contents stopped responding after navigating to a page without one and back
 - Full search page (`/search`) failed to load results when the site is served under a base path
 - Theme toggle no longer breaks when browser storage is unavailable
