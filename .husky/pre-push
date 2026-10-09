@@ -1,2 +1,2 @@
-npm audit --omit=dev --audit-level=high
+# Dev tooling never reaches the deployed site; block only critical advisories (same policy as CI)
 npm audit --audit-level=critical

@@ -28,47 +28,42 @@ const sortedCategories = getSortedCategories(entriesByCategory);
 <section class="entry-list">
   <h2 class="collection-title">{title}</h2>
 
-  {
-    sortedCategories.map((category) => (
-      <div class="category-section">
-        <h3 class="category-title">{category}</h3>
-        <ul class="entry-grid">
-          {entriesByCategory[category].map((entry) => (
-            <li class="entry-item">
-              <a
-                href={getEntryURL(collectionType, entry.id, import.meta.env.BASE_URL)}
-                class="entry-card"
-                transition:name={`card-${collectionType}-${entry.id}`}
-              >
-                <h4 class="entry-title" transition:name={`title-${collectionType}-${entry.id}`}>
-                  {entry.data.title}
-                </h4>
-                {entry.data.description && (
-                  <p
-                    class="entry-description"
-                    transition:name={`desc-${collectionType}-${entry.id}`}
-                  >
-                    {entry.data.description}
-                  </p>
-                )}
+  {sortedCategories.map((category) => (
+    <div class="category-section">
+      <h3 class="category-title">{category}</h3>
+      <ul class="entry-grid">
+        {entriesByCategory[category].map((entry) => (
+          <li class="entry-item">
+            <a
+              href={getEntryURL(collectionType, entry.id, import.meta.env.BASE_URL)}
+              class="entry-card"
+              transition:name={`card-${collectionType}-${entry.id}`}
+            >
+              <h4 class="entry-title" transition:name={`title-${collectionType}-${entry.id}`}>
+                {entry.data.title}
+              </h4>
+              {entry.data.description && (
+                <p class="entry-description" transition:name={`desc-${collectionType}-${entry.id}`}>
+                  {entry.data.description}
+                </p>
+              )}
 
-                {entry.data.tags && entry.data.tags.length > 0 && (
-                  <div class="entry-tags" transition:animate="fade">
-                    {entry.data.tags.slice(0, 3).map((tag) => (
-                      <span class="tag">{tag}</span>
-                    ))}
-                    {entry.data.tags.length > 3 && (
-                      <span class="tag-more">+{entry.data.tags.length - 3}</span>
-                    )}
-                  </div>
-                )}
-              </a>
-            </li>
-          ))}
-        </ul>
-      </div>
-    ))
-  }
+              {entry.data.tags && entry.data.tags.length > 0 && (
+                <div class="entry-tags" transition:animate="fade">
+                  {entry.data.tags.slice(0, 3).map((tag) => (
+                    <span class="tag">{tag}</span>
+                  ))}
+                  {entry.data.tags.length > 3 && (
+                    <span class="tag-more">+{entry.data.tags.length - 3}</span>
+                  )}
+                </div>
+              )}
+            </a>
+          </li>
+        ))}
+      </ul>
+    </div>
+  ))}
 </section>
 
 <style>

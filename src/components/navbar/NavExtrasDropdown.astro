@@ -41,32 +41,28 @@ const { otherExtras, resourceLinks, baseUrl, isActivePath } = Astro.props;
     </svg>
   </button>
   <div id="extras-dropdown-menu" class="dropdown-menu dropdown-menu-right">
-    {
-      otherExtras.map((entry) => (
-        <a
-          href={`${baseUrl}extras/${entry.id}`}
-          class={isActivePath("extras", entry.id) ? "dropdown-item active" : "dropdown-item"}
-          aria-label={entry.data.title || `Extras ${entry.id}`}
-        >
-          {entry.data.title || entry.id}
-        </a>
-      ))
-    }
+    {otherExtras.map((entry) => (
+      <a
+        href={`${baseUrl}extras/${entry.id}`}
+        class={isActivePath("extras", entry.id) ? "dropdown-item active" : "dropdown-item"}
+        aria-label={entry.data.title || `Extras ${entry.id}`}
+      >
+        {entry.data.title || entry.id}
+      </a>
+    ))}
 
     {resourceLinks.length > 0 && <div class="dropdown-divider" />}
 
-    {
-      resourceLinks.length > 0 && (
-        <a
-          href={`${baseUrl}extras/${resourceLinks[0].id}`}
-          class={
-            isActivePath("extras", resourceLinks[0].id) ? "dropdown-item active" : "dropdown-item"
-          }
-          aria-label="External Resources"
-        >
-          External Resources
-        </a>
-      )
-    }
+    {resourceLinks.length > 0 && (
+      <a
+        href={`${baseUrl}extras/${resourceLinks[0].id}`}
+        class={
+          isActivePath("extras", resourceLinks[0].id) ? "dropdown-item active" : "dropdown-item"
+        }
+        aria-label="External Resources"
+      >
+        External Resources
+      </a>
+    )}
   </div>
 </li>

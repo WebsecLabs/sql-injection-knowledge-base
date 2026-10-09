@@ -124,15 +124,21 @@ const articleData = {
     <meta data-pagefind-meta={`title:${entry.data.title}`} />
     <meta data-pagefind-meta={`database:${collectionName}`} />
     <meta data-pagefind-meta={`category:${entry.data.category}`} />
-    <span data-pagefind-filter="database" style="display:none;">{collectionName}</span>
+    <span data-pagefind-filter="database" style="display:none;">
+      {collectionName}
+    </span>
     <div class="entry-header" data-pagefind-ignore transition:animate="fade">
       <nav class="breadcrumbs" aria-label="Breadcrumb">
         <a href={import.meta.env.BASE_URL}>Home</a>
-        <span class="separator" aria-hidden="true">/</span>
-        <a href={`${import.meta.env.BASE_URL}${collectionName}/${firstEntrySlug}`}
-          >{collectionTitle}</a
-        >
-        <span class="separator" aria-hidden="true">/</span>
+        <span class="separator" aria-hidden="true">
+          /
+        </span>
+        <a href={`${import.meta.env.BASE_URL}${collectionName}/${firstEntrySlug}`}>
+          {collectionTitle}
+        </a>
+        <span class="separator" aria-hidden="true">
+          /
+        </span>
         <span aria-current="page">{entry.data.title}</span>
       </nav>
     </div>

@@ -16,6 +16,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 - Refactored navbar.ts to use shared transition utility (3 duplicate patterns removed)
+- Upgraded to Astro 7, ESLint 10, Vitest 5, TypeScript 6 and current releases of all other dependencies
+- Markdown is now processed by Astro's native Sätteri processor; the base-path link plugin was ported to a Sätteri hast plugin and `rehype-slug` was dropped in favour of built-in heading IDs
+- SmartyPants is disabled so SQL syntax such as `--` and quotes renders literally in prose and headings
+- CI now builds both modes and runs E2E and accessibility tests against the integrated build served by the production nginx image
+- CI actions are pinned to commit SHAs; Dependabot now also tracks GitHub Actions and the Docker base image
+- The nginx base image is pinned by version and digest
+
+### Fixed
+
+- Full search page (`/search`) failed to load results when the site is served under a base path
 
 ## [1.1.0] - 2025-01
 

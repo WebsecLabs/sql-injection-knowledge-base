@@ -41,24 +41,24 @@ function processCode(rawCode: string) {
     <div class="code-header">
       <span class="code-label">SQL</span>
       <div class="fake-buttons" aria-hidden="true">
-        <span></span><span></span><span></span>
+        <span></span>
+        <span></span>
+        <span></span>
       </div>
     </div>
     <pre class="code-content"><code class="language-sql" set:html={processCode(code)} /></pre>
   </div>
 
-  {
-    notes.length > 0 && (
-      <div class="example-notes">
-        <h4>Notes:</h4>
-        <ul>
-          {notes.map((note) => (
-            <li>{note}</li>
-          ))}
-        </ul>
-      </div>
-    )
-  }
+  {notes.length > 0 && (
+    <div class="example-notes">
+      <h4>Notes:</h4>
+      <ul>
+        {notes.map((note) => (
+          <li>{note}</li>
+        ))}
+      </ul>
+    </div>
+  )}
 </div>
 
 <style>

@@ -6,14 +6,14 @@ const WCAG_AA_TAGS = ["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"];
 
 // Pages to test for comprehensive coverage
 const PAGES_TO_TEST = [
-  { path: "/", name: "Home page" },
-  { path: "/search", name: "Search page" },
-  { path: "/mysql/intro", name: "MySQL Intro" },
-  { path: "/mariadb/intro", name: "MariaDB Intro" },
-  { path: "/mssql/intro", name: "MSSQL Intro" },
-  { path: "/oracle/intro", name: "Oracle Intro" },
-  { path: "/postgresql/intro", name: "PostgreSQL Intro" },
-  { path: "/extras/about", name: "About page" },
+  { path: "./", name: "Home page" },
+  { path: "search", name: "Search page" },
+  { path: "mysql/intro", name: "MySQL Intro" },
+  { path: "mariadb/intro", name: "MariaDB Intro" },
+  { path: "mssql/intro", name: "MSSQL Intro" },
+  { path: "oracle/intro", name: "Oracle Intro" },
+  { path: "postgresql/intro", name: "PostgreSQL Intro" },
+  { path: "extras/about", name: "About page" },
 ];
 
 // Viewport configurations for responsive testing
@@ -78,9 +78,9 @@ test.describe("Accessibility - Core Page Scans", () => {
 
 test.describe("Accessibility - Responsive Views", () => {
   const pagesToTestResponsive = [
-    { path: "/", name: "Home page" },
-    { path: "/mysql/intro", name: "Content page" },
-    { path: "/search", name: "Search page" },
+    { path: "./", name: "Home page" },
+    { path: "mysql/intro", name: "Content page" },
+    { path: "search", name: "Search page" },
   ];
 
   for (const [viewportName, dimensions] of Object.entries(VIEWPORTS)) {
@@ -112,7 +112,7 @@ test.describe("Accessibility - Interactive Component States", () => {
   });
 
   test("Navbar dropdowns maintain accessibility when open", async ({ page }) => {
-    await page.goto("/");
+    await page.goto("./");
 
     const databasesButton = page.locator('button.dropdown-toggle:has-text("Databases")');
     await databasesButton.click();
@@ -130,7 +130,7 @@ test.describe("Accessibility - Interactive Component States", () => {
 
   test("Mobile menu maintains accessibility when open", async ({ page }) => {
     await page.setViewportSize(VIEWPORTS.mobile);
-    await page.goto("/");
+    await page.goto("./");
 
     await page.locator("#mobile-toggle").click();
     await expect(page.locator("#navbar-menu")).toHaveClass(/active/);
@@ -145,7 +145,7 @@ test.describe("Accessibility - Interactive Component States", () => {
   });
 
   test("Sidebar sections maintain accessibility when expanded/collapsed", async ({ page }) => {
-    await page.goto("/mysql/intro");
+    await page.goto("mysql/intro");
 
     const firstHeading = page.locator(".sidebar-heading").first();
     await firstHeading.click();
@@ -160,7 +160,7 @@ test.describe("Accessibility - Interactive Component States", () => {
   });
 
   test("Theme toggle maintains accessibility in dark mode", async ({ page }) => {
-    await page.goto("/");
+    await page.goto("./");
 
     await page.locator("#theme-toggle").click();
     await expect(page.locator("html")).toHaveClass(/dark/);
@@ -175,7 +175,7 @@ test.describe("Accessibility - Interactive Component States", () => {
   });
 
   test("Search page maintains accessibility with results", async ({ page }) => {
-    await page.goto("/search");
+    await page.goto("search");
 
     // Pagefind UI initializes dynamically — wait for its input to appear
     const searchInput = page.locator("#pagefind-search .pagefind-ui__search-input");
@@ -194,7 +194,7 @@ test.describe("Accessibility - Interactive Component States", () => {
   });
 
   test("Table of Contents maintains accessibility when collapsed", async ({ page }) => {
-    await page.goto("/mysql/intro");
+    await page.goto("mysql/intro");
 
     const tocToggle = page.locator("#toc-toggle");
     if (await tocToggle.isVisible()) {
@@ -217,7 +217,7 @@ test.describe("Accessibility - Keyboard Navigation", () => {
   });
 
   test("Skip link is accessible and functional", async ({ page }) => {
-    await page.goto("/");
+    await page.goto("./");
 
     // Tab to skip link
     await page.keyboard.press("Tab");
@@ -235,7 +235,7 @@ test.describe("Accessibility - Keyboard Navigation", () => {
   });
 
   test("Focus order follows logical reading order", async ({ page }) => {
-    await page.goto("/");
+    await page.goto("./");
 
     const focusOrder: string[] = [];
 
@@ -259,7 +259,7 @@ test.describe("Accessibility - Keyboard Navigation", () => {
   });
 
   test("All interactive elements are keyboard accessible", async ({ page }) => {
-    await page.goto("/");
+    await page.goto("./");
 
     const interactiveElements = page.locator(
       'a[href], button, input, select, textarea, [tabindex]:not([tabindex="-1"])'
@@ -285,7 +285,7 @@ test.describe("Accessibility - ARIA Implementation", () => {
   });
 
   test("Sidebar headings have correct aria-expanded states", async ({ page }) => {
-    await page.goto("/mysql/intro");
+    await page.goto("mysql/intro");
 
     const headings = page.locator(".sidebar-heading");
     const count = await headings.count();
@@ -304,7 +304,7 @@ test.describe("Accessibility - ARIA Implementation", () => {
   });
 
   test("Dropdown buttons have correct aria-expanded states", async ({ page }) => {
-    await page.goto("/");
+    await page.goto("./");
 
     const databasesDropdown = page.locator('.nav-item.dropdown:has(button:text("Databases"))');
     const databasesButton = databasesDropdown.locator("button.dropdown-toggle");
@@ -322,7 +322,7 @@ test.describe("Accessibility - ARIA Implementation", () => {
   });
 
   test("Theme toggle has accessible label", async ({ page }) => {
-    await page.goto("/");
+    await page.goto("./");
 
     const themeToggle = page.locator("#theme-toggle");
     await expect(themeToggle).toHaveAttribute("aria-label");
@@ -334,7 +334,7 @@ test.describe("Accessibility - ARIA Implementation", () => {
 
   test("Mobile toggle has accessible label", async ({ page }) => {
     await page.setViewportSize(VIEWPORTS.mobile);
-    await page.goto("/");
+    await page.goto("./");
 
     const mobileToggle = page.locator("#mobile-toggle");
     await expect(mobileToggle).toHaveAttribute("aria-label");
@@ -343,7 +343,7 @@ test.describe("Accessibility - ARIA Implementation", () => {
 
 test.describe("Accessibility - Color Contrast", () => {
   test("Light mode passes color contrast checks", async ({ page }) => {
-    await page.goto("/");
+    await page.goto("./");
 
     // Ensure light mode
     await page.evaluate(() => {
@@ -362,7 +362,7 @@ test.describe("Accessibility - Color Contrast", () => {
   });
 
   test("Dark mode passes color contrast checks", async ({ page }) => {
-    await page.goto("/");
+    await page.goto("./");
 
     // Switch to dark mode
     await page.locator("#theme-toggle").click();
@@ -381,7 +381,7 @@ test.describe("Accessibility - Color Contrast", () => {
 
 test.describe("Accessibility - Form Controls", () => {
   test("Search inputs have accessible labels", async ({ page }) => {
-    await page.goto("/");
+    await page.goto("./");
 
     // Navbar search trigger button
     const searchTrigger = page.locator("#search-trigger");
@@ -395,14 +395,14 @@ test.describe("Accessibility - Form Controls", () => {
   });
 
   test("Sidebar search input has accessible label", async ({ page }) => {
-    await page.goto("/mysql/intro");
+    await page.goto("mysql/intro");
 
     const sidebarSearch = page.locator("#sidebar-search-input");
     await expect(sidebarSearch).toHaveAttribute("aria-label");
   });
 
   test("Buttons have accessible names", async ({ page }) => {
-    await page.goto("/");
+    await page.goto("./");
 
     // Theme toggle
     const themeToggle = page.locator("#theme-toggle");
@@ -417,7 +417,7 @@ test.describe("Accessibility - Form Controls", () => {
 
 test.describe("Accessibility - Images and Media", () => {
   test("All images have alt text", async ({ page }) => {
-    await page.goto("/");
+    await page.goto("./");
 
     const images = page.locator("img");
     const count = await images.count();
@@ -432,7 +432,7 @@ test.describe("Accessibility - Images and Media", () => {
   });
 
   test("Decorative SVGs are hidden from assistive technology", async ({ page }) => {
-    await page.goto("/");
+    await page.goto("./");
 
     // Check for SVGs with aria-hidden
     const decorativeSvgs = page.locator('svg[aria-hidden="true"]');
@@ -445,7 +445,7 @@ test.describe("Accessibility - Images and Media", () => {
 
 test.describe("Accessibility - Landmarks", () => {
   test("Page has proper landmark structure", async ({ page }) => {
-    await page.goto("/mysql/intro");
+    await page.goto("mysql/intro");
 
     // Check for main landmark
     await expect(page.locator("main")).toBeVisible();
@@ -458,7 +458,7 @@ test.describe("Accessibility - Landmarks", () => {
   });
 
   test("Main content has accessible id for skip link target", async ({ page }) => {
-    await page.goto("/");
+    await page.goto("./");
 
     const mainContent = page.locator("#main-content");
     await expect(mainContent).toBeVisible();
@@ -466,7 +466,7 @@ test.describe("Accessibility - Landmarks", () => {
   });
 
   test("Skip link targets main content correctly", async ({ page }) => {
-    await page.goto("/");
+    await page.goto("./");
 
     const skipLink = page.locator(".skip-link");
     const href = await skipLink.getAttribute("href");
@@ -481,7 +481,7 @@ test.describe("Accessibility - Landmarks", () => {
 
 test.describe("Accessibility - Content Pages", () => {
   test("Content page with TOC has accessible navigation", async ({ page }) => {
-    await page.goto("/mysql/intro");
+    await page.goto("mysql/intro");
 
     // TOC should be present on content pages - assert to catch regressions
     const toc = page.locator("#toc");
@@ -497,7 +497,7 @@ test.describe("Accessibility - Content Pages", () => {
   });
 
   test("Breadcrumbs have correct ARIA implementation", async ({ page }) => {
-    await page.goto("/mysql/intro");
+    await page.goto("mysql/intro");
 
     const breadcrumbs = page.locator('[aria-label="Breadcrumb"]');
     if ((await breadcrumbs.count()) > 0) {
@@ -510,16 +510,13 @@ test.describe("Accessibility - Content Pages", () => {
   });
 
   test("Code blocks are accessible", async ({ page }) => {
-    await page.goto("/mysql/intro");
+    await page.goto("mysql/stacked-queries");
 
-    // Check that code blocks exist and have proper structure
-    const codeBlocks = page.locator("pre code");
-    const count = await codeBlocks.count();
-
-    if (count > 0) {
-      // Code blocks should be within pre elements
-      const preElements = page.locator("pre");
-      expect(await preElements.count()).toBeGreaterThan(0);
-    }
+    // Code is marked up as <pre><code>, and each scrollable block is
+    // reachable by keyboard so it can be scrolled without a mouse
+    const preElements = page.locator("#main-content pre");
+    await expect(preElements.first()).toBeVisible();
+    await expect(preElements.first().locator("code")).toHaveCount(1);
+    await expect(preElements.first()).toHaveAttribute("tabindex", "0");
   });
 });

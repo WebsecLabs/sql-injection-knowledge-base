@@ -13,39 +13,33 @@ const { Content } = await render(entry);
 <article class="markdown-entry" transition:animate="slide">
   <header class="entry-header">
     <h1 transition:name={`title-${entry.collection}-${entry.id}`}>{entry.data.title}</h1>
-    {
-      entry.data.description && (
-        <p class="entry-description" transition:name={`desc-${entry.collection}-${entry.id}`}>
-          {entry.data.description}
-        </p>
-      )
-    }
+    {entry.data.description && (
+      <p class="entry-description" transition:name={`desc-${entry.collection}-${entry.id}`}>
+        {entry.data.description}
+      </p>
+    )}
 
     <div class="entry-meta" transition:animate="fade">
       <span class="entry-category">{entry.data.category}</span>
-      {
-        entry.data.lastUpdated && (
-          <span class="entry-date">
-            Last updated:{" "}
-            {entry.data.lastUpdated.toLocaleDateString("en-US", {
-              year: "numeric",
-              month: "long",
-              day: "numeric",
-            })}
-          </span>
-        )
-      }
+      {entry.data.lastUpdated && (
+        <span class="entry-date">
+          Last updated:{" "}
+          {entry.data.lastUpdated.toLocaleDateString("en-US", {
+            year: "numeric",
+            month: "long",
+            day: "numeric",
+          })}
+        </span>
+      )}
     </div>
 
-    {
-      entry.data.tags && entry.data.tags.length > 0 && (
-        <div class="entry-tags" transition:animate="fade">
-          {entry.data.tags.map((tag) => (
-            <span class="tag">{tag}</span>
-          ))}
-        </div>
-      )
-    }
+    {entry.data.tags && entry.data.tags.length > 0 && (
+      <div class="entry-tags" transition:animate="fade">
+        {entry.data.tags.map((tag) => (
+          <span class="tag">{tag}</span>
+        ))}
+      </div>
+    )}
   </header>
 
   <div class="entry-content" transition:animate="slide">

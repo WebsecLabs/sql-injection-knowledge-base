@@ -1,0 +1,4 @@
+# The image only needs the pre-built site and the nginx config
+*
+!dist/
+!nginx.conf

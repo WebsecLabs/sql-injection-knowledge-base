@@ -12,9 +12,6 @@ export default defineConfig({
     include: ["src/**/*.{test,spec}.ts", "tests/unit/**/*.{test,spec}.ts"],
     exclude: ["node_modules", "dist", ".astro", "tests/e2e/**"],
     environment: "jsdom",
-    // Node 25+ enables a native localStorage global that shadows jsdom's
-    // implementation; disable it so tests behave the same on all Node versions.
-    execArgv: ["--no-experimental-webstorage"],
     globals: true,
     coverage: {
       provider: "v8",

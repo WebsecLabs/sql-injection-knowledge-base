@@ -49,20 +49,18 @@ if (!headings || headings.length === 0) {
   </div>
   <nav id="toc-content" class="toc-content">
     <ul class="toc-list">
-      {
-        headings.map((heading) => (
-          <li class={`toc-item toc-item-h${heading.depth}`}>
-            <a
-              href={`#${heading.slug}`}
-              class="toc-link"
-              data-heading-id={heading.slug}
-              title={heading.text}
-            >
-              {heading.text}
-            </a>
-          </li>
-        ))
-      }
+      {headings.map((heading) => (
+        <li class={`toc-item toc-item-h${heading.depth}`}>
+          <a
+            href={`#${heading.slug}`}
+            class="toc-link"
+            data-heading-id={heading.slug}
+            title={heading.text}
+          >
+            {heading.text}
+          </a>
+        </li>
+      ))}
     </ul>
   </nav>
 </aside>
