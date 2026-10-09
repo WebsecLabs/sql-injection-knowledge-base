@@ -28,7 +28,8 @@ export async function loadAllCollections(): Promise<CollectionEntriesMap> {
         return [collection, entries] as const;
       } catch (error) {
         throw new Error(
-          `Failed to load collection "${collection}": ${error instanceof Error ? error.message : String(error)}`
+          `Failed to load collection "${collection}": ${error instanceof Error ? error.message : String(error)}`,
+          { cause: error }
         );
       }
     })
