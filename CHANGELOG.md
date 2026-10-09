@@ -23,6 +23,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - CI actions are pinned to commit SHAs; Dependabot now also tracks GitHub Actions and the Docker base image
 - The nginx base image is pinned by version and digest
 
+### SEO and performance
+
+- Canonical URLs, Open Graph URLs and structured data always point at the official home on websec.ca; set `CANONICAL_URL` to make another deployment canonical. Only the canonical deployment publishes a sitemap
+- Real 404 responses with a dedicated, non-indexed 404 page; unknown URLs no longer return the home page
+- Every internal link ends with a trailing slash, matching the canonical URLs, so no link goes through a redirect (`trailingSlash: "always"`)
+- Build-time link checker fails the build on internal links to missing pages, headings or slashless page URLs
+- Sitemap excludes redirect and error pages and reports each entry's `lastUpdated` date
+- robots.txt points to the sitemap under the base path
+- Fonts are served through Astro's Fonts API from the installed Fontsource packages, Latin subsets only, with metric-matched fallbacks and `font-display: optional`, so text never shifts while loading
+- Page CSS is inlined, and per-card view-transition styles were replaced with native `view-transition-name` values, cutting the home page from 1.3 MB to 200 KB
+- The logo is served as sized WebP at 1x and 2x
+- The search page bundles the Pagefind UI, so it is served from hashed, long-cached URLs
+- nginx sends long-lived caching headers for hashed assets
+- Lighthouse: 100 for accessibility, best practices, SEO and agentic browsing on every page; performance 100 on desktop and 96-98 on simulated mobile
+
 ### Security
 
 - Content-Security-Policy generated at build time from the site's inline script hashes, embedded in every page as a `<meta>` tag and sent by the nginx image as a header with `frame-ancestors` and violation reporting
@@ -35,6 +50,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Full search page (`/search`) failed to load results when the site is served under a base path
 - Theme toggle no longer breaks when browser storage is unavailable
+- Broken internal links in the PostgreSQL, MySQL and MariaDB articles
+- Copy button text contrast on code blocks, and previous/next link names that did not match their visible text
+- The search page script no longer runs on other pages after visiting search
 
 ## [1.1.0] - 2025-01
 
