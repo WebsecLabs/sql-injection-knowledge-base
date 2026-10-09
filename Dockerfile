@@ -1,5 +1,7 @@
-# NGINX-maintained image that runs nginx as an unprivileged user (uid 101)
-FROM nginxinc/nginx-unprivileged:1.31.6-alpine@sha256:b9241c6e7b8e9a862f129d8d4199ab64b10390949a78bdd5603379b32c844083
+# NGINX-maintained image that runs nginx as an unprivileged user (uid 101).
+# Pulled from NGINX's ECR Public mirror rather than Docker Hub, whose
+# anonymous pull limit breaks CI on shared runners. Same image and digest.
+FROM public.ecr.aws/nginx/nginx-unprivileged:1.31.6-alpine@sha256:b9241c6e7b8e9a862f129d8d4199ab64b10390949a78bdd5603379b32c844083
 
 # Copy custom nginx config
 COPY nginx.conf /etc/nginx/nginx.conf
