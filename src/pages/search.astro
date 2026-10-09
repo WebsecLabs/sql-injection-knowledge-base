@@ -1,63 +1,51 @@
 ---
 import Layout from "../layouts/Layout.astro";
 import { loadAllCollections } from "../utils/collectionLoader";
+// Bundled with the page so it is served from a hashed, long-cached URL
+import "@pagefind/default-ui/css/ui.css";
 
 const collections = await loadAllCollections();
-const baseUrl = import.meta.env.BASE_URL;
 ---
 
-<Layout title="Search - SQL Injection KB" showSidebar={false} collections={collections}>
+<Layout
+  title="Search - SQL Injection KB"
+  description="Search SQL injection techniques, payloads and functions across MySQL, MariaDB, PostgreSQL, MSSQL and Oracle."
+  showSidebar={false}
+  collections={collections}
+>
   <div class="search-page">
     <h1>Search</h1>
     <div id="pagefind-search"></div>
   </div>
 
-  <link rel="stylesheet" href={`${baseUrl}pagefind/pagefind-ui.css`} />
-
   <script>
-    async function initPagefindUI() {
-      const base = import.meta.env.BASE_URL;
+    import { PagefindUI } from "@pagefind/default-ui";
+
+    let searchUI: PagefindUI | null = null;
+
+    function initPagefindUI() {
+      // This module stays loaded after leaving the page with View
+      // Transitions, so only act when the search container is present
       const container = document.getElementById("pagefind-search");
+      searchUI?.destroy();
+      searchUI = null;
+      if (!container) return;
 
-      // Load Pagefind UI (IIFE bundle sets window.PagefindUI)
-      try {
-        await import(/* @vite-ignore */ `${base}pagefind/pagefind-ui.js`);
-      } catch {
-        if (container) {
-          container.textContent = "Search requires a build. Run npm run build first.";
-        }
-        return;
-      }
-
-      const PagefindUI = (
-        window as Window & { PagefindUI?: new (opts: Record<string, unknown>) => unknown }
-      ).PagefindUI;
-      if (!PagefindUI) {
-        if (container) {
-          container.textContent = "Search failed to initialize.";
-        }
-        return;
-      }
-
-      new PagefindUI({
+      const base = import.meta.env.BASE_URL;
+      searchUI = new PagefindUI({
         element: "#pagefind-search",
         showSubResults: true,
         showImages: false,
         baseUrl: base,
-        // The UI is loaded via dynamic import, so it cannot infer its bundle
-        // location from a <script> tag; without this it requests /pagefind/
+        // The UI is bundled rather than loaded from /pagefind/, so it cannot
+        // infer where the search index lives
         bundlePath: `${base}pagefind/`,
       });
 
       // Apply URL query parameter if present
-      const params = new URLSearchParams(window.location.search);
-      const query = params.get("q");
+      const query = new URLSearchParams(window.location.search).get("q");
       if (query) {
-        const input = document.querySelector<HTMLInputElement>("#pagefind-search input");
-        if (input) {
-          input.value = query;
-          input.dispatchEvent(new Event("input", { bubbles: true }));
-        }
+        searchUI.triggerSearch(query);
       }
     }
 

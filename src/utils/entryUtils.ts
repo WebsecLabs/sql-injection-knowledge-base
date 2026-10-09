@@ -165,3 +165,17 @@ export function getSortedCategories(grouped: Record<string, unknown[]>): string[
     return aOrder !== bOrder ? aOrder - bOrder : a.localeCompare(b);
   });
 }
+
+/**
+ * Build a view-transition-name shared by an entry's card on the home page and
+ * its heading on the entry page, so the browser morphs one into the other.
+ * Set it inline (style="view-transition-name: …") rather than with Astro's
+ * transition:name, which emits a <style> block per element.
+ */
+export function entryTransitionName(
+  part: "title" | "desc",
+  collection: ValidCollection,
+  slug: string
+): string {
+  return `${part}-${collection}-${slug}`.replace(/[^a-zA-Z0-9-]/g, "-");
+}

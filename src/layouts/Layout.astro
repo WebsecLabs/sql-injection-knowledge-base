@@ -5,6 +5,7 @@ import { ClientRouter } from "astro:transitions";
 import NavBar from "../components/NavBar.astro";
 import Sidebar from "../components/Sidebar.astro";
 import TableOfContents from "../components/TableOfContents.astro";
+import { Font, Image } from "astro:assets";
 import websecLogo from "../assets/websec-logo.png";
 import { TOC_MIN_HEADINGS } from "../utils/uiConstants";
 import SearchModal from "../components/search/SearchModal.astro";
@@ -16,13 +17,6 @@ import { toCanonicalUrl } from "../utils/siteUtils";
 import "../styles/main.css";
 import "../styles/toc.css";
 import "../styles/search-modal.css";
-
-import "@fontsource/inter/400.css";
-import "@fontsource/inter/500.css";
-import "@fontsource/inter/600.css";
-import "@fontsource/inter/700.css";
-import "@fontsource/jetbrains-mono/400.css";
-import "@fontsource/jetbrains-mono/500.css";
 
 interface Props {
   title: string;
@@ -84,6 +78,9 @@ const extrasEntries = collections?.extrasEntries ?? (await getCollection("extras
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <!-- Preload the body text and code faces so they are ready for first render -->
+    <Font cssVariable="--font-inter" preload={[{ weight: 400 }]} />
+    <Font cssVariable="--font-jetbrains-mono" preload={[{ weight: 400 }]} />
     <link rel="icon" type="image/png" href={`${import.meta.env.BASE_URL}favicon.png`} />
     {!noindex && <link rel="canonical" href={canonicalURL} />}
     <title>{title}</title>
@@ -299,11 +296,13 @@ const extrasEntries = collections?.extrasEntries ?? (await getCollection("extras
                 rel="noopener noreferrer"
                 class="footer-logo-link"
               >
-                <img
-                  src={websecLogo.src}
+                <Image
+                  src={websecLogo}
                   alt="Websec Logo"
                   class="footer-logo-img"
-                  loading="lazy"
+                  height={34}
+                  densities={[1, 2]}
+                  format="webp"
                 />
               </a>
             </div>

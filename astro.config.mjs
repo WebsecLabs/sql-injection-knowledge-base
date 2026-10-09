@@ -1,4 +1,4 @@
-import { defineConfig, envField } from "astro/config";
+import { defineConfig, envField, fontProviders } from "astro/config";
 import sitemap from "@astrojs/sitemap";
 import { satteri } from "@astrojs/markdown-satteri";
 import { hastBasePath } from "./src/plugins/hast-base-path.mjs";
@@ -52,6 +52,47 @@ export default defineConfig({
   server: {
     port: 3000,
   },
+
+  build: {
+    // Inline page CSS so first paint never waits on a stylesheet request
+    inlineStylesheets: "always",
+  },
+
+  // Self-hosted from the installed @fontsource packages, so builds need no
+  // network. font-display: optional plus Astro's metric-matched fallback faces
+  // means text never reflows: a web font is used only if it is ready by first
+  // render (it is preloaded), otherwise the fallback stays for that page view.
+  // Latin only: the content is English, and other scripts use the fallback.
+  fonts: [
+    {
+      provider: fontProviders.local(),
+      name: "Inter",
+      cssVariable: "--font-inter",
+      fallbacks: ["sans-serif"],
+      display: "optional",
+      options: {
+        variants: [400, 500, 600, 700].map((weight) => ({
+          weight,
+          style: "normal",
+          src: [`@fontsource/inter/files/inter-latin-${weight}-normal.woff2`],
+        })),
+      },
+    },
+    {
+      provider: fontProviders.local(),
+      name: "JetBrains Mono",
+      cssVariable: "--font-jetbrains-mono",
+      fallbacks: ["monospace"],
+      display: "optional",
+      options: {
+        variants: [400, 500].map((weight) => ({
+          weight,
+          style: "normal",
+          src: [`@fontsource/jetbrains-mono/files/jetbrains-mono-latin-${weight}-normal.woff2`],
+        })),
+      },
+    },
+  ],
 
   vite: {
     resolve: {

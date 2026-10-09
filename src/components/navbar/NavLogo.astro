@@ -3,6 +3,7 @@
  * NavLogo Component
  * Displays the site logo with responsive text variants
  */
+import { Image } from "astro:assets";
 import websecLogo from "../../assets/websec-logo.png";
 import { sanitizeBaseUrl } from "../../utils/pathUtils";
 
@@ -17,13 +18,16 @@ const safeBaseUrl = sanitizeBaseUrl(baseUrl);
 <div class="navbar-logo">
   <a href={safeBaseUrl} class="logo">
     <div class="logo-container">
-      <img
-        src={websecLogo.src}
+      <!-- Shown at 34px tall; on pages without large content it is the LCP element -->
+      <Image
+        src={websecLogo}
         alt="WEBSEC Logo"
         class="websec-logo"
-        width={websecLogo.width}
-        height={websecLogo.height}
-        decoding="async"
+        height={34}
+        densities={[1, 2]}
+        format="webp"
+        loading="eager"
+        fetchpriority="high"
       />
     </div>
     <span class="logo-text logo-text-full">SQL Injection Knowledge Base</span>
