@@ -8,6 +8,8 @@
 
 A modern, comprehensive resource for SQL injection techniques, examples, and bypasses across multiple database platforms.
 
+**Read it at [websec.ca/sql-injection-knowledge-base](https://websec.ca/sql-injection-knowledge-base/)**, its official home.
+
 ## About
 
 The SQL Injection Knowledge Base is a comprehensive resource designed to help security professionals and developers understand, identify, and test SQL injection vulnerabilities across various database systems. Serving both as an educational tool and practical reference, it supports continuous learning and effective vulnerability assessment.
@@ -16,7 +18,7 @@ This project is a modern rebuild of the original SQLi Knowledge Base, featuring 
 
 ## Features
 
-- **Comprehensive Coverage**: Techniques for MySQL, MSSQL, Oracle, and PostgreSQL databases
+- **Comprehensive Coverage**: Techniques for MySQL, MariaDB, MSSQL, Oracle, and PostgreSQL databases
 - **User-Friendly Navigation**: Organized by database type and technique categories
 - **Modern Interface**: Fast, responsive design that works across all devices
 - **Searchable Content**: Quick access to specific techniques
@@ -84,6 +86,16 @@ The image runs nginx as an unprivileged user. It sends a Content-Security-Policy
 ### Any static host
 
 Upload `dist/` to any static host, such as GitHub Pages, Netlify or Cloudflare Pages. No server configuration is required. Every page embeds its Content-Security-Policy as a `<meta>` tag generated at build time. That policy allows only the site's own scripts and the hashes of its inline scripts.
+
+### Canonical URLs
+
+Every page declares its canonical URL on websec.ca, the knowledge base's official home, so copies deployed elsewhere don't compete with it in search results. A build also publishes a sitemap only when it is served from the canonical URL. To make your deployment canonical, for example a fork with its own content, set `CANONICAL_URL` when building:
+
+```bash
+STANDALONE=true SITE_URL=https://kb.example.com CANONICAL_URL=https://kb.example.com/ npm run build:standalone
+```
+
+### Security headers on static hosts
 
 If your host lets you set response headers, also send these. They cannot be set from a `<meta>` tag:
 

@@ -4,6 +4,7 @@
  * Dropdown menu for extras and resources links
  */
 import { type CollectionEntry } from "astro:content";
+import { getEntryURL } from "../../utils/entryUtils";
 
 interface Props {
   otherExtras: CollectionEntry<"extras">[];
@@ -43,7 +44,7 @@ const { otherExtras, resourceLinks, baseUrl, isActivePath } = Astro.props;
   <div id="extras-dropdown-menu" class="dropdown-menu dropdown-menu-right">
     {otherExtras.map((entry) => (
       <a
-        href={`${baseUrl}extras/${entry.id}`}
+        href={getEntryURL("extras", entry.id, baseUrl)}
         class={isActivePath("extras", entry.id) ? "dropdown-item active" : "dropdown-item"}
         aria-label={entry.data.title || `Extras ${entry.id}`}
       >
@@ -55,7 +56,7 @@ const { otherExtras, resourceLinks, baseUrl, isActivePath } = Astro.props;
 
     {resourceLinks.length > 0 && (
       <a
-        href={`${baseUrl}extras/${resourceLinks[0].id}`}
+        href={getEntryURL("extras", resourceLinks[0].id, baseUrl)}
         class={
           isActivePath("extras", resourceLinks[0].id) ? "dropdown-item active" : "dropdown-item"
         }

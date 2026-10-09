@@ -20,6 +20,8 @@ export interface ArticleData {
   category?: string;
   tags?: string[];
   url: string;
+  /** Absolute URL of a representative image (e.g. the Open Graph image) */
+  image?: string;
   /** Proficiency level for the article (e.g., "Beginner", "Intermediate", "Expert") */
   proficiencyLevel?: string;
 }
@@ -96,6 +98,7 @@ function generateArticleSchema() {
     description: article.description,
     datePublished: formatDate(article.datePublished),
     dateModified: formatDate(article.dateModified),
+    image: article.image,
     author: {
       "@type": "Organization",
       name: "Websec",

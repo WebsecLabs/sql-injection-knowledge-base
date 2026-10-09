@@ -305,4 +305,4 @@ SELECT IF(USER() LIKE 'root@%', 1, 0) AS is_root
 - MariaDB may use either `Password` or `authentication_string` columns depending on version and plugin
 - The `ed25519` plugin is MariaDB-specific and more secure than `mysql_native_password`
 
-For more information on password hashing and cracking, see the related entries on [Password Hashing](password-hashing) and [Password Cracking](password-cracking).
+For more information on password hashing and cracking, see the related entries on [Password Hashing](/mariadb/password-hashing) and [Password Cracking](/mariadb/password-cracking).

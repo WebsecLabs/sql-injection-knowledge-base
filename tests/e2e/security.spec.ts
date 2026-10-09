@@ -33,7 +33,7 @@ function expectStrictScriptPolicy(csp: string): void {
 
 test.describe("Content-Security-Policy", () => {
   test("is embedded in the page ahead of any script", async ({ page }) => {
-    await page.goto("mysql/intro");
+    await page.goto("mysql/intro/");
     const meta = page.locator('head meta[http-equiv="Content-Security-Policy"]');
 
     await expect(meta).toHaveCount(1);
@@ -52,7 +52,7 @@ test.describe("Content-Security-Policy", () => {
   });
 
   test("is sent as a header with framing protection", async ({ page }) => {
-    const response = await page.goto("mysql/intro");
+    const response = await page.goto("mysql/intro/");
     const csp = response?.headers()["content-security-policy"] ?? "";
 
     // CI serves the production container and must send the header; other
@@ -65,7 +65,7 @@ test.describe("Content-Security-Policy", () => {
   test("allows article pages and client-side navigation", async ({ page }) => {
     const violations = await trackCspViolations(page);
 
-    await page.goto("mysql/intro");
+    await page.goto("mysql/intro/");
     await page.waitForLoadState("networkidle");
 
     // Navigate through the ClientRouter to the home page, whose tabs use
@@ -93,7 +93,7 @@ test.describe("Content-Security-Policy", () => {
   test("allows the search page to load and query the index", async ({ page }) => {
     const violations = await trackCspViolations(page);
 
-    await page.goto("search?q=union");
+    await page.goto("search/?q=union");
     await expect(page.locator(".pagefind-ui__result").first()).toBeVisible({ timeout: 10000 });
 
     expect(violations).toEqual([]);
@@ -102,7 +102,7 @@ test.describe("Content-Security-Policy", () => {
   test("allows theme toggling", async ({ page }) => {
     const violations = await trackCspViolations(page);
 
-    await page.goto("mysql/intro");
+    await page.goto("mysql/intro/");
     const toggle = page.locator("#theme-toggle:visible, #mobile-theme-toggle:visible").first();
     await toggle.click();
 

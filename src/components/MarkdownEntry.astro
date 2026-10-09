@@ -1,5 +1,6 @@
 ---
 import { render, type CollectionEntry } from "astro:content";
+import { entryTransitionName } from "../utils/entryUtils";
 // Note: transition:animate directives use built-in Astro values, no import needed
 
 interface Props {
@@ -12,9 +13,14 @@ const { Content } = await render(entry);
 
 <article class="markdown-entry" transition:animate="slide">
   <header class="entry-header">
-    <h1 transition:name={`title-${entry.collection}-${entry.id}`}>{entry.data.title}</h1>
+    <h1 style={`view-transition-name: ${entryTransitionName("title", entry.collection, entry.id)}`}>
+      {entry.data.title}
+    </h1>
     {entry.data.description && (
-      <p class="entry-description" transition:name={`desc-${entry.collection}-${entry.id}`}>
+      <p
+        class="entry-description"
+        style={`view-transition-name: ${entryTransitionName("desc", entry.collection, entry.id)}`}
+      >
         {entry.data.description}
       </p>
     )}

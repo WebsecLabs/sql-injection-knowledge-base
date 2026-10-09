@@ -13,7 +13,7 @@ test.describe("Content Pages", () => {
   });
 
   test("should display content page with title", async ({ page }) => {
-    await page.goto("mysql/intro");
+    await page.goto("mysql/intro/");
 
     const title = page.locator("h1");
     await expect(title).toBeVisible();
@@ -21,7 +21,7 @@ test.describe("Content Pages", () => {
   });
 
   test("should have proper heading hierarchy", async ({ page }) => {
-    await page.goto("mysql/intro");
+    await page.goto("mysql/intro/");
 
     // Page should have exactly one h1
     const h1Count = await page.locator("h1").count();
@@ -29,7 +29,7 @@ test.describe("Content Pages", () => {
   });
 
   test("should display main content area", async ({ page }) => {
-    await page.goto("mysql/intro");
+    await page.goto("mysql/intro/");
 
     // Content pages should have main content area
     const main = page.locator("#main-content");
@@ -37,14 +37,14 @@ test.describe("Content Pages", () => {
   });
 
   test("should have code blocks with proper formatting", async ({ page }) => {
-    await page.goto("mysql/stacked-queries");
+    await page.goto("mysql/stacked-queries/");
 
     const codeBlocks = page.locator("#main-content pre code");
     await expect(codeBlocks.first()).toBeVisible();
   });
 
   test("should have working internal links", async ({ page, baseURL }) => {
-    await page.goto("mysql/intro");
+    await page.goto("mysql/intro/");
 
     // Markdown links are prefixed with the site base path at build time
     const basePath = new URL(baseURL ?? "http://localhost/").pathname;
@@ -97,42 +97,42 @@ test.describe("Collection Pages", () => {
 
   test("should navigate to MySQL content", async ({ page }) => {
     // Collection URLs may redirect to first entry
-    await page.goto("mysql/intro");
+    await page.goto("mysql/intro/");
 
     const heading = page.locator("h1");
     await expect(heading).toBeVisible();
   });
 
   test("should navigate to MariaDB content", async ({ page }) => {
-    await page.goto("mariadb/intro");
+    await page.goto("mariadb/intro/");
 
     const heading = page.locator("h1");
     await expect(heading).toBeVisible();
   });
 
   test("should navigate to MSSQL content", async ({ page }) => {
-    await page.goto("mssql/intro");
+    await page.goto("mssql/intro/");
 
     const heading = page.locator("h1");
     await expect(heading).toBeVisible();
   });
 
   test("should navigate to Oracle content", async ({ page }) => {
-    await page.goto("oracle/intro");
+    await page.goto("oracle/intro/");
 
     const heading = page.locator("h1");
     await expect(heading).toBeVisible();
   });
 
   test("should navigate to PostgreSQL content", async ({ page }) => {
-    await page.goto("postgresql/intro");
+    await page.goto("postgresql/intro/");
 
     const heading = page.locator("h1");
     await expect(heading).toBeVisible();
   });
 
   test("should have sidebar with entries on content pages", async ({ page }) => {
-    await page.goto("mysql/intro");
+    await page.goto("mysql/intro/");
 
     const sidebarLinks = page.locator(".sidebar-nav a");
     const count = await sidebarLinks.count();
@@ -184,7 +184,7 @@ test.describe("Navigation", () => {
   });
 
   test("should navigate between pages using sidebar", async ({ page }) => {
-    await page.goto("mysql/intro");
+    await page.goto("mysql/intro/");
 
     const sidebarLinks = page.locator(".sidebar-nav a");
     expect(await sidebarLinks.count()).toBeGreaterThan(1);

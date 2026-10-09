@@ -26,14 +26,17 @@ export const CATEGORY_ORDER: Record<string, number> = {
 const DEFAULT_CATEGORY_ORDER = 99;
 
 /**
- * Generate a URL for a content entry
+ * Generate the URL for a content entry.
+ * Entry URLs always end with a slash, matching the built directory URLs and
+ * the canonical URLs, so links never go through a redirect.
  */
 export function getEntryURL(
   collection: ValidCollection,
   slug: string,
   baseUrl: string = "/"
 ): string {
-  return `${baseUrl}${collection}/${slug}`;
+  const base = baseUrl.endsWith("/") ? baseUrl : `${baseUrl}/`;
+  return `${base}${collection}/${slug}/`;
 }
 
 /**
@@ -161,4 +164,18 @@ export function getSortedCategories(grouped: Record<string, unknown[]>): string[
     const bOrder = CATEGORY_ORDER[b] ?? DEFAULT_CATEGORY_ORDER;
     return aOrder !== bOrder ? aOrder - bOrder : a.localeCompare(b);
   });
+}
+
+/**
+ * Build a view-transition-name shared by an entry's card on the home page and
+ * its heading on the entry page, so the browser morphs one into the other.
+ * Set it inline (style="view-transition-name: …") rather than with Astro's
+ * transition:name, which emits a <style> block per element.
+ */
+export function entryTransitionName(
+  part: "title" | "desc",
+  collection: ValidCollection,
+  slug: string
+): string {
+  return `${part}-${collection}-${slug}`.replace(/[^a-zA-Z0-9-]/g, "-");
 }

