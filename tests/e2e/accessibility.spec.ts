@@ -7,13 +7,14 @@ const WCAG_AA_TAGS = ["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"];
 // Pages to test for comprehensive coverage
 const PAGES_TO_TEST = [
   { path: "./", name: "Home page" },
-  { path: "search", name: "Search page" },
-  { path: "mysql/intro", name: "MySQL Intro" },
-  { path: "mariadb/intro", name: "MariaDB Intro" },
-  { path: "mssql/intro", name: "MSSQL Intro" },
-  { path: "oracle/intro", name: "Oracle Intro" },
-  { path: "postgresql/intro", name: "PostgreSQL Intro" },
-  { path: "extras/about", name: "About page" },
+  { path: "search/", name: "Search page" },
+  { path: "mysql/intro/", name: "MySQL Intro" },
+  { path: "mariadb/intro/", name: "MariaDB Intro" },
+  { path: "mssql/intro/", name: "MSSQL Intro" },
+  { path: "oracle/intro/", name: "Oracle Intro" },
+  { path: "postgresql/intro/", name: "PostgreSQL Intro" },
+  { path: "extras/about/", name: "About page" },
+  { path: "this-page-does-not-exist/", name: "404 page" },
 ];
 
 // Viewport configurations for responsive testing
@@ -79,8 +80,8 @@ test.describe("Accessibility - Core Page Scans", () => {
 test.describe("Accessibility - Responsive Views", () => {
   const pagesToTestResponsive = [
     { path: "./", name: "Home page" },
-    { path: "mysql/intro", name: "Content page" },
-    { path: "search", name: "Search page" },
+    { path: "mysql/intro/", name: "Content page" },
+    { path: "search/", name: "Search page" },
   ];
 
   for (const [viewportName, dimensions] of Object.entries(VIEWPORTS)) {
@@ -145,7 +146,7 @@ test.describe("Accessibility - Interactive Component States", () => {
   });
 
   test("Sidebar sections maintain accessibility when expanded/collapsed", async ({ page }) => {
-    await page.goto("mysql/intro");
+    await page.goto("mysql/intro/");
 
     const firstHeading = page.locator(".sidebar-heading").first();
     await firstHeading.click();
@@ -175,7 +176,7 @@ test.describe("Accessibility - Interactive Component States", () => {
   });
 
   test("Search page maintains accessibility with results", async ({ page }) => {
-    await page.goto("search");
+    await page.goto("search/");
 
     // Pagefind UI initializes dynamically — wait for its input to appear
     const searchInput = page.locator("#pagefind-search .pagefind-ui__search-input");
@@ -194,7 +195,7 @@ test.describe("Accessibility - Interactive Component States", () => {
   });
 
   test("Table of Contents maintains accessibility when collapsed", async ({ page }) => {
-    await page.goto("mysql/intro");
+    await page.goto("mysql/intro/");
 
     const tocToggle = page.locator("#toc-toggle");
     if (await tocToggle.isVisible()) {
@@ -285,7 +286,7 @@ test.describe("Accessibility - ARIA Implementation", () => {
   });
 
   test("Sidebar headings have correct aria-expanded states", async ({ page }) => {
-    await page.goto("mysql/intro");
+    await page.goto("mysql/intro/");
 
     const headings = page.locator(".sidebar-heading");
     const count = await headings.count();
@@ -395,7 +396,7 @@ test.describe("Accessibility - Form Controls", () => {
   });
 
   test("Sidebar search input has accessible label", async ({ page }) => {
-    await page.goto("mysql/intro");
+    await page.goto("mysql/intro/");
 
     const sidebarSearch = page.locator("#sidebar-search-input");
     await expect(sidebarSearch).toHaveAttribute("aria-label");
@@ -445,7 +446,7 @@ test.describe("Accessibility - Images and Media", () => {
 
 test.describe("Accessibility - Landmarks", () => {
   test("Page has proper landmark structure", async ({ page }) => {
-    await page.goto("mysql/intro");
+    await page.goto("mysql/intro/");
 
     // Check for main landmark
     await expect(page.locator("main")).toBeVisible();
@@ -481,7 +482,7 @@ test.describe("Accessibility - Landmarks", () => {
 
 test.describe("Accessibility - Content Pages", () => {
   test("Content page with TOC has accessible navigation", async ({ page }) => {
-    await page.goto("mysql/intro");
+    await page.goto("mysql/intro/");
 
     // TOC should be present on content pages - assert to catch regressions
     const toc = page.locator("#toc");
@@ -497,7 +498,7 @@ test.describe("Accessibility - Content Pages", () => {
   });
 
   test("Breadcrumbs have correct ARIA implementation", async ({ page }) => {
-    await page.goto("mysql/intro");
+    await page.goto("mysql/intro/");
 
     const breadcrumbs = page.locator('[aria-label="Breadcrumb"]');
     if ((await breadcrumbs.count()) > 0) {
@@ -510,7 +511,7 @@ test.describe("Accessibility - Content Pages", () => {
   });
 
   test("Code blocks are accessible", async ({ page }) => {
-    await page.goto("mysql/stacked-queries");
+    await page.goto("mysql/stacked-queries/");
 
     // Code is marked up as <pre><code>, and each scrollable block is
     // reachable by keyboard so it can be scrolled without a mouse

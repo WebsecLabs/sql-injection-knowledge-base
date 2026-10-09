@@ -31,7 +31,7 @@ SELECT/**/username/**/FROM/**/users
 SELECT /* outer /* nested */ comment */ username FROM users
 ```
 
-**Note:** PostgreSQL does **NOT** support splitting keywords with comments. Neither does MySQL—this is a common myth in security literature (see [MySQL Keyword Splitting Myth](/mysql/fuzzing-obfuscation#keyword-splitting-myth)):
+**Note:** PostgreSQL does **NOT** support splitting keywords with comments. Neither does MySQL—this is a common myth in security literature (see [MySQL comment variations](/mysql/fuzzing-obfuscation#comment-variations)):
 
 ```sql
 -- DOES NOT WORK in PostgreSQL (or MySQL)

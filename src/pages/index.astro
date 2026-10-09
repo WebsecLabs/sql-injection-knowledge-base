@@ -5,7 +5,9 @@ import EntryList from "../components/EntryList.astro";
 import Tabs from "../components/Tabs.astro";
 import StructuredData from "../components/StructuredData.astro";
 import { COLLECTION_TYPES, COLLECTION_LABELS } from "../utils/constants";
-import { requireSiteUrl } from "../utils/siteUtils";
+import { getEntryURL } from "../utils/entryUtils";
+import { CANONICAL_URL } from "astro:env/server";
+import { toCanonicalUrl } from "../utils/siteUtils";
 
 // Get entries from all collections
 const mysqlEntries = await getCollection("mysql");
@@ -44,12 +46,10 @@ const activeDatabaseCount = [
   postgresqlEntries.length > 0,
 ].filter(Boolean).length;
 
-// Ensure site is configured for structured data URLs
-const site = requireSiteUrl(Astro.site);
-
-// Build site URL for structured data
-const siteUrl = site.href;
-const searchUrl = new URL(`${import.meta.env.BASE_URL}search`, site).href;
+// Structured data describes the official site
+const baseUrl = import.meta.env.BASE_URL;
+const siteUrl = toCanonicalUrl(baseUrl, baseUrl, CANONICAL_URL);
+const searchUrl = toCanonicalUrl(`${baseUrl}search/`, baseUrl, CANONICAL_URL);
 ---
 
 <Layout
@@ -95,7 +95,7 @@ const searchUrl = new URL(`${import.meta.env.BASE_URL}search`, site).href;
     </div>
 
     <div class="cta-container">
-      <a href={`${import.meta.env.BASE_URL}mysql/intro`} class="explore-button">
+      <a href={getEntryURL("mysql", "intro", baseUrl)} class="explore-button">
         <span>Explore Documentation</span>
         <svg
           xmlns="http://www.w3.org/2000/svg"

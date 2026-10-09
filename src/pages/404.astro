@@ -1,0 +1,105 @@
+---
+import Layout from "../layouts/Layout.astro";
+import { loadAllCollections } from "../utils/collectionLoader";
+import { COLLECTION_LABELS, COLLECTION_TYPES } from "../utils/constants";
+import { getEntryURL, getFirstEntrySlug } from "../utils/entryUtils";
+
+const collections = await loadAllCollections();
+const baseUrl = import.meta.env.BASE_URL;
+
+// Link each database to its first entry, as the navbar does
+const databases = COLLECTION_TYPES.filter((c) => c !== "extras").flatMap((collection) => {
+  const slug = getFirstEntrySlug(collections[`${collection}Entries`] ?? []);
+  return slug
+    ? [{ label: COLLECTION_LABELS[collection], href: getEntryURL(collection, slug, baseUrl) }]
+    : [];
+});
+---
+
+<Layout
+  title="Page not found - SQL Injection KB"
+  description="The requested page does not exist in the SQL Injection Knowledge Base."
+  showSidebar={false}
+  collections={collections}
+  noindex
+>
+  <div class="not-found">
+    <p class="not-found-code" aria-hidden="true">
+      404
+    </p>
+    <h1>Page not found</h1>
+    <p>
+      This page does not exist or has moved. Search the knowledge base, or start from a database:
+    </p>
+
+    <a class="not-found-search" href={`${baseUrl}search/`}>
+      Search the knowledge base
+    </a>
+
+    <nav aria-label="Databases">
+      <ul class="not-found-links">
+        {databases.map(({ label, href }) => (
+          <li>
+            <a href={href}>{label}</a>
+          </li>
+        ))}
+      </ul>
+    </nav>
+
+    <p>
+      <a href={baseUrl}>Back to the home page</a>
+    </p>
+  </div>
+</Layout>
+
+<style>
+  .not-found {
+    max-width: 40rem;
+    margin: 4rem auto;
+    padding: 0 1rem;
+    text-align: center;
+  }
+
+  .not-found-code {
+    margin: 0;
+    font-family: var(--font-mono);
+    font-size: 4rem;
+    font-weight: 700;
+    line-height: 1;
+    color: var(--color-primary);
+  }
+
+  .not-found-search {
+    display: inline-block;
+    margin: 1rem 0 2rem;
+    padding: 0.75rem 1.5rem;
+    border-radius: 4px;
+    background: var(--color-primary);
+    color: white;
+    font-weight: 600;
+    text-decoration: none;
+  }
+
+  .not-found-search:hover {
+    filter: brightness(1.1);
+  }
+
+  .not-found-links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    justify-content: center;
+    margin: 0 0 2rem;
+    padding: 0;
+    list-style: none;
+  }
+
+  .not-found-links a {
+    display: inline-block;
+    min-height: 2.75rem;
+    padding: 0.625rem 1rem;
+    border: 1px solid var(--color-border);
+    border-radius: 4px;
+    text-decoration: none;
+  }
+</style>

@@ -5,12 +5,14 @@
  * Styling consolidated in navbar.css for consistent theming
  */
 import { type CollectionEntry } from "astro:content";
+import { getEntryURL } from "../utils/entryUtils";
+import type { ValidCollection } from "../utils/constants";
 
 interface Props {
   category: string;
   entries: CollectionEntry<"mysql" | "mariadb" | "mssql" | "oracle" | "postgresql" | "extras">[];
   baseUrl: string;
-  section: string;
+  section: ValidCollection;
   isActivePath: (section: string, slug: string) => boolean;
 }
 
@@ -34,7 +36,7 @@ const { category, entries, baseUrl, section, isActivePath } = Astro.props;
     {entries.map((entry) => (
       <li>
         <a
-          href={`${baseUrl}${section}/${entry.id}`}
+          href={getEntryURL(section, entry.id, baseUrl)}
           class:list={["dropdown-item", { active: isActivePath(section, entry.id) }]}
           aria-label={entry.data.title || `${section.toUpperCase()} ${entry.id}`}
         >

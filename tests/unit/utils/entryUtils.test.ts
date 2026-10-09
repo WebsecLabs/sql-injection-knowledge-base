@@ -35,21 +35,25 @@ function createMockEntry(slug: string, title: string, category: string, order: n
 describe("entryUtils", () => {
   describe("getEntryURL", () => {
     it("generates URL with root base", () => {
-      expect(getEntryURL("mysql", "intro", "/")).toBe("/mysql/intro");
+      expect(getEntryURL("mysql", "intro", "/")).toBe("/mysql/intro/");
     });
 
     it("generates URL with custom base", () => {
       expect(getEntryURL("mysql", "intro", "/sql-injection-knowledge-base/")).toBe(
-        "/sql-injection-knowledge-base/mysql/intro"
+        "/sql-injection-knowledge-base/mysql/intro/"
       );
     });
 
     it("generates URL with default base when not provided", () => {
-      expect(getEntryURL("oracle", "timing")).toBe("/oracle/timing");
+      expect(getEntryURL("oracle", "timing")).toBe("/oracle/timing/");
     });
 
     it("handles different collection types", () => {
-      expect(getEntryURL("extras", "about", "/")).toBe("/extras/about");
+      expect(getEntryURL("extras", "about", "/")).toBe("/extras/about/");
+    });
+
+    it("tolerates a base without a trailing slash", () => {
+      expect(getEntryURL("mysql", "intro", "/kb")).toBe("/kb/mysql/intro/");
     });
   });
 

@@ -4,7 +4,8 @@
  * Extracts common pattern used for MySQL, MSSQL, Oracle, and Extras sections.
  */
 import type { CollectionEntry } from "astro:content";
-import { getSortedCategories } from "../utils/entryUtils";
+import { getEntryURL, getSortedCategories } from "../utils/entryUtils";
+import type { ValidCollection } from "../utils/constants";
 import { createSectionActiveChecker } from "../utils/pathUtils";
 
 interface CategoryGroup {
@@ -15,7 +16,7 @@ interface CategoryGroup {
 
 interface Props {
   /** Section identifier used in data attributes and URL paths */
-  sectionId: string;
+  sectionId: ValidCollection;
   /** Display title for the section header */
   title: string;
   /** Whether this section is currently active/expanded */
@@ -83,7 +84,7 @@ const contentId = `sidebar-section-content-${sectionId}`;
               {entriesByCategory[category].map((entry) => (
                 <li>
                   <a
-                    href={`${import.meta.env.BASE_URL}${sectionId}/${entry.id}`}
+                    href={getEntryURL(sectionId, entry.id, import.meta.env.BASE_URL)}
                     class={isActivePath(entry.id) ? "active" : ""}
                     aria-current={isActivePath(entry.id) ? "page" : undefined}
                   >
@@ -99,7 +100,7 @@ const contentId = `sidebar-section-content-${sectionId}`;
           {entries.map((entry) => (
             <li>
               <a
-                href={`${import.meta.env.BASE_URL}${sectionId}/${entry.id}`}
+                href={getEntryURL(sectionId, entry.id, import.meta.env.BASE_URL)}
                 class={isActivePath(entry.id) ? "active" : ""}
                 aria-current={isActivePath(entry.id) ? "page" : undefined}
               >

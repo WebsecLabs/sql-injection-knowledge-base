@@ -1,7 +1,7 @@
 ---
 import { getCollection } from "astro:content";
 import { COLLECTION_TYPES, type ValidCollection } from "../../utils/constants";
-import { getFirstEntrySlug } from "../../utils/entryUtils";
+import { getEntryURL, getFirstEntrySlug } from "../../utils/entryUtils";
 
 export async function getStaticPaths() {
   const paths = [];
@@ -27,7 +27,7 @@ interface Props {
 }
 
 return Astro.redirect(
-  `${import.meta.env.BASE_URL.replace(/\/$/, "")}/${Astro.props.collectionName}/${Astro.props.firstSlug}`,
+  getEntryURL(Astro.props.collectionName, Astro.props.firstSlug, import.meta.env.BASE_URL),
   301
 );
 ---

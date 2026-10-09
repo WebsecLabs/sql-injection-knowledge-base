@@ -7,10 +7,12 @@ import StructuredData from "../../components/StructuredData.astro";
 import { COLLECTION_TYPES, COLLECTION_LABELS, type ValidCollection } from "../../utils/constants";
 import {
   getAdjacentEntries,
+  getEntryURL,
   getFirstEntrySlug,
   sortEntriesByCategory,
 } from "../../utils/entryUtils";
-import { requireSiteUrl } from "../../utils/siteUtils";
+import { CANONICAL_URL } from "astro:env/server";
+import { toCanonicalUrl } from "../../utils/siteUtils";
 
 // Union type for entries from any valid collection
 type AnyEntry = CollectionEntry<ValidCollection>;
@@ -80,22 +82,19 @@ const { headings } = await render(entry);
 // Filter to H2 and H3 headings for TOC (depth 2 and 3)
 const tocHeadings = headings.filter((h) => h.depth === 2 || h.depth === 3);
 
-// Ensure site is configured for structured data URLs
-const site = requireSiteUrl(Astro.site);
-
-// Build breadcrumb data for structured data
-const siteUrl = site.href;
+// Structured data describes the official site (CANONICAL_URL)
+const baseUrl = import.meta.env.BASE_URL;
+const canonical = (path: string) => toCanonicalUrl(path, baseUrl, CANONICAL_URL);
+const homeUrl = baseUrl;
+const collectionUrl = getEntryURL(collectionName, firstEntrySlug, baseUrl);
 const breadcrumbItems = [
-  { name: "Home", url: siteUrl },
-  {
-    name: collectionTitle,
-    url: new URL(`${import.meta.env.BASE_URL}${collectionName}/${firstEntrySlug}`, site).href,
-  },
+  { name: "Home", url: canonical(homeUrl) },
+  { name: collectionTitle, url: canonical(collectionUrl) },
   { name: entry.data.title },
 ];
 
 // Build article data for structured data
-const articleUrl = new URL(Astro.url.pathname, site).href;
+const articleUrl = canonical(Astro.url.pathname);
 const articleData = {
   title: entry.data.title,
   description:
@@ -105,6 +104,7 @@ const articleData = {
   category: entry.data.category,
   tags: entry.data.tags,
   url: articleUrl,
+  image: canonical(`${baseUrl}og-image.png`),
 };
 ---
 
@@ -129,13 +129,11 @@ const articleData = {
     </span>
     <div class="entry-header" data-pagefind-ignore transition:animate="fade">
       <nav class="breadcrumbs" aria-label="Breadcrumb">
-        <a href={import.meta.env.BASE_URL}>Home</a>
+        <a href={homeUrl}>Home</a>
         <span class="separator" aria-hidden="true">
           /
         </span>
-        <a href={`${import.meta.env.BASE_URL}${collectionName}/${firstEntrySlug}`}>
-          {collectionTitle}
-        </a>
+        <a href={collectionUrl}>{collectionTitle}</a>
         <span class="separator" aria-hidden="true">
           /
         </span>

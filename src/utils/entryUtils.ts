@@ -26,14 +26,17 @@ export const CATEGORY_ORDER: Record<string, number> = {
 const DEFAULT_CATEGORY_ORDER = 99;
 
 /**
- * Generate a URL for a content entry
+ * Generate the URL for a content entry.
+ * Entry URLs always end with a slash, matching the built directory URLs and
+ * the canonical URLs, so links never go through a redirect.
  */
 export function getEntryURL(
   collection: ValidCollection,
   slug: string,
   baseUrl: string = "/"
 ): string {
-  return `${baseUrl}${collection}/${slug}`;
+  const base = baseUrl.endsWith("/") ? baseUrl : `${baseUrl}/`;
+  return `${base}${collection}/${slug}/`;
 }
 
 /**

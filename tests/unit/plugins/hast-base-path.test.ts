@@ -19,19 +19,34 @@ describe("hastBasePath", () => {
 
   it("prefixes internal absolute links in Markdown syntax", () => {
     expect(render("[a](/mysql/intro)", base)).toContain(
-      'href="/sql-injection-knowledge-base/mysql/intro"'
+      'href="/sql-injection-knowledge-base/mysql/intro/"'
     );
   });
 
   it("prefixes internal absolute links in raw HTML", () => {
     expect(render('<a href="/mysql/intro">a</a>', base)).toContain(
-      'href="/sql-injection-knowledge-base/mysql/intro"'
+      'href="/sql-injection-knowledge-base/mysql/intro/"'
     );
   });
 
   it("does not double-prefix links that already include the base", () => {
-    expect(render("[a](/sql-injection-knowledge-base/mysql/intro)", base)).toContain(
-      'href="/sql-injection-knowledge-base/mysql/intro"'
+    expect(render("[a](/sql-injection-knowledge-base/mysql/intro/)", base)).toContain(
+      'href="/sql-injection-knowledge-base/mysql/intro/"'
+    );
+  });
+
+  it("adds the trailing slash before a fragment or query string", () => {
+    expect(render("[a](/mysql/intro#comments)", base)).toContain(
+      'href="/sql-injection-knowledge-base/mysql/intro/#comments"'
+    );
+    expect(render("[a](/search?q=union)", base)).toContain(
+      'href="/sql-injection-knowledge-base/search/?q=union"'
+    );
+  });
+
+  it("leaves links to files unchanged apart from the base", () => {
+    expect(render("[a](/og-image.png)", base)).toContain(
+      'href="/sql-injection-knowledge-base/og-image.png"'
     );
   });
 
@@ -45,10 +60,10 @@ describe("hastBasePath", () => {
   });
 
   it("normalizes a base without a trailing slash", () => {
-    expect(render("[a](/mysql/intro)", "/kb")).toContain('href="/kb/mysql/intro"');
+    expect(render("[a](/mysql/intro)", "/kb")).toContain('href="/kb/mysql/intro/"');
   });
 
-  it("is a no-op for the root base", () => {
-    expect(render("[a](/mysql/intro)", "/")).toContain('href="/mysql/intro"');
+  it("only adds the trailing slash for the root base", () => {
+    expect(render("[a](/mysql/intro)", "/")).toContain('href="/mysql/intro/"');
   });
 });

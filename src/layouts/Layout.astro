@@ -8,7 +8,8 @@ import TableOfContents from "../components/TableOfContents.astro";
 import websecLogo from "../assets/websec-logo.png";
 import { TOC_MIN_HEADINGS } from "../utils/uiConstants";
 import SearchModal from "../components/search/SearchModal.astro";
-import { requireSiteUrl } from "../utils/siteUtils";
+import { CANONICAL_URL } from "astro:env/server";
+import { toCanonicalUrl } from "../utils/siteUtils";
 
 // Import CSS — main.css imports variables, base, layout, navbar, sidebar, components, code, footer.
 // toc.css and search-modal.css are additional and imported separately.
@@ -35,6 +36,8 @@ interface Props {
   lastModified?: Date;
   /** Additional CSS class for page-layout div */
   pageClass?: string;
+  /** Keep the page out of search indexes (search results, error pages) */
+  noindex?: boolean;
   // Allow pages to pass their own collections to avoid duplicate loading
   collections?: {
     mysqlEntries?: CollectionEntry<"mysql">[];
@@ -54,16 +57,15 @@ const {
   pageType = "website",
   lastModified,
   pageClass = "",
+  noindex = false,
   collections,
 } = Astro.props;
 
-// Ensure site is configured (required for canonical URLs and SEO)
-const site = requireSiteUrl(Astro.site);
-
-// Build canonical URL using site config and current path
-const canonicalURL = new URL(Astro.url.pathname, site);
-// Build OG image URL
-const ogImageURL = new URL(`${import.meta.env.BASE_URL}og-image.png`, site);
+// Canonical and social URLs always point at the official home (CANONICAL_URL),
+// so copies of the site deployed elsewhere do not compete with it in search
+const baseUrl = import.meta.env.BASE_URL;
+const canonicalURL = toCanonicalUrl(Astro.url.pathname, baseUrl, CANONICAL_URL);
+const ogImageURL = toCanonicalUrl(`${baseUrl}og-image.png`, baseUrl, CANONICAL_URL);
 
 // Show TOC only if there are enough headings
 const showToc = tocHeadings.length >= TOC_MIN_HEADINGS;
@@ -83,15 +85,10 @@ const extrasEntries = collections?.extrasEntries ?? (await getCollection("extras
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
     <link rel="icon" type="image/png" href={`${import.meta.env.BASE_URL}favicon.png`} />
-    <link rel="canonical" href={canonicalURL.href} />
+    {!noindex && <link rel="canonical" href={canonicalURL} />}
     <title>{title}</title>
     <meta name="description" content={description} />
-    <meta name="robots" content="index, follow" />
-    <meta
-      name="keywords"
-      content="SQL injection, SQL injection techniques, SQLi, Boolean-based blind injection, Time-based blind injection, UNION-based injection, Error-based injection, WAF bypass, penetration testing, MySQL injection, PostgreSQL injection, MSSQL injection, Oracle injection, MariaDB injection, SQL injection cheatsheet, web application security"
-    />
-    <meta name="HandheldFriendly" content="true" />
+    <meta name="robots" content={noindex ? "noindex, follow" : "index, follow"} />
     <meta name="author" content="Websec" />
 
     <!-- Theme initialization - runs before page renders to prevent flash -->
@@ -152,11 +149,11 @@ const extrasEntries = collections?.extrasEntries ?? (await getCollection("extras
 
     <!-- Open Graph / Facebook -->
     <meta property="og:type" content={pageType === "article" ? "article" : "website"} />
-    <meta property="og:url" content={canonicalURL.href} />
+    <meta property="og:url" content={canonicalURL} />
     <meta property="og:title" content={title} />
     <meta property="og:description" content={description} />
     <meta property="og:site_name" content="SQL Injection Knowledge Base" />
-    <meta property="og:image" content={ogImageURL.href} />
+    <meta property="og:image" content={ogImageURL} />
     <meta property="og:image:type" content="image/png" />
     <meta property="og:image:width" content="1200" />
     <meta property="og:image:height" content="630" />
@@ -171,10 +168,9 @@ const extrasEntries = collections?.extrasEntries ?? (await getCollection("extras
 
     <!-- Twitter -->
     <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:url" content={canonicalURL.href} />
     <meta name="twitter:title" content={title} />
     <meta name="twitter:description" content={description} />
-    <meta name="twitter:image" content={ogImageURL.href} />
+    <meta name="twitter:image" content={ogImageURL} />
     <meta name="twitter:image:alt" content="SQL Injection Knowledge Base" />
 
     <style is:global>

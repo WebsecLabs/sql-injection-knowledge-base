@@ -106,7 +106,7 @@ test.describe("Theme Toggle", () => {
     expect(toggledBg).not.toBe(initialBg);
 
     // Navigate to another page
-    await page.goto("mysql/intro");
+    await page.goto("mysql/intro/");
 
     // Theme should persist
     const persistedBg = await page.evaluate(

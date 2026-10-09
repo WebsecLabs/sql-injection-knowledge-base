@@ -1,7 +1,7 @@
 import { test, expect, type Page } from "@playwright/test";
 
 // Use a page known to have multiple headings for TOC tests
-const TOC_TEST_PAGE = "mysql/testing-injection";
+const TOC_TEST_PAGE = "mysql/testing-injection/";
 
 // TOC width constants - sync with src/styles/toc.css (.toc width and .toc.toc-collapsed width)
 const TOC_EXPANDED_WIDTH = "250px";
@@ -88,7 +88,7 @@ test.describe("Table of Contents", () => {
     // DEPENDENCY: This test relies on /mssql/default-databases having < 2 h2/h3 headings.
     // As of 2025-03-16, this page contains only a table and one paragraph (no h2/h3 headings).
     // If this test fails, either update the expected page or find another page with < 2 headings.
-    await page.goto("mssql/default-databases");
+    await page.goto("mssql/default-databases/");
     await page.waitForLoadState("networkidle");
 
     const toc = page.locator("#toc");
@@ -168,7 +168,7 @@ test.describe("Table of Contents", () => {
     await expect(toc).toHaveClass(/toc-collapsed/);
 
     // Navigate to another page with TOC
-    await page.goto("mysql/fuzzing-obfuscation");
+    await page.goto("mysql/fuzzing-obfuscation/");
     await page.waitForLoadState("networkidle");
 
     // Wait for TOC to be visible on new page
