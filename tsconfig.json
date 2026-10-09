@@ -4,7 +4,6 @@
     "strictNullChecks": true,
     "allowJs": true,
     "skipLibCheck": true,
-    "baseUrl": ".",
     "paths": {
       "@/*": ["./src/*"]
     },
