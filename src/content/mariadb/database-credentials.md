@@ -7,8 +7,6 @@ tags: ["credentials", "authentication", "user data"]
 lastUpdated: 2025-12-18
 ---
 
-## Database Credentials
-
 When performing SQL injection attacks against MariaDB, extracting database credentials can provide valuable information for further exploitation.
 
 | Information  | Query                                                                         |

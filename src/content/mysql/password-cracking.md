@@ -7,11 +7,9 @@ tags: ["password cracking", "authentication", "hash breaking"]
 lastUpdated: 2025-03-15
 ---
 
-## Password Cracking
-
 After extracting MySQL password hashes through SQL injection, the next step is often to attempt to crack these hashes to obtain cleartext passwords. This knowledge can be useful for privilege escalation, lateral movement, or accessing other systems where credentials might be reused.
 
-### MySQL Hash Types
+## MySQL Hash Types
 
 Before attempting to crack MySQL password hashes, it's important to identify the hash type:
 
@@ -22,7 +20,7 @@ Before attempting to crack MySQL password hashes, it's important to identify the
 | 5.7+ (default)  | '\*' + 40-character hex | `*2470C0C06DEE42FD1618BB99005ADCA2EC9D1E19` |
 | 8.0+ (optional) | '$A$005$' + mixed case  | `$A$005$XKK#jY,d89Z0s8...`                  |
 
-### Cracking Tools
+## Cracking Tools
 
 Several tools can be used to crack MySQL password hashes:
 
@@ -34,7 +32,7 @@ Several tools can be used to crack MySQL password hashes:
 | Medusa          | Online password cracker          | For direct MySQL authentication  |
 | Custom scripts  | Python/Ruby scripts              | For specialized attacks          |
 
-### Hashcat Commands for MySQL Hashes
+## Hashcat Commands for MySQL Hashes
 
 ```bash
 # MySQL pre-4.1 (hash mode 300)
@@ -47,7 +45,7 @@ hashcat -m 300 -a 0 mysql_hashes.txt wordlist.txt
 hashcat -m 11200 -a 0 mysql_hashes.txt wordlist.txt
 ```
 
-### John the Ripper Commands
+## John the Ripper Commands
 
 ```bash
 # MySQL pre-4.1
@@ -57,9 +55,9 @@ john --format=mysql mysql_old_hashes.txt
 john --format=mysql-sha1 mysql_hashes.txt
 ```
 
-### Attack Strategies
+## Attack Strategies
 
-#### Dictionary Attack
+### Dictionary Attack
 
 Using a wordlist of common passwords:
 
@@ -67,7 +65,7 @@ Using a wordlist of common passwords:
 hashcat -m 11200 -a 0 mysql_hashes.txt rockyou.txt
 ```
 
-#### Rule-based Attack
+### Rule-based Attack
 
 Applying transformations to dictionary words:
 
@@ -75,7 +73,7 @@ Applying transformations to dictionary words:
 hashcat -m 11200 -a 0 mysql_hashes.txt rockyou.txt -r rules/best64.rule
 ```
 
-#### Brute Force Attack
+### Brute Force Attack
 
 Trying all possible combinations of characters:
 
@@ -84,7 +82,7 @@ Trying all possible combinations of characters:
 hashcat -m 11200 -a 3 mysql_hashes.txt ?l?l?l?l?l?l?l?l
 ```
 
-#### Mask Attack
+### Mask Attack
 
 Targeted brute force using patterns:
 
@@ -93,7 +91,7 @@ Targeted brute force using patterns:
 hashcat -m 11200 -a 3 mysql_hashes.txt ?l?l?l?l?l?l?d?d?d
 ```
 
-#### Hybrid Attack
+### Hybrid Attack
 
 Combining dictionary words with patterns:
 
@@ -102,7 +100,7 @@ Combining dictionary words with patterns:
 hashcat -m 11200 -a 6 mysql_hashes.txt rockyou.txt ?d?d?d?d
 ```
 
-### Common Default Passwords
+## Common Default Passwords
 
 Many MySQL installations use default or weak passwords:
 
@@ -114,7 +112,7 @@ Many MySQL installations use default or weak passwords:
 | user     | user, password                 |
 | test     | test, password                 |
 
-### Wordlist Resources
+## Wordlist Resources
 
 Some useful wordlist sources:
 
@@ -123,7 +121,7 @@ Some useful wordlist sources:
 3. HashesOrg (repository of real-world password leaks)
 4. CrackStation (very large wordlist)
 
-### Special Considerations for MySQL Passwords
+## Special Considerations for MySQL Passwords
 
 1. **Pre-4.1 Hash Weaknesses**: The old MySQL hash algorithm is extremely weak and can be cracked quickly.
 
@@ -133,7 +131,7 @@ Some useful wordlist sources:
 
 4. **Common Patterns**: Database passwords often follow patterns like "dbname_user" or "company_db".
 
-### Practical Example Workflow
+## Practical Example Workflow
 
 1. **Extract hashes**:
 
@@ -161,14 +159,14 @@ Some useful wordlist sources:
    hashcat -m 300 mysql_hashes_clean.txt --show
    ```
 
-### Ethical and Legal Considerations
+## Ethical and Legal Considerations
 
 - Only crack password hashes of systems you have explicit permission to test
 - Maintain proper documentation and authorization
 - Report findings responsibly
 - Do not use cracked passwords for unauthorized access
 
-### Mitigation Strategies
+## Mitigation Strategies
 
 To protect against password cracking:
 

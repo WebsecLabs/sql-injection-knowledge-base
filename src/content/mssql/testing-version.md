@@ -7,11 +7,9 @@ tags: ["version detection", "reconnaissance"]
 lastUpdated: 2025-03-15
 ---
 
-## Testing Version
-
 Identifying the version of Microsoft SQL Server is an important reconnaissance step in SQL injection testing. Different versions have different capabilities, vulnerabilities, and syntax support.
 
-### Using Version Functions
+## Using Version Functions
 
 MSSQL provides several functions to determine the database version:
 
@@ -22,7 +20,7 @@ MSSQL provides several functions to determine the database version:
 | `SERVERPROPERTY('ProductLevel')`   | Returns the update level (e.g., RTM, SP1, SP2)              |
 | `SERVERPROPERTY('Edition')`        | Returns the edition (e.g., Enterprise, Standard)            |
 
-### Examples
+## Examples
 
 ```sql
 -- Basic version information
@@ -34,7 +32,7 @@ SELECT SERVERPROPERTY('ProductVersion') AS Version,
        SERVERPROPERTY('Edition') AS Edition;
 ```
 
-### Version-based Detection Techniques
+## Version-based Detection Techniques
 
 You can use conditional statements to determine the version when direct version output isn't visible:
 
@@ -50,7 +48,7 @@ BEGIN
 END
 ```
 
-### Common Version Identifiers
+## Common Version Identifiers
 
 The `@@VERSION` output starts with different text depending on the version:
 
@@ -66,7 +64,7 @@ The `@@VERSION` output starts with different text depending on the version:
 | Microsoft SQL Server 2005    | SQL Server 2005 (9.x)        |
 | Microsoft SQL Server 2000    | SQL Server 2000 (8.x)        |
 
-### Injection Examples
+## Injection Examples
 
 ```sql
 -- Using ORDER BY to test version-specific syntax

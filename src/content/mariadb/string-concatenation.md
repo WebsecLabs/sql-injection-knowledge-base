@@ -7,8 +7,6 @@ tags: ["string operations", "concatenation", "sql functions"]
 lastUpdated: 2025-12-18
 ---
 
-## String Concatenation
-
 String concatenation is essential for constructing complex queries or bypassing filters during SQL injection. MariaDB provides several methods to concatenate strings.
 
 ## Adjacent Literal Concatenation

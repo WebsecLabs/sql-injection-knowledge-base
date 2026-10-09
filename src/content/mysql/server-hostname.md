@@ -7,8 +7,6 @@ tags: ["hostname", "server information"]
 lastUpdated: 2025-03-15
 ---
 
-## Server Hostname
-
 Retrieving the server hostname can provide useful information about the target environment during SQL injection testing. This information can be especially helpful for lateral movement or identifying the specific server in a network.
 
 In MySQL, you can retrieve the server hostname using:
@@ -17,7 +15,7 @@ In MySQL, you can retrieve the server hostname using:
 @@HOSTNAME
 ```
 
-### Example
+## Example
 
 ```sql
 SELECT @@hostname;

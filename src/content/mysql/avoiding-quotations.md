@@ -7,11 +7,9 @@ tags: ["quotes", "evasion", "bypass"]
 lastUpdated: 2025-03-15
 ---
 
-## Avoiding Quotations
-
 In some scenarios, web applications may implement filters that block or sanitize quotation marks (`'` or `"`). These techniques allow you to construct strings without using quotes.
 
-### Using Hexadecimal Notation
+## Using Hexadecimal Notation
 
 MySQL allows representing string literals in hexadecimal by prefixing the hex value with `0x`:
 
@@ -20,7 +18,7 @@ MySQL allows representing string literals in hexadecimal by prefixing the hex va
 SELECT 0x61646D696E;
 ```
 
-### Using CHAR() Function
+## Using CHAR() Function
 
 The `CHAR()` function converts decimal ASCII values to characters:
 
@@ -33,7 +31,7 @@ SELECT CONCAT(CHAR(114, 111, 111, 116), CHAR(64), CHAR(108, 111, 99, 97, 108, 10
 -- Results in: root@localhost
 ```
 
-### Using Prepared Statements
+## Using Prepared Statements
 
 For more complex scenarios in MySQL 5+, you can use prepared statements:
 
@@ -44,7 +42,7 @@ EXECUTE stmt;
 -- Executes: SELECT @@version
 ```
 
-### Examples in Injection Context
+## Examples in Injection Context
 
 ```sql
 -- Original query using quotes

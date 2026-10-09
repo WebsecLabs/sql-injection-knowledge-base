@@ -7,11 +7,9 @@ tags: ["password hashing", "authentication", "security"]
 lastUpdated: 2025-12-18
 ---
 
-## Password Hashing
-
 MariaDB uses different password hashing algorithms depending on the version. Understanding these algorithms is important during SQL injection attacks when attempting to extract and potentially crack user passwords.
 
-### MariaDB Password Hash Evolution
+## MariaDB Password Hash Evolution
 
 | MariaDB Version | Default Auth Plugin   | Hash Format                     |
 | --------------- | --------------------- | ------------------------------- |
@@ -19,7 +17,7 @@ MariaDB uses different password hashing algorithms depending on the version. Und
 
 > **Note:** Unlike MySQL 8.0+ which defaults to `caching_sha2_password`, MariaDB uses `mysql_native_password` across all supported versions (Pre-10.0 through 10.4+). The hash format remains consistent: a 41-character string with `*` prefix followed by the uppercase hex representation of SHA1(SHA1(password)).
 
-#### Checking MariaDB Version
+### Checking MariaDB Version
 
 ```sql
 -- Get full version string
@@ -30,7 +28,7 @@ SELECT VERSION() AS version;
 SHOW VARIABLES LIKE 'version%';
 ```
 
-### MariaDB Old Password Algorithm (Pre-4.1)
+## MariaDB Old Password Algorithm (Pre-4.1)
 
 The old password algorithm used before MySQL/MariaDB 4.1 is a simple 16-byte hash:
 
@@ -46,7 +44,7 @@ This hash is:
 - No prefix
 - Very weak (easily cracked)
 
-### MariaDB Standard Password Algorithm
+## MariaDB Standard Password Algorithm
 
 The password algorithm uses double SHA1:
 
@@ -62,7 +60,7 @@ The algorithm:
 2. Calculate SHA1(hash1) = hash2
 3. Return '\*' + UPPERCASE(HEX(hash2))
 
-#### Manual Hash Generation
+### Manual Hash Generation
 
 You can manually generate the same hash using SHA1 functions:
 
@@ -74,7 +72,7 @@ SELECT
 -- Both return: '*94BDCEBE19083CE2A1F959FD02F964C7AF4CFC29'
 ```
 
-### Where Password Hashes Are Stored
+## Where Password Hashes Are Stored
 
 MariaDB stores password hashes in system tables:
 
@@ -86,7 +84,7 @@ SELECT User, Host, authentication_string FROM mysql.user;
 SELECT User, Host, Password FROM mysql.user;
 ```
 
-### Extracting Password Hashes
+## Extracting Password Hashes
 
 When exploiting SQL injection vulnerabilities, password hashes can be obtained:
 
@@ -110,7 +108,7 @@ FROM (SELECT User, Password FROM mysql.user LIMIT 5) AS limited_users
 
 > **Note:** Once hashes are extracted, see [Password Cracking](/mariadb/password-cracking) for techniques to crack these hashes using tools like Hashcat and John the Ripper.
 
-### Password Hash Format Examples
+## Password Hash Format Examples
 
 ```text
 -- Pre-4.1 hash for 'password' (16 hex chars)
@@ -123,7 +121,7 @@ FROM (SELECT User, Password FROM mysql.user LIMIT 5) AS limited_users
 VxvQhxjLHDOZ9zMX1bK7
 ```
 
-### Hash Format Recognition
+## Hash Format Recognition
 
 Use regex patterns to identify hash types:
 
@@ -145,7 +143,7 @@ SELECT
 FROM mysql.user
 ```
 
-### Special Password Values
+## Special Password Values
 
 MariaDB uses special values for certain account states:
 
@@ -163,7 +161,7 @@ NULL
 '*LK*'
 ```
 
-#### Checking for Locked Accounts
+### Checking for Locked Accounts
 
 ```sql
 -- MariaDB 10.4+ has account_locked column
@@ -174,7 +172,7 @@ SELECT User, Host, Password FROM mysql.user
 WHERE Password IN ('*THISISNOTAVALIDPASSWORDHASH*', '*LK*')
 ```
 
-### Dual Password Mechanism
+## Dual Password Mechanism
 
 MariaDB can maintain compatibility with old password hashes:
 
@@ -190,7 +188,7 @@ SELECT PLUGIN_NAME FROM information_schema.plugins
 WHERE PLUGIN_TYPE = 'AUTHENTICATION'
 ```
 
-### Functions to Generate Password Hashes
+## Functions to Generate Password Hashes
 
 MariaDB provides several functions to create and work with password hashes:
 
@@ -204,7 +202,7 @@ SELECT OLD_PASSWORD('mypassword')
 -- Returns: 16 hex characters
 ```
 
-#### Cryptographic Hash Functions
+### Cryptographic Hash Functions
 
 ```sql
 -- SHA1 (40 hex characters) - used in mysql_native_password
@@ -223,7 +221,7 @@ SELECT MD5('password') AS hash
 -- Returns: '5f4dcc3b5aa765d61d8327deb882cf99'
 ```
 
-#### Binary Conversion Functions
+### Binary Conversion Functions
 
 ```sql
 -- UNHEX converts hex string to binary
@@ -242,7 +240,7 @@ SELECT HEX(UNHEX(SHA1('test'))) AS reconverted
 SELECT SHA1('test') AS original, HEX(UNHEX(SHA1('test'))) AS reconverted;
 ```
 
-### MariaDB Authentication Plugins
+## MariaDB Authentication Plugins
 
 MariaDB supports multiple authentication plugins:
 
@@ -254,19 +252,19 @@ MariaDB supports multiple authentication plugins:
 | pam                   | PAM authentication                 |
 | unix_socket           | OS user matching                   |
 
-### Checking Authentication Method
+## Checking Authentication Method
 
 ```sql
 SELECT User, Host, plugin FROM mysql.user;
 ```
 
-### Password Hash Security Considerations
+## Password Hash Security Considerations
 
 1. SHA1-based hashes are vulnerable to rainbow tables (no salt)
 2. MariaDB's `ed25519` plugin is more secure than mysql_native_password
 3. Some MariaDB server configurations may still allow legacy authentication
 
-#### Password Policy Plugin
+### Password Policy Plugin
 
 MariaDB can enforce password policies via the `simple_password_check` plugin:
 
@@ -286,7 +284,7 @@ SHOW VARIABLES LIKE 'simple_password_check%'
 | simple_password_check_minimal_length    | Minimum password length    |
 | simple_password_check_other_characters  | Minimum special characters |
 
-### Notes for Penetration Testers
+## Notes for Penetration Testers
 
 - Password policies are not enforced at the database level by default
 - Password hashes can be transferred between servers of the same version
@@ -294,7 +292,7 @@ SHOW VARIABLES LIKE 'simple_password_check%'
 - MariaDB uses mysql_native_password by default, unlike MySQL 8.0
 - Some apps store passwords in their own tables, often with weaker hashing
 
-#### Check for Users Without Passwords
+### Check for Users Without Passwords
 
 ```sql
 -- Find accounts with empty or NULL passwords
@@ -306,7 +304,7 @@ SELECT User, Host FROM mysql.user
 WHERE authentication_string = '' OR authentication_string IS NULL
 ```
 
-#### Check for Weak Authentication Plugins
+### Check for Weak Authentication Plugins
 
 ```sql
 -- Find users with potentially weaker auth methods
@@ -318,7 +316,7 @@ SELECT PLUGIN_NAME FROM information_schema.plugins
 WHERE PLUGIN_NAME = 'ed25519'
 ```
 
-#### Application Password Storage
+### Application Password Storage
 
 Applications often store passwords in their own tables with varying security:
 
@@ -341,7 +339,7 @@ SELECT
 FROM users
 ```
 
-#### Hash Length Quick Reference
+### Hash Length Quick Reference
 
 | Length | Algorithm     | Security Level |
 | ------ | ------------- | -------------- |

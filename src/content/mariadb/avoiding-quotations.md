@@ -7,8 +7,6 @@ tags: ["quotes", "evasion", "bypass"]
 lastUpdated: 2025-12-18
 ---
 
-## Avoiding Quotations
-
 In some scenarios, web applications may implement filters that block or sanitize quotation marks (`'` or `"`). These techniques allow you to construct strings without using quotes.
 
 ## Using Hexadecimal Notation

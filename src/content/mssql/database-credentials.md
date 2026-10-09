@@ -7,11 +7,9 @@ tags: ["credentials", "authentication", "user data"]
 lastUpdated: 2025-03-15
 ---
 
-## Database Credentials
-
 Extracting database credentials from Microsoft SQL Server can provide valuable information for lateral movement and privilege escalation during penetration testing.
 
-### System Tables with Credential Information
+## System Tables with Credential Information
 
 | Information       | Tables/Views                                                          |
 | ----------------- | --------------------------------------------------------------------- |
@@ -32,7 +30,7 @@ Extracting database credentials from Microsoft SQL Server can provide valuable i
 - `master..syslogins` (legacy): `name`, `loginname`, `password` (returns hash in 2005–2017, NULL in 2019+)
 - `master..sysprocesses` (legacy): `loginame`, `spid`, `dbid`
 
-### Legacy Credential Retrieval
+## Legacy Credential Retrieval
 
 ```sql
 -- Get current login from process list (deprecated since 2005, use sys.dm_exec_sessions)
@@ -56,9 +54,9 @@ SELECT name, type_desc, is_disabled FROM sys.server_principals WHERE type IN ('S
 SELECT name, is_disabled, is_policy_checked FROM sys.sql_logins;
 ```
 
-### Examples
+## Examples
 
-#### Retrieving Current Identity Information
+### Retrieving Current Identity Information
 
 ```sql
 -- Get the current user context
@@ -70,7 +68,7 @@ SELECT USER;              -- Shorthand for USER_NAME()
 SELECT SESSION_USER;      -- Current session user
 ```
 
-#### Retrieving SQL Server Login Information
+### Retrieving SQL Server Login Information
 
 ```sql
 -- Get SQL Server logins (requires high privileges)
@@ -90,7 +88,7 @@ WHERE sp.type NOT IN ('G', 'R')
 ORDER BY sp.name;
 ```
 
-#### Retrieving Role Memberships
+### Retrieving Role Memberships
 
 ```sql
 -- Get server role memberships
@@ -113,7 +111,7 @@ WHERE r.type = 'R'
 ORDER BY r.name, m.name;
 ```
 
-### Notes
+## Notes
 
 1. Access to credential information typically requires high privileges (sysadmin or similar).
 2. `sys.sql_logins` replaced `master.dbo.syslogins` in SQL Server 2005. The legacy view still exists for compatibility but `password` column returns NULL.

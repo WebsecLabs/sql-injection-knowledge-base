@@ -7,8 +7,6 @@ tags: ["MAC address", "UUID", "hardware information"]
 lastUpdated: 2025-12-18
 ---
 
-## Server MAC Address
-
 The Universally Unique Identifier (UUID) in MariaDB is a 128-bit number where the last 12 characters represent the network interface's MAC address. This can be used to identify the physical hardware running the MariaDB server.
 
 ```sql

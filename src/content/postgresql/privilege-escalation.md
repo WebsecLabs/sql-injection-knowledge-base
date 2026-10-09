@@ -7,9 +7,9 @@ tags: ["privesc", "createrole", "security definer", "filenode", "enumeration"]
 lastUpdated: 2025-12-15
 ---
 
-## Privilege Enumeration and Escalation
-
 PostgreSQL has several privilege escalation vectors that can be exploited to gain higher privileges within the database or on the underlying system. This document covers both **enumeration techniques** (identifying escalation opportunities) and **exploitation techniques** (executing privilege escalation).
+
+## Escalation Techniques
 
 ### CREATEROLE Privilege Escalation
 
