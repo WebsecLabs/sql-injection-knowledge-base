@@ -88,8 +88,8 @@
   --color-highlight-line: rgb(43 108 176 / 15%);
   --color-gradient-end: #1a365d;
   --color-nav-text: white;
-  --color-code-button-bg: rgb(0 0 0 / 50%);
-  --color-code-button-hover-bg: rgb(0 0 0 / 70%);
+  --color-code-button-bg: rgb(0 0 0 / 72%);
+  --color-code-button-hover-bg: rgb(0 0 0 / 85%);
   --color-modal-backdrop: rgb(0 0 0 / 60%);
   --color-scroll-shadow: rgb(0 0 0 / 15%);
   --color-badge-mysql-bg: #dbeafe;

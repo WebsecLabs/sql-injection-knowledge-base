@@ -82,8 +82,9 @@ pre code,
   transition: opacity 0.2s ease;
 }
 
+/* Fully opaque when shown, so the label keeps WCAG AA contrast */
 .code-block-wrapper:hover > .copy-button {
-  opacity: 0.7;
+  opacity: 1;
 }
 
 .code-block-wrapper > .copy-button:hover {
@@ -100,7 +101,7 @@ pre code,
 /* Mobile optimization — always show copy button on touch devices (no hover) */
 @media (width <= 768px) {
   .code-block-wrapper > .copy-button {
-    opacity: 0.7;
+    opacity: 1;
     padding: 6px 10px;
     font-size: 0.875rem;
   }
