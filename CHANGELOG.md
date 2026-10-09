@@ -36,7 +36,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - The logo is served as sized WebP at 1x and 2x
 - The search page bundles the Pagefind UI, so it is served from hashed, long-cached URLs
 - nginx sends long-lived caching headers for hashed assets
-- Lighthouse: 100 for accessibility, best practices, SEO and agentic browsing on every page; performance 100 on desktop and 96-98 on simulated mobile
+- Lighthouse: 100 for accessibility, best practices, SEO and agentic browsing on every page; performance 100 on desktop and 97-98 on simulated mobile
 
 ### Security
 
@@ -46,8 +46,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - The Docker image runs nginx as an unprivileged user and no longer advertises the nginx version
 - Assets and scripts are emitted as files rather than inlined, so the CSP needs no `data:` script or font sources
 
+### Accessibility and usability
+
+- Tables in articles scroll inside a focusable, named region instead of widening the page on small screens; pages reflow without horizontal scrolling at 320px
+- Escape closes the open navbar dropdown, the mobile menu and the mobile sidebar, returning focus to the control that opened them; desktop dropdowns close when focus leaves them
+- The mobile sidebar button reports its expanded state, switches to a close icon, moves focus into the drawer, and the closed drawer's links are out of the tab order
+- The search modal has a visible Cancel button on touch screens, a keyboard-scrollable results region, ignores results from superseded searches, recovers from a failed index load, and opens results with client-side navigation
+- A closed search dialog no longer leaves its invisible input reachable by keyboard, and reopening it during the close animation works
+- Copying code is announced to screen readers; theme toggles expose their pressed state with a name that matches the visible label; the home page tab list is named
+- Article titles are no longer repeated as the first heading, and the sidebar heading no longer precedes the page's `h1` at a deeper level, so every page has a single, ordered heading outline
+- Tag chips are visible in dark mode, and the site title no longer clips at phone widths
+- Accessibility tests cover WCAG 2.2 AA, the open search modal and mobile sidebar, and reflow
+
 ### Fixed
 
+- The table of contents stopped responding after navigating to a page without one and back
 - Full search page (`/search`) failed to load results when the site is served under a base path
 - Theme toggle no longer breaks when browser storage is unavailable
 - Broken internal links in the PostgreSQL, MySQL and MariaDB articles
