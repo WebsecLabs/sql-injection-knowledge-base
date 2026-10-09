@@ -235,6 +235,23 @@ test.describe("Accessibility - Keyboard Navigation", () => {
     await expect(mainContent).toBeFocused();
   });
 
+  test("Skip link stays fully off-screen until focused", async ({ page }) => {
+    await page.goto("./");
+
+    const skipLink = page.locator(".skip-link");
+    const bottomEdge = () => skipLink.evaluate((el) => el.getBoundingClientRect().bottom);
+
+    // No part of the link may peek into the viewport
+    await expect.poll(bottomEdge).toBeLessThanOrEqual(0);
+
+    // Once focused it slides fully into view
+    await page.keyboard.press("Tab");
+    await expect(skipLink).toBeFocused();
+    await expect
+      .poll(() => skipLink.evaluate((el) => el.getBoundingClientRect().top))
+      .toBeGreaterThanOrEqual(0);
+  });
+
   test("Focus order follows logical reading order", async ({ page }) => {
     await page.goto("./");
 
