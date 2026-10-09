@@ -25,7 +25,6 @@ const TOC_COLLAPSED_CLASS = "toc-collapsed";
 
 /** Module state */
 let tocObserver: IntersectionObserver | null = null;
-let lastInitializedPath: string | null = null;
 let tocToggleController: AbortController | null = null;
 
 /**
@@ -33,21 +32,22 @@ let tocToggleController: AbortController | null = null;
  * Sets up toggle button and scroll-spy
  */
 export function initToc(): void {
-  const currentPath = window.location.pathname;
-
-  // Avoid re-initialization on the same path (View Transitions)
-  if (lastInitializedPath === currentPath) return;
-
   const toc = document.getElementById("toc");
-  if (!toc) return;
+  if (!toc) {
+    // This page has no TOC; stop observing headings from the previous page
+    cleanupToc();
+    return;
+  }
+
+  // Each navigation brings a fresh #toc element; skip one already set up
+  if (toc.dataset.tocReady === "true") return;
 
   // Restore collapsed state first, then initialize toggle button
   restoreCollapsedState(toc);
   initToggle(toc);
   initScrollSpy();
 
-  // Only mark as initialized after successful setup
-  lastInitializedPath = currentPath;
+  toc.dataset.tocReady = "true";
 }
 
 /**
@@ -190,12 +190,13 @@ function initScrollSpy(): void {
 
 /**
  * Cleanup function for TOC
- * Disconnects the IntersectionObserver
+ * Disconnects the IntersectionObserver and removes the toggle listener
  */
 export function cleanupToc(): void {
   if (tocObserver) {
     tocObserver.disconnect();
     tocObserver = null;
   }
-  lastInitializedPath = null;
+  tocToggleController?.abort();
+  tocToggleController = null;
 }
