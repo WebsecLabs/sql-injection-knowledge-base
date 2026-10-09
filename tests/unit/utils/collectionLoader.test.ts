@@ -90,6 +90,18 @@ describe("collectionLoader", () => {
       );
     });
 
+    it("preserves the original error as cause", async () => {
+      const original = new Error("Network error");
+      mockGetCollection.mockImplementation(async (name: ValidCollection) => {
+        if (name === "mysql") {
+          throw original;
+        }
+        return [];
+      });
+
+      await expect(loadAllCollections()).rejects.toMatchObject({ cause: original });
+    });
+
     it("handles empty collections", async () => {
       mockGetCollection.mockResolvedValue([]);
 

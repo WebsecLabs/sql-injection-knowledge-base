@@ -342,20 +342,15 @@ const searchUrl = new URL(`${import.meta.env.BASE_URL}search`, site).href;
     scroll-snap-align: start;
   }
 
+  /* Padding, cursor and transition come from .tab-item in components.css */
   :global(.tab-item) {
-    padding: 1rem 1.5rem;
-    cursor: pointer;
     font-weight: 600;
     color: var(--color-text-muted);
     border: none;
-    border-bottom: 3px solid transparent;
+    border-bottom: 2px solid transparent;
     background: none;
     font-family: inherit;
     font-size: inherit;
-    transition:
-      color 0.3s ease,
-      background-color 0.3s ease,
-      border-color 0.3s ease;
     white-space: nowrap;
   }
 
@@ -439,7 +434,6 @@ const searchUrl = new URL(`${import.meta.env.BASE_URL}search`, site).href;
     }
 
     :global(.tab-item) {
-      padding: 0.75rem 1rem;
       font-size: 0.9rem;
     }
 
