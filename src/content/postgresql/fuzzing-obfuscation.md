@@ -4,7 +4,7 @@ description: Techniques for bypassing WAFs and filters in PostgreSQL injection
 category: Advanced Techniques
 order: 20
 tags: ["bypass", "WAF", "obfuscation", "filter evasion"]
-lastUpdated: 2025-12-15
+lastUpdated: 2026-10-08
 ---
 
 Modern web applications often employ Web Application Firewalls (WAFs) and other security measures to detect and block SQL injection attempts. Fuzzing and obfuscation techniques can help bypass these protections by disguising SQL injection payloads.
@@ -38,17 +38,18 @@ SEL/**/ECT username FR/**/OM users  -- Syntax error!
 
 ## Whitespace Alternatives
 
-PostgreSQL accepts only **5 characters** as whitespace (tested across Unicode range 0x0000-0xFFFF):
+PostgreSQL accepts only a few ASCII characters as whitespace (tested across Unicode range 0x0000-0xFFFF):
 
-| Hex  | Dec | Character       | URL Encoded |
-| ---- | --- | --------------- | ----------- |
-| 0x09 | 9   | Horizontal Tab  | %09         |
-| 0x0A | 10  | Line Feed (LF)  | %0A         |
-| 0x0C | 12  | Form Feed       | %0C         |
-| 0x0D | 13  | Carriage Return | %0D         |
-| 0x20 | 32  | Space           | %20         |
+| Hex  | Dec | Character       | URL Encoded | Versions |
+| ---- | --- | --------------- | ----------- | -------- |
+| 0x09 | 9   | Horizontal Tab  | %09         | All      |
+| 0x0A | 10  | Line Feed (LF)  | %0A         | All      |
+| 0x0B | 11  | Vertical Tab    | %0B         | 17+      |
+| 0x0C | 12  | Form Feed       | %0C         | All      |
+| 0x0D | 13  | Carriage Return | %0D         | All      |
+| 0x20 | 32  | Space           | %20         | All      |
 
-**Note:** Vertical tab (0x0B) is NOT valid whitespace in PostgreSQL—it causes syntax errors.
+**Note:** Vertical tab (0x0B) is a syntax error up to PostgreSQL 16 and whitespace from 17 (checked on 15, 16, 17 and 18), so `%0B` also tells the major versions apart. A null byte (0x00) never reaches the parser: the wire protocol rejects a query containing one (`invalid message format`).
 
 ```sql
 -- Tab and newline as separators

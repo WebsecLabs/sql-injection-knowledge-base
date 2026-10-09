@@ -4,7 +4,7 @@ description: MariaDB operators useful for SQL injection techniques
 category: Reference
 order: 21
 tags: ["operators", "comparison", "logical", "reference"]
-lastUpdated: 2025-12-18
+lastUpdated: 2026-10-08
 ---
 
 Understanding MariaDB operators is essential for crafting effective SQL injection payloads. This reference covers the most useful operators for SQL injection techniques.
@@ -167,6 +167,8 @@ SELECT * FROM users WHERE id=1 OR username='admin'
 SELECT * FROM users WHERE id=1 || username='admin'
 ```
 
+Unlike MySQL, MariaDB accepts `||` and `&&` without a deprecation warning. With `PIPES_AS_CONCAT` or `ORACLE` in `sql_mode`, `||` concatenates strings instead (`0 || 1` returns `'01'`).
+
 ### Practical Examples in Injections
 
 ```sql
@@ -208,7 +210,7 @@ From highest to lowest:
 2. `BINARY`, `COLLATE`
 3. `!` (logical NOT - unary)
 4. `-` (unary minus), `~` (bitwise NOT)
-5. `||` (string concatenation, when `PIPES_AS_CONCAT` SQL mode is enabled)
+5. `||` (string concatenation, when `PIPES_AS_CONCAT` or `ORACLE` SQL mode is enabled)
 6. `^` (bitwise XOR)
 7. `*`, `/`, `DIV`, `%`, `MOD`
 8. `-`, `+` (binary arithmetic)

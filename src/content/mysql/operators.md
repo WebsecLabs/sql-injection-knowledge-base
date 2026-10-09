@@ -4,7 +4,7 @@ description: MySQL operators useful for SQL injection techniques
 category: Reference
 order: 21
 tags: ["operators", "comparison", "logical", "reference"]
-lastUpdated: 2025-03-15
+lastUpdated: 2026-10-08
 ---
 
 Understanding MySQL operators is essential for crafting effective SQL injection payloads. This reference covers the most useful operators for SQL injection techniques.
@@ -112,6 +112,8 @@ SELECT * FROM users WHERE id=1 OR username='admin'
 SELECT * FROM users WHERE id=1 || username='admin'
 ```
 
+`||` and `&&` still work as `OR` and `AND` on MySQL 8.0, 8.4 and 9.7, but every use logs a deprecation warning, which may show up in logs or an application that reports warnings. With `PIPES_AS_CONCAT` or `ANSI` in `sql_mode`, `||` concatenates strings instead (`0 || 1` returns `'01'`), so test it before relying on it. On every other database in this knowledge base `||` is concatenation or a syntax error, never a logical OR.
+
 ### Practical Examples in Injections
 
 ```sql
@@ -157,7 +159,7 @@ From highest to lowest:
 9. `BETWEEN`, `CASE`, `WHEN`, `THEN`, `ELSE`
 10. `NOT`
 11. `AND`, `&&`
-12. `OR`, `||`
-13. `XOR`
+12. `XOR`
+13. `OR`, `||`
 
 Understanding operator precedence is crucial for complex injections.

