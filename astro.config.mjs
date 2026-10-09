@@ -1,6 +1,6 @@
 import { defineConfig } from "astro/config";
-import tsconfigPaths from "vite-tsconfig-paths";
 import sitemap from "@astrojs/sitemap";
+import { unified } from "@astrojs/markdown-remark";
 import rehypeSlug from "rehype-slug";
 import { remarkBasePath } from "./src/plugins/remark-base-path.mjs";
 
@@ -29,12 +29,16 @@ export default defineConfig({
   },
 
   vite: {
-    plugins: [tsconfigPaths()],
+    resolve: {
+      tsconfigPaths: true,
+    },
   },
 
   markdown: {
-    remarkPlugins: [[remarkBasePath, { base }]],
-    rehypePlugins: [rehypeSlug],
+    processor: unified({
+      remarkPlugins: [[remarkBasePath, { base }]],
+      rehypePlugins: [rehypeSlug],
+    }),
     shikiConfig: {
       themes: {
         light: "github-light",
