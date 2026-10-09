@@ -25,18 +25,25 @@
         role="combobox"
         aria-expanded="false"
         aria-controls="search-modal-results"
-        aria-owns="search-modal-results"
         aria-autocomplete="list"
         autocomplete="off"
         autocorrect="off"
         spellcheck="false"
       />
-      <kbd class="search-modal-esc">Esc</kbd>
+      <button type="button" class="search-modal-close" aria-label="Close search">
+        <kbd class="search-modal-esc" aria-hidden="true">
+          Esc
+        </kbd>
+        <span class="search-modal-cancel" aria-hidden="true">
+          Cancel
+        </span>
+      </button>
     </div>
 
-    <div class="search-modal-body">
+    <!-- Focusable so keyboard users can scroll a long result list -->
+    <div class="search-modal-body" role="region" aria-label="Search results" tabindex="0">
       <div id="search-modal-sr-status" class="sr-only" aria-live="polite"></div>
-      <ul id="search-modal-results" role="listbox" aria-label="Search results"></ul>
+      <ul id="search-modal-results" role="listbox" aria-label="Matching pages"></ul>
       <div id="search-modal-empty" class="search-modal-empty" hidden>
         No results found.
       </div>

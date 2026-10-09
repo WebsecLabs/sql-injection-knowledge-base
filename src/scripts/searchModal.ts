@@ -12,8 +12,10 @@
  * - Global Ctrl/Cmd+K shortcut
  */
 
+import { navigate } from "astro:transitions/client";
 import { debounce, initOnce } from "../utils/domUtils";
 import { COLLECTION_SEARCH_LABELS, type ValidCollection } from "../utils/constants";
+import { setSidebarOpen } from "./mobileSidebar";
 
 // ---------------------------------------------------------------------------
 // Pagefind lazy loading
@@ -37,25 +39,23 @@ interface PagefindResult {
 }
 
 let pagefind: PagefindAPI | null = null;
-let pagefindLoadError: string | null = null;
 
+/** Load the Pagefind index once; a failed load is retried on the next search */
 async function loadPagefind(): Promise<PagefindAPI> {
   if (pagefind) return pagefind;
-  if (pagefindLoadError) throw new Error(pagefindLoadError);
 
-  try {
-    const base = import.meta.env.BASE_URL;
-    const pf = (await import(/* @vite-ignore */ `${base}pagefind/pagefind.js`)) as PagefindAPI;
-    await pf.init();
-    pagefind = pf;
-    return pf;
-  } catch (err) {
-    pagefindLoadError =
-      err instanceof Error && err.message.includes("Failed to fetch")
-        ? "Search requires a build. Run npm run build first."
-        : "Search index failed to load. Try refreshing the page.";
-    throw err;
-  }
+  const base = import.meta.env.BASE_URL;
+  const pf = (await import(/* @vite-ignore */ `${base}pagefind/pagefind.js`)) as PagefindAPI;
+  await pf.init();
+  pagefind = pf;
+  return pf;
+}
+
+function searchErrorMessage(err: unknown): string {
+  if (pagefind) return "Search failed. Please try again.";
+  return import.meta.env.DEV && err instanceof Error && err.message.includes("Failed to fetch")
+    ? "Search requires a build. Run npm run build first."
+    : "Search index failed to load. Check your connection and try again.";
 }
 
 // ---------------------------------------------------------------------------
@@ -125,7 +125,10 @@ function returnFocus(): void {
 // ---------------------------------------------------------------------------
 
 const MAX_RESULTS = 12;
+const NO_RESULTS_TEXT = "No results found.";
 let activeIndex = -1;
+/** Incremented per search so a slow, superseded search never renders */
+let searchGeneration = 0;
 
 interface ModalElements {
   input: HTMLInputElement | null;
@@ -150,6 +153,7 @@ function clearResultsList(resultsList: HTMLElement): void {
 }
 
 function resetSearchState(): void {
+  searchGeneration++;
   activeIndex = -1;
   const { input, resultsList, emptyEl, initialEl, srStatus } = getModalElements();
 
@@ -183,9 +187,12 @@ function renderResults(results: PagefindResultData[]): void {
   }
 
   if (results.length === 0) {
-    if (emptyEl) emptyEl.hidden = false;
+    if (emptyEl) {
+      emptyEl.textContent = NO_RESULTS_TEXT;
+      emptyEl.hidden = false;
+    }
     if (input) input.setAttribute("aria-expanded", "false");
-    if (srStatus) srStatus.textContent = "No results found.";
+    if (srStatus) srStatus.textContent = NO_RESULTS_TEXT;
     return;
   }
 
@@ -247,11 +254,8 @@ function renderResults(results: PagefindResultData[]): void {
 // ---------------------------------------------------------------------------
 
 function navigateToResult(url: string): void {
-  const dialog = document.getElementById("search-modal") as HTMLDialogElement | null;
-  if (dialog?.open) {
-    dialog.close();
-  }
-  window.location.href = url;
+  // The client router keeps the navigation smooth; astro:before-swap closes the modal
+  void navigate(url);
 }
 
 // ---------------------------------------------------------------------------
@@ -320,24 +324,30 @@ async function performSearch(query: string): Promise<void> {
     return;
   }
 
+  const generation = ++searchGeneration;
   try {
     const pf = await loadPagefind();
     const search = await pf.search(query);
     const resultData: PagefindResultData[] = await Promise.all(
       search.results.slice(0, MAX_RESULTS).map((r: PagefindResult) => r.data())
     );
+    if (generation !== searchGeneration) return;
     renderResults(resultData);
-  } catch (_err) {
-    const { emptyEl, initialEl, srStatus } = getModalElements();
+  } catch (err) {
+    if (generation !== searchGeneration) return;
+    const { input, resultsList, emptyEl, initialEl, srStatus } = getModalElements();
+    const message = searchErrorMessage(err);
 
+    if (resultsList) clearResultsList(resultsList);
+    activeIndex = -1;
+    input?.setAttribute("aria-expanded", "false");
+    input?.removeAttribute("aria-activedescendant");
     if (initialEl) initialEl.hidden = true;
     if (emptyEl) {
-      emptyEl.textContent = pagefindLoadError || "Search failed. Please try again.";
+      emptyEl.textContent = message;
       emptyEl.hidden = false;
     }
-    if (srStatus) {
-      srStatus.textContent = pagefindLoadError || "Search failed.";
-    }
+    if (srStatus) srStatus.textContent = message;
   }
 }
 
@@ -347,25 +357,26 @@ const debouncedSearch = debounce(performSearch, 200);
 // Modal open / close
 // ---------------------------------------------------------------------------
 
-function closeMobileSidebar(): void {
-  const sidebar = document.querySelector(".sidebar") as HTMLElement | null;
-  if (sidebar?.classList.contains("mobile-open")) {
-    sidebar.classList.remove("mobile-open");
-    const overlay = document.getElementById("sidebar-overlay");
-    if (overlay) {
-      overlay.classList.remove("active");
-      overlay.setAttribute("aria-hidden", "true");
-    }
-    document.body.style.overflow = "";
-  }
-}
+/** Pending close while the fade-out runs; reopening cancels it */
+let closeTimer: ReturnType<typeof setTimeout> | null = null;
 
 function openSearchModal(): void {
   const dialog = document.getElementById("search-modal") as HTMLDialogElement | null;
-  if (!dialog || dialog.open) return;
+  if (!dialog) return;
 
-  // Close mobile sidebar if open
-  closeMobileSidebar();
+  if (dialog.open) {
+    // Reopened mid fade-out: keep the dialog open with a fresh search
+    if (closeTimer !== null) {
+      clearTimeout(closeTimer);
+      closeTimer = null;
+      resetSearchState();
+      dialog.classList.add("is-open");
+      getModalElements().input?.focus();
+    }
+    return;
+  }
+
+  if (document.querySelector(".sidebar.mobile-open")) setSidebarOpen(false);
 
   // Store focus for restoration
   lastFocusedElement = document.activeElement as HTMLElement | null;
@@ -398,7 +409,9 @@ function closeSearchModal(): void {
   const prefersReduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
   const delay = prefersReduced ? 0 : 80;
 
-  setTimeout(() => {
+  if (closeTimer !== null) return;
+  closeTimer = setTimeout(() => {
+    closeTimer = null;
     if (dialog.open) {
       dialog.close();
     }
@@ -428,6 +441,8 @@ function bindModalEvents(): void {
 
   // Keyboard navigation within input
   input.addEventListener("keydown", handleResultKeydown);
+
+  dialog.querySelector(".search-modal-close")?.addEventListener("click", closeSearchModal);
 
   // Dialog close event - handles all cleanup
   dialog.addEventListener("close", () => {
@@ -500,6 +515,10 @@ function setupGlobalListeners(): void {
 
   // Close modal on View Transition navigation
   document.addEventListener("astro:before-swap", () => {
+    if (closeTimer !== null) {
+      clearTimeout(closeTimer);
+      closeTimer = null;
+    }
     const dialog = document.getElementById("search-modal") as HTMLDialogElement | null;
     if (dialog?.open) {
       // Force close without animation since page is about to swap

@@ -39,7 +39,6 @@ body.search-modal-open {
 
 #search-modal {
   position: fixed;
-  display: flex;
   align-items: center;
   justify-content: center;
   width: 100%;
@@ -54,7 +53,10 @@ body.search-modal-open {
   pointer-events: none;
 }
 
+/* Closed, the dialog keeps the browser's display: none so nothing in it
+   can take focus; it fades in after opening and out before closing */
 #search-modal[open] {
+  display: flex;
   pointer-events: auto;
 }
 
@@ -129,8 +131,34 @@ body.search-modal-open {
   display: none;
 }
 
-.search-modal-esc {
+.search-modal-close {
+  display: flex;
   flex-shrink: 0;
+  align-items: center;
+  min-height: 24px;
+  padding: 0;
+  border: none;
+  background: none;
+  color: var(--color-text-muted);
+  font: inherit;
+  cursor: pointer;
+}
+
+.search-modal-close:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+.search-modal-cancel {
+  display: none;
+  padding: 8px 4px;
+  color: var(--color-primary);
+  font-size: 0.9375rem;
+  font-weight: 500;
+}
+
+.search-modal-esc {
   padding: 1px 6px;
   border: 1px solid var(--color-modal-kbd-border);
   border-radius: 4px;
@@ -163,6 +191,11 @@ body.search-modal-open {
       100% 12px no-repeat scroll,
     radial-gradient(farthest-side at 50% 100%, var(--color-scroll-shadow), transparent) center
       bottom / 100% 12px no-repeat scroll;
+}
+
+.search-modal-body:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: -2px;
 }
 
 .search-modal-body::-webkit-scrollbar {
@@ -401,6 +434,15 @@ body.search-modal-open {
 
   .search-modal-footer {
     display: none;
+  }
+
+  /* No Esc key on touch keyboards: show a tappable Cancel instead */
+  .search-modal-esc {
+    display: none;
+  }
+
+  .search-modal-cancel {
+    display: inline;
   }
 }
 
