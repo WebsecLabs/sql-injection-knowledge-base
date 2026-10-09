@@ -46,6 +46,21 @@ describe("themeToggle", () => {
       expect(localStorage.getItem("theme")).toBe("dark");
     });
 
+    it("reports the dark theme as the toggles' pressed state", () => {
+      document.body.innerHTML =
+        '<button id="theme-toggle">Theme</button><button id="mobile-theme-toggle"></button>';
+      document.documentElement.classList.add("light");
+
+      initializeThemeToggle();
+      const desktop = document.getElementById("theme-toggle")!;
+      const mobile = document.getElementById("mobile-theme-toggle")!;
+      expect(desktop.getAttribute("aria-pressed")).toBe("false");
+
+      desktop.click();
+      expect(desktop.getAttribute("aria-pressed")).toBe("true");
+      expect(mobile.getAttribute("aria-pressed")).toBe("true");
+    });
+
     it("toggles from dark to light when clicking", () => {
       document.body.innerHTML = '<button id="theme-toggle">Toggle</button>';
       localStorage.setItem("theme", "dark");

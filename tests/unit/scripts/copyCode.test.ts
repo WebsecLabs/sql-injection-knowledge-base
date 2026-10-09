@@ -161,6 +161,24 @@ describe("copyCode", () => {
         expect(mockWriteText).toHaveBeenCalledWith(expectedCode);
       });
     });
+
+    it("announces a successful copy to screen readers", async () => {
+      document.body.innerHTML = `<pre><code>SELECT 1</code></pre>`;
+      Object.defineProperty(navigator, "clipboard", {
+        value: { writeText: vi.fn().mockResolvedValue(undefined) },
+        writable: true,
+        configurable: true,
+      });
+
+      addCopyButtons();
+      (document.querySelector(".copy-button") as HTMLButtonElement).click();
+
+      await vi.waitFor(() => {
+        expect(document.querySelector('[role="status"]')?.textContent).toBe(
+          "Code copied to clipboard"
+        );
+      });
+    });
   });
 
   describe("clipboard fallback behavior", () => {
