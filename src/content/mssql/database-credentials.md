@@ -4,7 +4,7 @@ description: How to extract database credentials from Microsoft SQL Server
 category: Information Gathering
 order: 4
 tags: ["credentials", "authentication", "user data"]
-lastUpdated: 2025-03-15
+lastUpdated: 2026-10-08
 ---
 
 Extracting database credentials from Microsoft SQL Server can provide valuable information for lateral movement and privilege escalation during penetration testing.
@@ -27,7 +27,7 @@ Extracting database credentials from Microsoft SQL Server can provide valuable i
 
 - `sys.sql_logins`: `name`, `password_hash`, `is_disabled`, `is_policy_checked`
 - `sys.server_principals`: `name`, `type_desc`, `is_disabled`, `create_date`
-- `master..syslogins` (legacy): `name`, `loginname`, `password` (returns hash in 2005–2017, NULL in 2019+)
+- `master..syslogins` (legacy): `name`, `loginname`, `password` (the hash on SQL Server 2000, always NULL on 2005+)
 - `master..sysprocesses` (legacy): `loginame`, `spid`, `dbid`
 
 ## Legacy Credential Retrieval
@@ -49,7 +49,8 @@ SELECT IS_SRVROLEMEMBER('sysadmin');
 
 ```sql
 -- Modern alternative (SQL Server 2005+)
--- Requires VIEW SERVER STATE (2019-) or VIEW SERVER PERFORMANCE STATE (2022+)
+-- Without extra permissions a login only sees itself, the system logins (such as sa) and the fixed server roles;
+-- ALTER ANY LOGIN or VIEW ANY DEFINITION shows all logins
 SELECT name, type_desc, is_disabled FROM sys.server_principals WHERE type IN ('S', 'U');
 SELECT name, is_disabled, is_policy_checked FROM sys.sql_logins;
 ```
@@ -71,7 +72,8 @@ SELECT SESSION_USER;      -- Current session user
 ### Retrieving SQL Server Login Information
 
 ```sql
--- Get SQL Server logins (requires high privileges)
+-- Get SQL Server logins: password_hash is NULL unless the caller has CONTROL SERVER (sysadmin)
+-- or, on SQL Server 2022+, VIEW ANY CRYPTOGRAPHICALLY SECURED DEFINITION
 SELECT name, password_hash FROM sys.sql_logins;
 
 -- More detailed login information
@@ -113,7 +115,7 @@ ORDER BY r.name, m.name;
 
 ## Notes
 
-1. Access to credential information typically requires high privileges (sysadmin or similar).
-2. `sys.sql_logins` replaced `master.dbo.syslogins` in SQL Server 2005. The legacy view still exists for compatibility but `password` column returns NULL.
+1. Any login can read its own identity and role membership; other logins and the password hashes require extra permissions (see above).
+2. `sys.sql_logins` replaced `master.dbo.sysxlogins` in SQL Server 2005. `master.dbo.syslogins` still exists as a compatibility view, but its `password` column always returns NULL.
 3. Password hashes in SQL Server are salted and difficult to crack without specialized tools.
-4. SQL Server 2005+ uses SHA-1 hashing. SQL Server 2012+ uses SHA-512. SQL Server 2022+ introduced VIEW ANY CRYPTOGRAPHICALLY SECURED DEFINITION as a granular alternative to CONTROL SERVER for viewing `password_hash`.
+4. SQL Server 2005-2008 R2 hash with salted SHA-1, 2012-2022 with salted SHA-512, and 2025 with PBKDF2 (see [Password Hashing](/mssql/password-hashing)). SQL Server 2022 CU12+ can also write the PBKDF2 format when trace flag 4671 is on. SQL Server 2022+ introduced VIEW ANY CRYPTOGRAPHICALLY SECURED DEFINITION as a granular alternative to CONTROL SERVER for viewing `password_hash`.

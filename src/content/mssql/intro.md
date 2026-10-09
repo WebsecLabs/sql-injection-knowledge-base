@@ -4,12 +4,12 @@ description: Overview of Microsoft SQL Server SQL injection techniques and categ
 category: Basics
 order: 1
 tags: ["introduction", "overview", "mssql", "sql server"]
-lastUpdated: 2025-03-16
+lastUpdated: 2026-10-08
 ---
 
 ## Microsoft SQL Server Introduction
 
-This section provides a comprehensive collection of SQL injection techniques specific to Microsoft SQL Server (MSSQL) databases. The techniques are organized into the following categories:
+This section collects SQL injection techniques specific to Microsoft SQL Server (MSSQL) databases. The techniques are organized into the following categories:
 
 ## Basics
 
@@ -34,7 +34,7 @@ Advanced methods for exploiting MSSQL injection vulnerabilities:
 
 - [**Avoiding Quotations**](/mssql/avoiding-quotations) - Bypassing quote filters in SQL Server
 - [**String Concatenation**](/mssql/string-concatenation) - Techniques to concatenate strings in MSSQL
-- [**Conditional Statements**](/mssql/conditional-statements) - Using IIF, CASE, and other conditional expressions
+- [**Conditional Statements**](/mssql/conditional-statements) - Using IF, IIF and CASE
 - [**Stacked Queries**](/mssql/stacked-queries) - Executing multiple statements in one injection
 - [**Timing**](/mssql/timing) - Time-based blind injection methods
 - [**Fuzzing/Obfuscation**](/mssql/fuzzing-obfuscation) - Techniques to bypass WAFs and filters
@@ -45,6 +45,8 @@ Sophisticated attacks for extracting data and gaining system access:
 
 - [**System Command Execution**](/mssql/system-command-execution) - Using xp_cmdshell to run OS commands
 - [**OPENROWSET Attacks**](/mssql/openrowset-attacks) - Leveraging OPENROWSET for remote connections
+- [**Reading Files**](/mssql/reading-files) - Reading files from the server's filesystem
+- [**Writing Files**](/mssql/writing-files) - Writing files to the server's filesystem
 - [**Password Hashing**](/mssql/password-hashing) - Understanding and exploiting SQL Server password storage
 - [**Password Cracking**](/mssql/password-cracking) - Techniques to recover passwords from hashes
 - [**SP_PASSWORD Parameter**](/mssql/sp-password) - Using sp_password to hide queries from logs

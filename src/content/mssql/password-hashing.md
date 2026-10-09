@@ -4,7 +4,7 @@ description: Understanding password hashing mechanisms in Microsoft SQL Server
 category: Authentication
 order: 17
 tags: ["password hashing", "authentication", "security"]
-lastUpdated: 2025-03-15
+lastUpdated: 2026-10-08
 ---
 
 Microsoft SQL Server uses various password hashing algorithms depending on the version and authentication method. Understanding these mechanisms is important for security assessment and potential password cracking during penetration testing.
@@ -18,15 +18,16 @@ SQL Server supports two primary authentication modes:
 
 ## Password Storage Evolution
 
-Password storage in SQL Server has evolved over time:
+Password storage in SQL Server has evolved over time. Every hash uses a random 4-byte salt and the password encoded as UTF-16LE; the first two bytes give the format version:
 
-| SQL Server Version          | Hashing Algorithm     | Description                    |
-| --------------------------- | --------------------- | ------------------------------ |
-| SQL Server 2000 and earlier | Proprietary algorithm | Weak, reversible in some cases |
-| SQL Server 2005             | SHA-1                 | 160-bit SHA-1 hash with salt   |
-| SQL Server 2012+            | SHA-512               | Stronger algorithm with salt   |
-| SQL Server 2017+            | Additional encryption | Password encryption at rest    |
-| Azure SQL                   | SHA-256 or bcrypt     | Cloud-specific implementations |
+| SQL Server Version      | Header   | Hashing Algorithm                                     | Length   |
+| ----------------------- | -------- | ----------------------------------------------------- | -------- |
+| SQL Server 2000         | `0x0100` | SHA-1, plus a second SHA-1 of the uppercased password | 46 bytes |
+| SQL Server 2005-2008 R2 | `0x0100` | SHA-1 (case-sensitive password only)                  | 26 bytes |
+| SQL Server 2012-2022    | `0x0200` | SHA-512                                               | 70 bytes |
+| SQL Server 2025         | `0x0300` | PBKDF2 (RFC 2898) with SHA-512, 100,000 iterations    | 70 bytes |
+
+The uppercase hash in the SQL Server 2000 format makes it much weaker: cracking the case-insensitive half first and then trying case variations is fast. Hashes created on an older version keep their format after an upgrade until the password is changed. SQL Server 2022 CU12 and later can also write `0x0300` hashes when a sysadmin enables trace flag 4671 (off by default).
 
 ## SQL Server Password Hash Locations
 
@@ -36,60 +37,74 @@ SQL Server stores password hashes in several system tables:
 -- Main location for SQL Server logins (2005+)
 SELECT name, password_hash FROM sys.sql_logins;
 
--- Older SQL Server versions (2000)
-SELECT name, password FROM sysxlogins;
+-- SQL Server 2000 only (the table was removed in 2005)
+SELECT name, password FROM master.dbo.sysxlogins;
 
--- Master database storage (SQL Server 2000 and earlier)
+-- SQL Server 2000: compatibility view over sysxlogins (2005+: password is always NULL)
 SELECT name, password FROM master.dbo.syslogins;
 ```
+
+Any login can query `sys.sql_logins`, but it only sees its own login and `sa`, and `password_hash` is `NULL` unless the caller has `CONTROL SERVER` (sysadmin) or, on SQL Server 2022 and later, `VIEW ANY CRYPTOGRAPHICALLY SECURED DEFINITION`. `VIEW ANY DEFINITION` shows every login but still not the hashes.
 
 ## Password Hash Format
 
 SQL Server password hashes have specific formats:
 
-### SQL Server 2000 and Earlier
+### SQL Server 2000
 
 ```plaintext
-0x0100[16-byte hash]
+0x0100[4-byte salt][SHA-1 of password + salt][SHA-1 of UPPER(password) + salt]
 ```
 
-Example: `0x0100B58E58130D2B6FF57F70737D3978`
-
-### SQL Server 2005 and Later
+### SQL Server 2005 to 2008 R2
 
 ```plaintext
-0x0200[SHA-1 hash of salt+password][salt]
+0x0100[4-byte salt][SHA-1 of password + salt]
 ```
 
-Example: `0x020058CD420B993C1C32561C772608D549FCEDFA66C8B733C3270DD8D3D32385D6580A6D367B`
-
-The format consists of:
-
-- `0x0200`: Version identifier
-- First 20 bytes: SHA-1 hash of (password + salt)
-- Remaining bytes: The salt value
+Example (password `password`, salt `4086CEB6`): `0x01004086CEB6E0BC04FE5027A51DF29E1CF0B74DD3C33214D9DB` (26 bytes)
 
 ## SQL Server 2012+ Format
 
 ```plaintext
-0x0200[SHA-512 hash][salt]
+0x0200[4-byte salt][SHA-512 of password + salt]
 ```
 
-The salt is typically 32 bytes, and the resulting hash is significantly longer.
+Example: `0x020093F7305CD8301C7D767C1A9D48A9180B30DB11978AC3E0052265A8BB4969B264C09270C4EB9129E844FB5B1AA1125214DF28914A638CA784159F05C1AE5834F72F51F221` (70 bytes)
+
+The format consists of:
+
+- `0x0200`: Version identifier
+- Next 4 bytes: The salt (`93F7305C` in the example)
+- Remaining 64 bytes: SHA-512 of the UTF-16LE password followed by the salt
+
+SQL Server 2025 replaces this with an iterated PBKDF2 hash (header `0x0300`, same 70-byte layout), which slows down cracking considerably.
 
 ## Extracting Password Hashes
 
 With appropriate permissions, password hashes can be extracted:
 
 ```sql
--- Basic extraction with sysadmin privileges
+-- Basic extraction with sysadmin privileges (password_hash is varbinary)
 SELECT name, password_hash FROM sys.sql_logins;
 
--- Using CAST for readability
-SELECT name, CAST(password_hash AS varbinary(256)) FROM sys.sql_logins;
+-- Converting to a hex string with the 0x prefix (style 1, SQL Server 2008+)
+SELECT name, CONVERT(varchar(max), password_hash, 1) FROM sys.sql_logins;
 
--- Converting to hex string
+-- Converting to a hex string without the prefix (style 2)
 SELECT name, CONVERT(varchar(max), password_hash, 2) FROM sys.sql_logins;
+```
+
+On SQL Server 2005, which has no binary styles for `CONVERT`, use `master.dbo.fn_varbintohexstr(password_hash)`.
+
+## Checking Passwords with PWDCOMPARE
+
+`PWDCOMPARE(clear_text, hash)` returns 1 when the password matches the hash, so weak passwords can be tested inside the database without exporting the hashes (it needs the same access to `password_hash`). `PWDENCRYPT(clear_text)` returns a hash in the current server's format.
+
+```sql
+-- Logins with a blank password or a password equal to the login name
+SELECT name FROM sys.sql_logins
+WHERE PWDCOMPARE('', password_hash) = 1 OR PWDCOMPARE(name, password_hash) = 1;
 ```
 
 ## SQL Server Authentication Process
@@ -143,17 +158,17 @@ Even though both users have the same password, the stored hashes are different.
 
 ## Practical SQL Injection Examples
 
-If you have SQL injection access to a database, you might be able to extract hashes:
+If the application connects with a sysadmin login (or one with the permissions above), you can extract hashes. String context (`WHERE username = '<input>'`); the UNION example assumes 3 columns, the last two strings. Convert the hash with style 1: casting `varbinary` to `nvarchar` produces unreadable characters instead of hex.
 
 ```sql
 -- UNION attack to extract hashes
-UNION SELECT name, CAST(password_hash AS nvarchar(max)), NULL FROM sys.sql_logins--
+' UNION SELECT NULL, name, CONVERT(varchar(max), password_hash, 1) FROM sys.sql_logins--
 
--- Error-based extraction
-AND 1=CONVERT(int, (SELECT TOP 1 name + ':' + CAST(password_hash AS nvarchar(max)) FROM sys.sql_logins))--
+-- Error-based extraction: the conversion error shows 'sa:0x0200...'
+' AND 1=CONVERT(int, (SELECT TOP 1 name + ':' + CONVERT(varchar(max), password_hash, 1) FROM sys.sql_logins))--
 
--- Blind extraction
-AND ASCII(SUBSTRING((SELECT TOP 1 CAST(password_hash AS nvarchar(max)) FROM sys.sql_logins), 1, 1)) > 65--
+-- Blind extraction: characters 3-6 of the hex string are the version header (needs a valid value before the quote)
+admin' AND SUBSTRING((SELECT CONVERT(varchar(max), password_hash, 1) FROM sys.sql_logins WHERE name = 'sa'), 3, 4) = '0200'--
 ```
 
 ## Detecting Weak Password Implementations
@@ -161,7 +176,7 @@ AND ASCII(SUBSTRING((SELECT TOP 1 CAST(password_hash AS nvarchar(max)) FROM sys.
 Some signs of weak password storage:
 
 1. No CHECK_POLICY enforcement
-2. Using SQL Server 2000 or earlier hashing algorithms
+2. Hashes still in the `0x0100` (SHA-1) format, from logins created on SQL Server 2008 R2 or earlier and never changed
 3. Using third-party applications with custom authentication that may store passwords insecurely
 
 To check password policy enforcement:
@@ -178,9 +193,9 @@ To secure SQL Server passwords:
 1. Use Windows Authentication when possible to avoid storing passwords in SQL Server
 2. Enable CHECK_POLICY and CHECK_EXPIRATION for all SQL logins
 3. Use strong password complexity requirements
-4. Use service account group managed service accounts (gMSA) for application connections
-5. Implement Always Encrypted for sensitive data
-6. Use the latest SQL Server version with stronger hashing algorithms
+4. Use group managed service accounts (gMSA) with Windows Authentication for application connections
+5. Change passwords after upgrading, so the hashes are regenerated in the current format
+6. Use SQL Server 2025 or later (or 2022 CU12+ with trace flag 4671) for the iterated PBKDF2 hashing
 7. Regularly audit for weak password configurations
 
 ```sql
@@ -196,14 +211,16 @@ CREATE LOGIN SecureUser WITH PASSWORD = 'C0mpl3xP@$$w0rd!',
 To protect against password hash theft:
 
 1. Use least privilege principles for database access
-2. Restrict access to system tables and views
-3. Implement transparent data encryption (TDE)
-4. Use Extended Events to audit access to sys.sql_logins
-5. Implement endpoint protection for the SQL Server machine
-6. Use SQL Server Audit to monitor security-related events
+2. Never let applications connect as sysadmin, and do not grant them `CONTROL SERVER` or `VIEW ANY CRYPTOGRAPHICALLY SECURED DEFINITION`
+3. Protect backups and data files of `master`: TDE cannot encrypt the system databases, so it does not protect login hashes
+4. Implement endpoint protection for the SQL Server machine
+5. Use SQL Server Audit to monitor reads of `sys.sql_logins`
+
+The audit specification must be created in `master` (use a Linux path such as `/var/opt/mssql/data/` on SQL Server on Linux):
 
 ```sql
 -- Create audit to track access to login information
+USE master;
 CREATE SERVER AUDIT SecurityAudit TO FILE (FILEPATH = 'C:\Audits\');
 
 CREATE DATABASE AUDIT SPECIFICATION LoginAudit

