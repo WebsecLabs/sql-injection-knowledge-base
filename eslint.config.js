@@ -14,6 +14,8 @@ export default [
       ".worktrees/",
       "public/",
       "coverage/",
+      "playwright-report/",
+      "test-results/",
       "**/*.min.js",
     ],
   },

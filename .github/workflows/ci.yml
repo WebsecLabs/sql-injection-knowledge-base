@@ -28,8 +28,14 @@ jobs:
 
       - run: npm ci
 
-      - name: Audit dependencies
-        run: npm audit --audit-level=high
+      # Production deps must be free of high+ advisories. Dev tooling only
+      # blocks on critical: some high advisories (e.g. braces via stylelint)
+      # have no upstream patch and only process our own lint globs.
+      - name: Audit production dependencies
+        run: npm audit --omit=dev --audit-level=high
+
+      - name: Audit all dependencies
+        run: npm audit --audit-level=critical
 
       - run: npm run lint
 

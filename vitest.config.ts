@@ -1,9 +1,8 @@
 import { defineConfig } from "vitest/config";
-import tsconfigPaths from "vite-tsconfig-paths";
 
 export default defineConfig({
-  plugins: [tsconfigPaths()],
   resolve: {
+    tsconfigPaths: true,
     alias: {
       // Mock astro:content virtual module for unit tests
       "astro:content": new URL("./tests/mocks/astro-content.ts", import.meta.url).pathname,
@@ -13,6 +12,9 @@ export default defineConfig({
     include: ["src/**/*.{test,spec}.ts", "tests/unit/**/*.{test,spec}.ts"],
     exclude: ["node_modules", "dist", ".astro", "tests/e2e/**"],
     environment: "jsdom",
+    // Node 25+ enables a native localStorage global that shadows jsdom's
+    // implementation; disable it so tests behave the same on all Node versions.
+    execArgv: ["--no-experimental-webstorage"],
     globals: true,
     coverage: {
       provider: "v8",
