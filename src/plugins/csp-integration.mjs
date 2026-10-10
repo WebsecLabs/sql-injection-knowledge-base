@@ -40,18 +40,27 @@ export function collectInlineScriptHashes(documents) {
  * - 'wasm-unsafe-eval' lets Pagefind instantiate its WebAssembly search index.
  * - style-src needs 'unsafe-inline' for Shiki's per-token style attributes.
  * - data: images are used by the Pagefind UI stylesheet.
+ * - cloudflareAnalytics allows the Web Analytics beacon Cloudflare injects on
+ *   websec.ca: the script loads from static.cloudflareinsights.com and reports
+ *   to cloudflareinsights.com. Standalone builds stay same-origin only.
  *
  * Header-only directives (frame-ancestors, reporting) are added by the server
  * configuration; see nginx.conf.
  */
-export function buildContentSecurityPolicy(scriptHashes) {
+export function buildContentSecurityPolicy(scriptHashes, { cloudflareAnalytics = false } = {}) {
+  const scriptSources = ["'self'", "'wasm-unsafe-eval'"];
+  const connectSources = ["'self'"];
+  if (cloudflareAnalytics) {
+    scriptSources.push("https://static.cloudflareinsights.com");
+    connectSources.push("https://cloudflareinsights.com");
+  }
   return [
     "default-src 'self'",
-    ["script-src 'self' 'wasm-unsafe-eval'", ...scriptHashes].join(" "),
+    ["script-src", ...scriptSources, ...scriptHashes].join(" "),
     "style-src 'self' 'unsafe-inline'",
     "img-src 'self' data:",
     "font-src 'self'",
-    "connect-src 'self'",
+    ["connect-src", ...connectSources].join(" "),
     "object-src 'none'",
     "base-uri 'self'",
     "form-action 'self'",
@@ -78,7 +87,7 @@ async function listHtmlFiles(dir) {
  * embeds the matching policy in each page as a <meta> element and writes an
  * nginx snippet defining it as $site_csp for use in a response header.
  */
-export function cspIntegration() {
+export function cspIntegration({ cloudflareAnalytics = false } = {}) {
   return {
     name: "csp",
     hooks: {
@@ -87,7 +96,7 @@ export function cspIntegration() {
         const files = await listHtmlFiles(outDir);
         const documents = await Promise.all(files.map((file) => readFile(file, "utf8")));
         const hashes = collectInlineScriptHashes(documents);
-        const policy = buildContentSecurityPolicy(hashes);
+        const policy = buildContentSecurityPolicy(hashes, { cloudflareAnalytics });
 
         await Promise.all(
           files.map((file, i) => writeFile(file, injectCspMeta(documents[i], policy)))
