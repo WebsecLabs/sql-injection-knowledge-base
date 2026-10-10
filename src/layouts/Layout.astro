@@ -9,7 +9,8 @@ import { Font, Image } from "astro:assets";
 import websecLogo from "../assets/websec-logo.png";
 import { TOC_MIN_HEADINGS } from "../utils/uiConstants";
 import SearchModal from "../components/search/SearchModal.astro";
-import { CANONICAL_URL } from "astro:env/server";
+import WebsecBanner from "../components/WebsecBanner.astro";
+import { CANONICAL_URL, WEBSEC_BANNER } from "astro:env/server";
 import { toCanonicalUrl } from "../utils/siteUtils";
 
 // Import CSS — main.css imports variables, base, layout, navbar, sidebar, components, code, footer.
@@ -74,7 +75,7 @@ const extrasEntries = collections?.extrasEntries ?? (await getCollection("extras
 ---
 
 <!doctype html>
-<html lang="en">
+<html lang="en" class:list={{ "has-websec-banner": WEBSEC_BANNER }}>
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
@@ -217,7 +218,8 @@ const extrasEntries = collections?.extrasEntries ?? (await getCollection("extras
         }
       });
     </script>
-    <div data-pagefind-ignore="all">
+    <header class="site-header" data-pagefind-ignore="all">
+      {WEBSEC_BANNER && <WebsecBanner />}
       <NavBar
         mysqlEntries={mysqlEntries}
         mariadbEntries={mariadbEntries}
@@ -226,7 +228,7 @@ const extrasEntries = collections?.extrasEntries ?? (await getCollection("extras
         postgresqlEntries={postgresqlEntries}
         extrasEntries={extrasEntries}
       />
-    </div>
+    </header>
 
     {/* Sidebar overlay and FAB button are outside .page-layout to prevent
          overflow-x: clip from breaking position: fixed on mobile */}

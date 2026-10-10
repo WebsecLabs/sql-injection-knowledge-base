@@ -47,6 +47,12 @@ export default defineConfig({
         access: "public",
         default: canonicalBase,
       }),
+      // The "Back to main site" strip shown when the KB is served on websec.ca
+      WEBSEC_BANNER: envField.boolean({
+        context: "server",
+        access: "public",
+        default: !isStandalone,
+      }),
     },
   },
 

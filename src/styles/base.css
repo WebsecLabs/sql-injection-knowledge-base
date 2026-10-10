@@ -5,10 +5,17 @@
   padding: 0;
 }
 
-/* CSS Custom Properties for navbar and scroll offset */
+/* CSS Custom Properties for the sticky header and scroll offset.
+ * The header is the navbar plus, on websec.ca, the banner above it. */
 :root {
   --navbar-height: 70px;
-  --scroll-offset: 10px; /* Breathing room below navbar */
+  --banner-height: 0px;
+  --header-height: calc(var(--navbar-height) + var(--banner-height));
+  --scroll-offset: 10px; /* Breathing room below the header */
+}
+
+:root.has-websec-banner {
+  --banner-height: 32px;
 }
 
 html {
@@ -60,7 +67,7 @@ h6 {
   /* Offset for sticky navbar when navigating via anchor links (TOC).
    * Uses CSS custom properties for maintainability.
    * Responsive adjustments below update --navbar-height per breakpoint. */
-  scroll-margin-top: calc(var(--navbar-height) + var(--scroll-offset));
+  scroll-margin-top: calc(var(--header-height) + var(--scroll-offset));
 }
 
 h1 {

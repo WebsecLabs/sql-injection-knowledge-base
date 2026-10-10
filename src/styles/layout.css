@@ -58,7 +58,7 @@
 /* Content sections */
 .section {
   margin-bottom: 3.5rem;
-  scroll-margin-top: calc(var(--navbar-height) + var(--scroll-offset));
+  scroll-margin-top: calc(var(--header-height) + var(--scroll-offset));
   padding: 0 1rem;
 }
 
@@ -110,10 +110,5 @@
 
     /* Add bottom safe area for the sidebar FAB (56px button + 20px bottom offset + 16px breathing room) */
     padding-bottom: 92px;
-  }
-
-  header .container {
-    flex-direction: column;
-    gap: 1rem;
   }
 }

@@ -1106,3 +1106,38 @@ test.describe("Navbar - Escape key", () => {
     await expect(menuButton).toBeFocused();
   });
 });
+
+test.describe("Site header", () => {
+  test("stays pinned to the top while the page scrolls", async ({ page }) => {
+    await page.setViewportSize({ width: 1280, height: 800 });
+    await page.goto("./mysql/intro/");
+    await page.evaluate(() => window.scrollTo(0, 1500));
+
+    const navbar = page.locator(".navbar");
+    await expect(navbar).toBeInViewport();
+    const header = await page.locator(".site-header").boundingBox();
+    expect(header?.y).toBe(0);
+  });
+
+  // The E2E suite runs the integrated build that websec.ca serves
+  test("shows the websec.ca banner above the navbar", async ({ page }) => {
+    await page.goto("./");
+
+    const banner = page.locator(".site-header > .websec-banner");
+    await expect(banner).toBeVisible();
+    await expect(banner.getByRole("link", { name: "Back to main site" })).toHaveAttribute(
+      "href",
+      "/"
+    );
+    await expect(page.locator(".websec-banner")).toHaveCount(1);
+  });
+
+  test("keeps the banner on one line on a phone", async ({ page }) => {
+    await page.setViewportSize({ width: 320, height: 640 });
+    await page.goto("./");
+
+    const box = await page.locator(".websec-banner").boundingBox();
+    expect(box?.height).toBe(32);
+    await expect(page.getByRole("link", { name: "Back to main site" })).toBeVisible();
+  });
+});
