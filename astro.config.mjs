@@ -128,6 +128,7 @@ export default defineConfig({
     ...(isCanonical ? [sitemap(createSitemapOptions({ site, base }))] : []),
     contentGuardIntegration(),
     linkCheckIntegration(),
-    cspIntegration(),
+    // websec.ca is served through Cloudflare, which injects its analytics beacon
+    cspIntegration({ cloudflareAnalytics: !isStandalone }),
   ],
 });
