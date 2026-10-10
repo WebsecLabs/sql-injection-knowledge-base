@@ -30,8 +30,8 @@ body.sidebar-filtering .sidebar-category:not([data-match]) {
   border-right: 1px solid var(--color-border);
   overflow-y: auto;
   position: sticky;
-  top: var(--navbar-height);
-  height: calc(100vh - var(--navbar-height));
+  top: var(--header-height);
+  height: calc(100vh - var(--header-height));
   contain: layout style paint;
   padding: 0;
   margin: 0;
@@ -347,9 +347,9 @@ body.sidebar-filtering .sidebar-category:not([data-match]) {
     width: 100%;
     position: fixed;
     left: 0;
-    top: var(--navbar-height);
-    height: calc(100vh - var(--navbar-height));
-    max-height: calc(100vh - var(--navbar-height));
+    top: var(--header-height);
+    height: calc(100vh - var(--header-height));
+    max-height: calc(100vh - var(--header-height));
     margin-top: 0;
     border-right: none;
     border-top: none;
@@ -488,7 +488,7 @@ body.sidebar-filtering .sidebar-category:not([data-match]) {
   .sidebar-overlay {
     display: block;
     position: fixed;
-    top: var(--navbar-height);
+    top: var(--header-height);
     left: 0;
     right: 0;
     bottom: 0;

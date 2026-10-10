@@ -359,40 +359,29 @@ test.describe("Table of Contents", () => {
     const toc = page.locator("#toc");
     await expect(toc).toBeVisible();
 
-    // Get initial TOC position relative to viewport
-    const initialBoundingBox = await toc.boundingBox();
-    expect(initialBoundingBox).not.toBeNull();
+    // The TOC sticks just below the sticky site header (navbar, plus the
+    // websec.ca banner in integrated builds)
+    const header = page.locator(".site-header");
+    const expectBelowHeader = async () => {
+      const headerBox = await header.boundingBox();
+      const tocBox = await toc.boundingBox();
+      expect(headerBox).not.toBeNull();
+      expect(tocBox).not.toBeNull();
+      expect(headerBox!.y).toBe(0);
+      expect(Math.abs(tocBox!.y - (headerBox!.y + headerBox!.height))).toBeLessThanOrEqual(1);
+    };
 
-    // TOC should start at sticky position (top: 70px)
-    expect(initialBoundingBox!.y).toBeGreaterThanOrEqual(60);
-    expect(initialBoundingBox!.y).toBeLessThanOrEqual(80);
+    await expectBelowHeader();
 
     // Scroll down significantly
     await page.evaluate(() => window.scrollBy(0, 500));
-
-    // Wait for layout to settle after scroll (3 animation frames)
     await waitForAnimationFrames(page);
-
-    // Get TOC position after scrolling
-    const afterScrollBoundingBox = await toc.boundingBox();
-    expect(afterScrollBoundingBox).not.toBeNull();
-
-    // TOC should still be at sticky position (~70px from viewport top)
-    expect(afterScrollBoundingBox!.y).toBeGreaterThanOrEqual(60);
-    expect(afterScrollBoundingBox!.y).toBeLessThanOrEqual(80);
+    await expectBelowHeader();
 
     // Scroll down even more
     await page.evaluate(() => window.scrollBy(0, 500));
-
-    // Wait for layout to settle after scroll (3 animation frames)
     await waitForAnimationFrames(page);
-
-    const finalBoundingBox = await toc.boundingBox();
-    expect(finalBoundingBox).not.toBeNull();
-
-    // TOC should still be at sticky position
-    expect(finalBoundingBox!.y).toBeGreaterThanOrEqual(60);
-    expect(finalBoundingBox!.y).toBeLessThanOrEqual(80);
+    await expectBelowHeader();
 
     // Verify TOC is still visible
     await expect(toc).toBeVisible();

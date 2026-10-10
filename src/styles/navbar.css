@@ -5,6 +5,51 @@
  */
 
 /* ============================================
+   Site Header
+   ============================================ */
+
+/* Sticky wrapper for the banner and navbar. It is a direct child of <body>
+   so it can stick for the whole page. */
+.site-header {
+  position: sticky;
+  top: 0;
+  z-index: var(--z-navbar);
+}
+
+/* websec.ca banner: one line at a fixed height, so --header-height stays exact */
+.websec-banner {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  height: var(--banner-height);
+  padding: 0 1rem;
+  overflow: hidden;
+  white-space: nowrap;
+  background-color: #0f172a;
+  border-bottom: 1px solid #1e293b;
+  color: #f8fafc;
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+
+.websec-banner a {
+  color: #93c5fd;
+  font-weight: 600;
+  text-decoration: underline;
+}
+
+.websec-banner a:hover {
+  color: #bfdbfe;
+}
+
+@media (width <= 480px) {
+  .websec-banner-text {
+    display: none;
+  }
+}
+
+/* ============================================
    Base Navbar Styles
    ============================================ */
 
@@ -12,9 +57,7 @@
   background-color: var(--color-navbar-bg);
   background-image: linear-gradient(135deg, var(--color-navbar-bg), var(--color-gradient-end));
   box-shadow: 0 2px 10px rgb(0 0 0 / 5%);
-  position: sticky;
-  top: 0;
-  z-index: var(--z-navbar);
+  position: relative;
   contain: layout style;
   color: var(--color-nav-text);
   width: 100%;
@@ -713,12 +756,14 @@
     }
   }
 
+  /* .navbar's layout containment makes it the containing block, so top is
+     measured from the navbar while the height leaves room for the banner */
   .navbar-menu {
     position: fixed;
     top: var(--navbar-height);
     left: 0;
     width: 100%;
-    height: calc(100vh - var(--navbar-height));
+    height: calc(100vh - var(--header-height));
     background-color: var(--color-card-bg);
     flex-direction: column;
     align-items: flex-start;
