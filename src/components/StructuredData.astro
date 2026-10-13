@@ -31,14 +31,13 @@ interface Props {
   // For WebSite schema
   siteName?: string;
   siteUrl?: string;
-  searchUrl?: string;
   // For Article schema
   article?: ArticleData;
   // For BreadcrumbList schema
   breadcrumbs?: BreadcrumbItem[];
 }
 
-const { type, siteName, siteUrl, searchUrl, article, breadcrumbs } = Astro.props;
+const { type, siteName, siteUrl, article, breadcrumbs } = Astro.props;
 
 // Format date for schema.org (ISO 8601)
 function formatDate(date?: Date): string | undefined {
@@ -61,18 +60,6 @@ function generateWebSiteSchema() {
       url: "https://www.websec.com",
     },
   };
-
-  // Add search action if search URL is provided
-  if (searchUrl) {
-    schema.potentialAction = {
-      "@type": "SearchAction",
-      target: {
-        "@type": "EntryPoint",
-        urlTemplate: `${searchUrl}?q={search_term_string}`,
-      },
-      "query-input": "required name=search_term_string",
-    };
-  }
 
   return schema;
 }

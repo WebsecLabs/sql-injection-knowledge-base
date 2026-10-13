@@ -49,7 +49,6 @@ const activeDatabaseCount = [
 // Structured data describes the official site
 const baseUrl = import.meta.env.BASE_URL;
 const siteUrl = toCanonicalUrl(baseUrl, baseUrl, CANONICAL_URL);
-const searchUrl = toCanonicalUrl(`${baseUrl}search/`, baseUrl, CANONICAL_URL);
 ---
 
 <Layout
@@ -66,12 +65,7 @@ const searchUrl = toCanonicalUrl(`${baseUrl}search/`, baseUrl, CANONICAL_URL);
   }}
 >
   <!-- Structured Data for SEO -->
-  <StructuredData
-    type="website"
-    siteName="SQL Injection Knowledge Base"
-    siteUrl={siteUrl}
-    searchUrl={searchUrl}
-  />
+  <StructuredData type="website" siteName="SQL Injection Knowledge Base" siteUrl={siteUrl} />
 
   <div class="home-intro" transition:animate="slide">
     <h1 transition:name="page-title">SQL Injection Knowledge Base</h1>

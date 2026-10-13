@@ -45,7 +45,7 @@ function readLastUpdated(contentDir) {
 export function createSitemapOptions({ site, base, contentDir = "src/content" }) {
   const root = new URL(base, site).href;
   const excluded = new Set(
-    ["404/", ...REDIRECT_COLLECTIONS.map((c) => `${c}/`)].map((p) => root + p)
+    ["404/", "search/", ...REDIRECT_COLLECTIONS.map((c) => `${c}/`)].map((p) => root + p)
   );
   const lastUpdated = readLastUpdated(contentDir);
 

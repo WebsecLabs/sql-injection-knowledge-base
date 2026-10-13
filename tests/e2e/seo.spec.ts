@@ -47,14 +47,26 @@ test.describe("SEO", () => {
     }
   });
 
-  test("search results consolidate onto the search page", async ({ page }) => {
+  test("search results stay out of the index", async ({ page }) => {
     await page.goto("search/?q=union");
 
-    // Query variants are not separate pages: they all canonicalize to /search/
-    await expect(page.locator('link[rel="canonical"]')).toHaveAttribute(
-      "href",
-      `${OFFICIAL_BASE}search/`
-    );
+    // Internal search results are thin, endless URL variants: keep them out
+    // of the index but let crawlers follow the result links
+    await expect(page.locator('meta[name="robots"]')).toHaveAttribute("content", "noindex, follow");
+  });
+
+  test("home page structured data has no search box template", async ({ page }) => {
+    await page.goto("");
+
+    // Google retired the sitelinks search box; the template URL only got
+    // crawled as a literal "?q={search_term_string}" page
+    const schemas = await page
+      .locator('script[type="application/ld+json"]')
+      .evaluateAll((nodes) => nodes.map((node) => JSON.parse(node.textContent ?? "{}")));
+    const website = schemas.find((s) => s["@type"] === "WebSite");
+
+    expect(website).toBeDefined();
+    expect(website.potentialAction).toBeUndefined();
   });
 
   test("unknown pages return 404 with a helpful page", async ({ page }) => {
