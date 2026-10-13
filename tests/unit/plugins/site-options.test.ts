@@ -61,13 +61,13 @@ describe("createSitemapOptions", () => {
     return createSitemapOptions({ site: "https://websec.ca", base: "/kb/", contentDir });
   }
 
-  it("excludes redirect and error pages", () => {
+  it("excludes redirect, error and noindex pages", () => {
     const { filter } = setup();
 
     expect(filter("https://websec.ca/kb/mysql/")).toBe(false);
     expect(filter("https://websec.ca/kb/404/")).toBe(false);
     expect(filter("https://websec.ca/kb/mysql/intro/")).toBe(true);
-    expect(filter("https://websec.ca/kb/search/")).toBe(true);
+    expect(filter("https://websec.ca/kb/search/")).toBe(false);
   });
 
   it("reports each entry's lastUpdated date as lastmod", () => {
