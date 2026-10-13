@@ -11,6 +11,7 @@
  * --color-text-light:    Tertiary text (placeholders, hints) — must meet WCAG AA 4.5:1
  * --color-heading-1/2/3: Heading hierarchy colors
  * --color-code-bg:       Code block background
+ * --color-code-inline-bg: Inline code chip background
  * --color-mac-*:         Decorative code block window buttons
  * --color-sidebar-toggle-*: Mobile sidebar FAB button
  * --color-gradient-end:     Gradient endpoint for navbar/footer
@@ -49,6 +50,7 @@
   --color-mac-green: #68d391;
   --color-sidebar-toggle-bg: #0d4a86;
   --color-code-bg: #f8fafc;
+  --color-code-inline-bg: #f1f5f9;
   --color-text-muted: #4a5568;
   --color-text-light: #64748b; /* WCAG AA: 5.4:1 on white, 5.2:1 on #f8fafc, 4.7:1 on #f1f5f9 */
   --color-tag-bg: #f1f5f9;
@@ -167,6 +169,7 @@
   --color-mac-green: #5ab880;
   --color-sidebar-toggle-bg: #1e5a9e;
   --color-code-bg: #1e293b;
+  --color-code-inline-bg: #334155; /* Must differ from card and table rows (#1e293b) */
   --color-text-muted: #94a3b8;
   --color-text-light: #94a3b8;
   --color-tag-bg: #334155; /* Distinct from card and code surfaces (#1e293b) */
