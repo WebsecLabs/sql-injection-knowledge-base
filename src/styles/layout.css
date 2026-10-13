@@ -18,10 +18,17 @@
   padding: 2rem 0 2rem 1rem;
 }
 
+/* Left-aligned next to the sidebar so the content starts at the same spot
+   on every page, whether or not the TOC column is shown or collapsed */
 .content-container {
   max-width: 1000px;
-  margin: 0 auto;
+  margin: 0;
   padding: 0 1.5rem;
+}
+
+/* Pages without a sidebar (home, search, 404) stay centered */
+.page-layout.no-sidebar .content-container {
+  margin: 0 auto;
 }
 
 /* Page layout with sidebar */
