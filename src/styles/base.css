@@ -118,7 +118,7 @@ ol {
 
 code {
   font-family: var(--font-mono);
-  background-color: var(--color-code-bg);
+  background-color: var(--color-code-inline-bg);
   padding: 0.1rem 0.3rem;
   border-radius: 3px;
   font-size: 0.9em;

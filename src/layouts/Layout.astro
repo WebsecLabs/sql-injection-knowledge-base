@@ -235,7 +235,7 @@ const extrasEntries = collections?.extrasEntries ?? (await getCollection("extras
     {showSidebar && <div id="sidebar-overlay" class="sidebar-overlay" aria-hidden="true" />}
 
     <div
-      class={`page-layout ${showToc ? "with-toc" : ""} ${showSidebar ? "" : "no-sidebar"} ${pageClass}`}
+      class:list={["page-layout", { "with-toc": showToc, "no-sidebar": !showSidebar }, pageClass]}
     >
       {showSidebar && (
         <div data-pagefind-ignore="all">
