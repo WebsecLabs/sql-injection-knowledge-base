@@ -234,7 +234,9 @@ const extrasEntries = collections?.extrasEntries ?? (await getCollection("extras
          overflow-x: clip from breaking position: fixed on mobile */}
     {showSidebar && <div id="sidebar-overlay" class="sidebar-overlay" aria-hidden="true" />}
 
-    <div class={`page-layout ${showToc ? "with-toc" : ""} ${pageClass}`}>
+    <div
+      class={`page-layout ${showToc ? "with-toc" : ""} ${showSidebar ? "" : "no-sidebar"} ${pageClass}`}
+    >
       {showSidebar && (
         <div data-pagefind-ignore="all">
           <Sidebar
