@@ -159,6 +159,10 @@ body.search-modal-open {
 }
 
 .search-modal-esc {
+  display: flex;
+}
+
+.search-modal-key {
   padding: 1px 6px;
   border: 1px solid var(--color-modal-kbd-border);
   border-radius: 4px;
