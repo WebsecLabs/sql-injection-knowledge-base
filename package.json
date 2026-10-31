@@ -14,7 +14,7 @@
     "preview": "astro preview",
     "lint": "eslint . && stylelint 'src/**/*.css' && markdownlint 'src/content/**/*.md' && prettier --check .",
     "lint:fix": "eslint --fix . && stylelint --fix 'src/**/*.css' && markdownlint --fix 'src/content/**/*.md' && prettier --write .",
-    "typecheck": "astro check",
+    "typecheck": "astro check && node node_modules/typescript-7/bin/tsc --noEmit",
     "test": "vitest",
     "test:unit": "vitest run",
     "test:unit:watch": "vitest",
@@ -72,7 +72,8 @@
     "prettier-plugin-astro": "^1.1.2",
     "stylelint": "^17.16.0",
     "stylelint-config-standard": "^40.0.0",
-    "typescript": "^6.0.3",
+    "typescript": "npm:@typescript/typescript6@^6.0.2",
+    "typescript-7": "npm:typescript@^7.0.2",
     "typescript-eslint": "^8.72.1",
     "vitest": "^5.0.5"
   },
