@@ -76,6 +76,14 @@ Built with:
    npm run build
    ```
 
+5. Check types:
+
+   ```bash
+   npm run typecheck
+   ```
+
+   This runs `astro check` on TypeScript 6, which covers the `.astro` files, then the TypeScript 7 compiler on the `.ts` files. `astro check` and typescript-eslint do not support TypeScript 7 yet, so the `typescript` package name points at TypeScript 6 through `@typescript/typescript6`, and TypeScript 7 is installed as `typescript-7`.
+
 ## Deployment
 
 The build output in `dist/` is a fully static site. Choose a build mode first:

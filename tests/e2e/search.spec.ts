@@ -91,6 +91,19 @@ test.describe("Search Modal", () => {
     await expect(modal).not.toHaveAttribute("open", { timeout: MEDIUM_TIMEOUT_MS });
   });
 
+  test("has a visible Esc button that closes the modal", async ({ page }) => {
+    await page.keyboard.press("Control+k");
+    const modal = page.locator("#search-modal");
+    await expect(modal).toBeVisible();
+
+    const close = page.getByRole("button", { name: "Esc to close search" });
+    await expect(close).toBeVisible();
+    await expect(close).toContainText("Esc");
+    await close.click();
+
+    await expect(modal).not.toHaveAttribute("open", { timeout: MEDIUM_TIMEOUT_MS });
+  });
+
   test("should clear input on first Escape, close on second", async ({ page }) => {
     await page.keyboard.press("Control+k");
 
@@ -192,7 +205,7 @@ test.describe("Search Modal - Mobile", () => {
     const modal = page.locator("#search-modal");
     await expect(modal).toBeVisible();
 
-    const close = page.getByRole("button", { name: "Close search" });
+    const close = page.getByRole("button", { name: "Cancel search" });
     await expect(close).toBeVisible();
     await expect(close).toContainText("Cancel");
     await close.click();

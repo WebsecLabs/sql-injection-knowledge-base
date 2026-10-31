@@ -30,12 +30,14 @@
         autocorrect="off"
         spellcheck="false"
       />
-      <button type="button" class="search-modal-close" aria-label="Close search">
-        <kbd class="search-modal-esc" aria-hidden="true">
-          Esc
-        </kbd>
-        <span class="search-modal-cancel" aria-hidden="true">
-          Cancel
+      <!-- The accessible name starts with the visible word (WCAG 2.5.3 Label in Name) -->
+      <button type="button" class="search-modal-close">
+        <span class="search-modal-esc">
+          <kbd class="search-modal-key">Esc</kbd>
+          <span class="sr-only"> to close search</span>
+        </span>
+        <span class="search-modal-cancel">
+          Cancel<span class="sr-only"> search</span>
         </span>
       </button>
     </div>
