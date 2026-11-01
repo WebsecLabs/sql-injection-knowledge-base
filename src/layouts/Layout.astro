@@ -199,6 +199,10 @@ const extrasEntries = collections?.extrasEntries ?? (await getCollection("extras
     </style>
   </head>
   <body>
+    {/* Cloudflare email obfuscation turns email-like text, including user@host values
+        in code examples, into "[email protected]" links that 404 for crawlers.
+        It skips anything between these markers. */}
+    <!--email_off-->
     <a href="#main-content" class="skip-link">
       Skip to main content
     </a>
@@ -338,5 +342,6 @@ const extrasEntries = collections?.extrasEntries ?? (await getCollection("extras
     <div data-pagefind-ignore="all">
       <SearchModal />
     </div>
+    <!--/email_off-->
   </body>
 </html>
