@@ -45,7 +45,7 @@
     "@pagefind/default-ui": "^1.5.2",
     "astro": "^7.4.4",
     "pagefind": "^1.5",
-    "satteri": "^0.10.5"
+    "satteri": "^0.11.6"
   },
   "overrides": {
     "yaml": "2.9.1",
