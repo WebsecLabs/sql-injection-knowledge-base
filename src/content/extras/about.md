@@ -10,7 +10,7 @@ lastUpdated: 2025-12-16
 
 The SQL Injection Knowledge Base is a comprehensive resource designed to help security professionals and developers understand, identify, and test SQL injection vulnerabilities across various database systems. Serving both as an educational tool and practical reference, it supports continuous learning and effective vulnerability assessment.
 
-Originally created by Roberto Salgado in 2013, the SQLi Knowledge Base underwent a major update (v2) in 2025. This version features improved performance, enhanced accessibility, better user experience, and increased extensibility to encourage community contributions and facilitate ongoing maintenance. The live version can be accessed at [websec.com/sql-injection-knowledge-base](https://www.websec.com/sql-injection-knowledge-base).
+Originally created by Roberto Salgado in 2013, the SQLi Knowledge Base underwent a major update (v2) in 2025. This version features improved performance, enhanced accessibility, better user experience, and increased extensibility to encourage community contributions and facilitate ongoing maintenance. The live version can be accessed at [websec.ca/sql-injection-knowledge-base](https://websec.ca/sql-injection-knowledge-base).
 
 ## Purpose
 
