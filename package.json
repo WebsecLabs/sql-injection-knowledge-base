@@ -38,14 +38,14 @@
   "author": "WebsecLabs",
   "license": "MIT",
   "dependencies": {
-    "@astrojs/markdown-satteri": "^0.4.7",
+    "@astrojs/markdown-satteri": "^0.4.9",
     "@astrojs/sitemap": "^3.7.4",
     "@fontsource/inter": "^5.3.0",
     "@fontsource/jetbrains-mono": "^5.3.0",
     "@pagefind/default-ui": "^1.6.0",
-    "astro": "^7.4.7",
+    "astro": "^7.4.11",
     "pagefind": "^1.6.0",
-    "satteri": "^0.11.6"
+    "satteri": "^0.11.7"
   },
   "overrides": {
     "yaml": "2.9.1",
